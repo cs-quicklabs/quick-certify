@@ -3,16 +3,19 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UserModule } from './user/user.module';
-import { User } from './user/models/user.model';  // Add this import
+import { User } from './user/models/user.model';
 import { ConfigModule } from '@nestjs/config';
+import { EmailModule } from './email/email.module';
+import * as path from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: path.resolve(process.cwd(), '.env'),
     }),
     SequelizeModule.forRoot({
-    dialect: 'postgres',
+      dialect: 'postgres',
       host: 'localhost',
       port: 5432,
       username: 'postgres',
@@ -23,9 +26,9 @@ import { ConfigModule } from '@nestjs/config';
       logging: console.log,
     }),
     UserModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
 export class AppModule {}
