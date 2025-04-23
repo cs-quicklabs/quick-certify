@@ -5,7 +5,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Sequelize } from 'sequelize-typescript';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'debug', 'log', 'verbose'],
+  });
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
 

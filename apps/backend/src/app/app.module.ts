@@ -6,6 +6,8 @@ import { UserModule } from './user/user.module';
 import { User } from './user/models/user.model';
 import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from './email/email.module';
+import { FileModule } from './file/file.module';
+import fileConfig from './file/config/file.config';
 import * as path from 'path';
 
 @Module({
@@ -13,6 +15,7 @@ import * as path from 'path';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: path.resolve(process.cwd(), '.env'),
+      load: [fileConfig],
     }),
     SequelizeModule.forRoot({
       dialect: 'postgres',
@@ -27,6 +30,7 @@ import * as path from 'path';
     }),
     UserModule,
     EmailModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
