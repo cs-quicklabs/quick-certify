@@ -6,6 +6,7 @@ import { SequelizeConfigService } from '@/common/database/sequelize-config.servi
 import databaseConfig from '@/common/database/config/database.config';
 import appConfig from '@/config/app.config';
 import { OrganizationModule } from '../organization/organization.module';
+import { EmailModule } from '@/modules/email/email.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { OrganizationModule } from '../organization/organization.module';
     }),
     UserModule,
     OrganizationModule,
+    EmailModule,
   ],
   controllers: [],
   providers: [],

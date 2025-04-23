@@ -1,0 +1,64 @@
+<mjml>
+  <mj-head>
+    <mj-title>Welcome to QuickCerify</mj-title>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif" />
+      <mj-text font-size="16px" color="#000000" line-height="24px" />
+      <mj-button background-color="#2563EB" color="white" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f4">
+    <!-- Header Section -->
+    <mj-section background-color="#ffffff" padding="20px 0">
+      <mj-column>
+        <mj-text
+          align="center"
+          font-size="28px"
+          font-weight="bold"
+          color="#2563EB"
+        >
+          QuickCerify
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Welcome Message -->
+    <mj-section background-color="#ffffff" padding="20px">
+      <mj-column>
+        <mj-text font-size="24px" font-weight="bold">
+          Welcome to QuickCerify! 🎉
+        </mj-text>
+        <mj-text>
+          We're excited to have you on board! Your account has been successfully
+          created, and you're ready to begin your journey with us.
+        </mj-text>
+        <mj-button href="{{loginUrl}}" align="left">
+          Login to Your Account
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Next Steps -->
+    <mj-section background-color="#ffffff" padding="20px">
+      <mj-column>
+        <mj-text font-weight="bold"> Getting Started: </mj-text>
+        <mj-text>
+          1. Login to your account<br />
+          2. Complete your profile<br />
+          3. Explore our features<br />
+          4. Start your certification journey
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#f4f4f4" padding="20px">
+      <mj-column>
+        <mj-text align="center" color="#666666" font-size="12px">
+          This email was sent by QuickCerify. If you have any questions, please
+          contact our support team.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
