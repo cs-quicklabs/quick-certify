@@ -1,12 +1,12 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
+import { AppModule } from './modules/app/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Sequelize } from 'sequelize-typescript';
+import validationOptions from './utils/validation-options';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const globalPrefix = 'api';
+  const globalPrefix = process.env.API_PREFIX ?? '';
   app.setGlobalPrefix(globalPrefix);
 
   // Swagger setup
@@ -16,19 +16,23 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-    
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document); // This will serve Swagger at /docs
 
-  // Force sync all models
-  const sequelize = app.get(Sequelize);
-  await sequelize.sync({ force: true });
+  app.enableVersioning({ type: VersioningType.URI });
+
+  // to ensure smooth function while application shutdown
+  app.enableShutdownHooks();
+
+  // Global Validations
+  app.useGlobalPipes(new ValidationPipe(validationOptions));
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document); // This will serve Swagger at /docs
   Logger.log(
     `📝 Swagger documentation is available at: http://localhost:${port}/docs`
   );
