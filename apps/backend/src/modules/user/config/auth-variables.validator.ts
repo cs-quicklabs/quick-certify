@@ -1,8 +1,9 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class AuthVariablesValidator {
   @IsOptional()
-  SALT_OR_ROUNDS: string | number;
+  @IsNumber()
+  SALT_OR_ROUNDS: number;
 
   @IsOptional()
   @IsString()

@@ -13,12 +13,9 @@
       "@/*": [
         "src/*"
       ],
-      "@quick-learn/shared": [
-        "../../lib/shared/src/index.ts"
+      "@quick-certify/shared": [
+        "../../libs/src/index.ts"
       ],
-      "@quick-learn/email": [
-        "../../lib/email/src/index.ts"
-      ]
     }
   },
   "include": [

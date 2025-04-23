@@ -7,11 +7,14 @@ import databaseConfig from '@/common/database/config/database.config';
 import appConfig from '@/config/app.config';
 import { OrganizationModule } from '../organization/organization.module';
 import { EmailModule } from '@/modules/email/email.module';
+import { FileModule } from '@/modules/file/file.module';
+import fileConfig from '../file/config/file.config';
+import authConfig from '../user/config/auth.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [databaseConfig, appConfig],
+      load: [databaseConfig, appConfig, fileConfig, authConfig],
       isGlobal: true,
     }),
     SequelizeModule.forRootAsync({
@@ -20,6 +23,7 @@ import { EmailModule } from '@/modules/email/email.module';
     UserModule,
     OrganizationModule,
     EmailModule,
+    FileModule,
   ],
   controllers: [],
   providers: [],

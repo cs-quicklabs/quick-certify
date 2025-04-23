@@ -34,6 +34,8 @@ export class UserService extends BasicCrudService<UserModel> {
       infer: true,
     });
 
+    console.log('saltOrRounds', saltOrRounds);
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);
 

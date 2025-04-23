@@ -1,5 +1,5 @@
 export type AuthConfig = {
-  saltOrRounds: string | number;
+  saltOrRounds: number;
   accessTokenSecret: string;
   accessTokenExpires: string;
   refreshTokenSecret: string;

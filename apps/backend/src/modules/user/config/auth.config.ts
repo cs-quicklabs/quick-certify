@@ -7,7 +7,9 @@ export default registerAs<AuthConfig>('auth', () => {
   validateConfig(process.env, AuthVariablesValidator);
 
   return {
-    saltOrRounds: process.env.SALT_OR_ROUNDS || 10,
+    saltOrRounds: process.env.SALT_OR_ROUNDS
+      ? parseInt(process.env.SALT_OR_ROUNDS, 10)
+      : 10,
     accessTokenSecret: process.env.ACCESS_TOKEN_SECRET,
     accessTokenExpires: process.env.ACCESS_TOKEN_EXPIRY,
     refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,
