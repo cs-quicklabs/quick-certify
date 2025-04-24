@@ -53,6 +53,18 @@ export class UserModel extends BaseModel {
   password: string;
 
   @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  inActiveAt: Date;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  profileImageUrl: string;
+
+  @Column({
     type: DataType.BOOLEAN,
     defaultValue: true,
   })
