@@ -19,7 +19,8 @@
     }
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/common/database/config/sequelize.config.js"
   ],
   "exclude": [
     "jest.config.ts",
