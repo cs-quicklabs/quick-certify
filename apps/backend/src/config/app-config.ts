@@ -8,4 +8,5 @@ export type AppConfig = {
   smtpPort?: number;
   smtpUser?: string;
   smtpPass?: string;
+  frontendDomain?: string;
 };
