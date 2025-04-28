@@ -17,5 +17,6 @@ export default registerAs<AppConfig>('app', () => {
     smtpPort: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587,
     smtpUser: process.env.SMTP_USER,
     smtpPass: process.env.SMTP_PASS,
+    frontendDomain: process.env.FRONTEND_DOMAIN,
   };
 });

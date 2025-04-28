@@ -8,7 +8,8 @@ import * as fs from 'fs/promises';
 import { emailSubjects } from './constants/constants';
 import { generatePreviewHTML } from '@/utils/emailTemplate';
 import { BrowserUtils } from '@/utils/browser.utils';
-import { ApiResponse } from '@/common/dto';
+import { EnvironmentEnum } from '@/common/enums';
+import { AppConfig } from '@/config/app-config';
 
 export type Message = {
   body: string;
@@ -28,26 +29,28 @@ export class EmailService {
   private readonly logger = new Logger('EmailService');
   private readonly frontendURL: string;
   private readonly accountEmail: string;
-  private readonly emailTransporter: nodemailer.Transporter;
+  private readonly transporter: nodemailer.Transporter;
   private readonly isDevelopment: boolean;
 
-  constructor(private readonly configService: ConfigService) {
-    this.accountEmail = this.configService.getOrThrow<string>('SMTP_EMAIL');
+  constructor(
+    private readonly configService: ConfigService<{ app: AppConfig }>
+  ) {
+    const appConfig = this.configService.get('app', { infer: true });
 
-    const options = {
-      host: this.configService.getOrThrow<string>('SMTP_HOST'),
-      port: this.configService.getOrThrow<number>('SMTP_PORT'),
-      auth: {
-        user: this.configService.getOrThrow<string>('SMTP_USER'),
-        pass: this.configService.getOrThrow<string>('SMTP_PASS'),
-      },
-      secure: false,
-    };
-
-    this.isDevelopment = process.env.NODE_ENV !== 'production';
+    this.accountEmail = appConfig.smtpEmail;
+    this.isDevelopment = process.env.NODE_ENV !== EnvironmentEnum.Production;
     this.logger.log(`Current NODE_ENV: ${process.env.NODE_ENV}`);
-    this.emailTransporter = nodemailer.createTransport(options);
-    this.frontendURL = this.configService.get<string>('FRONTEND_DOMAIN') || '';
+    this.transporter = nodemailer.createTransport({
+      host: appConfig.smtpHost,
+      port: appConfig.smtpPort,
+      secure: false,
+      auth: {
+        user: appConfig.smtpUser,
+        pass: appConfig.smtpPass,
+      },
+    });
+    this.frontendURL =
+      this.configService.get('app.frontendDomain', { infer: true }) || '';
   }
 
   /**
@@ -71,7 +74,7 @@ export class EmailService {
 
     if (!this.isDevelopment) {
       try {
-        const info = await this.emailTransporter.sendMail(mailOptions);
+        const info = await this.transporter.sendMail(mailOptions);
         this.logger.log(
           `Email sent successfully to ${info.accepted.join(', ')}`
         );
@@ -140,7 +143,7 @@ export class EmailService {
   ): Promise<string> {
     const templatePath = path.join(
       process.cwd(),
-      'apps/backend/src/app/email/email-templates',
+      'apps/backend/src/modules/email/email-templates',
       `${templateName}.mjml`
     );
     const mjmlContent = await fs.readFile(templatePath, 'utf8');
@@ -150,17 +153,26 @@ export class EmailService {
   }
 
   // This function is used to send the email to the user when the user forgets the password
-  async forgetPasswordEmail(resetURL: string, email: string) {
-    const emailBody = await this.compileMjmlTemplate(
-      { resetURL },
-      'forget-password'
-    );
-    await this.send({
-      body: emailBody,
-      recipients: [email],
-      subject: emailSubjects.resetPassword,
-    });
-    return new ApiResponse(200, 'Reset password link has been shared.');
+  async forgetPasswordEmail(email: string, resetToken: string): Promise<void> {
+    const resetUrl = `${this.frontendURL}/reset-password?token=${resetToken}`;
+
+    console.log('reset-url', resetUrl);
+
+    try {
+      const emailBody = await this.compileMjmlTemplate(
+        { resetUrl },
+        'forget-password'
+      );
+
+      await this.send({
+        recipients: [email],
+        body: emailBody,
+        subject: emailSubjects.resetPassword,
+      });
+    } catch (err) {
+      this.logger.error('Failed to send password reset email:', err);
+      throw new Error('Failed to send password reset email.');
+    }
   }
 
   // The below function is used to send the welcome email to the user

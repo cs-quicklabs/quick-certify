@@ -37,4 +37,8 @@ export class AppVariablesValidator {
   @IsString()
   @IsOptional()
   SMTP_PASS?: string;
+
+  @IsString()
+  @IsOptional()
+  FRONTEND_DOMAIN?: string;
 }
