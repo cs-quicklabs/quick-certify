@@ -22,7 +22,9 @@ export class SequelizeConfigService implements SequelizeOptionsFactory {
       synchronize: this.configService.get('database.synchronize', {
         infer: true,
       }),
-      logging: this.configService.get('database.logging', { infer: true }),
+      logging:
+        this.configService.get('database.logging', { infer: true }) &&
+        console.log,
       models: [...Models],
       pool: {
         max: this.configService.get('database.maxConnections', { infer: true }),
