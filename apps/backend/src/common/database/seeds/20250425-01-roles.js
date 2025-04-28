@@ -4,12 +4,12 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     // Check if any roles already exist
-    const existingRoles = await queryInterface.sequelize.query(
+    const [{ count }] = await queryInterface.sequelize.query(
       'SELECT COUNT(*) as count FROM roles;',
       { type: queryInterface.sequelize.QueryTypes.SELECT }
     );
 
-    if (existingRoles.length) {
+    if (count > 0) {
       console.log('Roles already exist, skipping seed');
       return;
     }
@@ -19,25 +19,25 @@ module.exports = {
       [
         {
           name: 'Super Admin',
-          code: 'SUPER_ADMIN',
+          code: 'super_admin',
           created_at: new Date(),
           updated_at: new Date(),
         },
         {
           name: 'Admin',
-          code: 'ADMIN',
+          code: 'admin',
           created_at: new Date(),
           updated_at: new Date(),
         },
         {
-          name: 'Organization Admin',
-          code: 'ORG_ADMIN',
+          name: 'Manager',
+          code: 'manager',
           created_at: new Date(),
           updated_at: new Date(),
         },
         {
-          name: 'User',
-          code: 'USER',
+          name: 'Designer',
+          code: 'designer',
           created_at: new Date(),
           updated_at: new Date(),
         },
