@@ -62,11 +62,6 @@ module.exports = {
         allowNull: false,
         comment: 'Record last update timestamp',
       },
-      deleted_at: {
-        type: Sequelize.DATE,
-        allowNull: true,
-        comment: 'Soft delete timestamp',
-      },
     });
 
     // Create indexes for users table
@@ -285,7 +280,7 @@ module.exports = {
         unique: true,
         comment: 'URL-friendly unique identifier',
       },
-      linkedin_url: {
+      linked_in_url: {
         type: Sequelize.STRING(1024),
         allowNull: true,
         comment: 'LinkedIn profile URL',
