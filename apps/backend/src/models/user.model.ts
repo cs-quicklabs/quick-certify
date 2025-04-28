@@ -7,7 +7,7 @@ import {
   Scopes,
   DefaultScope,
 } from 'sequelize-typescript';
-import { BaseModelWithSoftDelete } from './base.model';
+import { BaseModel } from './base.model';
 import { Exclude, Expose } from 'class-transformer';
 import { OrganizationUserModel } from './organization-user.model';
 
@@ -50,7 +50,7 @@ import { OrganizationUserModel } from './organization-user.model';
     },
   ],
 })
-export class UserModel extends BaseModelWithSoftDelete {
+export class UserModel extends BaseModel {
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
