@@ -97,8 +97,8 @@ module.exports = {
         allowNull: false,
         comment: 'Session hash for authentication',
       },
-      expires: {
-        type: Sequelize.STRING,
+      expires_at: {
+        type: Sequelize.DATE,
         allowNull: false,
         comment: 'Session expiration timestamp',
       },
