@@ -159,4 +159,9 @@ export class UserModel extends BaseModel {
       instance.password = await bcrypt.hash(instance.password, saltRounds);
     }
   }
+
+  async comparePassword(password: string): Promise<boolean> {
+    const user = await UserModel.unscoped().findByPk(this.id);
+    return bcrypt.compare(password, user.password);
+  }
 }
