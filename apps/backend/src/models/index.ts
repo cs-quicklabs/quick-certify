@@ -5,6 +5,7 @@ import { OrganizationUserModel } from './organization-user.model';
 import { RoleModel } from './role.model';
 import { PermissionModel } from './permission.model';
 import { RolePermissionModel } from './role-permission.model';
+import { UserResetTokenModel } from './user-reset-token.model';
 
 /**
  * Export all models for Sequelize initialization
@@ -17,6 +18,7 @@ export const Models = [
   PermissionModel,
   RolePermissionModel,
   OrganizationUserModel,
+  UserResetTokenModel
 ];
 
 export {
@@ -27,4 +29,5 @@ export {
   RoleModel,
   PermissionModel,
   RolePermissionModel,
+  UserResetTokenModel
 };
