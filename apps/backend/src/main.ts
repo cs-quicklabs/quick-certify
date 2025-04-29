@@ -27,6 +27,14 @@ async function bootstrap() {
   // Global Validations
   app.useGlobalPipes(new ValidationPipe(validationOptions));
 
+  // Enable CORS
+  app.enableCors({
+    origin: process.env.CORS_ORIGINS?.split(',') || [], // Allow all origins
+    methods: 'GET,PUT,PATCH,POST,DELETE', // Allowed methods
+    credentials: true, // Allow credentials (e.g., cookies)
+    // allowedHeaders: 'Content-Type, Accept', // Allowed headers
+  });
+  console.log('processENV', process.env.CORS_ORIGINS);
   const port = process.env.PORT || 3001;
   await app.listen(port);
   Logger.log(
