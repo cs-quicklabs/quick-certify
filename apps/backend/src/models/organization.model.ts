@@ -5,9 +5,11 @@ import {
   Index,
   HasMany,
   Scopes,
+  BelongsToMany,
 } from 'sequelize-typescript';
 import { BaseModel } from './base.model';
 import { OrganizationUserModel } from './organization-user.model';
+import { UserModel } from './user.model';
 
 /**
  * Organization model representing groups that users can belong to
@@ -105,6 +107,9 @@ export class OrganizationModel extends BaseModel {
   // Define relationships
   @HasMany(() => OrganizationUserModel)
   organizationUsers: OrganizationUserModel[];
+
+  @BelongsToMany(() => UserModel, () => OrganizationUserModel)
+  users: UserModel[];
 
   // Helper methods
   getSocialLinks(): Record<string, string> {

@@ -11,6 +11,7 @@ import { FileModule } from '@/modules/file/file.module';
 import fileConfig from '../file/config/file.config';
 import authConfig from '../user/config/auth.config';
 import { HealthCheckModule } from '../health-check/health-check.module';
+import { RoleModule } from '../role/role.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { HealthCheckModule } from '../health-check/health-check.module';
     OrganizationModule,
     EmailModule,
     FileModule,
+    RoleModule,
   ],
   controllers: [],
   providers: [],
