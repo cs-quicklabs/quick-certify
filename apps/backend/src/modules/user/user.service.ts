@@ -26,7 +26,8 @@ export class UserService extends BasicCrudService<UserModel> {
   }
 
   async register(registerUserDto: RegisterUserDto) {
-    const { organizationName, ...userDetails } = registerUserDto;
+    const { organizationName, organizationWebsite, ...userDetails } =
+      registerUserDto;
 
     // Check if a user with the same email already exists
     const existingUser = await this.findByEmail(userDetails.email);
@@ -47,6 +48,7 @@ export class UserService extends BasicCrudService<UserModel> {
     // Create the organization
     const newOrganization = await this.organizationService.createOrganization({
       name: organizationName,
+      websiteUrl: organizationWebsite,
     });
 
     // Get the SUPER_ADMIN role

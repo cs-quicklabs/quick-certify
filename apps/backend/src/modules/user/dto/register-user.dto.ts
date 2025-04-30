@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
@@ -33,6 +33,15 @@ export class RegisterUserDto {
   @IsNotEmpty()
   @MinLength(2)
   organizationName: string;
+
+  @ApiProperty({
+    example: 'https://example.com',
+    description: 'Website URL of the organization',
+  })
+  @IsNotEmpty()
+  @Transform(({ value }) => value?.toLowerCase())
+  @IsUrl()
+  organizationWebsite: string;
 
   @ApiProperty({
     example: 'password123',

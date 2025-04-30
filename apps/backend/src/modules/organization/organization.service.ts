@@ -10,7 +10,7 @@ export class OrganizationService extends BasicCrudService<OrganizationModel> {
   }
 
   async createOrganization(createOrganizationDto: CreateOrganizationDto) {
-    const { name } = createOrganizationDto;
+    const { name, websiteUrl } = createOrganizationDto;
     const slug = this.createOrgSlug(name);
 
     // Check if an organization with the same name already exists
@@ -22,7 +22,7 @@ export class OrganizationService extends BasicCrudService<OrganizationModel> {
     }
 
     // Create the organization
-    const organization = await this.model.create({ name, slug });
+    const organization = await this.model.create({ name, slug, websiteUrl });
     return organization;
   }
 
