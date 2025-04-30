@@ -81,6 +81,16 @@ export class AuthService {
     };
   }
 
+  async logout(token: string): Promise<void> {
+    const session = await this.jwtService.decode(token);
+    if (session) {
+      const data = await this.sessionService.getOneByPk(session.sessionId);
+      if (data) {
+        await data.destroy();
+      }
+    }
+  }
+
   async validateUser(email: string, password: string): Promise<UserModel> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
