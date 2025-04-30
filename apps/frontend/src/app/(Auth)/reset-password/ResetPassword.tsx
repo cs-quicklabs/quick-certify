@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { z } from 'zod';
 import FormFieldsMapper from '@src/shared/formElements/FormFieldsMapper';
 import { FieldConfig } from '@src/shared/types/formTypes';
@@ -16,6 +16,7 @@ function ResetPassword() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const resetPasswordFields: FieldConfig[] = [
     {
       label: 'New Password',
@@ -40,10 +41,13 @@ function ResetPassword() {
     resetPasswordApiCall(payload)
       .then((res) => {
         toast.success(res.message);
-        // router.push(RouteEnum.LOGIN);
+        router.push(RouteEnum.LOGIN);
       })
       .catch((err) => {
         showApiErrorInToast(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -55,6 +59,7 @@ function ResetPassword() {
         onSubmit={handleResetPassword}
         buttonText="Change password"
         id="resetPasswordForm"
+        isLoading={isLoading}
         bigButton
       />
       <p className="text-sm  text-center">

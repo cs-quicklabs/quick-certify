@@ -156,8 +156,6 @@ export class EmailService {
   async forgetPasswordEmail(email: string, resetToken: string): Promise<void> {
     const resetUrl = `${this.frontendURL}/reset-password?token=${resetToken}`;
 
-    console.log('reset-url', resetUrl);
-
     try {
       const emailBody = await this.compileMjmlTemplate(
         { resetUrl },
