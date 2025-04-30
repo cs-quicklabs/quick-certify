@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 function LoginPage() {
   return (
-    <AuthTemplate title="Sign in to your account">
+    <AuthTemplate title="Sign in to issuer account">
       <Login />
     </AuthTemplate>
   );

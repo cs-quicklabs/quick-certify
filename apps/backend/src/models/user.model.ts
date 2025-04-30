@@ -148,7 +148,7 @@ export class UserModel extends BaseModel {
   organizations: OrganizationModel[];
 
   // Helper methods
-  isActive(): boolean {
+  get isActive(): boolean {
     return this.inActiveAt === null;
   }
 

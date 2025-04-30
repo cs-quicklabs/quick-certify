@@ -1,4 +1,4 @@
-import { IsNotEmpty, MinLength } from 'class-validator';
+import { IsNotEmpty, MinLength, IsUrl } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateOrganizationDto {
@@ -10,4 +10,12 @@ export class CreateOrganizationDto {
   @MinLength(2)
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty({
+    example: 'https://example.com',
+    description: 'Website URL of the organization',
+  })
+  @IsNotEmpty()
+  @IsUrl()
+  websiteUrl: string;
 }

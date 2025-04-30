@@ -10,6 +10,7 @@ export enum RouteEnum {
 }
 
 export enum authApiEnum {
+  SIGNUP = '/users/register',
   LOGIN = '/auth/login',
   FORGOT_PASSWORD = '/users/forgot-password',
   RESET_PASSWORD = '/users/reset-password',

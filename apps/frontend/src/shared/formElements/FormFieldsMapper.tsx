@@ -11,7 +11,7 @@ import { FileUploadResponse } from '../types/utilTypes';
 import en from '@/constants/lang/en';
 
 interface Props<T extends z.ZodTypeAny> {
-  readonly fields: FieldConfig[];
+  readonly fields: (FieldConfig | FieldConfig[])[];
   readonly schema: T;
   readonly onSubmit: (
     data: z.infer<T>,
@@ -100,7 +100,7 @@ function FormFieldsMapper<T extends z.ZodTypeAny>({
     <>
       <div className="mb-2">
         {fields.map((field) => {
-          if (field.type === 'image')
+          if (!Array.isArray(field) && field.type === 'image')
             return (
               <ImageInput
                 key={field.label}
@@ -127,7 +127,32 @@ function FormFieldsMapper<T extends z.ZodTypeAny>({
         noValidate
       >
         {fields.map((field) => {
-          if (field.type !== 'image')
+          if (Array.isArray(field)) {
+            return (
+              <div
+                key={field[0].name}
+                className="flex gap-4 mb-0"
+              >
+                {field.map((item) => (
+                  <InputField
+                    key={item.name}
+                    label={item.label}
+                    name={item.name}
+                    type={item.type}
+                    placeholder={item.placeholder ?? ''}
+                    options={item.options}
+                    height={item.height}
+                    width={item.width}
+                    className={item.className}
+                    register={register}
+                    disabled={isLoading || item.disabled}
+                    errorMsg={errors[item.name]?.message as string}
+                    id={id}
+                  />
+                ))}
+              </div>
+            );
+          } else if (field.type !== 'image') {
             return (
               <InputField
                 key={field.name}
@@ -147,22 +172,21 @@ function FormFieldsMapper<T extends z.ZodTypeAny>({
                 resetState={resetState}
               />
             );
+          }
         })}
         <div className="flex flex-wrap mt-4 gap-2">
           <button
             type="submit"
             disabled={buttonDisabled || isLoading || !isValid || !isDirty}
-            className={`${
-              bigButton && 'w-full'
-            } text-white bg-primary-600 hover:bg-primary-700 flex items-center justify-center focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium  text-sm px-5 py-2.5 align-middle disabled:bg-gray-500`}
+            className={`${bigButton && 'w-full'
+              } text-white bg-primary-600 hover:bg-primary-700 flex items-center justify-center focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium  text-sm px-5 py-2.5 align-middle disabled:bg-gray-500`}
           >
             {isLoading ? <Loader /> : buttonText}
           </button>
           {cancelButton && (
             <button
-              className={`${
-                bigButton && 'w-full'
-              } py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-hidden bg-white  border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-1 focus:ring-gray-200`}
+              className={`${bigButton && 'w-full'
+                } py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-hidden bg-white  border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-1 focus:ring-gray-200`}
               onClick={() => cancelButton()}
               type="button"
               disabled={isLoading}

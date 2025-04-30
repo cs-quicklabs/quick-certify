@@ -1,5 +1,6 @@
 import {
   ForgotPasswordPayload,
+  RegisterPayload,
   LoginCredentials,
   LoginResponse,
   ResetPasswordPayload,
@@ -9,6 +10,11 @@ import { authApiEnum } from '@/constants/route.enum';
 
 type ForgotPasswordResData = {
   resetURL: string;
+};
+
+export const signupApiCall = async (payload: RegisterPayload) => {
+  const response = await axiosInstance.post(authApiEnum.SIGNUP, payload);
+  return response.data;
 };
 
 export const loginApiCall = async (
