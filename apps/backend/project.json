@@ -38,6 +38,108 @@
       "options": {
         "passWithNoTests": true
       }
+    },
+    "migration:generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli migration:generate --name {args.name} --config apps/backend/src/common/database/config/sequelize.config.js"
+      }
+    },
+    "migration:run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli db:migrate --env development --config apps/backend/src/common/database/config/sequelize.config.js"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx sequelize-cli db:migrate --env production --config apps/backend/src/common/database/config/sequelize.config.js"
+        },
+        "test": {
+          "command": "npx sequelize-cli db:migrate --env test --config apps/backend/src/common/database/config/sequelize.config.js"
+        }
+      }
+    },
+    "migration:revert": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli db:migrate:undo --env development --config apps/backend/src/common/database/config/sequelize.config.js"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx sequelize-cli db:migrate:undo --env production --config apps/backend/src/common/database/config/sequelize.config.js"
+        },
+        "test": {
+          "command": "npx sequelize-cli db:migrate:undo --env test --config apps/backend/src/common/database/config/sequelize.config.js"
+        }
+      }
+    },
+    "migration:revert:all": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli db:migrate:undo:all --env development --config apps/backend/src/common/database/config/sequelize.config.js"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx sequelize-cli db:migrate:undo:all --env production --config apps/backend/src/common/database/config/sequelize.config.js"
+        },
+        "test": {
+          "command": "npx sequelize-cli db:migrate:undo:all --env test --config apps/backend/src/common/database/config/sequelize.config.js"
+        }
+      }
+    },
+    "migration:status": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli db:migrate:status --env development --config apps/backend/src/common/database/config/sequelize.config.js"
+      }
+    },
+    "seed:generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli seed:generate --name {args.name} --config apps/backend/src/common/database/config/sequelize.config.js"
+      }
+    },
+    "seed:run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli db:seed:all --env development --config apps/backend/src/common/database/config/sequelize.config.js"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx sequelize-cli db:seed:all --env production --config apps/backend/src/common/database/config/sequelize.config.js"
+        },
+        "test": {
+          "command": "npx sequelize-cli db:seed:all --env test --config apps/backend/src/common/database/config/sequelize.config.js"
+        }
+      }
+    },
+    "seed:revert": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli db:seed:undo --env development --config apps/backend/src/common/database/config/sequelize.config.js"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx sequelize-cli db:seed:undo --env production --config apps/backend/src/common/database/config/sequelize.config.js"
+        },
+        "test": {
+          "command": "npx sequelize-cli db:seed:undo --env test --config apps/backend/src/common/database/config/sequelize.config.js"
+        }
+      }
+    },
+    "seed:revert:all": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx sequelize-cli db:seed:undo:all --env development --config apps/backend/src/common/database/config/sequelize.config.js"
+      },
+      "configurations": {
+        "production": {
+          "command": "npx sequelize-cli db:seed:undo:all --env production --config apps/backend/src/common/database/config/sequelize.config.js"
+        },
+        "test": {
+          "command": "npx sequelize-cli db:seed:undo:all --env test --config apps/backend/src/common/database/config/sequelize.config.js"
+        }
+      }
     }
   }
 }
