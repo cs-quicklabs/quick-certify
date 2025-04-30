@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { showApiErrorInToast } from '@src/utils/toastUtils';
 import { toast } from 'react-toastify';
 import { loginApiCall } from '@/apiServices/authService';
+import { SuperLink } from '@/utils/HiLink';
 
 function Login() {
   const router = useRouter();
@@ -52,15 +53,29 @@ function Login() {
   };
 
   return (
-    <FormFieldsMapper
-      fields={loginFields}
-      schema={loginFormSchema}
-      onSubmit={handleLogin}
-      buttonDisabled={isLoading}
-      bigButton
-      buttonText="Sign In"
-      id="loginForm"
-    />
+    <>
+      <FormFieldsMapper
+        fields={loginFields}
+        schema={loginFormSchema}
+        onSubmit={handleLogin}
+        buttonDisabled={isLoading}
+        isLoading={isLoading}
+        bigButton
+        buttonText="Sign In"
+        id="loginForm"
+      />
+
+      <p className='text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center'>
+        <span className='font-light'>
+          Don't have an account yet?
+        </span>
+
+        <SuperLink
+          href="/signup"
+          className="font-medium text-primary-500 hover:underline ml-2">
+          Sign up</SuperLink>
+      </p>
+    </>
   );
 }
 
