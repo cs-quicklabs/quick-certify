@@ -6,7 +6,7 @@ export enum RouteEnum {
 }
 
 export enum authApiEnum {
-  LOGIN = '/users/login',
+  LOGIN = '/auth/login',
   FORGOT_PASSWORD = '/users/forgot-password',
   RESET_PASSWORD = '/users/reset-password',
   LOGOUT = '/users/logout',
