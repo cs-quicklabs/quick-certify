@@ -11,10 +11,10 @@ export class OrganizationService extends BasicCrudService<OrganizationModel> {
 
   async createOrganization(createOrganizationDto: CreateOrganizationDto) {
     const { name } = createOrganizationDto;
-    const slug = this.getSlug(name);
+    const slug = this.createOrgSlug(name);
 
     // Check if an organization with the same name already exists
-    const existingOrganization = await this.getOne({ where: { slug } });
+    const existingOrganization = await this.findBySlug(slug);
     if (existingOrganization) {
       throw new BadRequestException(
         'Organization with this name already exists'
@@ -26,7 +26,11 @@ export class OrganizationService extends BasicCrudService<OrganizationModel> {
     return organization;
   }
 
-  getSlug(name: string) {
+  async findBySlug(slug: string) {
+    return this.getOne({ where: { slug } });
+  }
+
+  createOrgSlug(name: string) {
     return name
       .trim()
       .toLowerCase()

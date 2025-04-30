@@ -6,10 +6,14 @@ import {
   HasMany,
   Scopes,
   DefaultScope,
+  BelongsToMany,
+  BeforeSave,
 } from 'sequelize-typescript';
 import { BaseModel } from './base.model';
 import { Exclude, Expose } from 'class-transformer';
 import { OrganizationUserModel } from './organization-user.model';
+import { OrganizationModel } from './organization.model';
+import * as bcrypt from 'bcrypt';
 
 /**
  * User model representing application users
@@ -140,8 +144,24 @@ export class UserModel extends BaseModel {
   @HasMany(() => OrganizationUserModel)
   organizationUsers: OrganizationUserModel[];
 
+  @BelongsToMany(() => OrganizationModel, () => OrganizationUserModel)
+  organizations: OrganizationModel[];
+
   // Helper methods
   isActive(): boolean {
     return this.inActiveAt === null;
+  }
+
+  @BeforeSave
+  static async hashPassword(instance: UserModel) {
+    if (instance.changed('password')) {
+      const saltRounds = parseInt(process.env.SALT_ROUNDS, 10) || 10;
+      instance.password = await bcrypt.hash(instance.password, saltRounds);
+    }
+  }
+
+  async comparePassword(password: string): Promise<boolean> {
+    const user = await UserModel.unscoped().findByPk(this.id);
+    return bcrypt.compare(password, user.password);
   }
 }

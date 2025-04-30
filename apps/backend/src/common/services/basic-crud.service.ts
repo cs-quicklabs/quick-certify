@@ -19,6 +19,13 @@ export class BasicCrudService<T extends Model> {
   }
 
   /**
+   * Retrieves all records matching the given options.
+   */
+  async getAll(options: FindOptions<T> = {}) {
+    return this.model.findAll(Object.assign({}, this.options, options));
+  }
+
+  /**
    * Retrieves a single record by its primary key.
    */
   async getOneByPk(identifier: Identifier, options: FindOptions<T> = {}) {

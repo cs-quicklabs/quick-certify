@@ -3,9 +3,11 @@ import { BasicCrudService } from '@/common/services';
 import { UserModel, UserResetTokenModel } from '@/models';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { OrganizationService } from '../organization/organization.service';
-import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '@/config/config.type';
+import { RoleService } from '../role/role.service';
+import { RoleEnum } from '@/common/enums';
+import { OrganizationUserService } from '../organization/organization-user.service';
 import { EmailService } from '../email/email.service';
 import { randomUUID } from 'crypto';
 import { addMinutes } from 'date-fns';
@@ -15,14 +17,16 @@ import { Op } from 'sequelize';
 export class UserService extends BasicCrudService<UserModel> {
   constructor(
     private readonly organizationService: OrganizationService,
-    private readonly emailService: EmailService,
-    private readonly configService: ConfigService<AllConfigType>
+    private readonly configService: ConfigService<AllConfigType>,
+    private readonly roleService: RoleService,
+    private readonly orgUserService: OrganizationUserService,
+    private readonly emailService: EmailService
   ) {
     super(UserModel);
   }
 
   async register(registerUserDto: RegisterUserDto) {
-    const { organizationName, password, ...userDetails } = registerUserDto;
+    const { organizationName, ...userDetails } = registerUserDto;
 
     // Check if a user with the same email already exists
     const existingUser = await this.findByEmail(userDetails.email);
@@ -30,30 +34,43 @@ export class UserService extends BasicCrudService<UserModel> {
       throw new BadRequestException('User with this email already exists');
     }
 
+    const orgSlug = this.organizationService.createOrgSlug(organizationName);
+
+    // Check if organization with the same name already exists
+    const existingOrg = await this.organizationService.findBySlug(orgSlug);
+    if (existingOrg) {
+      throw new BadRequestException(
+        'Organization with this name already exists'
+      );
+    }
+
     // Create the organization
     const newOrganization = await this.organizationService.createOrganization({
       name: organizationName,
     });
 
-    const saltOrRounds = this.configService.get('auth.saltOrRounds', {
-      infer: true,
-    });
+    // Get the SUPER_ADMIN role
+    const superAdminRole = await this.roleService.findByCode(
+      RoleEnum.SUPER_ADMIN
+    );
+    if (!superAdminRole) {
+      throw new BadRequestException('Super admin role not found');
+    }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, saltOrRounds);
+    // Save new user details
+    const newUser = await this.create(userDetails);
 
-    // Save the user details with the new organization ID
-    const newUser = await this.create({
-      ...userDetails,
-      password: hashedPassword,
+    // Map user to organization and role in OrganizationUserModel
+    await this.orgUserService.create({
+      userId: newUser.id,
       organizationId: newOrganization.id,
+      roleId: superAdminRole.id,
     });
 
+    // send welcome email
     this.emailService.welcomeEmail(newUser.email);
 
-    // TODO: send email to the user for verification
-
-    return newUser;
+    return this.getOneByPk(newUser.id);
   }
 
   async findByUUId(uuid: string) {
@@ -121,15 +138,10 @@ export class UserService extends BasicCrudService<UserModel> {
     }
 
     const user = resetToken.user;
-    const saltOrRounds = this.configService.get('auth.saltOrRounds', {
-      infer: true,
-    });
 
     // Update password and invalidate the token
     await Promise.all([
-      user.update({
-        password: await bcrypt.hash(newPassword, saltOrRounds),
-      }),
+      user.update({ password: newPassword }),
       resetToken.update({ isValid: false }),
     ]);
   }

@@ -11,6 +11,8 @@ import { FileModule } from '@/modules/file/file.module';
 import fileConfig from '../file/config/file.config';
 import authConfig from '../user/config/auth.config';
 import { HealthCheckModule } from '../health-check/health-check.module';
+import { RoleModule } from '../role/role.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -22,10 +24,12 @@ import { HealthCheckModule } from '../health-check/health-check.module';
       useClass: SequelizeConfigService,
     }),
     HealthCheckModule,
+    AuthModule,
     UserModule,
     OrganizationModule,
     EmailModule,
     FileModule,
+    RoleModule,
   ],
   controllers: [],
   providers: [],

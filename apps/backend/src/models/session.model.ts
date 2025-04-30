@@ -32,11 +32,11 @@ export class SessionModel extends BaseModel {
   hash: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.DATE,
     allowNull: false,
     comment: 'Session expiration timestamp',
   })
-  expires: string;
+  expiresAt: Date;
 
   // Define relationships
   @BelongsTo(() => UserModel, {
