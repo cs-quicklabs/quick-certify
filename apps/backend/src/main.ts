@@ -3,11 +3,16 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './modules/app/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import validationOptions from './utils/validation-options';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'debug', 'log', 'verbose'],
   });
+
+  // adding cookie parser
+  app.use(cookieParser());
+
   const globalPrefix = process.env.API_PREFIX ?? '';
   app.setGlobalPrefix(globalPrefix);
 
