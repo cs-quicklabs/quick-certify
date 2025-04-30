@@ -30,10 +30,13 @@ function ForgotPassword() {
     forgotPasswordApiCall({ email: data.email })
       .then((res) => {
         toast.success(res.message);
-        // router.push(RouteEnum.LOGIN);
+        router.push(RouteEnum.LOGIN);
       })
       .catch((err) => {
         showApiErrorInToast(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
   return (
