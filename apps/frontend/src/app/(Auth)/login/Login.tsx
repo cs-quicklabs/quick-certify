@@ -32,7 +32,6 @@ function Login() {
     { label: 'Remember me', name: 'rememberMe', type: 'checkbox' },
   ];
 
-
   const handleLogin = async (data: LoginCredentials) => {
     setIsLoading(true);
     loginApiCall(data)
@@ -65,15 +64,12 @@ function Login() {
         id="loginForm"
       />
 
-      <p className='text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center'>
-        <span className='font-light'>
-          Don't have an account yet?
-        </span>
+      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
+        <span className="font-light">Don't have an account yet?</span>
 
-        <SuperLink
-          href="/signup"
-          className="font-medium text-primary-500 hover:underline ml-2">
-          Sign up</SuperLink>
+        <SuperLink href="/signup" className="link ml-2">
+          Sign up
+        </SuperLink>
       </p>
     </>
   );

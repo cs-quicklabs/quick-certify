@@ -21,6 +21,7 @@ interface Props {
   height?: string;
   width?: string;
   resetState?: boolean;
+  noMargin?: boolean;
 }
 const InputField: FC<Props> = ({
   label,
@@ -31,12 +32,13 @@ const InputField: FC<Props> = ({
   placeholder,
   errorMsg,
   disabled = false,
-  className = 'bg-gray-50 border focus:outline-hidden border-gray-300 text-gray-900  focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5',
+  className = 'form-input-field',
   id,
   options,
   height,
   width,
   resetState = false,
+  noMargin = false,
 }) => {
   const isFieldPassword = type === 'password';
   const [showPassword, setShowPassword] = useState<boolean>(!isFieldPassword);
@@ -92,7 +94,7 @@ const InputField: FC<Props> = ({
     return (
       <div>
         <label
-          className="block mb-2 text-sm font-medium text-gray-900 focus:outline-none focus:border-2"
+          className="form-input-label focus:outline-none focus:border-2"
           htmlFor={`${id ?? ''}_select_${name}`}
         >
           {label}
@@ -120,7 +122,7 @@ const InputField: FC<Props> = ({
     return (
       <div>
         <label
-          className="block mb-2 text-sm font-medium text-gray-900 "
+          className="form-input-label "
           htmlFor={`${id ?? ''}_textarea_${name}`}
         >
           {label}
@@ -137,10 +139,10 @@ const InputField: FC<Props> = ({
     );
   }
   return (
-    <div className="mb-4">
+    <div className={noMargin ? '' : 'mb-4'}>
       {label && (
         <label
-          className="block mb-2 text-sm font-medium text-gray-900 "
+          className="form-input-label "
           htmlFor={`${id ?? ''}_input_${
             showPassword ? 'text' : 'password' + name
           }`}
