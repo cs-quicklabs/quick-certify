@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+**/node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnp
+.pnp.js
+
+# Build outputs
+.next
+**/.next
+dist
+**/dist
+build
+**/build
+out
+**/out
+
+# Nx cache
+.nx/
+.nx/cache
+
+# Testing
+**/coverage
+**/nyc_output
+
+# Environment variables
+.env
+.env.*
+!.env.sample
+!.env.example
+
+# Development files
+.git
+.github
+.vscode
+.idea
+.DS_Store
+*.pem
+**/*.pem
+**/*.md
+!README.md
+
+# Debug
+**/.DS_Store
+**/.direnv
+**/.envrc
+**/.npmrc
+
+# Docker
+Dockerfile
+**/Dockerfile
+docker-compose*.yml
+**/*.dockerignore

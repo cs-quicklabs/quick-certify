@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    extends:
+      file: ../../docker-compose.base.yml
+      service: backend
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile
+      args:
+        - NODE_ENV=production
+    ports:
+      - 8080:8080
+    env_file:
+      - ../../apps/backend/.env
+
+  frontend:
+    extends:
+      file: ../../docker-compose.base.yml
+      service: frontend
+    build:
+      context: ../..
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        - NODE_ENV=production
+    ports:
+      - 3000:3000
+    env_file:
+      - ../../apps/frontend/.env
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

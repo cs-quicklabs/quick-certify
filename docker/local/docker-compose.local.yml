@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgresdb:
+    extends:
+      file: docker-compose.base.yml
+      service: postgresdb
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=quick-certify
+
+# Note: Local environment typically doesn't need containerized
+# frontend and backend as developers run them directly on their machine.
+# This file is primarily for the database service.
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
