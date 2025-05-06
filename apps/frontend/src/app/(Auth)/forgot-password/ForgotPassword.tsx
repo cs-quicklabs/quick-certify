@@ -50,11 +50,8 @@ function ForgotPassword() {
         isLoading={isLoading}
         bigButton
       />
-      <p className="text-sm  text-center">
-        <SuperLink
-          href={RouteEnum.LOGIN}
-          className="font-medium text-primary-500 hover:underline"
-        >
+      <p className="text-sm text-center">
+        <SuperLink href={RouteEnum.LOGIN} className="link">
           {en.Auth.Login}
         </SuperLink>
       </p>

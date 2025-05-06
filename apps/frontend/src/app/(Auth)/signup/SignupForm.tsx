@@ -17,18 +17,20 @@ function Login() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const signupFields: (FieldConfig | FieldConfig[])[] = [
-    {
-      label: 'First Name',
-      name: 'firstName',
-      type: 'text',
-      placeholder: 'John',
-    },
-    {
-      label: 'Last Name',
-      name: 'lastName',
-      type: 'text',
-      placeholder: 'Doe'
-    },
+    [
+      {
+        label: 'First Name',
+        name: 'firstName',
+        type: 'text',
+        placeholder: 'John',
+      },
+      {
+        label: 'Last Name',
+        name: 'lastName',
+        type: 'text',
+        placeholder: 'Doe',
+      },
+    ],
     {
       label: 'Your email',
       name: 'email',
@@ -36,31 +38,32 @@ function Login() {
       placeholder: 'name@company.com',
     },
     {
-      label: "Issuer name",
+      label: 'Issuer name',
       name: 'organizationName',
       type: 'text',
       placeholder: 'Issuer or company name',
     },
     {
-      label: "Issuer Website URL",
+      label: 'Issuer Website URL',
       name: 'organizationWebsite',
       type: 'text',
-      placeholder: 'Issuer or company website',
+      placeholder: 'Website URL',
     },
-    {
-      label: 'Password',
-      name: 'password',
-      type: 'password',
-      placeholder: '••••••••',
-    },
-    {
-      label: 'Confirm Password',
-      name: 'confirmPassword',
-      type: 'password',
-      placeholder: '••••••••',
-    },
+    [
+      {
+        label: 'Password',
+        name: 'password',
+        type: 'password',
+        placeholder: '••••••••',
+      },
+      {
+        label: 'Confirm Password',
+        name: 'confirmPassword',
+        type: 'password',
+        placeholder: '••••••••',
+      },
+    ],
   ];
-
 
   const handleSignup = async (data: RegisterPayload) => {
     setIsLoading(true);
@@ -87,14 +90,14 @@ function Login() {
       />
 
       <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
-        <span className='font-light'>
-          Already have an account?
-        </span>
+        <span className="font-light">Already have an account?</span>
 
         <SuperLink
           href={RouteEnum.LOGIN}
           className="font-medium text-primary-500 hover:underline ml-2"
-        >Login</SuperLink>
+        >
+          Login
+        </SuperLink>
       </p>
     </>
   );
