@@ -6,18 +6,24 @@ import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { SessionModel } from '@/models';
+import { SessionModel, UserResetTokenModel } from '@/models';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtAccessTokenStrategy, JwtRefreshTokenStrategy } from './strategies';
 import { AllConfigType } from '@/config/config.type';
+import { OrganizationModule } from '../organization/organization.module';
+import { RoleModule } from '../role/role.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   controllers: [AuthController],
   imports: [
     forwardRef(() => UserModule),
-    SequelizeModule.forFeature([SessionModel]),
+    SequelizeModule.forFeature([SessionModel, UserResetTokenModel]),
     PassportModule,
     SessionModule,
+    OrganizationModule,
+    RoleModule,
+    EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService<AllConfigType>) => {

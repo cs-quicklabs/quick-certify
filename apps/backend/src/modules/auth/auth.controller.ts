@@ -8,12 +8,22 @@ import {
   Req,
   Res,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse as SwaggerApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
-import { LoginDto } from './dto';
+import {
+  LoginDto,
+  RegisterUserDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './dto';
 import Helpers from '@/utils/helper';
 import { ApiResponse } from '@/common/dto';
 import {
@@ -31,6 +41,29 @@ import { CurrentUser } from '@/common/decorators';
 })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @SwaggerApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'User successfully registered',
+    type: ApiResponse,
+  })
+  @SwaggerApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'User with this email already exists',
+    type: ApiResponse,
+  })
+  @SwaggerApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - validation error',
+    type: ApiResponse,
+  })
+  async register(@Body() registerUserDto: RegisterUserDto) {
+    await this.authService.register(registerUserDto);
+
+    return new ApiResponse(HttpStatus.CREATED, 'User successfully registered');
+  }
 
   @Post('login')
   @ApiOperation({ summary: 'User Login' })
@@ -76,5 +109,52 @@ export class AuthController {
     await this.authService.logout(refresh_token);
     Helpers.clearCookies(res);
     return new ApiResponse(HttpStatus.OK, 'Successfully logged out');
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset' })
+  @SwaggerApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password reset email sent if user exists',
+    type: ApiResponse,
+  })
+  @SwaggerApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - validation error',
+    type: ApiResponse,
+  })
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(forgotPasswordDto.email);
+
+    return new ApiResponse(
+      HttpStatus.OK,
+      'If an account exists with this email, a password reset link has been sent'
+    );
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password using token' })
+  @SwaggerApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password successfully reset',
+    type: ApiResponse,
+  })
+  @SwaggerApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid or expired token',
+    type: ApiResponse,
+  })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    await this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.newPassword
+    );
+
+    return new ApiResponse(
+      HttpStatus.OK,
+      'Password has been successfully reset'
+    );
   }
 }
