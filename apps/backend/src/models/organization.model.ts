@@ -72,6 +72,16 @@ export class OrganizationModel extends BaseModel {
   linkedInUrl: string;
 
   @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    validate: {
+      isInt: true,
+    },
+    comment: 'LinkedIn Company ID',
+  })
+  linkedInCompanyId: number;
+
+  @Column({
     type: DataType.STRING(1024),
     allowNull: true,
     validate: {
@@ -103,6 +113,83 @@ export class OrganizationModel extends BaseModel {
     comment: 'Organization website URL',
   })
   websiteUrl: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment: 'Indicates whether the organization has been verified',
+  })
+  isVerified: boolean;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+    comment: 'Organization description',
+  })
+  description: string;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: true,
+    validate: {
+      isEmail: true,
+    },
+    comment: 'Support email address for the organization',
+  })
+  supportEmail: string;
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+    validate: {
+      len: [0, 500],
+    },
+    comment: 'Organization slogan or tagline',
+  })
+  slogan: string;
+
+  @Column({
+    type: DataType.STRING(2048),
+    allowNull: true,
+    validate: {
+      isUrl: true,
+      len: [0, 2048],
+    },
+    comment: 'S3 URL for issuer/organization logo image',
+  })
+  issuerLogo: string;
+
+  @Column({
+    type: DataType.STRING(2048),
+    allowNull: true,
+    validate: {
+      isUrl: true,
+      len: [0, 2048],
+    },
+    comment: 'S3 URL for organization favicon',
+  })
+  favIcon: string;
+
+  @Column({
+    type: DataType.STRING(2048),
+    allowNull: true,
+    validate: {
+      isUrl: true,
+      len: [0, 2048],
+    },
+    comment: 'S3 URL for organization banner image',
+  })
+  bannerImage: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment:
+      'Indicates whether the issuer portal is enabled for this organization',
+  })
+  isEnabledIssuerPortal: boolean;
 
   // Define relationships
   @HasMany(() => OrganizationUserModel)
