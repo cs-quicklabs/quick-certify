@@ -11,6 +11,11 @@ export enum RoleEnum {
   DESIGNER = 'designer',
 }
 
+export enum PermissionEnum {
+  VIEW_ORGANIZATION_DETAILS = 'view_organization_details',
+  EDIT_ORGANIZATION_DETAILS = 'edit_organization_details',
+}
+
 export const en = {
   pathNotProvided: 'Path is not provided.',
   fileUploaded: 'File upload successfully.',

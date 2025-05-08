@@ -8,7 +8,6 @@ export class CreateOrganizationDto {
   })
   @IsNotEmpty()
   @MinLength(2)
-  @IsNotEmpty()
   name: string;
 
   @ApiProperty({
