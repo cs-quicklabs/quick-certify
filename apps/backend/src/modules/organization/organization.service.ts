@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { BasicCrudService } from '@/common/services';
 import { OrganizationModel } from '@/models';
@@ -57,17 +56,7 @@ export class OrganizationService extends BasicCrudService<OrganizationModel> {
         throw new NotFoundException(`Organization with ID ${id} not found`);
       }
 
-      // Check if user has permission to update this organization
-      const canUpdate =
-        await this.organizationUserService.canUserUpdateOrganization(
-          userId,
-          parseInt(id)
-        );
-      if (!canUpdate) {
-        throw new UnauthorizedException(
-          'You do not have permission to update this organization'
-        );
-      }
+      // Permission check is now handled by the PermissionsGuard
 
       // Create a copy with proper typing to allow slug property
       const updateData: UpdateWithSlug = { ...updateOrganizationDto };
@@ -97,11 +86,8 @@ export class OrganizationService extends BasicCrudService<OrganizationModel> {
       // If everything succeeds, commit the transaction
       await transaction.commit();
 
-      return {
-        statusCode: 200,
-        message: 'Organization updated successfully',
-        data: organization,
-      };
+      // Return just the organization entity
+      return organization;
     } catch (error) {
       // If any error occurs, roll back the transaction
       await transaction.rollback();

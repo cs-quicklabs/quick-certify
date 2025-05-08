@@ -14,8 +14,10 @@ import { OrganizationUserService } from './organization-user.service';
 import { ApiResponse as ApiResponseDto } from '@/common/dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { JwtAuthGuard } from '@/modules/auth/guards';
-import { CurrentUser } from '@/common/decorators';
+import { CurrentUser, RequirePermissions } from '@/common/decorators';
 import { UserModel } from '@/models';
+import { PermissionsGuard } from '@/common/guards';
+import { PermissionEnum } from '@/common/enums';
 
 @ApiTags('Organization')
 @Controller({
@@ -60,7 +62,8 @@ export class OrganizationController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions(PermissionEnum.EDIT_ORGANIZATION_DETAILS)
   @ApiOperation({ summary: 'Update organization details' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -88,10 +91,17 @@ export class OrganizationController {
     updateOrganizationDto: UpdateOrganizationDto,
     @CurrentUser() user: UserModel
   ) {
-    return this.organizationService.updateOrganization(
-      id,
-      updateOrganizationDto,
-      user.id
+    const updatedOrganization =
+      await this.organizationService.updateOrganization(
+        id,
+        updateOrganizationDto,
+        user.id
+      );
+
+    return new ApiResponseDto(
+      HttpStatus.OK,
+      'Organization updated successfully',
+      updatedOrganization
     );
   }
 }

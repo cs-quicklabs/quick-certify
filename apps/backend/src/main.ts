@@ -4,6 +4,7 @@ import { AppModule } from './modules/app/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import validationOptions from './utils/validation-options';
 import cookieParser from 'cookie-parser';
+import { ExceptionResponseFilter } from './common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -31,6 +32,9 @@ async function bootstrap() {
 
   // Global Validations
   app.useGlobalPipes(new ValidationPipe(validationOptions));
+
+  // Global Exception Filter
+  app.useGlobalFilters(new ExceptionResponseFilter());
 
   // Enable CORS
   app.enableCors({
