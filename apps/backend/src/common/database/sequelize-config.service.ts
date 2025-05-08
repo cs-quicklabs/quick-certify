@@ -29,7 +29,14 @@ export class SequelizeConfigService implements SequelizeOptionsFactory {
       pool: {
         max: this.configService.get('database.maxConnections', { infer: true }),
       },
-      ssl: this.configService.get('database.sslEnabled', { infer: true }),
+      dialectOptions: {
+        ssl: this.configService.get('database.sslEnabled', { infer: true })
+          ? {
+              require: true,
+              rejectUnauthorized: false,
+            }
+          : undefined,
+      },
     };
   }
 }
