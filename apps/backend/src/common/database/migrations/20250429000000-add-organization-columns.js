@@ -72,48 +72,9 @@ module.exports = {
           'Indicates whether the issuer portal is enabled for this organization',
       }
     );
-
-    // Add indexes for faster lookups
-    await queryInterface.addIndex('organizations', ['linked_in_company_id'], {
-      name: 'idx_organizations_linkedin_company_id',
-    });
-
-    await queryInterface.addIndex('organizations', ['is_verified'], {
-      name: 'idx_organizations_is_verified',
-    });
-
-    await queryInterface.addIndex('organizations', ['support_email'], {
-      name: 'idx_organizations_support_email',
-    });
-
-    await queryInterface.addIndex(
-      'organizations',
-      ['is_enabled_issuer_portal'],
-      {
-        name: 'idx_organizations_is_enabled_issuer_portal',
-      }
-    );
   },
 
   async down(queryInterface) {
-    // Remove indexes first
-    await queryInterface.removeIndex(
-      'organizations',
-      'idx_organizations_linkedin_company_id'
-    );
-    await queryInterface.removeIndex(
-      'organizations',
-      'idx_organizations_is_verified'
-    );
-    await queryInterface.removeIndex(
-      'organizations',
-      'idx_organizations_support_email'
-    );
-    await queryInterface.removeIndex(
-      'organizations',
-      'idx_organizations_is_enabled_issuer_portal'
-    );
-
     // Remove columns
     await queryInterface.removeColumn('organizations', 'linked_in_company_id');
     await queryInterface.removeColumn('organizations', 'is_verified');
