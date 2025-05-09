@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -41,4 +42,8 @@ export class AppVariablesValidator {
   @IsString()
   @IsOptional()
   FRONTEND_DOMAIN?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  IS_PREVIEW_HTML_EMAIL?: boolean;
 }

@@ -9,4 +9,5 @@ export type AppConfig = {
   smtpUser?: string;
   smtpPass?: string;
   frontendDomain?: string;
+  enableHtmlEmailPreview: boolean;
 };

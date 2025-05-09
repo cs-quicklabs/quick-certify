@@ -8,7 +8,6 @@ import * as fs from 'fs/promises';
 import { emailSubjects } from './constants/constants';
 import { generatePreviewHTML } from '@/utils/emailTemplate';
 import { BrowserUtils } from '@/utils/browser.utils';
-import { EnvironmentEnum } from '@/common/enums';
 import { AppConfig } from '@/config/app-config';
 
 export type Message = {
@@ -30,7 +29,7 @@ export class EmailService {
   private readonly frontendURL: string;
   private readonly accountEmail: string;
   private readonly transporter: nodemailer.Transporter;
-  private readonly isDevelopment: boolean;
+  private readonly enableHtmlEmailPreview: boolean; // Flag to determine if emails should be sent or previewed
 
   constructor(
     private readonly configService: ConfigService<{ app: AppConfig }>
@@ -38,8 +37,7 @@ export class EmailService {
     const appConfig = this.configService.get('app', { infer: true });
 
     this.accountEmail = appConfig.smtpEmail;
-    this.isDevelopment = process.env.NODE_ENV !== EnvironmentEnum.Production;
-    this.logger.log(`Current NODE_ENV: ${process.env.NODE_ENV}`);
+    this.enableHtmlEmailPreview = appConfig.enableHtmlEmailPreview;
     this.transporter = nodemailer.createTransport({
       host: appConfig.smtpHost,
       port: appConfig.smtpPort,
@@ -72,7 +70,7 @@ export class EmailService {
       html: message.body,
     };
 
-    if (!this.isDevelopment) {
+    if (!this.enableHtmlEmailPreview) {
       try {
         const info = await this.transporter.sendMail(mailOptions);
         this.logger.log(

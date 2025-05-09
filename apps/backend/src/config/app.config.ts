@@ -18,5 +18,6 @@ export default registerAs<AppConfig>('app', () => {
     smtpUser: process.env.SMTP_USER,
     smtpPass: process.env.SMTP_PASS,
     frontendDomain: process.env.FRONTEND_DOMAIN,
+    enableHtmlEmailPreview: process.env.ENABLE_HTML_EMAIL_PREVIEW === 'true',
   };
 });
