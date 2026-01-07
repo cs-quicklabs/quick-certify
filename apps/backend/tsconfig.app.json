@@ -1,0 +1,39 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node"],
+    "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2021",
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"],
+      "@crownstack/mailer": ["../../packages/mailer/src/index.ts"],
+      "@crownstack/mailer/*": ["../../packages/mailer/src/*"],
+      "@crownstack/sms": ["../../packages/sms/src/index.ts"],
+      "@crownstack/sms/*": ["../../packages/sms/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "../../packages/*/src/**/*.ts"],
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../../packages/sms/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/mailer/tsconfig.lib.json"
+    }
+  ]
+}

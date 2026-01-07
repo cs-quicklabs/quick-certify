@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're Invited!</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #fff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px; }
+    .button { display: inline-block; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .org-badge { background: #e3f2fd; border: 1px solid #4facfe; padding: 15px 25px; border-radius: 5px; display: inline-block; margin: 15px 0; font-weight: bold; color: #1976d2; }
+    .footer { text-align: center; color: #888; font-size: 12px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎁 You're Invited!</h1>
+  </div>
+  <div class="content">
+    <p>Great news!</p>
+    
+    <p><strong>{{inviterName}}</strong> has invited you to join:</p>
+    
+    <p style="text-align: center;">
+      <span class="org-badge">{{organizationName}}</span>
+    </p>
+    
+    <p>Click the button below to accept the invitation and get started:</p>
+    
+    <p style="text-align: center;">
+      <a href="{{inviteLink}}" class="button">Accept Invitation</a>
+    </p>
+    
+    <p>If you weren't expecting this invitation, you can safely ignore this email.</p>
+    
+    <p>Best regards,<br>The Team</p>
+  </div>
+  <div class="footer">
+    <p>© 2024 Your Company. All rights reserved.</p>
+  </div>
+</body>
+</html>
+

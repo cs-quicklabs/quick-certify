@@ -1,0 +1,56 @@
+{
+  "name": "@crownstack/mailer",
+  "version": "1.0.0",
+  "description": "Lightweight NestJS email service package with Nodemailer integration and dev preview support. Perfect for sending emails in NestJS applications.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "license": "MIT",
+  "author": {
+    "name": "CrownStack",
+    "url": "https://crownstack.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crownstack/boilerplate-nest-next.git",
+    "directory": "packages/mailer"
+  },
+  "homepage": "https://github.com/crownstack/boilerplate-nest-next#readme",
+  "bugs": {
+    "url": "https://github.com/crownstack/boilerplate-nest-next/issues"
+  },
+  "keywords": [
+    "nestjs",
+    "nodemailer",
+    "email",
+    "mailer",
+    "smtp",
+    "email-service",
+    "typescript",
+    "crownstack"
+  ],
+  "nx": {
+    "name": "mailer"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.2",
+    "nodemailer": "^6.9.16"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.17"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
