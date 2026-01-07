@@ -5,7 +5,7 @@ export const profileFormFields: FormFieldConfig[] = [
     name: 'avatarUrl',
     label: 'Upload avatar',
     type: 'file',
-    accept: 'image/*',
+    accept: 'image/png,image/jpg,image/jpeg',
     defaultValue: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/helene-engels.png',
   },
   {
@@ -20,14 +20,13 @@ export const profileFormFields: FormFieldConfig[] = [
     label: 'Last Name',
     type: 'text',
     placeholder: 'Last Name',
-    required: true,
   },
   {
     name: 'email',
     label: 'Email',
     type: 'email',
     placeholder: 'email@gmail.com',
-    required: true,
+    description: 'Changing email requires verification via the new email address',
   },
 ];
 

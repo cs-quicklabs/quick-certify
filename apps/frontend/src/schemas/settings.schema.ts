@@ -1,14 +1,30 @@
 import { z } from 'zod';
 
+// Allowed image types
+export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpg', 'image/jpeg'];
+export const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
+
 // Profile Settings Schema
 export const profileSettingsSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email address'),
-  avatarUrl: z.string().url().optional(),
+  lastName: z.string().optional(),
+  email: z.string().email('Invalid email address').optional(),
+  avatarUrl: z.string().optional(),
+  signupMethod: z.enum(['email', 'google']).optional(),
 });
 
 export type ProfileSettingsData = z.infer<typeof profileSettingsSchema>;
+
+// Image validation helper
+export const validateImageFile = (file: File): { valid: boolean; error?: string } => {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return { valid: false, error: 'Only PNG, JPG, and JPEG formats are allowed' };
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    return { valid: false, error: 'Image size must be less than 1MB' };
+  }
+  return { valid: true };
+};
 
 // Change Password Schema
 export const changePasswordSchema = z
