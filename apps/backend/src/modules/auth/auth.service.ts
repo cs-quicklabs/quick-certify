@@ -115,8 +115,10 @@ export class AuthService implements IAuthService {
     });
 
     this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+
     const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
-    return {...tokens };
+
+    return tokens;
   }
 
   async login(dto: LoginDto, ipAddress?: string, userAgent?: string) {
@@ -151,8 +153,10 @@ export class AuthService implements IAuthService {
     }
 
     await user.update({ last_login_at: new Date() });
+
     const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
-    return { ...tokens };
+
+    return tokens;
   }
 
   async refreshToken(refreshToken: string, ipAddress?: string, userAgent?: string) {

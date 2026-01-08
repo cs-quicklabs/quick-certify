@@ -5,20 +5,22 @@ import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/b
 import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
-import { PasswordService } from '@src/modules/auth/services';
+import { PasswordService, SessionService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
 
 /**
  * User Service
  *
- * Extends BaseCrudService following DRY
+ * Extends BaseCrudService with string IDs (nanoid)
  * DIP: Uses PasswordService for password operations
  * SRP: Manages user CRUD only
+ * Note: Overrides soft delete methods to use status field instead of deleted_at
  */
 @Injectable()
-export class UserService extends BaseCrudService<UserEntity, CreateUserDto, UpdateUserDto> {
-  protected readonly model = UserEntity;
-  protected readonly entityName = 'User';
+export class UserService extends BaseCrudService<UserEntity, CreateUserDto, UpdateUserDto, string> {
+  protected override readonly model = UserEntity;
+  protected override readonly entityName = 'User';
+  protected override readonly softDeleteField: string | null = null; // Use status field instead
 
   constructor(
     @InjectModel(UserEntity)
@@ -28,11 +30,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     @InjectModel(OrganizationEntity)
     private readonly organizationModel: typeof OrganizationEntity,
     private readonly passwordService: PasswordService,
+    private readonly sessionService: SessionService,
   ) {
     super();
   }
 
-  async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<UserEntity>> {
+  override async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<UserEntity>> {
     const {
       page = 1,
       limit = this.defaultLimit,
@@ -48,13 +51,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const { count, rows } = await this.userModel.findAndCountAll({
       where: {
         ...where,
-        deleted_at: null,
+        status: { [Op.ne]: 'archived' },
       },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: ['password_hash'] },
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,
@@ -75,36 +78,28 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     };
   }
 
-  async findOne(id: number): Promise<UserEntity | null> {
+  override async findOne(id: string): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { id, deleted_at: null },
+      where: { id, status: { [Op.ne]: 'archived' } },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
-      attributes: { exclude: ['password'] },
-    });
-  }
-
-  async findByUuid(uuid: string): Promise<UserEntity | null> {
-    return this.userModel.findOne({
-      where: { uuid, deleted_at: null },
-      include: [
-        { model: RoleEntity, attributes: ['id', 'role'] },
-        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
-      ],
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: ['password_hash'] },
     });
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { email: email.toLowerCase(), deleted_at: null },
+      where: { email: email.toLowerCase(), status: { [Op.ne]: 'archived' } },
       include: [RoleEntity],
     });
   }
 
-  async create(dto: CreateUserDto): Promise<UserEntity> {
+  override async create(dto: CreateUserDto): Promise<UserEntity> {
+    // Check if email belongs to a deactivated/archived user
+    await this.validateEmailNotDeactivated(dto.email);
+
     // Validate email uniqueness
     await this.validateEmailUniqueness(dto.email);
 
@@ -121,19 +116,19 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       first_name: dto.firstName,
       last_name: dto.lastName,
       email: dto.email.toLowerCase(),
-      phone: dto.phone || null,
       password_hash: hashedPassword,
-      gender: dto.gender || null,
-      profile_picture: dto.profilePicture || null,
       organization_id: dto.organizationId,
       role_id: dto.roleId,
+      status: 'active',
+      email_notifications: true,
     });
 
     return this.findOne(user.id) as Promise<UserEntity>;
   }
 
-  async update(id: number, dto: UpdateUserDto): Promise<UserEntity> {
+  override async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
+    const previousRoleId = user.role_id;
 
     // Validate email if changing
     if (dto.email && dto.email.toLowerCase() !== user.email) {
@@ -148,31 +143,38 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const updateData = this.buildUpdateData(dto);
     await user.update(updateData);
 
+    // If role changed, logout user from all devices (force re-login)
+    if (dto.roleId && dto.roleId !== previousRoleId) {
+      await this.logoutUserFromAllDevices(user.id);
+    }
+
     return this.findOne(id) as Promise<UserEntity>;
   }
 
-  async softDelete(id: number): Promise<boolean> {
+  override async softDelete(id: string): Promise<boolean> {
     const user = await this.findOneOrThrow(id);
-    await user.update({ deleted_at: new Date() });
+    await user.update({ status: 'archived' });
+    // Logout user from all devices when deactivated
+    await this.logoutUserFromAllDevices(user.id);
     return true;
   }
 
-  async restore(id: number): Promise<UserEntity> {
+  override async restore(id: string): Promise<UserEntity> {
     const user = await this.userModel.findOne({
-      where: { id, deleted_at: { [Op.ne]: null } },
+      where: { id, status: 'archived' },
     });
 
     if (!user) {
-      throw new NotFoundException('User not found or not deleted');
+      throw new NotFoundException('User not found or not archived');
     }
 
-    await user.update({ deleted_at: null });
+    await user.update({ status: 'active' });
     return this.findOne(id) as Promise<UserEntity>;
   }
 
   // Multi-tenant methods
-  async findAllByOrganization(
-    organizationId: number,
+  override async findAllByOrganization(
+    organizationId: string,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
     return this.findAll({
@@ -184,19 +186,19 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  async findOneByOrganization(id: number, organizationId: number): Promise<UserEntity | null> {
+  override async findOneByOrganization(id: string, organizationId: string): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { id, organization_id: organizationId, deleted_at: null },
+      where: { id, organization_id: organizationId, status: { [Op.ne]: 'archived' } },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: ['password_hash'] },
     });
   }
 
   async searchUsers(
-    organizationId: number,
+    organizationId: string,
     searchQuery: string,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
@@ -220,9 +222,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
   // Private validation helpers (SRP - validation logic)
 
-  private async findOneOrThrow(id: number): Promise<UserEntity> {
+  private async findOneOrThrow(id: string): Promise<UserEntity> {
     const user = await this.userModel.findOne({
-      where: { id, deleted_at: null },
+      where: { id, status: { [Op.ne]: 'archived' } },
     });
 
     if (!user) {
@@ -232,10 +234,24 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return user;
   }
 
-  private async validateEmailUniqueness(email: string, excludeId?: number): Promise<void> {
+  private async validateEmailNotDeactivated(email: string): Promise<void> {
+    const existingUser = await this.userModel.findOne({
+      where: {
+        email: email.toLowerCase(),
+      },
+    });
+
+    if (existingUser && (existingUser.status === 'archived' || existingUser.status === 'inactive')) {
+      throw new ConflictException(
+        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+      );
+    }
+  }
+
+  private async validateEmailUniqueness(email: string, excludeId?: string): Promise<void> {
     const whereClause: Record<string, unknown> = {
       email: email.toLowerCase(),
-      deleted_at: null,
+      status: { [Op.ne]: 'archived' },
     };
 
     if (excludeId) {
@@ -249,10 +265,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  private async validateOrganization(organizationId: number): Promise<void> {
+  private async validateOrganization(organizationId: string): Promise<void> {
     const organization = await this.organizationModel.findByPk(organizationId);
-    if (!organization || organization.deleted_at) {
-      throw new NotFoundException('Organization not found');
+    if (!organization || !organization.is_active) {
+      throw new NotFoundException('Organization not found or inactive');
     }
   }
 
@@ -266,14 +282,15 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {
     const updateData: Partial<UserEntity> = {};
 
-    if (dto.firstName) updateData.first_name = dto.firstName;
-    if (dto.lastName) updateData.last_name = dto.lastName;
-    if (dto.email) updateData.email = dto.email.toLowerCase();
-    if (dto.phone !== undefined) updateData.phone = dto.phone;
-    if (dto.gender !== undefined) updateData.gender = dto.gender;
-    if (dto.profilePicture !== undefined) updateData.profile_picture = dto.profilePicture;
-    if (dto.roleId) updateData.role_id = dto.roleId;
+    if (dto.firstName !== undefined) updateData.first_name = dto.firstName;
+    if (dto.lastName !== undefined) updateData.last_name = dto.lastName;
+    if (dto.email !== undefined) updateData.email = dto.email.toLowerCase();
+    if (dto.roleId !== undefined) updateData.role_id = dto.roleId;
 
     return updateData;
+  }
+
+  private async logoutUserFromAllDevices(userId: string): Promise<void> {
+    await this.sessionService.revokeAllForUser(userId);
   }
 }

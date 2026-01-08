@@ -14,7 +14,7 @@ export interface IAuthService {
     dto: RegisterDto,
     ipAddress?: string,
     userAgent?: string,
-  ): Promise<{ user: Record<string, unknown>; accessToken: string; refreshToken: string; accessTokenExpiresAt: Date; refreshTokenExpiresAt: Date }>;
+  ): Promise<{ accessToken: string; refreshToken: string; accessTokenExpiresAt: Date; refreshTokenExpiresAt: Date }>;
 
   /**
    * Login a user
@@ -23,7 +23,7 @@ export interface IAuthService {
     dto: LoginDto,
     ipAddress?: string,
     userAgent?: string,
-  ): Promise<{ user: Record<string, unknown>; accessToken: string; refreshToken: string; accessTokenExpiresAt: Date; refreshTokenExpiresAt: Date }>;
+  ): Promise<{ accessToken: string; refreshToken: string; accessTokenExpiresAt: Date; refreshTokenExpiresAt: Date }>;
 
   /**
    * Refresh access token using refresh token

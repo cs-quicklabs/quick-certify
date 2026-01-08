@@ -27,13 +27,13 @@ export interface FindAllOptions extends PaginationOptions {
 
 export interface BaseCrudServiceInterface<T extends Model, CreateDto, UpdateDto> {
   findAll(options?: FindAllOptions): Promise<PaginatedResult<T>>;
-  findOne(id: number, options?: FindOptions): Promise<T | null>;
+  findOne(id: number | string, options?: FindOptions): Promise<T | null>;
   findByUuid(uuid: string, options?: FindOptions): Promise<T | null>;
   create(dto: CreateDto, options?: CreateOptions): Promise<T>;
-  update(id: number, dto: UpdateDto, options?: UpdateOptions): Promise<T>;
-  delete(id: number, options?: DestroyOptions): Promise<boolean>;
-  softDelete?(id: number): Promise<boolean>;
-  restore?(id: number): Promise<T>;
+  update(id: number | string, dto: UpdateDto, options?: UpdateOptions): Promise<T>;
+  delete(id: number | string, options?: DestroyOptions): Promise<boolean>;
+  softDelete?(id: number | string): Promise<boolean>;
+  restore?(id: number | string): Promise<T>;
   count(where?: Record<string, unknown>): Promise<number>;
-  exists(id: number): Promise<boolean>;
+  exists(id: number | string): Promise<boolean>;
 }
