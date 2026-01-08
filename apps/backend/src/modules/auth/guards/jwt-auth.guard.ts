@@ -5,7 +5,7 @@ import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators';
 import { CurrentUser } from '../interfaces';
 import { TokenService, SessionService } from '../services';
-import { UserEntity, UserTypeEntity } from '@src/entities';
+import { UserEntity, RoleEntity } from '@src/entities';
 
 /**
  * JWT Auth Guard
@@ -78,17 +78,17 @@ export class JwtAuthGuard implements CanActivate {
     return type === 'Bearer' ? token : undefined;
   }
 
-  private async findValidUser(userId: number): Promise<UserEntity> {
+  private async findValidUser(userId: string): Promise<UserEntity> {
     const user = await this.userModel.findOne({
       where: { id: userId },
-      include: [{ model: UserTypeEntity }],
+      include: [{ model: RoleEntity }],
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    if (user.deleted_at) {
+    if (user.status !== 'active') {
       throw new UnauthorizedException('User account has been deactivated');
     }
 
@@ -98,13 +98,12 @@ export class JwtAuthGuard implements CanActivate {
   private attachUserToRequest(request: Request, user: UserEntity, sessionHash: string): void {
     const currentUser: CurrentUser = {
       id: user.id,
-      uuid: user.uuid,
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
       organizationId: user.organization_id,
-      userTypeId: user.user_type_id,
-      userTypeCode: user.user_type?.code || '',
+      roleId: user.role_id,
+      role: user.role?.role || '',
       sessionHash,
     };
 

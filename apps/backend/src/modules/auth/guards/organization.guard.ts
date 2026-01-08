@@ -26,15 +26,13 @@ export class OrganizationGuard implements CanActivate {
       return true;
     }
 
-    const orgIdNumber = parseInt(requestOrgId, 10);
-
     // Super admins can access any organization (you might want to customize this)
-    if (user.userTypeCode === 'SUPER_ADMIN') {
+    if (user.role === 'super_admin') {
       return true;
     }
 
     // Check if user belongs to the requested organization
-    if (user.organizationId !== orgIdNumber) {
+    if (user.organizationId !== requestOrgId) {
       throw new ForbiddenException("You do not have access to this organization's resources");
     }
 

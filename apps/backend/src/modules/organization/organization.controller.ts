@@ -1,10 +1,8 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -17,7 +15,7 @@ import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
-import { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -50,28 +48,26 @@ export class OrganizationController {
     return new SuccessResponse('Organization retrieved successfully', organization);
   }
 
-  @Get(':id')
-  @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Get organization by ID (Super Admin only)' })
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get organization by slug' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const organization = await this.organizationService.findOne(id);
+  async findBySlug(@Param('slug') slug: string) {
+    const organization = await this.organizationService.findBySlug(slug);
     if (!organization) {
       return new SuccessResponse('Organization not found', null);
     }
     return new SuccessResponse('Organization retrieved successfully', organization);
   }
 
-  @Get('uuid/:uuid')
+  @Get(':id')
   @UseGuards(RolesGuard)
   @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Get organization by UUID (Super Admin only)' })
+  @ApiOperation({ summary: 'Get organization by ID (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async findByUuid(@Param('uuid') uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
+  async findOne(@Param('id') id: string) {
+    const organization = await this.organizationService.findOne(id);
     if (!organization) {
       return new SuccessResponse('Organization not found', null);
     }
@@ -107,30 +103,8 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Update organization (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrganizationDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
     const organization = await this.organizationService.update(id, dto);
     return new SuccessResponse('Organization updated successfully', organization);
-  }
-
-  @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Delete organization (soft delete) (Super Admin only)' })
-  @ApiResponse({ status: 200, description: 'Organization deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Organization not found' })
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.organizationService.softDelete(id);
-    return new SuccessResponse('Organization deleted successfully', { deleted: true });
-  }
-
-  @Post(':id/restore')
-  @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Restore deleted organization (Super Admin only)' })
-  @ApiResponse({ status: 200, description: 'Organization restored successfully' })
-  @ApiResponse({ status: 404, description: 'Organization not found' })
-  async restore(@Param('id', ParseIntPipe) id: number) {
-    const organization = await this.organizationService.restore(id);
-    return new SuccessResponse('Organization restored successfully', organization);
   }
 }

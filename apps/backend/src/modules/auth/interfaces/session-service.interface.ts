@@ -13,12 +13,12 @@ export interface ISessionService {
   /**
    * Find a session by hash and validate it
    */
-  findByHash(hash: string, userId: number): Promise<SessionEntity | null>;
+  findByHash(hash: string, userId: string): Promise<SessionEntity | null>;
 
   /**
    * Validate if a session is still active and not expired
    */
-  validate(hash: string, userId: number): Promise<SessionEntity | null>;
+  validate(hash: string, userId: string): Promise<SessionEntity | null>;
 
   /**
    * Update session's last activity timestamp
@@ -33,16 +33,21 @@ export interface ISessionService {
   /**
    * Revoke all sessions for a user
    */
-  revokeAllForUser(userId: number): Promise<void>;
+  revokeAllForUser(userId: string): Promise<void>;
 
   /**
    * Get all active sessions for a user
    */
-  getActiveForUser(userId: number): Promise<SessionEntity[]>;
+  getActiveForUser(userId: string): Promise<SessionEntity[]>;
+
+  /**
+   * Revoke a session by hash and user ID
+   */
+  revokeByHashAndUser(sessionHash: string, userId: string): Promise<boolean>;
 }
 
 export interface CreateSessionInput {
-  userId: number;
+  userId: string; // nanoid
   expiresAt: Date;
   ipAddress?: string;
   userAgent?: string;

@@ -31,10 +31,10 @@ export class TokenService implements ITokenService {
   generateTokens(input: TokenPayloadInput): JwtTokens {
     const basePayload = {
       sub: input.userId,
-      uuid: input.userUuid,
       email: input.email,
       organizationId: input.organizationId,
-      userTypeCode: input.userTypeCode,
+      roleId: input.roleId,
+      role: input.role,
       sessionHash: input.sessionHash,
     };
 

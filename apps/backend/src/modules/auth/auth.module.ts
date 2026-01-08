@@ -7,7 +7,7 @@ import { JwtAuthGuard, RolesGuard } from './guards';
 import { EmailService } from '@src/commons/services';
 import {
   UserEntity,
-  UserTypeEntity,
+  RoleEntity,
   OrganizationEntity,
   SessionEntity,
   PasswordResetEntity,
@@ -25,7 +25,7 @@ import {
   imports: [
     SequelizeModule.forFeature([
       UserEntity,
-      UserTypeEntity,
+      RoleEntity,
       OrganizationEntity,
       SessionEntity,
       PasswordResetEntity,

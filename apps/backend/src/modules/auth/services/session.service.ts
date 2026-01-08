@@ -30,7 +30,7 @@ export class SessionService implements ISessionService {
     });
   }
 
-  async findByHash(hash: string, userId: number): Promise<SessionEntity | null> {
+  async findByHash(hash: string, userId: string): Promise<SessionEntity | null> {
     return this.sessionModel.findOne({
       where: {
         hash,
@@ -39,7 +39,7 @@ export class SessionService implements ISessionService {
     });
   }
 
-  async validate(hash: string, userId: number): Promise<SessionEntity | null> {
+  async validate(hash: string, userId: string): Promise<SessionEntity | null> {
     const session = await this.sessionModel.findOne({
       where: {
         hash,
@@ -72,14 +72,14 @@ export class SessionService implements ISessionService {
     }
   }
 
-  async revokeAllForUser(userId: number): Promise<void> {
+  async revokeAllForUser(userId: string): Promise<void> {
     await this.sessionModel.update(
       { is_active: false, revoked_at: new Date() },
       { where: { user_id: userId, is_active: true } },
     );
   }
 
-  async getActiveForUser(userId: number): Promise<SessionEntity[]> {
+  async getActiveForUser(userId: string): Promise<SessionEntity[]> {
     return this.sessionModel.findAll({
       where: {
         user_id: userId,
@@ -99,7 +99,7 @@ export class SessionService implements ISessionService {
     });
   }
 
-  async revokeByHashAndUser(hash: string, userId: number): Promise<boolean> {
+  async revokeByHashAndUser(hash: string, userId: string): Promise<boolean> {
     const session = await this.sessionModel.findOne({
       where: { hash, user_id: userId },
     });

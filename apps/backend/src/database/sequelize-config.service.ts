@@ -27,6 +27,29 @@ export class SequelizeConfigService implements SequelizeOptionsFactory {
       pool: {
         max: 5,
         min: 0,
+        acquire: 30000,
+        idle: 10000,
+        evict: 1000,
+      },
+      retry: {
+        max: 3,
+        match: [
+          /ETIMEDOUT/,
+          /EHOSTUNREACH/,
+          /ECONNRESET/,
+          /ECONNREFUSED/,
+          /ETIMEDOUT/,
+          /ESOCKETTIMEDOUT/,
+          /EHOSTUNREACH/,
+          /EPIPE/,
+          /EAI_AGAIN/,
+          /SequelizeConnectionError/,
+          /SequelizeConnectionRefusedError/,
+          /SequelizeHostNotFoundError/,
+          /SequelizeHostNotReachableError/,
+          /SequelizeInvalidConnectionError/,
+          /SequelizeConnectionTimedOutError/,
+        ],
       },
       dialectOptions:
         databaseConfig.dialect === 'postgres' && !databaseConfig.host.includes('localhost')

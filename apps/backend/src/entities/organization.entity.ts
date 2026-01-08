@@ -1,64 +1,35 @@
-import { Column, DataType, IsUUID, Table } from 'sequelize-typescript';
-import { BaseEntity } from './base.entity';
-import { Sequelize } from 'sequelize';
+import { Column, DataType, Index, Table } from 'sequelize-typescript';
+import { BaseNanoidEntity } from './base-nanoid.entity';
 
 @Table({
   tableName: 'organization',
 })
-export class OrganizationEntity extends BaseEntity {
-  @IsUUID(4)
+export class OrganizationEntity extends BaseNanoidEntity {
+  @Index({ name: 'IDX_ORGANIZATION_NAME', unique: true })
   @Column({
-    type: DataType.UUID,
-    allowNull: false,
-    defaultValue: Sequelize.literal('gen_random_uuid()'),
-  })
-  declare uuid: string;
-
-  @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(150),
     allowNull: false,
   })
   declare name: string;
 
+  @Index({ name: 'IDX_ORGANIZATION_SLUG', unique: true })
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
+    type: DataType.STRING(150),
+    allowNull: false,
   })
-  declare image: string;
+  declare slug: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
   })
-  declare address: string;
+  declare is_active: boolean;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   })
-  declare phone: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  declare email: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  declare website: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  declare description: string;
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: true,
-  })
-  declare deleted_at: Date | null;
+  declare issuer_verified: boolean;
 }

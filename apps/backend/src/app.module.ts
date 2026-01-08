@@ -15,7 +15,7 @@ import { EmailService } from '@src/commons/services';
 import { AuthModule, JwtAuthGuard, TokenService, SessionService } from './modules/auth';
 import { UserModule } from './modules/user';
 import { OrganizationModule } from './modules/organization';
-import { UserTypeModule } from './modules/user-type';
+import { RoleModule } from './modules/role';
 
 // Entities for guards
 import { SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
@@ -46,7 +46,8 @@ import { SessionEntity, UserEntity } from './entities';
     // Mailer Package (only for sending)
     MailerModule.forRootAsync({
       isGlobal: true,
-      useFactory: (configService: ConfigService<AllConfigType>) => {
+      useFactory: (...args: unknown[]) => {
+        const configService = args[0] as ConfigService<AllConfigType>;
         const mailerCfg = configService.getOrThrow('mailer', { infer: true });
         return {
           host: mailerCfg.host,
@@ -66,7 +67,8 @@ import { SessionEntity, UserEntity } from './entities';
     // SMS Package (only for sending)
     SmsModule.forRootAsync({
       isGlobal: true,
-      useFactory: (configService: ConfigService<AllConfigType>) => {
+      useFactory: (...args: unknown[]) => {
+        const configService = args[0] as ConfigService<AllConfigType>;
         const smsCfg = configService.getOrThrow('sms', { infer: true });
         return {
           accountSid: smsCfg.accountSid,
@@ -82,7 +84,7 @@ import { SessionEntity, UserEntity } from './entities';
     AuthModule,
     UserModule,
     OrganizationModule,
-    UserTypeModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [
