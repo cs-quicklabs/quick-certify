@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
 import { validateConfig } from '@src/commons/utils';
 
 export interface AuthConfig {
@@ -8,28 +8,43 @@ export interface AuthConfig {
   jwtRefreshTokenExpiresIn: number;
   bcryptSaltRounds: number;
   passwordResetExpiresIn: number;
+  googleClientId?: string;
+  googleClientSecret?: string;
+  googleCallbackUrl?: string;
 }
 
 class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty({ message: 'JWT_SECRET is required' })
-  JWT_SECRET: string;
+  JWT_SECRET: string = '';
 
   @IsNumber()
   @IsOptional()
-  JWT_ACCESS_TOKEN_EXPIRES_IN: number;
+  JWT_ACCESS_TOKEN_EXPIRES_IN?: number;
 
   @IsNumber()
   @IsOptional()
-  JWT_REFRESH_TOKEN_EXPIRES_IN: number;
+  JWT_REFRESH_TOKEN_EXPIRES_IN?: number;
 
   @IsNumber()
   @IsOptional()
-  BCRYPT_SALT_ROUNDS: number;
+  BCRYPT_SALT_ROUNDS?: number;
 
   @IsNumber()
   @IsOptional()
-  PASSWORD_RESET_EXPIRES_IN: number;
+  PASSWORD_RESET_EXPIRES_IN?: number;
+
+  @IsString()
+  @IsOptional()
+  GOOGLE_CLIENT_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  GOOGLE_CLIENT_SECRET?: string;
+
+  @IsUrl({ require_tld: false }, { message: 'GOOGLE_CALLBACK_URL must be a valid URL' })
+  @IsOptional()
+  GOOGLE_CALLBACK_URL?: string;
 }
 
 export default registerAs<AuthConfig>('auth', () => {
@@ -52,5 +67,8 @@ export default registerAs<AuthConfig>('auth', () => {
     passwordResetExpiresIn: process.env.PASSWORD_RESET_EXPIRES_IN
       ? parseInt(process.env.PASSWORD_RESET_EXPIRES_IN, 10)
       : 600,
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL,
   };
 });

@@ -64,16 +64,22 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService<AllConfigType>);
 
-  const frontendURL = configService.getOrThrow('app.frontendDomain', {
+  const corsOrigins = configService.getOrThrow('app.corsOrigins', {
     infer: true,
   });
 
   // enabling CORS for frontend consumption
+  // Supports multiple origins from CORS_ORIGINS env variable
   app.enableCors({
-    origin: [frontendURL],
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
     credentials: true,
+    maxAge: 3600, // Cache preflight response for 1 hour
   });
+
+  Logger.log(`🔒 CORS enabled for origins: ${corsOrigins.join(', ')}`);
 
   // global prefix
   const globalPrefix = configService.getOrThrow('app.apiPrefix', { infer: true }) || 'api';

@@ -10,15 +10,26 @@ import { InjectModel } from '@nestjs/sequelize';
 import { AllConfigType } from '@src/config/config.type';
 import { UserEntity, RoleEntity, OrganizationEntity, PasswordResetEntity } from '@src/entities';
 import { EmailService } from '@src/commons/services';
+import { generateNanoid } from '@src/commons/utils';
 import {
   RegisterDto,
   LoginDto,
   ForgotPasswordDto,
   ResetPasswordDto,
   ChangePasswordDto,
+  GoogleLoginDto,
+  GoogleSignupCompleteDto,
 } from './dtos';
 import { JwtTokens, IAuthService } from './interfaces';
-import { PasswordService, TokenService, SessionService } from './services';
+import { PasswordService, TokenService, SessionService, GoogleOAuthService, GoogleUserInfo } from './services';
+
+/**
+ * Temporary Google user data stored during signup flow
+ */
+interface TempGoogleUserData {
+  googleUser: GoogleUserInfo;
+  timestamp: number;
+}
 
 /**
  * Auth Service - Orchestrator
@@ -28,6 +39,7 @@ import { PasswordService, TokenService, SessionService } from './services';
  * - TokenService: JWT token generation/validation
  * - SessionService: session management
  * - EmailService: email notifications
+ * - GoogleOAuthService: Google OAuth operations
  *
  * OCP: New authentication methods can be added without modifying existing code
  * DIP: Depends on abstractions (services) rather than concrete implementations
@@ -38,12 +50,18 @@ export class AuthService implements IAuthService {
   private readonly passwordResetExpiresIn: number;
   private readonly frontendDomain: string;
 
+  // Temporary store for Google user data during signup flow
+  // In production, use Redis for scalability
+  private readonly tempGoogleUserStore = new Map<string, TempGoogleUserData>();
+  private readonly TEMP_TOKEN_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
     private readonly passwordService: PasswordService,
     private readonly tokenService: TokenService,
     private readonly sessionService: SessionService,
     private readonly emailService: EmailService,
+    private readonly googleOAuthService: GoogleOAuthService,
     @InjectModel(UserEntity)
     private readonly userModel: typeof UserEntity,
     @InjectModel(RoleEntity)
@@ -140,6 +158,13 @@ export class AuthService implements IAuthService {
     if (user.status !== 'active') {
       throw new UnauthorizedException(
         'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+      );
+    }
+
+    // Handle mixed auth providers
+    if (user.auth_provider === 'google' && !user.password_hash) {
+      throw new UnauthorizedException(
+        'This account uses Google authentication. Please sign in with Google.',
       );
     }
 
@@ -334,6 +359,224 @@ export class AuthService implements IAuthService {
     return { success: true, message: 'Session revoked successfully' };
   }
 
+  // ============================================
+  // Google OAuth Methods
+  // ============================================
+
+  /**
+   * Initiate Google OAuth flow (Authorization Code Flow)
+   * Returns URL to redirect user to Google
+   */
+  initiateGoogleAuth(action: 'login' | 'signup', redirectUrl?: string): { url: string; state: string } {
+    return this.googleOAuthService.generateAuthUrl(action, redirectUrl);
+  }
+
+  /**
+   * Handle Google OAuth callback (Authorization Code Flow)
+   * Exchanges code for tokens and processes user
+   */
+  async handleGoogleCallback(
+    code: string,
+    state: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<{
+    action: 'login' | 'signup';
+    tokens?: JwtTokens;
+    tempToken?: string;
+    redirectUrl?: string;
+    requiresSignup?: boolean;
+  }> {
+    // Validate state for CSRF protection
+    const stateData = this.googleOAuthService.validateState(state);
+    if (!stateData) {
+      throw new UnauthorizedException('Invalid or expired state parameter');
+    }
+
+    // Exchange code for Google user info
+    const googleUser = await this.googleOAuthService.exchangeCodeForTokens(code);
+
+    // Check if user exists
+    const existingUser = await this.userModel.findOne({
+      where: { email: googleUser.email.toLowerCase() },
+      include: [RoleEntity, OrganizationEntity],
+    });
+
+    if (stateData.action === 'login') {
+      // Login flow
+      if (!existingUser) {
+        throw new UnauthorizedException(
+          'No account found with this Google email. Please sign up first.',
+        );
+      }
+
+      return {
+        action: 'login',
+        tokens: await this.processGoogleLogin(existingUser, googleUser, ipAddress, userAgent),
+        redirectUrl: stateData.redirectUrl,
+      };
+    } else {
+      // Signup flow
+      if (existingUser) {
+        // User already exists, log them in instead
+        return {
+          action: 'signup',
+          tokens: await this.processGoogleLogin(existingUser, googleUser, ipAddress, userAgent),
+          redirectUrl: stateData.redirectUrl,
+        };
+      }
+
+      // New user - need to collect organization details
+      const tempToken = this.createTempGoogleToken(googleUser);
+      return {
+        action: 'signup',
+        tempToken,
+        requiresSignup: true,
+        redirectUrl: stateData.redirectUrl,
+      };
+    }
+  }
+
+  /**
+   * Google OAuth Login (ID Token Flow)
+   * Handles login for existing users who signed up with Google
+   */
+  async googleLogin(dto: GoogleLoginDto, ipAddress?: string, userAgent?: string): Promise<JwtTokens> {
+    const googleUser = await this.googleOAuthService.verifyIdToken(dto.idToken);
+
+    const user = await this.userModel.findOne({
+      where: { email: googleUser.email.toLowerCase() },
+      include: [RoleEntity, OrganizationEntity],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException(
+        'No account found with this Google email. Please sign up first.',
+      );
+    }
+
+    return this.processGoogleLogin(user, googleUser, ipAddress, userAgent);
+  }
+
+  /**
+   * Complete Google Signup (Both flows)
+   * Creates organization and user after Google OAuth authentication
+   */
+  async completeGoogleSignup(
+    dto: GoogleSignupCompleteDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<JwtTokens> {
+    let googleUser: GoogleUserInfo;
+
+    // Determine which flow is being used
+    if (dto.idToken) {
+      // ID Token flow - verify the token
+      googleUser = await this.googleOAuthService.verifyIdToken(dto.idToken);
+    } else if (dto.tempToken) {
+      // Authorization Code flow - retrieve stored user data
+      const tempData = this.getTempGoogleUser(dto.tempToken);
+      if (!tempData) {
+        throw new UnauthorizedException('Invalid or expired temporary token. Please restart the signup process.');
+      }
+      googleUser = tempData;
+    } else {
+      throw new BadRequestException('Either idToken or tempToken is required');
+    }
+
+    // Check if user already exists
+    const existingUser = await this.userModel.findOne({
+      where: { email: googleUser.email.toLowerCase() },
+    });
+
+    if (existingUser) {
+      // User exists, try to login instead
+      if (existingUser.status === 'archived') {
+        throw new UnauthorizedException(
+          'Your account is deactivated. For more queries reach out to admin.',
+        );
+      }
+
+      if (existingUser.status !== 'active') {
+        throw new UnauthorizedException(
+          'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+        );
+      }
+
+      // Link Google account if not already linked
+      if (!existingUser.google_id) {
+        await existingUser.update({
+          google_id: googleUser.id,
+          auth_provider: existingUser.password_hash ? 'both' : 'google',
+        });
+      }
+
+      await existingUser.update({ last_login_at: new Date() });
+      return this.createSessionAndTokens(existingUser, ipAddress, userAgent);
+    }
+
+    // Validate organization name uniqueness
+    const slug = this.generateSlug(dto.companyName);
+    const existingSlug = await this.organizationModel.findOne({ where: { slug } });
+    if (existingSlug) {
+      throw new ConflictException('Organization with this name already exists');
+    }
+
+    const existingOrgName = await this.organizationModel.findOne({ where: { name: dto.companyName } });
+    if (existingOrgName) {
+      throw new ConflictException('Organization with this name already exists');
+    }
+
+    // Get Super Admin role
+    const superAdminRole = await this.roleModel.findOne({
+      where: { role: 'super_admin' },
+    });
+
+    if (!superAdminRole) {
+      throw new NotFoundException('Super Admin role not found. Please ensure roles are seeded.');
+    }
+
+    // Create organization
+    const organization = await this.organizationModel.create({
+      name: dto.companyName,
+      slug,
+      website: dto.websiteUrl,
+      is_active: true,
+      issuer_verified: false,
+    });
+
+    // Create user with Google auth
+    const user = await this.userModel.create({
+      first_name: googleUser.given_name,
+      last_name: googleUser.family_name || null,
+      email: googleUser.email.toLowerCase(),
+      password_hash: null, // No password for Google auth
+      auth_provider: 'google',
+      google_id: googleUser.id,
+      organization_id: organization.id,
+      role_id: superAdminRole.id,
+      status: 'active',
+      email_notifications: true,
+    });
+
+    this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+
+    const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+
+    return tokens;
+  }
+
+  /**
+   * Check if Google OAuth is configured
+   */
+  isGoogleOAuthConfigured(): boolean {
+    return this.googleOAuthService.isConfigured();
+  }
+
+  // ============================================
+  // Private Helper Methods
+  // ============================================
+
   private async createSessionAndTokens(
     user: UserEntity,
     ipAddress?: string,
@@ -357,6 +600,87 @@ export class AuthService implements IAuthService {
       role: role?.role || '',
       sessionHash: session.hash,
     });
+  }
+
+  private async processGoogleLogin(
+    user: UserEntity,
+    googleUser: GoogleUserInfo,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<JwtTokens> {
+    if (user.status === 'archived') {
+      throw new UnauthorizedException(
+        'Your account is deactivated. For more queries reach out to admin.',
+      );
+    }
+
+    if (user.status !== 'active') {
+      throw new UnauthorizedException(
+        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+      );
+    }
+
+    // Handle account linking
+    if (user.auth_provider === 'email' && !user.google_id) {
+      // User signed up with email, now trying Google login
+      // Link Google account to existing email account
+      await user.update({
+        google_id: googleUser.id,
+        auth_provider: 'both', // Support both auth methods
+      });
+    } else if (user.auth_provider === 'google' && user.google_id !== googleUser.id) {
+      throw new UnauthorizedException('Google account mismatch');
+    } else if (!user.google_id) {
+      // First time Google login, update google_id
+      await user.update({
+        google_id: googleUser.id,
+        auth_provider: user.password_hash ? 'both' : 'google',
+      });
+    }
+
+    await user.update({ last_login_at: new Date() });
+
+    return this.createSessionAndTokens(user, ipAddress, userAgent);
+  }
+
+  private createTempGoogleToken(googleUser: GoogleUserInfo): string {
+    const tempToken = `temp_${generateNanoid()}`;
+    this.tempGoogleUserStore.set(tempToken, {
+      googleUser,
+      timestamp: Date.now(),
+    });
+
+    // Clean up expired tokens
+    this.cleanExpiredTempTokens();
+
+    return tempToken;
+  }
+
+  private getTempGoogleUser(tempToken: string): GoogleUserInfo | null {
+    const data = this.tempGoogleUserStore.get(tempToken);
+
+    if (!data) {
+      return null;
+    }
+
+    // Check expiry
+    if (Date.now() - data.timestamp > this.TEMP_TOKEN_EXPIRY_MS) {
+      this.tempGoogleUserStore.delete(tempToken);
+      return null;
+    }
+
+    // Remove used token (one-time use)
+    this.tempGoogleUserStore.delete(tempToken);
+    return data.googleUser;
+  }
+
+  private cleanExpiredTempTokens(): void {
+    const now = Date.now();
+    for (const [key, value] of this.tempGoogleUserStore.entries()) {
+      if (now - value.timestamp > this.TEMP_TOKEN_EXPIRY_MS) {
+        this.tempGoogleUserStore.delete(key);
+      }
+    }
   }
 
   private parseDeviceType(userAgent?: string): string | undefined {
