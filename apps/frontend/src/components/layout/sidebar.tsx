@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { SidebarItem } from '../types/sidebar.types';
-import { profileSidebarItems } from '../config/sidebar.config';
+import { SidebarItem } from '../../types/sidebar.types';
+import { profileSidebarItems } from '../../config/sidebar.config';
 
 interface SidebarProps {
   items?: SidebarItem[];

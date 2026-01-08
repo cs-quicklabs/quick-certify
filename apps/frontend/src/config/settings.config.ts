@@ -32,8 +32,8 @@ export const profileFormFields: FormFieldConfig[] = [
 
 export const passwordFormFields: FormFieldConfig[] = [
   {
-    name: 'oldPassword',
-    label: 'Old Password',
+    name: 'currentPassword',
+    label: 'Current Password',
     type: 'password',
     placeholder: '••••••••',
     required: true,

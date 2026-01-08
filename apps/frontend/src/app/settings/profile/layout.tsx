@@ -1,12 +1,11 @@
 'use client';
 
-import { Navbar } from '../../../components/Navbar';
-import { Sidebar } from '../../../components/Sidebar';
+import { Header, Sidebar } from '@/components';
 
 export default function ProfileSettingsLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Navbar />
+      <Header />
       <main className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
           <aside className="px-2 py-6 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3">
