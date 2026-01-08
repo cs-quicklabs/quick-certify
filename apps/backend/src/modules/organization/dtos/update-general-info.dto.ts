@@ -1,0 +1,51 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+
+/**
+ * DTO for updating organization general information
+ *
+ * Based on design: https://designs.quicklabs.in/quick-certify/settings/account/general-information
+ */
+export class UpdateGeneralInfoDto {
+  @ApiProperty({ example: 'Acme Corporation', description: 'Issuer or Organisation Name' })
+  @IsString()
+  @IsNotEmpty({ message: 'Organization name is required' })
+  @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
+  name: string = '';
+
+  @ApiPropertyOptional({
+    example: 'We specialize in professional certifications...',
+    description: 'Issuer description shown on credential pages',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(2000, { message: 'Description must not exceed 2000 characters' })
+  description?: string;
+
+  @ApiPropertyOptional({
+    example: 'support@acme.com',
+    description: 'Support email for recipients to contact',
+  })
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsOptional()
+  support_email?: string;
+
+  @ApiPropertyOptional({
+    example: 'Empowering Excellence',
+    description: 'Company slogan',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255, { message: 'Slogan must not exceed 255 characters' })
+  slogan?: string;
+
+  @ApiPropertyOptional({
+    example: '12345678',
+    description: 'LinkedIn Company ID for credential attribution',
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100, { message: 'LinkedIn Company ID must not exceed 100 characters' })
+  linkedin_company_id?: string;
+}
+

@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { Alert, Logo } from '@/components';
 import { useAuthStore } from '@/store/auth.store';
 import { authService, setTokens } from '@/services';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 /**
  * Google OAuth Callback Page
@@ -51,7 +52,7 @@ export default function AuthCallbackPage() {
         return;
       } catch (err) {
         console.error('Failed to fetch user:', err);
-        setError('Authentication successful but failed to load user data. Please try logging in again.');
+        setError(getApiErrorMessage(err, 'Authentication successful but failed to load user data. Please try logging in again.'));
         return;
       }
     }
