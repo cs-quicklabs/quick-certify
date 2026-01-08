@@ -1,36 +1,41 @@
 import {
+  BeforeValidate,
   BelongsTo,
   Column,
   DataType,
   ForeignKey,
   Index,
-  IsUUID,
   Table,
 } from 'sequelize-typescript';
-import { Sequelize } from 'sequelize';
-import { BaseEntity } from './base.entity';
+import { BaseNanoidEntity } from './base-nanoid.entity';
 import { UserEntity } from './user.entity';
+import { generateNanoid } from '@src/commons/utils/nanoid.util';
 
 @Table({
   tableName: 'session',
 })
-export class SessionEntity extends BaseEntity {
-  @IsUUID(4)
+export class SessionEntity extends BaseNanoidEntity {
   @Index({ name: 'IDX_SESSION_HASH', unique: true })
   @Column({
-    type: DataType.UUID,
+    type: DataType.STRING(21),
     allowNull: false,
-    defaultValue: Sequelize.literal('gen_random_uuid()'),
   })
   declare hash: string;
+
+  @BeforeValidate
+  static generateHash<T extends SessionEntity>(instance: T): void {
+    if (!instance.hash) {
+      instance.hash = generateNanoid();
+    }
+  }
 
   @ForeignKey(() => UserEntity)
   @Index({ name: 'IDX_SESSION_USER_ID' })
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.STRING(21),
     allowNull: false,
   })
-  declare user_id: number;
+  declare user_id: string;
 
   @BelongsTo(() => UserEntity)
   declare user: UserEntity;

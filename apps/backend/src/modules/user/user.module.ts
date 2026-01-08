@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { UserEntity, UserTypeEntity, OrganizationEntity } from '@src/entities';
+import { UserEntity } from '@src/entities/user.entity';
+import { RoleEntity } from '@src/entities/role.entity';
+import { OrganizationEntity } from '@src/entities/organization.entity';
 import { AuthModule } from '@src/modules/auth';
 
 /**
@@ -12,7 +14,7 @@ import { AuthModule } from '@src/modules/auth';
  */
 @Module({
   imports: [
-    SequelizeModule.forFeature([UserEntity, UserTypeEntity, OrganizationEntity]),
+    SequelizeModule.forFeature([UserEntity, RoleEntity, OrganizationEntity]),
     AuthModule, // For PasswordService
   ],
   controllers: [UserController],

@@ -2,7 +2,9 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
-import { UserEntity, UserTypeEntity, OrganizationEntity } from '@src/entities';
+import { UserEntity } from '@src/entities/user.entity';
+import { RoleEntity } from '@src/entities/role.entity';
+import { OrganizationEntity } from '@src/entities/organization.entity';
 import { PasswordService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
 
@@ -21,8 +23,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   constructor(
     @InjectModel(UserEntity)
     private readonly userModel: typeof UserEntity,
-    @InjectModel(UserTypeEntity)
-    private readonly userTypeModel: typeof UserTypeEntity,
+    @InjectModel(RoleEntity)
+    private readonly roleModel: typeof RoleEntity,
     @InjectModel(OrganizationEntity)
     private readonly organizationModel: typeof OrganizationEntity,
     private readonly passwordService: PasswordService,
@@ -49,8 +51,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         deleted_at: null,
       },
       include: [
-        { model: UserTypeEntity, attributes: ['id', 'name', 'code'] },
-        { model: OrganizationEntity, attributes: ['id', 'uuid', 'name'] },
+        { model: RoleEntity, attributes: ['id', 'role'] },
+        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password'] },
       order: [[sortBy, sortOrder]],
@@ -77,8 +79,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return this.userModel.findOne({
       where: { id, deleted_at: null },
       include: [
-        { model: UserTypeEntity, attributes: ['id', 'name', 'code'] },
-        { model: OrganizationEntity, attributes: ['id', 'uuid', 'name'] },
+        { model: RoleEntity, attributes: ['id', 'role'] },
+        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password'] },
     });
@@ -88,8 +90,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return this.userModel.findOne({
       where: { uuid, deleted_at: null },
       include: [
-        { model: UserTypeEntity, attributes: ['id', 'name', 'code'] },
-        { model: OrganizationEntity, attributes: ['id', 'uuid', 'name'] },
+        { model: RoleEntity, attributes: ['id', 'role'] },
+        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password'] },
     });
@@ -98,7 +100,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userModel.findOne({
       where: { email: email.toLowerCase(), deleted_at: null },
-      include: [UserTypeEntity],
+      include: [RoleEntity],
     });
   }
 
@@ -109,8 +111,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Validate organization
     await this.validateOrganization(dto.organizationId);
 
-    // Validate user type
-    await this.validateUserType(dto.userTypeId);
+    // Validate role
+    await this.validateRole(dto.roleId);
 
     // Hash password using injected service (DIP)
     const hashedPassword = await this.passwordService.hash(dto.password);
@@ -120,11 +122,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       last_name: dto.lastName,
       email: dto.email.toLowerCase(),
       phone: dto.phone || null,
-      password: hashedPassword,
+      password_hash: hashedPassword,
       gender: dto.gender || null,
       profile_picture: dto.profilePicture || null,
       organization_id: dto.organizationId,
-      user_type_id: dto.userTypeId,
+      role_id: dto.roleId,
     });
 
     return this.findOne(user.id) as Promise<UserEntity>;
@@ -138,9 +140,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       await this.validateEmailUniqueness(dto.email, id);
     }
 
-    // Validate user type if changing
-    if (dto.userTypeId) {
-      await this.validateUserType(dto.userTypeId);
+    // Validate role if changing
+    if (dto.roleId) {
+      await this.validateRole(dto.roleId);
     }
 
     const updateData = this.buildUpdateData(dto);
@@ -186,8 +188,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return this.userModel.findOne({
       where: { id, organization_id: organizationId, deleted_at: null },
       include: [
-        { model: UserTypeEntity, attributes: ['id', 'name', 'code'] },
-        { model: OrganizationEntity, attributes: ['id', 'uuid', 'name'] },
+        { model: RoleEntity, attributes: ['id', 'role'] },
+        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password'] },
     });
@@ -254,10 +256,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  private async validateUserType(userTypeId: number): Promise<void> {
-    const userType = await this.userTypeModel.findByPk(userTypeId);
-    if (!userType || !userType.is_active) {
-      throw new NotFoundException('User type not found or inactive');
+  private async validateRole(roleId: string): Promise<void> {
+    const role = await this.roleModel.findByPk(roleId);
+    if (!role) {
+      throw new NotFoundException('Role not found');
     }
   }
 
@@ -270,7 +272,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     if (dto.phone !== undefined) updateData.phone = dto.phone;
     if (dto.gender !== undefined) updateData.gender = dto.gender;
     if (dto.profilePicture !== undefined) updateData.profile_picture = dto.profilePicture;
-    if (dto.userTypeId) updateData.user_type_id = dto.userTypeId;
+    if (dto.roleId) updateData.role_id = dto.roleId;
 
     return updateData;
   }

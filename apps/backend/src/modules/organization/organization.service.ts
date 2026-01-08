@@ -1,25 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationEntity } from '@src/entities';
 import { CreateOrganizationDto, UpdateOrganizationDto } from './dtos';
+import { IOrganizationService } from './interfaces';
 
+/**
+ * Organization Service Implementation
+ *
+ * SRP: Handles all organization-related operations
+ */
 @Injectable()
-export class OrganizationService extends BaseCrudService<
-  OrganizationEntity,
-  CreateOrganizationDto,
-  UpdateOrganizationDto
-> {
-  protected readonly model = OrganizationEntity;
-  protected readonly entityName = 'Organization';
-
+export class OrganizationService implements IOrganizationService {
   constructor(
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
-  ) {
-    super();
-  }
+  ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -31,7 +28,7 @@ export class OrganizationService extends BaseCrudService<
     const { count, rows } = await this.organizationModel.findAndCountAll({
       where: {
         ...where,
-        deleted_at: null,
+        is_active: true,
       },
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
@@ -53,35 +50,44 @@ export class OrganizationService extends BaseCrudService<
     };
   }
 
-  async findOne(id: number): Promise<OrganizationEntity | null> {
+  async findOne(id: string): Promise<OrganizationEntity | null> {
     return this.organizationModel.findOne({
-      where: { id, deleted_at: null },
+      where: { id, is_active: true },
     });
   }
 
-  async findByUuid(uuid: string): Promise<OrganizationEntity | null> {
+  async findBySlug(slug: string): Promise<OrganizationEntity | null> {
     return this.organizationModel.findOne({
-      where: { uuid, deleted_at: null },
+      where: { slug, is_active: true },
     });
   }
 
   async create(dto: CreateOrganizationDto): Promise<OrganizationEntity> {
+    const slug = dto.slug || this.generateSlug(dto.name);
+
+    const existingSlug = await this.organizationModel.findOne({ where: { slug } });
+    if (existingSlug) {
+      throw new ConflictException('Organization with this slug already exists');
+    }
+
+    const existingName = await this.organizationModel.findOne({ where: { name: dto.name } });
+    if (existingName) {
+      throw new ConflictException('Organization with this name already exists');
+    }
+
     const organization = await this.organizationModel.create({
       name: dto.name,
-      image: dto.image || null,
-      address: dto.address || null,
-      phone: dto.phone || null,
-      email: dto.email || null,
-      website: dto.website || null,
-      description: dto.description || null,
+      slug,
+      is_active: dto.is_active !== undefined ? dto.is_active : true,
+      issuer_verified: dto.issuer_verified !== undefined ? dto.issuer_verified : false,
     });
 
     return organization;
   }
 
-  async update(id: number, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
+  async update(id: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findOne({
-      where: { id, deleted_at: null },
+      where: { id, is_active: true },
     });
 
     if (!organization) {
@@ -90,43 +96,31 @@ export class OrganizationService extends BaseCrudService<
 
     const updateData: Partial<OrganizationEntity> = {};
 
-    if (dto.name !== undefined) updateData.name = dto.name;
-    if (dto.image !== undefined) updateData.image = dto.image;
-    if (dto.address !== undefined) updateData.address = dto.address;
-    if (dto.phone !== undefined) updateData.phone = dto.phone;
-    if (dto.email !== undefined) updateData.email = dto.email;
-    if (dto.website !== undefined) updateData.website = dto.website;
-    if (dto.description !== undefined) updateData.description = dto.description;
+    if (dto.name !== undefined) {
+      updateData.name = dto.name;
+      if (dto.name !== organization.name && !dto.slug) {
+        updateData.slug = this.generateSlug(dto.name);
+        const existingSlug = await this.organizationModel.findOne({
+          where: { slug: updateData.slug, id: { [Op.ne]: id } },
+        });
+        if (existingSlug) {
+          throw new ConflictException('Organization with this name already exists');
+        }
+      }
+    }
+    if (dto.slug !== undefined) {
+      const existingSlug = await this.organizationModel.findOne({
+        where: { slug: dto.slug, id: { [Op.ne]: id } },
+      });
+      if (existingSlug) {
+        throw new ConflictException('Slug already taken');
+      }
+      updateData.slug = dto.slug;
+    }
+    if (dto.is_active !== undefined) updateData.is_active = dto.is_active;
+    if (dto.issuer_verified !== undefined) updateData.issuer_verified = dto.issuer_verified;
 
     await organization.update(updateData);
-
-    return organization;
-  }
-
-  async softDelete(id: number): Promise<boolean> {
-    const organization = await this.organizationModel.findOne({
-      where: { id, deleted_at: null },
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-
-    await organization.update({ deleted_at: new Date() });
-
-    return true;
-  }
-
-  async restore(id: number): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findOne({
-      where: { id, deleted_at: { [Op.ne]: null } },
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization not found or not deleted');
-    }
-
-    await organization.update({ deleted_at: null });
 
     return organization;
   }
@@ -138,8 +132,7 @@ export class OrganizationService extends BaseCrudService<
     const searchCondition = {
       [Op.or]: [
         { name: { [Op.iLike]: `%${searchQuery}%` } },
-        { email: { [Op.iLike]: `%${searchQuery}%` } },
-        { description: { [Op.iLike]: `%${searchQuery}%` } },
+        { slug: { [Op.iLike]: `%${searchQuery}%` } },
       ],
     };
 
@@ -150,5 +143,17 @@ export class OrganizationService extends BaseCrudService<
         ...searchCondition,
       },
     });
+  }
+
+  /**
+   * Generate URL-friendly slug from organization name
+   */
+  private generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

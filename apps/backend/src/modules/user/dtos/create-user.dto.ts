@@ -59,13 +59,13 @@ export class CreateUserDto {
   @IsOptional()
   profilePicture?: string;
 
-  @ApiProperty({ example: 1, description: 'Organization ID' })
-  @IsNumber()
+  @ApiProperty({ example: 'abc123', description: 'Organization ID (nanoid)' })
+  @IsString()
   @IsNotEmpty({ message: 'Organization ID is required' })
-  organizationId: number;
+  organizationId: string;
 
-  @ApiProperty({ example: 1, description: 'User type ID' })
-  @IsNumber()
-  @IsNotEmpty({ message: 'User type ID is required' })
-  userTypeId: number;
+  @ApiProperty({ example: 'xyz789', description: 'Role ID (nanoid)' })
+  @IsString()
+  @IsNotEmpty({ message: 'Role ID is required' })
+  roleId: string;
 }

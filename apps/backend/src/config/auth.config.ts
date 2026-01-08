@@ -48,9 +48,9 @@ export default registerAs<AuthConfig>('auth', () => {
     bcryptSaltRounds: process.env.BCRYPT_SALT_ROUNDS
       ? parseInt(process.env.BCRYPT_SALT_ROUNDS, 10)
       : 12,
-    // Password reset expires in 1 hour (in seconds)
+    // Password reset expires in 10 minutes (in seconds)
     passwordResetExpiresIn: process.env.PASSWORD_RESET_EXPIRES_IN
       ? parseInt(process.env.PASSWORD_RESET_EXPIRES_IN, 10)
-      : 3600,
+      : 600,
   };
 });

@@ -33,8 +33,8 @@ export class UpdateUserDto {
   @IsOptional()
   profilePicture?: string;
 
-  @ApiPropertyOptional({ example: 1, description: 'User type ID' })
-  @IsNumber()
+  @ApiPropertyOptional({ example: 'xyz789', description: 'Role ID (nanoid)' })
+  @IsString()
   @IsOptional()
-  userTypeId?: number;
+  roleId?: string;
 }

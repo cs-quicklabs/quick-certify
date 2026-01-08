@@ -1,49 +1,25 @@
 import { QueryInterface } from 'sequelize';
+import { generateNanoid } from '../../commons/utils/nanoid.util';
 
 /**
  * Seeder: Initial data
  *
  * Seeds:
- * 1. Default user types (SUPER_ADMIN, ADMIN, USER)
- * 2. Default organization
+ * 1. Default organization
+ *
+ * Note: Roles are seeded separately in 20231201000002-seed-roles.ts
  */
 export async function up(queryInterface: QueryInterface): Promise<void> {
   const now = new Date();
 
-  // 1. Seed user types
-  await queryInterface.bulkInsert('user_type', [
-    {
-      name: 'Super Administrator',
-      code: 'SUPER_ADMIN',
-      description: 'Full system access across all organizations',
-      is_active: true,
-      created_at: now,
-      updated_at: now,
-    },
-    {
-      name: 'Administrator',
-      code: 'ADMIN',
-      description: 'Organization administrator with full access to organization resources',
-      is_active: true,
-      created_at: now,
-      updated_at: now,
-    },
-    {
-      name: 'Standard User',
-      code: 'USER',
-      description: 'Standard user with basic access',
-      is_active: true,
-      created_at: now,
-      updated_at: now,
-    },
-  ]);
-
-  // 2. Seed default organization
+  // Seed default organization
   await queryInterface.bulkInsert('organization', [
     {
-      uuid: '00000000-0000-0000-0000-000000000001',
+      id: generateNanoid(),
       name: 'Default Organization',
-      description: 'Initial organization for the platform',
+      slug: 'default-organization',
+      is_active: true,
+      issuer_verified: false,
       created_at: now,
       updated_at: now,
     },
@@ -53,10 +29,6 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
 export async function down(queryInterface: QueryInterface): Promise<void> {
   // Remove seeded data
   await queryInterface.bulkDelete('organization', {
-    uuid: '00000000-0000-0000-0000-000000000001',
-  });
-
-  await queryInterface.bulkDelete('user_type', {
-    code: ['SUPER_ADMIN', 'ADMIN', 'USER'],
+    slug: 'default-organization',
   });
 }

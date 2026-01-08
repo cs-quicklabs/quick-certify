@@ -23,11 +23,11 @@ export interface ITokenService {
 }
 
 export interface TokenPayloadInput {
-  userId: number;
-  userUuid: string;
+  userId: string; // nanoid
   email: string;
-  organizationId: number;
-  userTypeCode: string;
+  organizationId: string; // nanoid
+  roleId: string; // nanoid
+  role: string; // role name
   sessionHash: string;
 }
 

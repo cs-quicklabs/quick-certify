@@ -1,39 +1,26 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateOrganizationDto {
   @ApiProperty({ example: 'Acme Corporation', description: 'Organization name' })
   @IsString()
   @IsNotEmpty({ message: 'Organization name is required' })
+  @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
   name: string;
 
-  @ApiPropertyOptional({ description: 'Organization logo URL' })
+  @ApiPropertyOptional({ example: 'acme-corporation', description: 'URL-friendly slug (auto-generated if not provided)' })
   @IsString()
   @IsOptional()
-  image?: string;
+  @MaxLength(150, { message: 'Slug must not exceed 150 characters' })
+  slug?: string;
 
-  @ApiPropertyOptional({ example: '123 Main St, City, Country', description: 'Address' })
-  @IsString()
+  @ApiPropertyOptional({ example: true, description: 'Organization active status', default: true })
+  @IsBoolean()
   @IsOptional()
-  address?: string;
+  is_active?: boolean;
 
-  @ApiPropertyOptional({ example: '+1234567890', description: 'Phone number' })
-  @IsString()
+  @ApiPropertyOptional({ example: false, description: 'Issuer verification status', default: false })
+  @IsBoolean()
   @IsOptional()
-  phone?: string;
-
-  @ApiPropertyOptional({ example: 'contact@acme.com', description: 'Email' })
-  @IsEmail()
-  @IsOptional()
-  email?: string;
-
-  @ApiPropertyOptional({ example: 'https://acme.com', description: 'Website URL' })
-  @IsUrl()
-  @IsOptional()
-  website?: string;
-
-  @ApiPropertyOptional({ description: 'Organization description' })
-  @IsString()
-  @IsOptional()
-  description?: string;
+  issuer_verified?: boolean;
 }
