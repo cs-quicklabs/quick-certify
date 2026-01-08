@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AxiosError } from 'axios';
 import { Input, Button, Alert, Divider, GoogleSignInButton } from '@/components';
 import { registerSchema, RegisterFormData } from '@/schemas/auth.schema';
-import { authService, ApiError } from '@/services';
+import { authService } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 /**
  * Signup Page
@@ -61,9 +61,7 @@ export default function SignupPage() {
       // Redirect to dashboard
       router.push('/dashboard');
     } catch (error) {
-      const axiosError = error as AxiosError<ApiError>;
-      const message = axiosError.response?.data?.message || 'An error occurred. Please try again.';
-      setServerError(message);
+      setServerError(getApiErrorMessage(error));
     }
   };
 

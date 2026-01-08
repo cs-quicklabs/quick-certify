@@ -27,6 +27,7 @@ export const profileFormFields: FormFieldConfig[] = [
     type: 'email',
     placeholder: 'email@gmail.com',
     description: 'Changing email requires verification via the new email address',
+    disabled: true,
   },
 ];
 

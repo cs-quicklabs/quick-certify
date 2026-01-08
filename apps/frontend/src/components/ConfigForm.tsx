@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { z } from 'zod';
 import { formatZodErrors } from '../lib/validation';
+import { getApiErrorMessage, getApiFieldErrors } from '../lib/api-error';
 import { FormFieldConfig, FormConfig } from '../types/form.types';
 import { validateImageFile } from '../schemas/settings.schema';
 
@@ -22,6 +23,13 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Update form data when initialValues changes (e.g., after data fetch)
+  useEffect(() => {
+    if (initialValues && Object.keys(initialValues).length > 0) {
+      setFormData(initialValues);
+    }
+  }, [initialValues]);
 
   // Image upload state
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -121,7 +129,14 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       await config.onSubmit(result.data as z.infer<T>);
       setSubmitSuccess(true);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'An error occurred');
+      // Extract proper error message from API response
+      setSubmitError(getApiErrorMessage(error));
+
+      // Set field-specific errors if available
+      const fieldErrors = getApiFieldErrors(error);
+      if (fieldErrors) {
+        setErrors((prev) => ({ ...prev, ...fieldErrors }));
+      }
     } finally {
       setIsSubmitting(false);
     }

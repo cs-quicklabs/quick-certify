@@ -3,7 +3,14 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationEntity } from '@src/entities';
-import { CreateOrganizationDto, UpdateOrganizationDto } from './dtos';
+import {
+  CreateOrganizationDto,
+  UpdateOrganizationDto,
+  UpdateGeneralInfoDto,
+  UpdateSocialLinksDto,
+  UpdateBrandingDto,
+  UpdatePortalSettingsDto,
+} from './dtos';
 import { IOrganizationService } from './interfaces';
 
 /**
@@ -143,6 +150,122 @@ export class OrganizationService implements IOrganizationService {
         ...searchCondition,
       },
     });
+  }
+
+  // ============================================
+  // Account Settings Methods
+  // ============================================
+
+  /**
+   * Update organization general information
+   */
+  async updateGeneralInfo(id: string, dto: UpdateGeneralInfoDto): Promise<OrganizationEntity> {
+    const organization = await this.organizationModel.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    // Check if name is being changed and is unique
+    if (dto.name && dto.name !== organization.name) {
+      const existingName = await this.organizationModel.findOne({
+        where: { name: dto.name, id: { [Op.ne]: id } },
+      });
+      if (existingName) {
+        throw new ConflictException('Organization with this name already exists');
+      }
+
+      // Auto-generate new slug when name changes
+      const newSlug = this.generateSlug(dto.name);
+      const existingSlug = await this.organizationModel.findOne({
+        where: { slug: newSlug, id: { [Op.ne]: id } },
+      });
+      if (existingSlug) {
+        throw new ConflictException('Organization with similar name already exists');
+      }
+
+      await organization.update({
+        name: dto.name,
+        slug: newSlug,
+        description: dto.description,
+        support_email: dto.support_email,
+        slogan: dto.slogan,
+        linkedin_company_id: dto.linkedin_company_id,
+      });
+    } else {
+      await organization.update({
+        description: dto.description,
+        support_email: dto.support_email,
+        slogan: dto.slogan,
+        linkedin_company_id: dto.linkedin_company_id,
+      });
+    }
+
+    return organization.reload();
+  }
+
+  /**
+   * Update organization social links
+   */
+  async updateSocialLinks(id: string, dto: UpdateSocialLinksDto): Promise<OrganizationEntity> {
+    const organization = await this.organizationModel.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    await organization.update({
+      linkedin_url: dto.linkedin_url,
+      facebook_url: dto.facebook_url,
+      twitter_url: dto.twitter_url,
+      website: dto.website,
+    });
+
+    return organization.reload();
+  }
+
+  /**
+   * Update organization branding
+   */
+  async updateBranding(id: string, dto: UpdateBrandingDto): Promise<OrganizationEntity> {
+    const organization = await this.organizationModel.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    await organization.update({
+      logo_url: dto.logo_url,
+      favicon_url: dto.favicon_url,
+    });
+
+    return organization.reload();
+  }
+
+  /**
+   * Update issuer portal settings
+   */
+  async updatePortalSettings(id: string, dto: UpdatePortalSettingsDto): Promise<OrganizationEntity> {
+    const organization = await this.organizationModel.findOne({
+      where: { id, is_active: true },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    await organization.update({
+      banner_url: dto.banner_url,
+      portal_enabled: dto.portal_enabled,
+    });
+
+    return organization.reload();
   }
 
   /**
