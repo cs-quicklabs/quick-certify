@@ -4,28 +4,23 @@ import { Logo } from '@/components';
  * Auth Layout
  *
  * Shared layout for authentication pages (login, signup, forgot-password, etc.)
- * Features a centered card design with logo
+ * Features a centered card design with logo matching Flowbite design
+ * Based on: https://designs.quicklabs.in/quick-certify/login
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-8">
-      {/* Logo */}
-      <div className="mb-6">
-        <Logo size="lg" />
-      </div>
+    <section className="bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto min-h-screen lg:py-0">
+        {/* Logo */}
+        <div className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+          <Logo size="lg" />
+        </div>
 
-      {/* Auth Card */}
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+        {/* Auth Card */}
+        <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
           {children}
         </div>
       </div>
-
-      {/* Footer */}
-      <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-        <p>&copy; {new Date().getFullYear()} Quick Certify. All rights reserved.</p>
-      </div>
-    </div>
+    </section>
   );
 }
-

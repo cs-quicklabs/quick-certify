@@ -43,7 +43,7 @@ function GoogleIcon() {
  * Google Sign-In Button
  *
  * Uses backend redirect flow for Google OAuth.
- * This approach is more secure and doesn't require Google Client ID on frontend.
+ * Styled to match the Flowbite design system.
  */
 export function GoogleSignInButton({
   mode = 'login',
@@ -58,16 +58,20 @@ export function GoogleSignInButton({
   const handleGoogleSignIn = useCallback(() => {
     setIsLoading(true);
 
-    // Build the redirect URL to backend
+    // Build the redirect URL - this is where backend will redirect after Google auth
     const action = mode === 'signup' ? 'signup' : 'login';
-    const currentUrl = typeof window !== 'undefined' ? window.location.origin : env.APP_URL;
-    const redirectUrl = `${currentUrl}/auth/callback`;
+    const frontendUrl = typeof window !== 'undefined' ? window.location.origin : env.APP_URL;
+    const callbackUrl = `${frontendUrl}/auth/callback`;
 
     // Redirect to backend Google OAuth endpoint
-    const googleAuthUrl = `${env.API_BASE_URL}/auth/google/redirect?action=${action}&redirectUrl=${encodeURIComponent(redirectUrl)}`;
+    // Backend will redirect to Google, then Google redirects back to backend callback,
+    // and finally backend redirects to our frontend callback with tokens
+    const googleAuthUrl = `${env.API_BASE_URL}/auth/google/redirect?action=${action}&redirectUrl=${encodeURIComponent(callbackUrl)}`;
 
     window.location.href = googleAuthUrl;
   }, [mode]);
+
+  const buttonText = mode === 'login' ? 'Sign in with Google' : 'Sign up with Google';
 
   return (
     <button
@@ -75,10 +79,11 @@ export function GoogleSignInButton({
       onClick={handleGoogleSignIn}
       disabled={disabled || isLoading}
       className={clsx(
-        'w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-300 rounded-sm',
-        'bg-white text-gray-700 font-medium text-sm',
-        'hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-300',
-        'dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600',
+        'w-full inline-flex items-center justify-center gap-3',
+        'px-5 py-2.5 text-sm font-medium',
+        'text-gray-900 bg-white rounded-lg border border-gray-300',
+        'hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100',
+        'dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700',
         'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
         className,
       )}
@@ -88,7 +93,7 @@ export function GoogleSignInButton({
       ) : (
         <GoogleIcon />
       )}
-      <span>{mode === 'login' ? 'Sign in with Google' : 'Sign up with Google'}</span>
+      <span>{buttonText}</span>
     </button>
   );
 }

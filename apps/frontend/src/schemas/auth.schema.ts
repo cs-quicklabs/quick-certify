@@ -98,12 +98,17 @@ export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 /**
  * Google Signup Complete Schema
+ * Based on design: https://designs.quicklabs.in/quick-certify/signup/complete
  */
 export const googleSignupCompleteSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, 'First name is required'),
+  lastName: z.string().optional(),
   companyName: z
     .string()
-    .min(1, 'Company name is required')
-    .min(2, 'Company name must be at least 2 characters'),
+    .min(1, 'Issuer name is required')
+    .min(2, 'Issuer name must be at least 2 characters'),
   websiteUrl: z
     .string()
     .min(1, 'Website URL is required')

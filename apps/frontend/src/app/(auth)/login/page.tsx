@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
-import { Input, Checkbox, Button, Alert, Divider, GoogleSignInButton } from '@/components';
+import { Input, Checkbox, Button, Alert, GoogleSignInButton } from '@/components';
 import { loginSchema, LoginFormData } from '@/schemas/auth.schema';
 import { authService, ApiError } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
@@ -60,9 +60,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
       {/* Header */}
-      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-6">
+      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
         Sign in to issuer account
       </h1>
 
@@ -72,12 +72,11 @@ export default function LoginPage() {
           type="error"
           message={serverError}
           onClose={() => setServerError(null)}
-          className="mb-6"
         />
       )}
 
       {/* Login Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
         {/* Email Field */}
         <Input
           label="Your email"
@@ -117,24 +116,21 @@ export default function LoginPage() {
         >
           Sign in
         </Button>
+
+        {/* Google Sign-In */}
+        <GoogleSignInButton mode="login" disabled={isSubmitting} />
+
+        {/* Sign Up Link */}
+        <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+          Don&apos;t have an account yet?{' '}
+          <Link
+            href="/signup"
+            className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+          >
+            Sign up
+          </Link>
+        </p>
       </form>
-
-      {/* Divider */}
-      <Divider className="my-6" />
-
-      {/* Google Sign-In */}
-      <GoogleSignInButton mode="login" disabled={isSubmitting} />
-
-      {/* Sign Up Link */}
-      <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-        Don&apos;t have an account yet?{' '}
-        <Link
-          href="/signup"
-          className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-        >
-          Sign up
-        </Link>
-      </p>
     </div>
   );
 }
