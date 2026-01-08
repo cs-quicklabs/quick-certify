@@ -3,12 +3,11 @@
 import { ConfigForm } from '../../../../components/ConfigForm';
 import { profileFormFields } from '../../../../config/settings.config';
 import { profileSettingsSchema, ProfileSettingsData } from '../../../../schemas/settings.schema';
-import { useProfile, useUpdateProfile } from '../../../../hooks/useSettings';
+import { useProfile } from '../../../../hooks/useSettings';
 import { FormConfig } from '../../../../types/form.types';
 
 export default function ProfileSettingsPage() {
   const { data: profile, isLoading } = useProfile();
-  const updateProfile = useUpdateProfile();
 
   const formConfig: FormConfig<typeof profileSettingsSchema> = {
     title: 'Profile Settings',
@@ -17,7 +16,8 @@ export default function ProfileSettingsPage() {
     schema: profileSettingsSchema,
     submitLabel: 'Save',
     onSubmit: async (data: ProfileSettingsData) => {
-      await updateProfile.mutateAsync(data);
+      // TODO: Integrate when profile update API is available
+      console.log('Profile update not implemented yet:', data);
     },
   };
 
