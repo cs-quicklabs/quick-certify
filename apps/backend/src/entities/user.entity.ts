@@ -11,6 +11,7 @@ import {
 import { BaseEntity } from './base.entity';
 import { UserTypeEntity } from './user-type.entity';
 import { OrganizationEntity } from './organization.entity';
+import { Exclude } from 'class-transformer';
 
 @Table({
   tableName: 'user',
@@ -38,7 +39,6 @@ export class UserEntity extends BaseEntity {
 
   @Column({
     type: DataType.VIRTUAL,
-    allowNull: false,
   })
   get full_name(): string {
     return `${this.first_name} ${this.last_name}`.trim();
@@ -57,6 +57,7 @@ export class UserEntity extends BaseEntity {
   })
   declare phone: string;
 
+  @Exclude({ toPlainOnly: true })
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -100,4 +101,10 @@ export class UserEntity extends BaseEntity {
 
   @BelongsTo(() => OrganizationEntity)
   declare organization: OrganizationEntity;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: true,
+  })
+  declare is_notifications_enabled: boolean;
 }

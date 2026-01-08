@@ -1,10 +1,18 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UserEntity, UserTypeEntity, OrganizationEntity } from '@src/entities';
 import { PasswordService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
+import { CurrentUser } from '../auth/interfaces';
+import { UserTypeEnum } from '@src/commons/enums';
+import { EmailService } from '@src/commons/services';
 
 /**
  * User Service
@@ -16,7 +24,7 @@ import { CreateUserDto, UpdateUserDto } from './dtos';
 @Injectable()
 export class UserService extends BaseCrudService<UserEntity, CreateUserDto, UpdateUserDto> {
   protected readonly model = UserEntity;
-  protected readonly entityName = 'User';
+  protected override readonly entityName = 'User';
 
   constructor(
     @InjectModel(UserEntity)
@@ -26,6 +34,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     @InjectModel(OrganizationEntity)
     private readonly organizationModel: typeof OrganizationEntity,
     private readonly passwordService: PasswordService,
+    private readonly mailService: EmailService,
   ) {
     super();
   }
@@ -84,9 +93,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  async findByUuid(uuid: string): Promise<UserEntity | null> {
+  async findByUuid(uuid: string, organizationId?: number): Promise<UserEntity | null> {
+    const whereClause: Record<string, unknown> = { uuid, deleted_at: null };
+    if (organizationId) {
+      whereClause.organization_id = organizationId;
+    }
     return this.userModel.findOne({
-      where: { uuid, deleted_at: null },
+      where: whereClause,
       include: [
         { model: UserTypeEntity, attributes: ['id', 'name', 'code'] },
         { model: OrganizationEntity, attributes: ['id', 'uuid', 'name'] },
@@ -102,7 +115,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  async create(dto: CreateUserDto): Promise<UserEntity> {
+  async create(dto: CreateUserDto, currentUser?: CurrentUser): Promise<UserEntity> {
     // Validate email uniqueness
     await this.validateEmailUniqueness(dto.email);
 
@@ -110,7 +123,15 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     await this.validateOrganization(dto.organizationId);
 
     // Validate user type
-    await this.validateUserType(dto.userTypeId);
+    const userType = await this.validateUserType(dto.userTypeId);
+
+    // Super admin users can only be created by super admin users
+    if (
+      currentUser?.userTypeCode !== UserTypeEnum.SUPER_ADMIN &&
+      userType.code === UserTypeEnum.SUPER_ADMIN
+    ) {
+      throw new ForbiddenException('You are not authorized to create a super admin user.');
+    }
 
     // Hash password using injected service (DIP)
     const hashedPassword = await this.passwordService.hash(dto.password);
@@ -127,10 +148,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       user_type_id: dto.userTypeId,
     });
 
+    // Send welcome email (fire and forget)
+    this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+
     return this.findOne(user.id) as Promise<UserEntity>;
   }
 
-  async update(id: number, dto: UpdateUserDto): Promise<UserEntity> {
+  override async update(id: number, dto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
 
     // Validate email if changing
@@ -139,8 +163,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     // Validate user type if changing
-    if (dto.userTypeId) {
-      await this.validateUserType(dto.userTypeId);
+    if (dto.user_type_id) {
+      await this.validateUserType(dto.user_type_id);
     }
 
     const updateData = this.buildUpdateData(dto);
@@ -182,9 +206,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  async findOneByOrganization(id: number, organizationId: number): Promise<UserEntity | null> {
+  async findOneByUuidAndOrganization(
+    uuid: string,
+    organizationId: number,
+  ): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { id, organization_id: organizationId, deleted_at: null },
+      where: { uuid, organization_id: organizationId, deleted_at: null },
       include: [
         { model: UserTypeEntity, attributes: ['id', 'name', 'code'] },
         { model: OrganizationEntity, attributes: ['id', 'uuid', 'name'] },
@@ -254,23 +281,26 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  private async validateUserType(userTypeId: number): Promise<void> {
+  private async validateUserType(userTypeId: number): Promise<UserTypeEntity> {
     const userType = await this.userTypeModel.findByPk(userTypeId);
     if (!userType || !userType.is_active) {
       throw new NotFoundException('User type not found or inactive');
     }
+    return userType;
   }
 
   private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {
     const updateData: Partial<UserEntity> = {};
 
-    if (dto.firstName) updateData.first_name = dto.firstName;
-    if (dto.lastName) updateData.last_name = dto.lastName;
+    if (dto.first_name) updateData.first_name = dto.first_name;
+    if (dto.last_name) updateData.last_name = dto.last_name;
     if (dto.email) updateData.email = dto.email.toLowerCase();
     if (dto.phone !== undefined) updateData.phone = dto.phone;
     if (dto.gender !== undefined) updateData.gender = dto.gender;
-    if (dto.profilePicture !== undefined) updateData.profile_picture = dto.profilePicture;
-    if (dto.userTypeId) updateData.user_type_id = dto.userTypeId;
+    if (dto.profile_picture !== undefined) updateData.profile_picture = dto.profile_picture;
+    if (dto.user_type_id) updateData.user_type_id = dto.user_type_id;
+    if (dto.is_notifications_enabled !== undefined)
+      updateData.is_notifications_enabled = dto.is_notifications_enabled;
 
     return updateData;
   }

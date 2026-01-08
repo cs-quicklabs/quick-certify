@@ -1,8 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Gender } from './create-user.dto';
+import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
 
-export class UpdateUserDto {
+export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'John', description: 'First name of the user' })
   @IsString()
   @IsOptional()
@@ -14,29 +13,14 @@ export class UpdateUserDto {
   last_name?: string;
 
   @ApiPropertyOptional({ example: 'john.doe@example.com', description: 'Email address' })
-  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsEmail()
   @IsOptional()
   email?: string;
-
-  @ApiPropertyOptional({ example: '+1234567890', description: 'Phone number' })
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @ApiPropertyOptional({ enum: Gender, description: 'Gender' })
-  @IsEnum(Gender)
-  @IsOptional()
-  gender?: Gender;
 
   @ApiPropertyOptional({ description: 'Profile picture URL' })
   @IsString()
   @IsOptional()
   profile_picture?: string;
-
-  @ApiPropertyOptional({ example: 1, description: 'User type ID' })
-  @IsNumber()
-  @IsOptional()
-  user_type_id?: number;
 
   @ApiPropertyOptional({ default: true, description: 'Whether notifications are enabled' })
   @IsBoolean()

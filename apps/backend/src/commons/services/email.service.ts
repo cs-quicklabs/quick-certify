@@ -11,6 +11,11 @@ export class EmailService {
 
   constructor(private readonly mailerService: MailerService) {
     this.templatesDir = path.join(process.cwd(), 'templates');
+    this.registerHelpers();
+  }
+
+  private registerHelpers(): void {
+    Handlebars.registerHelper('currentYear', () => new Date().getFullYear());
   }
 
   private getTemplate(templateName: string): Handlebars.TemplateDelegate {

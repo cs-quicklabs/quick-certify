@@ -3,10 +3,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export function setupSwagger(app: INestApplication, globalPrefix: string) {
   const config = new DocumentBuilder()
-    .setTitle('Boilerplate API')
+    .setTitle('Quick Certify API')
     .setDescription(
       `
-## API Documentation for Boilerplate Nest-Next Application
+## API Documentation for Quick Certify Application
 
 ### Authentication
 This API uses JWT Bearer token authentication. Include the token in the Authorization header:
@@ -16,9 +16,9 @@ This API uses JWT Bearer token authentication. Include the token in the Authoriz
 This is a multi-tenant application. Users belong to organizations and can only access resources within their organization.
 
 ### User Roles
-- **SUPER_ADMIN**: Full access to all organizations and resources
-- **ADMIN**: Full access to their organization's resources
-- **USER**: Standard user access
+- **SUPER_ADMIN**: Full access to organization's resources
+- **MANAGER**: Full access to their organization's resources
+- **DESIGNER**: Access to their organization's resources
 
 ### Token Management
 - Access tokens expire after 15 minutes
@@ -44,6 +44,6 @@ This is a multi-tenant application. Users belong to organizations and can only a
       filter: true,
       showRequestDuration: true,
     },
-    customSiteTitle: 'Boilerplate API Docs',
+    customSiteTitle: 'Certify | Quicklabs.in',
   });
 }
