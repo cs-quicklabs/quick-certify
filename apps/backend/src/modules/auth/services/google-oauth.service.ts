@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import * as crypto from 'crypto';
 import { AllConfigType } from '@src/config/config.type';
-import { generateNanoid } from '@src/commons/utils';
 
 /**
  * Google User Info extracted from OAuth
@@ -43,15 +43,16 @@ export class GoogleOAuthService {
   private readonly googleClientId: string | undefined;
   private readonly googleClientSecret: string | undefined;
   private readonly googleCallbackUrl: string | undefined;
-
-  // In-memory state store (use Redis in production for scalability)
-  private readonly stateStore = new Map<string, OAuthStateData>();
+  private readonly stateSecret: string;
   private readonly STATE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
   constructor(private readonly configService: ConfigService<AllConfigType>) {
     this.googleClientId = this.configService.get('auth.googleClientId', { infer: true });
     this.googleClientSecret = this.configService.get('auth.googleClientSecret', { infer: true });
     this.googleCallbackUrl = this.configService.get('auth.googleCallbackUrl', { infer: true });
+
+    // Use JWT secret for signing state tokens (survives restarts)
+    this.stateSecret = this.configService.get('auth.jwtSecret', { infer: true }) || 'default-secret';
 
     // Initialize OAuth2Client only if credentials are configured
     if (this.googleClientId) {
@@ -109,6 +110,8 @@ export class GoogleOAuthService {
    * Generate Authorization URL (for Authorization Code Flow)
    * Redirects user to Google for authentication
    *
+   * Uses signed state tokens that survive server restarts
+   *
    * @param action - Whether this is for login or signup
    * @param redirectUrl - URL to redirect after successful auth
    * @returns Authorization URL and state parameter
@@ -118,16 +121,14 @@ export class GoogleOAuthService {
       throw new UnauthorizedException('Google OAuth is not configured');
     }
 
-    // Generate state for CSRF protection
-    const state = generateNanoid();
-    this.stateStore.set(state, {
+    // Create state data and sign it (no server-side storage needed)
+    const stateData: OAuthStateData = {
       action,
       redirectUrl,
       timestamp: Date.now(),
-    });
+    };
 
-    // Clean up expired states
-    this.cleanExpiredStates();
+    const state = this.signState(stateData);
 
     const url = this.oAuth2Client.generateAuthUrl({
       access_type: 'offline', // Get refresh token
@@ -145,26 +146,71 @@ export class GoogleOAuthService {
 
   /**
    * Validate state parameter for CSRF protection
+   * Verifies signature and expiration
    *
    * @param state - State parameter from callback
    * @returns State data if valid
    */
   validateState(state: string): OAuthStateData | null {
-    const stateData = this.stateStore.get(state);
+    try {
+      const stateData = this.verifyState(state);
 
-    if (!stateData) {
+      if (!stateData) {
+        return null;
+      }
+
+      // Check if state has expired
+      if (Date.now() - stateData.timestamp > this.STATE_EXPIRY_MS) {
+        return null;
+      }
+
+      return stateData;
+    } catch (error) {
+      console.error('State validation failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Sign state data into a URL-safe token
+   */
+  private signState(data: OAuthStateData): string {
+    const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
+    const signature = crypto
+      .createHmac('sha256', this.stateSecret)
+      .update(payload)
+      .digest('base64url');
+    return `${payload}.${signature}`;
+  }
+
+  /**
+   * Verify and decode a signed state token
+   */
+  private verifyState(state: string): OAuthStateData | null {
+    const parts = state.split('.');
+    if (parts.length !== 2) {
       return null;
     }
 
-    // Check if state has expired
-    if (Date.now() - stateData.timestamp > this.STATE_EXPIRY_MS) {
-      this.stateStore.delete(state);
+    const [payload, signature] = parts;
+
+    // Verify signature
+    const expectedSignature = crypto
+      .createHmac('sha256', this.stateSecret)
+      .update(payload)
+      .digest('base64url');
+
+    if (signature !== expectedSignature) {
       return null;
     }
 
-    // Remove used state (one-time use)
-    this.stateStore.delete(state);
-    return stateData;
+    // Decode payload
+    try {
+      const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+      return data as OAuthStateData;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -231,15 +277,4 @@ export class GoogleOAuthService {
     };
   }
 
-  /**
-   * Clean up expired state entries
-   */
-  private cleanExpiredStates(): void {
-    const now = Date.now();
-    for (const [key, value] of this.stateStore.entries()) {
-      if (now - value.timestamp > this.STATE_EXPIRY_MS) {
-        this.stateStore.delete(key);
-      }
-    }
-  }
 }

@@ -31,6 +31,8 @@ export interface GoogleLoginRequest {
 export interface GoogleSignupCompleteRequest {
   idToken?: string;
   tempToken?: string;
+  firstName?: string;
+  lastName?: string;
   companyName: string;
   websiteUrl: string;
 }

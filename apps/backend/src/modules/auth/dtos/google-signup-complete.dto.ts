@@ -26,6 +26,16 @@ export class GoogleSignupCompleteDto {
   @IsOptional()
   tempToken?: string;
 
+  @ApiPropertyOptional({ example: 'John', description: 'First name (optional, will use Google name if not provided)' })
+  @IsString()
+  @IsOptional()
+  firstName?: string;
+
+  @ApiPropertyOptional({ example: 'Doe', description: 'Last name (optional)' })
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+
   @ApiProperty({ example: 'Acme Corporation', description: 'Company / Issuer Name' })
   @IsString()
   @IsNotEmpty({ message: 'Company / Issuer Name is required' })

@@ -402,39 +402,24 @@ export class AuthService implements IAuthService {
       include: [RoleEntity, OrganizationEntity],
     });
 
-    if (stateData.action === 'login') {
-      // Login flow
-      if (!existingUser) {
-        throw new UnauthorizedException(
-          'No account found with this Google email. Please sign up first.',
-        );
-      }
-
+    // If user exists, log them in (regardless of login or signup action)
+    if (existingUser) {
       return {
-        action: 'login',
+        action: stateData.action,
         tokens: await this.processGoogleLogin(existingUser, googleUser, ipAddress, userAgent),
         redirectUrl: stateData.redirectUrl,
       };
-    } else {
-      // Signup flow
-      if (existingUser) {
-        // User already exists, log them in instead
-        return {
-          action: 'signup',
-          tokens: await this.processGoogleLogin(existingUser, googleUser, ipAddress, userAgent),
-          redirectUrl: stateData.redirectUrl,
-        };
-      }
-
-      // New user - need to collect organization details
-      const tempToken = this.createTempGoogleToken(googleUser);
-      return {
-        action: 'signup',
-        tempToken,
-        requiresSignup: true,
-        redirectUrl: stateData.redirectUrl,
-      };
     }
+
+    // New user - redirect to signup completion to collect organization details
+    // This handles both "Sign in with Google" and "Sign up with Google" for new users
+    const tempToken = this.createTempGoogleToken(googleUser);
+    return {
+      action: 'signup',
+      tempToken,
+      requiresSignup: true,
+      redirectUrl: stateData.redirectUrl,
+    };
   }
 
   /**
@@ -546,9 +531,10 @@ export class AuthService implements IAuthService {
     });
 
     // Create user with Google auth
+    // Use provided names from form, fallback to Google profile names
     const user = await this.userModel.create({
-      first_name: googleUser.given_name,
-      last_name: googleUser.family_name || null,
+      first_name: dto.firstName || googleUser.given_name,
+      last_name: dto.lastName || googleUser.family_name || null,
       email: googleUser.email.toLowerCase(),
       password_hash: null, // No password for Google auth
       auth_provider: 'google',

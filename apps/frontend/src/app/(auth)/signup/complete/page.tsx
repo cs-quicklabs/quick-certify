@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
-import { ArrowLeft } from 'lucide-react';
 import { Input, Button, Alert } from '@/components';
 import { googleSignupCompleteSchema, GoogleSignupCompleteFormData } from '@/schemas/auth.schema';
 import { authService, ApiError } from '@/services';
@@ -17,12 +16,15 @@ import { useAuthStore } from '@/store/auth.store';
  *
  * This page is shown when a new user signs up with Google
  * and needs to provide organization details.
+ *
+ * Based on design: https://designs.quicklabs.in/quick-certify/signup/complete
  */
 export default function CompleteSignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setUser } = useAuthStore();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   const googleToken = searchParams.get('googleToken');
   const tempToken = searchParams.get('tempToken');
@@ -32,8 +34,11 @@ export default function CompleteSignupPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<GoogleSignupCompleteFormData>({
+    // @ts-ignore - Type compatibility issue between zod and hookform resolver
     resolver: zodResolver(googleSignupCompleteSchema),
     defaultValues: {
+      firstName: '',
+      lastName: '',
       companyName: '',
       websiteUrl: '',
     },
@@ -43,6 +48,8 @@ export default function CompleteSignupPage() {
   useEffect(() => {
     if (!googleToken && !tempToken) {
       router.push('/signup');
+    } else {
+      setIsReady(true);
     }
   }, [googleToken, tempToken, router]);
 
@@ -53,6 +60,8 @@ export default function CompleteSignupPage() {
       await authService.completeGoogleSignup({
         idToken: googleToken || undefined,
         tempToken: tempToken || undefined,
+        firstName: data.firstName,
+        lastName: data.lastName,
         companyName: data.companyName,
         websiteUrl: data.websiteUrl,
       });
@@ -70,19 +79,16 @@ export default function CompleteSignupPage() {
     }
   };
 
-  if (!googleToken && !tempToken) {
+  if (!isReady) {
     return null;
   }
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
       {/* Header */}
-      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
-        Complete your account
+      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+        Tell us more about your issuer account
       </h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        Just a few more details to get you started.
-      </p>
 
       {/* Server Error Alert */}
       {serverError && (
@@ -90,43 +96,55 @@ export default function CompleteSignupPage() {
           type="error"
           message={serverError}
           onClose={() => setServerError(null)}
-          className="mb-6"
         />
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
         <Input
-          label="Company / Issuer name"
+          label="First Name"
+          placeholder="John"
+          error={errors.firstName?.message}
+          {...register('firstName')}
+        />
+
+        <Input
+          label="Last Name"
+          placeholder="Doe"
+          error={errors.lastName?.message}
+          {...register('lastName')}
+        />
+
+        <Input
+          label="Issuer name"
           placeholder="Acme Corporation"
           error={errors.companyName?.message}
           {...register('companyName')}
         />
 
         <Input
-          label="Website URL"
+          label="Issuer Website URL"
           type="url"
-          placeholder="https://company.com"
+          placeholder="https://acme.com"
           error={errors.websiteUrl?.message}
           {...register('websiteUrl')}
         />
 
         <Button type="submit" fullWidth isLoading={isSubmitting}>
-          Complete setup
+          Complete profile and go to Dashboard
         </Button>
-      </form>
 
-      {/* Back to signup */}
-      <div className="mt-6 text-center">
-        <Link
-          href="/signup"
-          className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to sign up
-        </Link>
-      </div>
+        {/* Login link */}
+        <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+          Already have an account?{' '}
+          <Link
+            href="/login"
+            className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+          >
+            Login
+          </Link>
+        </p>
+      </form>
     </div>
   );
 }
-
