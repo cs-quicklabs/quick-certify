@@ -5,4 +5,5 @@ export type AppConfig = {
   backendDomain: string;
   port: number;
   apiPrefix: string;
+  corsOrigins: string[];
 };

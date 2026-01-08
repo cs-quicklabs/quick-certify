@@ -1,4 +1,12 @@
-import { LoginDto, RegisterDto, ForgotPasswordDto, ResetPasswordDto, ChangePasswordDto } from '../dtos';
+import {
+  LoginDto,
+  RegisterDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  ChangePasswordDto,
+  GoogleLoginDto,
+  GoogleSignupCompleteDto,
+} from '../dtos';
 import { JwtTokens } from './jwt-payload.interface';
 import { SessionEntity } from '@src/entities';
 
@@ -64,7 +72,50 @@ export interface IAuthService {
    * Revoke a specific session
    */
   revokeSession(userId: string, sessionHash: string): Promise<{ success: boolean; message: string }>;
+
+  /**
+   * Initiate Google OAuth flow (Authorization Code Flow)
+   */
+  initiateGoogleAuth(action: 'login' | 'signup', redirectUrl?: string): { url: string; state: string };
+
+  /**
+   * Handle Google OAuth callback (Authorization Code Flow)
+   */
+  handleGoogleCallback(
+    code: string,
+    state: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<{
+    action: 'login' | 'signup';
+    tokens?: JwtTokens;
+    tempToken?: string;
+    redirectUrl?: string;
+    requiresSignup?: boolean;
+  }>;
+
+  /**
+   * Login with Google OAuth (ID Token Flow)
+   */
+  googleLogin(
+    dto: GoogleLoginDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<JwtTokens>;
+
+  /**
+   * Complete Google signup with organization details
+   */
+  completeGoogleSignup(
+    dto: GoogleSignupCompleteDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<JwtTokens>;
+
+  /**
+   * Check if Google OAuth is configured
+   */
+  isGoogleOAuthConfigured(): boolean;
 }
 
 export const AUTH_SERVICE = Symbol('IAuthService');
-
