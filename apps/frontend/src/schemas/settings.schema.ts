@@ -48,9 +48,6 @@ export type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 // Email Preferences Schema
 export const emailPreferencesSchema = z.object({
   enableAllAlerts: z.boolean().default(false),
-  marketingEmails: z.boolean().default(false),
-  securityAlerts: z.boolean().default(true),
-  productUpdates: z.boolean().default(false),
 });
 
 export type EmailPreferencesData = z.infer<typeof emailPreferencesSchema>;
