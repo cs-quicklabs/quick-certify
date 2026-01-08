@@ -16,7 +16,6 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { Logo } from '@/components';
 import { useAuthStore } from '@/store/auth.store';
 
 /**
