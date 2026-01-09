@@ -1,14 +1,8 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  ForeignKey,
-  Index,
-  Table,
-} from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
 import { BaseNanoidEntity } from './base-nanoid.entity';
 import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
+import { Exclude } from 'class-transformer';
 
 @Table({
   tableName: 'user',
@@ -56,6 +50,7 @@ export class UserEntity extends BaseNanoidEntity {
   })
   declare password_hash: string | null;
 
+  @Exclude({ toPlainOnly: true })
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
@@ -92,6 +87,18 @@ export class UserEntity extends BaseNanoidEntity {
     defaultValue: true,
   })
   declare email_notifications: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare deleted_at: Date | null;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: true,
+  })
+  declare is_notifications_enabled: boolean;
 
   @Column({
     type: DataType.DATE,
