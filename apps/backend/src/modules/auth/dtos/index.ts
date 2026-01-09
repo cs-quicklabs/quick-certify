@@ -8,3 +8,4 @@ export * from './google-login.dto';
 export * from './google-signup-complete.dto';
 export * from './google-auth-init.dto';
 export * from './google-callback.dto';
+export * from './update-profile.dto';

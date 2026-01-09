@@ -24,9 +24,7 @@ export function Header() {
               <div className="shrink-0 flex items-center">
                 <span
                   data-cy="Quick Test-label"
-                  className="text-white text-lg font-bold tracking-wide px-3 hidden lg:block"
-                  style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-                >
+                  className="text-white font-extrabold font-mono px-3 hidden lg:block tracking-wider">
                   Quick Certify
                 </span>
                 <span className="text-white font-medium px-3 block lg:hidden"></span>
@@ -173,7 +171,7 @@ export function Header() {
                 </div>
                 {menuOpened && (
                   <div
-                    className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-sm bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="menu-button"
