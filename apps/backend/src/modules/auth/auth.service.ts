@@ -19,6 +19,8 @@ import {
   ChangePasswordDto,
   GoogleLoginDto,
   GoogleSignupCompleteDto,
+  UpdateProfileDto,
+  UpdateEmailPreferencesDto,
 } from './dtos';
 import { JwtTokens, IAuthService } from './interfaces';
 import { PasswordService, TokenService, SessionService, GoogleOAuthService, GoogleUserInfo } from './services';
@@ -627,6 +629,101 @@ export class AuthService implements IAuthService {
     await user.update({ last_login_at: new Date() });
 
     return this.createSessionAndTokens(user, ipAddress, userAgent);
+  }
+
+  /**
+   * Get full user profile with additional details
+   */
+  async getFullProfile(userId: string) {
+    const user = await this.userModel.findByPk(userId, {
+      include: [{ model: RoleEntity, as: 'role' }],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      fullName: user.full_name,
+      avatarUrl: null, // TODO: Add avatar_url field to user entity if needed
+      signupMethod: user.auth_provider === 'google' ? 'google' : 'email',
+      emailNotifications: user.email_notifications,
+      role: user.role?.role,
+      status: user.status,
+      lastLoginAt: user.last_login_at,
+    };
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.userModel.findByPk(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updateData: Partial<UserEntity> = {};
+
+    if (dto.firstName !== undefined) {
+      updateData.first_name = dto.firstName;
+    }
+
+    if (dto.lastName !== undefined) {
+      updateData.last_name = dto.lastName;
+    }
+
+    // TODO: Handle avatar URL if avatar_url field is added to entity
+    // if (dto.avatarUrl !== undefined) {
+    //   updateData.avatar_url = dto.avatarUrl;
+    // }
+
+    await user.update(updateData);
+
+    return {
+      message: 'Profile updated successfully',
+      user: await this.getFullProfile(userId),
+    };
+  }
+
+  /**
+   * Update email preferences
+   */
+  async updateEmailPreferences(userId: string, dto: UpdateEmailPreferencesDto) {
+    const user = await this.userModel.findByPk(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (dto.emailNotifications !== undefined) {
+      await user.update({ email_notifications: dto.emailNotifications });
+    }
+
+    return {
+      message: 'Email preferences updated successfully',
+      emailNotifications: user.email_notifications,
+    };
+  }
+
+  /**
+   * Get email preferences
+   */
+  async getEmailPreferences(userId: string) {
+    const user = await this.userModel.findByPk(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      emailNotifications: user.email_notifications,
+    };
   }
 
   private createTempGoogleToken(googleUser: GoogleUserInfo): string {

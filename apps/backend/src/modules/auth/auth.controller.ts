@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Ip,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -29,6 +30,8 @@ import {
   GoogleAuthInitDto,
   GoogleCallbackDto,
   GoogleAuthAction,
+  UpdateProfileDto,
+  UpdateEmailPreferencesDto,
 } from './dtos';
 import { Public, CurrentUser } from './decorators';
 import * as AuthInterfaces from './interfaces';
@@ -172,7 +175,41 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user info' })
   @ApiResponse({ status: 200, description: 'Current user information' })
   async getCurrentUser(@CurrentUser() user: AuthInterfaces.CurrentUser) {
-    return new SuccessResponse('User information retrieved', user);
+    const fullProfile = await this.authService.getFullProfile(user.id);
+    return new SuccessResponse('User information retrieved', fullProfile);
+  }
+
+  @Patch('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  async updateProfile(
+    @CurrentUser() user: AuthInterfaces.CurrentUser,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    const result = await this.authService.updateProfile(user.id, dto);
+    return new SuccessResponse(result.message, result.user);
+  }
+
+  @Get('me/email-preferences')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get email preferences' })
+  @ApiResponse({ status: 200, description: 'Email preferences retrieved' })
+  async getEmailPreferences(@CurrentUser() user: AuthInterfaces.CurrentUser) {
+    const result = await this.authService.getEmailPreferences(user.id);
+    return new SuccessResponse('Email preferences retrieved', result);
+  }
+
+  @Patch('me/email-preferences')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update email preferences' })
+  @ApiResponse({ status: 200, description: 'Email preferences updated successfully' })
+  async updateEmailPreferences(
+    @CurrentUser() user: AuthInterfaces.CurrentUser,
+    @Body() dto: UpdateEmailPreferencesDto,
+  ) {
+    const result = await this.authService.updateEmailPreferences(user.id, dto);
+    return new SuccessResponse(result.message, result);
   }
 
   // ============================================
