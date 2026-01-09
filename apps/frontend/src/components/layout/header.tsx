@@ -24,7 +24,8 @@ export function Header() {
               <div className="shrink-0 flex items-center">
                 <span
                   data-cy="Quick Test-label"
-                  className="text-white font-extrabold font-mono px-3 hidden lg:block tracking-wider">
+                  className="text-white font-extrabold font-mono px-3 hidden lg:block tracking-wider"
+                >
                   Quick Certify
                 </span>
                 <span className="text-white font-medium px-3 block lg:hidden"></span>
@@ -104,11 +105,7 @@ export function Header() {
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
                 <svg
@@ -305,9 +302,7 @@ export function Header() {
                 <div className="text-base font-medium text-white">
                   {user?.firstName} {user?.lastName}
                 </div>
-                <div className="text-sm font-medium text-gray-400">
-                  {user?.email || 'User'}
-                </div>
+                <div className="text-sm font-medium text-gray-400">{user?.email || 'User'}</div>
               </div>
             </div>
             <div className="mt-3 space-y-1 px-2">
