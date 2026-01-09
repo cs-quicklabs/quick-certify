@@ -1,64 +1,134 @@
-import { Column, DataType, IsUUID, Table } from 'sequelize-typescript';
-import { BaseEntity } from './base.entity';
-import { Sequelize } from 'sequelize';
+import { Column, DataType, Index, Table } from 'sequelize-typescript';
+import { BaseNanoidEntity } from './base-nanoid.entity';
 
+/**
+ * Organization Entity
+ *
+ * Represents an organization/company in the multi-tenant system.
+ * Contains general information, social links, branding, and portal settings.
+ */
 @Table({
   tableName: 'organization',
 })
-export class OrganizationEntity extends BaseEntity {
-  @IsUUID(4)
-  @Column({
-    type: DataType.UUID,
-    allowNull: false,
-    defaultValue: Sequelize.literal('gen_random_uuid()'),
-  })
-  declare uuid: string;
+export class OrganizationEntity extends BaseNanoidEntity {
+  // ============================================
+  // General Information
+  // ============================================
 
+  @Index({ name: 'IDX_ORGANIZATION_NAME', unique: true })
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(150),
     allowNull: false,
   })
   declare name: string;
 
+  @Index({ name: 'IDX_ORGANIZATION_SLUG', unique: true })
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
+    type: DataType.STRING(150),
+    allowNull: false,
   })
-  declare image: string;
+  declare slug: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     allowNull: true,
   })
-  declare address: string;
+  declare description: string | null;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true,
   })
-  declare phone: string;
+  declare support_email: string | null;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: true,
   })
-  declare email: string;
+  declare slogan: string | null;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(100),
     allowNull: true,
   })
-  declare website: string;
+  declare linkedin_company_id: string | null;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(500),
     allowNull: true,
   })
-  declare description: string;
+  declare website: string | null;
+
+  // ============================================
+  // Social Links
+  // ============================================
 
   @Column({
-    type: DataType.DATE,
+    type: DataType.STRING(500),
     allowNull: true,
   })
-  declare deleted_at: Date | null;
+  declare linkedin_url: string | null;
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  declare facebook_url: string | null;
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  declare twitter_url: string | null;
+
+  // ============================================
+  // Branding
+  // ============================================
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  declare logo_url: string | null;
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  declare favicon_url: string | null;
+
+  // ============================================
+  // Issuer Portal Settings
+  // ============================================
+
+  @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  declare banner_url: string | null;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  })
+  declare portal_enabled: boolean;
+
+  // ============================================
+  // Status Fields
+  // ============================================
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  })
+  declare is_active: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  declare issuer_verified: boolean;
 }

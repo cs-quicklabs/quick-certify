@@ -1,10 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumber,
-  IsOptional,
   IsString,
+  IsUrl,
   Matches,
   MinLength,
 } from 'class-validator';
@@ -13,17 +12,27 @@ export class RegisterDto {
   @ApiProperty({ example: 'John', description: 'First name of the user' })
   @IsString()
   @IsNotEmpty({ message: 'First name is required' })
-  firstName: string;
+  declare firstName: string;
 
   @ApiProperty({ example: 'Doe', description: 'Last name of the user' })
   @IsString()
   @IsNotEmpty({ message: 'Last name is required' })
-  lastName: string;
+  declare lastName: string;
 
   @ApiProperty({ example: 'john.doe@example.com', description: 'Email address' })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
-  email: string;
+  declare email: string;
+
+  @ApiProperty({ example: 'Acme Corporation', description: 'Company / Issuer Name' })
+  @IsString()
+  @IsNotEmpty({ message: 'Company / Issuer Name is required' })
+  declare companyName: string;
+
+  @ApiProperty({ example: 'https://acme.com', description: 'Website URL' })
+  @IsUrl({}, { message: 'Please provide a valid website URL' })
+  @IsNotEmpty({ message: 'Website URL is required' })
+  declare websiteUrl: string;
 
   @ApiProperty({
     example: 'StrongP@ssw0rd!',
@@ -35,20 +44,13 @@ export class RegisterDto {
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
     message: 'Password must include uppercase, lowercase, number, and special character',
   })
-  password: string;
+  declare password: string;
 
-  @ApiPropertyOptional({ example: '+1234567890', description: 'Phone number' })
+  @ApiProperty({
+    example: 'StrongP@ssw0rd!',
+    description: 'Confirm Password (must match password)',
+  })
   @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @ApiProperty({ example: 1, description: 'Organization ID' })
-  @IsNumber()
-  @IsNotEmpty({ message: 'Organization ID is required' })
-  organizationId: number;
-
-  @ApiPropertyOptional({ example: 1, description: 'User type ID (defaults to standard user)' })
-  @IsNumber()
-  @IsOptional()
-  userTypeId?: number;
+  @IsNotEmpty({ message: 'Confirm password is required' })
+  declare confirmPassword: string;
 }

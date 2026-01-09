@@ -1,80 +1,92 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  ForeignKey,
-  Index,
-  IsUUID,
-  Sequelize,
-  Table,
-} from 'sequelize-typescript';
-import { BaseEntity } from './base.entity';
-import { UserTypeEntity } from './user-type.entity';
+import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
+import { BaseNanoidEntity } from './base-nanoid.entity';
+import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
 import { Exclude } from 'class-transformer';
 
 @Table({
   tableName: 'user',
 })
-export class UserEntity extends BaseEntity {
-  @IsUUID(4)
+export class UserEntity extends BaseNanoidEntity {
+  @ForeignKey(() => OrganizationEntity)
   @Column({
-    type: DataType.UUID,
+    type: DataType.STRING(21),
     allowNull: false,
-    defaultValue: Sequelize.literal('gen_random_uuid()'),
   })
-  declare uuid: string;
+  declare organization_id: string;
+
+  @BelongsTo(() => OrganizationEntity)
+  declare organization: OrganizationEntity;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(100),
     allowNull: false,
   })
   declare first_name: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
+    type: DataType.STRING(100),
+    allowNull: true,
   })
-  declare last_name: string;
+  declare last_name: string | null;
 
   @Column({
     type: DataType.VIRTUAL,
   })
   get full_name(): string {
-    return `${this.first_name} ${this.last_name}`.trim();
+    return `${this.first_name} ${this.last_name || ''}`.trim();
   }
 
-  @Index({ name: 'IDX_USER_EMAIL', unique: true, where: { deleted_at: null } })
+  @Index({ name: 'IDX_USER_EMAIL', unique: true })
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false,
   })
   declare email: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
     allowNull: true,
   })
-  declare phone: string;
+  declare password_hash: string | null;
 
   @Exclude({ toPlainOnly: true })
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(50),
+    allowNull: false,
+    defaultValue: 'email',
+  })
+  declare auth_provider: string;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: true,
+  })
+  declare google_id: string | null;
+
+  @ForeignKey(() => RoleEntity)
+  @Column({
+    type: DataType.STRING(21),
     allowNull: false,
   })
-  declare password: string;
+  declare role_id: string;
+
+  @BelongsTo(() => RoleEntity)
+  declare role: RoleEntity;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
+    type: DataType.STRING(20),
+    allowNull: false,
+    defaultValue: 'active',
   })
-  declare gender: 'male' | 'female' | 'other';
+  declare status: 'active' | 'inactive' | 'invited' | 'archived';
 
   @Column({
-    type: DataType.STRING,
-    allowNull: true,
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
   })
-  declare profile_picture: string;
+  declare email_notifications: boolean;
 
   @Column({
     type: DataType.DATE,
@@ -82,29 +94,15 @@ export class UserEntity extends BaseEntity {
   })
   declare deleted_at: Date | null;
 
-  @ForeignKey(() => UserTypeEntity)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  declare user_type_id: number;
-
-  @BelongsTo(() => UserTypeEntity)
-  declare user_type: UserTypeEntity;
-
-  @ForeignKey(() => OrganizationEntity)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  declare organization_id: number;
-
-  @BelongsTo(() => OrganizationEntity)
-  declare organization: OrganizationEntity;
-
   @Column({
     type: DataType.BOOLEAN,
     allowNull: true,
   })
   declare is_notifications_enabled: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare last_login_at: Date | null;
 }

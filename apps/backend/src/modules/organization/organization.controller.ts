@@ -1,10 +1,8 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -12,12 +10,20 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { OrganizationService } from './organization.service';
-import { CreateOrganizationDto, UpdateOrganizationDto } from './dtos';
+import {
+  CreateOrganizationDto,
+  UpdateOrganizationDto,
+  UpdateGeneralInfoDto,
+  UpdateSocialLinksDto,
+  UpdateBrandingDto,
+  UpdatePortalSettingsDto,
+} from './dtos';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
-import { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import { Role } from '../role/enums';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -50,28 +56,36 @@ export class OrganizationController {
     return new SuccessResponse('Organization retrieved successfully', organization);
   }
 
-  @Get(':id')
+  @Get('settings')
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Get organization by ID (Super Admin only)' })
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all organization settings (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organization settings retrieved' })
+  async getSettings(@CurrentUser() user: CurrentUserType) {
+    const organization = await this.organizationService.findOne(user.organizationId);
+    return new SuccessResponse('Organization settings retrieved successfully', organization);
+  }
+
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get organization by slug' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const organization = await this.organizationService.findOne(id);
+  async findBySlug(@Param('slug') slug: string) {
+    const organization = await this.organizationService.findBySlug(slug);
     if (!organization) {
       return new SuccessResponse('Organization not found', null);
     }
     return new SuccessResponse('Organization retrieved successfully', organization);
   }
 
-  @Get('uuid/:uuid')
+  @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Get organization by UUID (Super Admin only)' })
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get organization by ID (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async findByUuid(@Param('uuid') uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
+  async findOne(@Param('id') id: string) {
+    const organization = await this.organizationService.findOne(id);
     if (!organization) {
       return new SuccessResponse('Organization not found', null);
     }
@@ -80,7 +94,7 @@ export class OrganizationController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Create a new organization (Super Admin only)' })
   @ApiResponse({ status: 201, description: 'Organization created successfully' })
   async create(@Body() dto: CreateOrganizationDto) {
@@ -90,7 +104,7 @@ export class OrganizationController {
 
   @Patch('current')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update current user organization (Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization updated successfully' })
   async updateCurrentOrganization(
@@ -103,34 +117,73 @@ export class OrganizationController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update organization (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrganizationDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
     const organization = await this.organizationService.update(id, dto);
     return new SuccessResponse('Organization updated successfully', organization);
   }
 
-  @Delete(':id')
+  // ============================================
+  // Account Settings Endpoints
+  // ============================================
+
+  @Patch('settings/general')
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Delete organization (soft delete) (Super Admin only)' })
-  @ApiResponse({ status: 200, description: 'Organization deleted successfully' })
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update organization general information (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'General information updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.organizationService.softDelete(id);
-    return new SuccessResponse('Organization deleted successfully', { deleted: true });
+  @ApiResponse({ status: 409, description: 'Organization name already exists' })
+  async updateGeneralInfo(
+    @CurrentUser() user: CurrentUserType,
+    @Body() dto: UpdateGeneralInfoDto,
+  ) {
+    const organization = await this.organizationService.updateGeneralInfo(user.organizationId, dto);
+    return new SuccessResponse('General information updated successfully', organization);
   }
 
-  @Post(':id/restore')
+  @Patch('settings/social-links')
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
-  @ApiOperation({ summary: 'Restore deleted organization (Super Admin only)' })
-  @ApiResponse({ status: 200, description: 'Organization restored successfully' })
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update organization social links (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Social links updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async restore(@Param('id', ParseIntPipe) id: number) {
-    const organization = await this.organizationService.restore(id);
-    return new SuccessResponse('Organization restored successfully', organization);
+  async updateSocialLinks(
+    @CurrentUser() user: CurrentUserType,
+    @Body() dto: UpdateSocialLinksDto,
+  ) {
+    const organization = await this.organizationService.updateSocialLinks(user.organizationId, dto);
+    return new SuccessResponse('Social links updated successfully', organization);
+  }
+
+  @Patch('settings/branding')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update organization branding (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Branding updated successfully' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async updateBranding(
+    @CurrentUser() user: CurrentUserType,
+    @Body() dto: UpdateBrandingDto,
+  ) {
+    const organization = await this.organizationService.updateBranding(user.organizationId, dto);
+    return new SuccessResponse('Branding updated successfully', organization);
+  }
+
+  @Patch('settings/portal')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update issuer portal settings (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Portal settings updated successfully' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async updatePortalSettings(
+    @CurrentUser() user: CurrentUserType,
+    @Body() dto: UpdatePortalSettingsDto,
+  ) {
+    const organization = await this.organizationService.updatePortalSettings(user.organizationId, dto);
+    return new SuccessResponse('Portal settings updated successfully', organization);
   }
 }

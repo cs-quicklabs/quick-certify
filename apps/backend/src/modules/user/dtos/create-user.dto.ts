@@ -3,7 +3,6 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -20,17 +19,17 @@ export class CreateUserDto {
   @ApiProperty({ example: 'John', description: 'First name of the user' })
   @IsString()
   @IsNotEmpty({ message: 'First name is required' })
-  firstName: string;
+  firstName: string='';
 
   @ApiProperty({ example: 'Doe', description: 'Last name of the user' })
   @IsString()
   @IsNotEmpty({ message: 'Last name is required' })
-  lastName: string;
+  lastName: string='';
 
   @ApiProperty({ example: 'john.doe@example.com', description: 'Email address' })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
-  email: string;
+  email: string='';
 
   @ApiProperty({
     example: 'StrongP@ssw0rd!',
@@ -42,30 +41,30 @@ export class CreateUserDto {
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
     message: 'Password must include uppercase, lowercase, number, and special character',
   })
-  password: string;
+  password: string='';
 
   @ApiPropertyOptional({ example: '+1234567890', description: 'Phone number' })
   @IsString()
   @IsOptional()
-  phone?: string;
+  phone?: string='';
 
   @ApiPropertyOptional({ enum: Gender, description: 'Gender' })
   @IsEnum(Gender)
   @IsOptional()
-  gender?: Gender;
+  gender?: Gender=Gender.Male;
 
   @ApiPropertyOptional({ description: 'Profile picture URL' })
   @IsString()
   @IsOptional()
-  profilePicture?: string;
+  profilePicture?: string='';
 
-  @ApiProperty({ example: 1, description: 'Organization ID' })
-  @IsNumber()
+  @ApiProperty({ example: 'abc123', description: 'Organization ID (nanoid)' })
+  @IsString()
   @IsNotEmpty({ message: 'Organization ID is required' })
-  organizationId: number;
+  organizationId: string='';
 
-  @ApiProperty({ example: 1, description: 'User type ID' })
-  @IsNumber()
-  @IsNotEmpty({ message: 'User type ID is required' })
-  userTypeId: number;
+  @ApiProperty({ example: 'xyz789', description: 'Role ID (nanoid)' })
+  @IsString()
+  @IsNotEmpty({ message: 'Role ID is required' })
+  roleId: string='';
 }

@@ -4,3 +4,7 @@ export * from './refresh-token.dto';
 export * from './forgot-password.dto';
 export * from './reset-password.dto';
 export * from './change-password.dto';
+export * from './google-login.dto';
+export * from './google-signup-complete.dto';
+export * from './google-auth-init.dto';
+export * from './google-callback.dto';

@@ -17,7 +17,7 @@ import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard, OrganizationGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
-import { UserTypeEnum } from '@src/commons/enums';
+import { Role } from '@src/modules/role/enums';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -27,7 +27,7 @@ export class UserController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(UserTypeEnum.SUPER_ADMIN, UserTypeEnum.MANAGER)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @ApiResponse({ status: 200, description: 'Users list' })
   @ApiQuery({ name: 'page', required: false })
@@ -36,6 +36,14 @@ export class UserController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
   async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
+    // Super admin can see all users, admin can see only their organization
+    // if (user.role === 'super_admin') {
+    //   const result = pagination.search
+    //     ? await this.userService.searchUsers(user.organizationId, pagination.search, pagination)
+    //     : await this.userService.findAll(pagination);
+    //   return new SuccessResponse('Users retrieved successfully', result);
+    // }
+
     const result = pagination.search
       ? await this.userService.searchUsers(user.organizationId, pagination.search, pagination)
       : await this.userService.findAllByOrganization(user.organizationId, pagination);
@@ -51,7 +59,7 @@ export class UserController {
     // Admin can access their own org users, super admin can access all
     const foundUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      +user.organizationId,
     );
     if (!foundUser) {
       return new SuccessResponse('User not found', null);
@@ -61,7 +69,7 @@ export class UserController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(UserTypeEnum.SUPER_ADMIN, UserTypeEnum.MANAGER)
+  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
@@ -74,7 +82,7 @@ export class UserController {
 
   @Patch(':uuid')
   @UseGuards(RolesGuard, OrganizationGuard)
-  @Roles(UserTypeEnum.SUPER_ADMIN, UserTypeEnum.MANAGER)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Update user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -85,7 +93,7 @@ export class UserController {
   ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      +user.organizationId,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
@@ -97,14 +105,14 @@ export class UserController {
 
   @Delete(':uuid')
   @UseGuards(RolesGuard, OrganizationGuard)
-  @Roles(UserTypeEnum.SUPER_ADMIN, UserTypeEnum.MANAGER)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Delete user (soft delete) (Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      +user.organizationId,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
@@ -121,14 +129,14 @@ export class UserController {
 
   @Post(':uuid/restore')
   @UseGuards(RolesGuard)
-  @Roles(UserTypeEnum.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.ADMIN)
   @ApiOperation({ summary: 'Restore deleted user (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User restored successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async restore(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      +user.organizationId,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);

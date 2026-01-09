@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { PasswordService, TokenService, SessionService } from './services';
+import { PasswordService, TokenService, SessionService, GoogleOAuthService } from './services';
 import { JwtAuthGuard, RolesGuard } from './guards';
 import { EmailService } from '@src/commons/services';
 import {
   UserEntity,
-  UserTypeEntity,
+  RoleEntity,
   OrganizationEntity,
   SessionEntity,
   PasswordResetEntity,
@@ -25,7 +25,7 @@ import {
   imports: [
     SequelizeModule.forFeature([
       UserEntity,
-      UserTypeEntity,
+      RoleEntity,
       OrganizationEntity,
       SessionEntity,
       PasswordResetEntity,
@@ -37,6 +37,7 @@ import {
     PasswordService,
     TokenService,
     SessionService,
+    GoogleOAuthService,
 
     // Orchestrator service
     AuthService,

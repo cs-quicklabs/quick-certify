@@ -24,7 +24,7 @@ The migration creates all tables in the correct order:
 
 | Table            | Description                           |
 | ---------------- | ------------------------------------- |
-| `user_type`      | User roles (SUPER_ADMIN, ADMIN, USER) |
+| `role`           | User roles (super_admin, admin, manager, designer) |
 | `organization`   | Organizations for multi-tenancy       |
 | `user`           | User accounts                         |
 | `session`        | User authentication sessions          |
@@ -32,10 +32,10 @@ The migration creates all tables in the correct order:
 
 ## Initial Data Seeded
 
-The seeder populates:
+The seeders populate:
 
-- **User Types**: SUPER_ADMIN, ADMIN, USER
-- **Organization**: Default Organization
+- **Roles**: super_admin, admin, manager, designer (seeded in `20231201000002-seed-roles.ts`)
+- **Organization**: Default Organization (seeded in `20231201000001-seed-initial-data.ts`)
 
 ## Commands
 

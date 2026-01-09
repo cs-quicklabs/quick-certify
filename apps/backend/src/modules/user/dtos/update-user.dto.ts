@@ -33,10 +33,10 @@ export class UpdateUserDto {
   @IsOptional()
   profile_picture?: string;
 
-  @ApiPropertyOptional({ example: 1, description: 'User type ID' })
-  @IsNumber()
+  @ApiPropertyOptional({ example: 'xyz789', description: 'Role ID (nanoid)' })
+  @IsString()
   @IsOptional()
-  user_type_id?: number;
+  roleId?: string;
 
   @ApiPropertyOptional({ default: true, description: 'Whether notifications are enabled' })
   @IsBoolean()
