@@ -34,7 +34,7 @@ export const profileFormFields: FormFieldConfig[] = [
 export const passwordFormFields: FormFieldConfig[] = [
   {
     name: 'currentPassword',
-    label: 'Current Password',
+    label: 'Old Password',
     type: 'password',
     placeholder: '••••••••',
     required: true,
@@ -45,7 +45,7 @@ export const passwordFormFields: FormFieldConfig[] = [
     type: 'password',
     placeholder: '••••••••',
     required: true,
-    description: 'Must be at least 8 characters with uppercase, lowercase, and number',
+    description: '',
   },
   {
     name: 'confirmPassword',

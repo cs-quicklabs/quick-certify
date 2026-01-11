@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationEntity } from '@src/entities';
+import { StorageService } from '@src/commons/services';
 import {
   CreateOrganizationDto,
   UpdateOrganizationDto,
@@ -23,6 +24,7 @@ export class OrganizationService implements IOrganizationService {
   constructor(
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
+    private readonly storageService: StorageService,
   ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
@@ -230,6 +232,7 @@ export class OrganizationService implements IOrganizationService {
 
   /**
    * Update organization branding
+   * Deletes old images from storage when replaced
    */
   async updateBranding(id: string, dto: UpdateBrandingDto): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findOne({
@@ -240,9 +243,30 @@ export class OrganizationService implements IOrganizationService {
       throw new NotFoundException('Organization not found');
     }
 
+    // Delete old logo from storage if being replaced or removed
+    if (dto.logo_url !== undefined && organization.logo_url) {
+      if (dto.logo_url !== organization.logo_url || dto.logo_url === '') {
+        // Old logo is being replaced or removed
+        await this.storageService.deleteFileByUrl(organization.logo_url).catch(() => {
+          // Silently fail if deletion fails (file might not exist)
+        });
+      }
+    }
+
+    // Delete old favicon from storage if being replaced or removed
+    if (dto.favicon_url !== undefined && organization.favicon_url) {
+      if (dto.favicon_url !== organization.favicon_url || dto.favicon_url === '') {
+        // Old favicon is being replaced or removed
+        await this.storageService.deleteFileByUrl(organization.favicon_url).catch(() => {
+          // Silently fail if deletion fails (file might not exist)
+        });
+      }
+    }
+
+    // Convert empty strings to null for cleaner database storage
     await organization.update({
-      logo_url: dto.logo_url,
-      favicon_url: dto.favicon_url,
+      logo_url: dto.logo_url === '' ? null : dto.logo_url,
+      favicon_url: dto.favicon_url === '' ? null : dto.favicon_url,
     });
 
     return organization.reload();
@@ -250,6 +274,7 @@ export class OrganizationService implements IOrganizationService {
 
   /**
    * Update issuer portal settings
+   * Deletes old banner from storage when replaced
    */
   async updatePortalSettings(id: string, dto: UpdatePortalSettingsDto): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findOne({
@@ -260,8 +285,19 @@ export class OrganizationService implements IOrganizationService {
       throw new NotFoundException('Organization not found');
     }
 
+    // Delete old banner from storage if being replaced or removed
+    if (dto.banner_url !== undefined && organization.banner_url) {
+      if (dto.banner_url !== organization.banner_url || dto.banner_url === '') {
+        // Old banner is being replaced or removed
+        await this.storageService.deleteFileByUrl(organization.banner_url).catch(() => {
+          // Silently fail if deletion fails (file might not exist)
+        });
+      }
+    }
+
+    // Convert empty strings to null for cleaner database storage
     await organization.update({
-      banner_url: dto.banner_url,
+      banner_url: dto.banner_url === '' ? null : dto.banner_url,
       portal_enabled: dto.portal_enabled,
     });
 

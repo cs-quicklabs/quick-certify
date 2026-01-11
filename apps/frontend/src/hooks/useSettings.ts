@@ -27,25 +27,42 @@ async function fetchProfile(): Promise<ProfileSettingsData> {
   const user = response.data.data;
   return {
     firstName: user.firstName || '',
-    lastName: user.lastName || '',
+    lastName: user.lastName ?? undefined,
     email: user.email,
-    avatarUrl: user.avatarUrl,
+    avatarUrl: user.avatarUrl ?? undefined,
     signupMethod: user.signupMethod,
   };
 }
 
-async function updateProfile(data: Partial<ProfileSettingsData>): Promise<ProfileSettingsData> {
-  const response = await apiClient.patch<ApiResponse<UserProfile>>('/auth/me', {
+async function updateProfile(data: Partial<ProfileSettingsData & { avatarUrl?: string | null }>): Promise<ProfileSettingsData> {
+  const payload: Record<string, string | null | undefined> = {
     firstName: data.firstName,
-    lastName: data.lastName,
-    avatarUrl: data.avatarUrl,
-  });
+  };
+
+  // Only include optional fields if they have values (not null, not undefined, not empty string)
+  if (data.lastName !== null && data.lastName !== undefined && data.lastName !== '') {
+    payload.lastName = data.lastName;
+  }
+
+  // Handle avatarUrl: explicitly check if it's null (for deletion) or has a value
+  if ('avatarUrl' in data) {
+    // If avatarUrl is explicitly null, send null to delete
+    // If it's a string (even empty), send it (or convert empty to null)
+    // If it's undefined, don't include in payload
+    if (data.avatarUrl === null) {
+      payload.avatarUrl = null;
+    } else if (data.avatarUrl !== undefined) {
+      payload.avatarUrl = data.avatarUrl && data.avatarUrl.trim() !== '' ? data.avatarUrl : null;
+    }
+  }
+
+  const response = await apiClient.patch<ApiResponse<UserProfile>>('/auth/me', payload);
   const user = response.data.data;
   return {
     firstName: user.firstName || '',
-    lastName: user.lastName || '',
+    lastName: user.lastName ?? undefined,
     email: user.email,
-    avatarUrl: user.avatarUrl,
+    avatarUrl: user.avatarUrl ?? undefined,
     signupMethod: user.signupMethod,
   };
 }

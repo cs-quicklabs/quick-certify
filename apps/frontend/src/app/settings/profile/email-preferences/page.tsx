@@ -71,8 +71,8 @@ export default function EmailPreferencesPage() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="flex items-start mb-6">
-          <div className="flex items-center h-5">
+        <div className="flex items-start mb-6 align-center">
+          <div className="flex items-center h-7">
             <input
               id="enableAllAlerts"
               type="checkbox"

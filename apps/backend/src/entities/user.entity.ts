@@ -94,6 +94,12 @@ export class UserEntity extends BaseNanoidEntity {
   declare email_notifications: boolean;
 
   @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  declare avatar_url: string | null;
+
+  @Column({
     type: DataType.DATE,
     allowNull: true,
   })

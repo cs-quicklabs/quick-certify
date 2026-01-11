@@ -3,6 +3,7 @@ import { DatabaseConfig } from '../database/config/database-config.type';
 import { AuthConfig } from './auth.config';
 import { MailerConfigType } from './mailer.config';
 import { SmsConfigType } from './sms.config';
+import { StorageConfig } from './storage.config';
 
 export type AllConfigType = {
   app: AppConfig;
@@ -10,4 +11,5 @@ export type AllConfigType = {
   auth: AuthConfig;
   mailer: MailerConfigType;
   sms: SmsConfigType;
+  storage: StorageConfig;
 };

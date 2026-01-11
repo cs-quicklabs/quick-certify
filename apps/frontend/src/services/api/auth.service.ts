@@ -58,6 +58,7 @@ export interface User {
   email: string;
   firstName?: string;
   lastName?: string;
+  avatarUrl?: string | null;
   organizationId: string;
   roleId: string;
   role: string;

@@ -4,6 +4,7 @@ import { AppController } from './app/app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig from './database/config/database.config';
 import { authConfig, mailerConfig, smsConfig, appConfig } from './config';
+import storageConfig from './config/storage.config';
 import { AllConfigType } from './config/config.type';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { SequelizeConfigService } from './database/sequelize-config.service';
@@ -16,6 +17,7 @@ import { AuthModule, JwtAuthGuard, TokenService, SessionService } from './module
 import { UserModule } from './modules/user';
 import { OrganizationModule } from './modules/organization';
 import { RoleModule } from './modules/role';
+import { FileModule } from './modules/file';
 
 // Entities for guards
 import { SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
@@ -31,7 +33,7 @@ import { SessionEntity, UserEntity } from './entities';
   imports: [
     // Configuration
     ConfigModule.forRoot({
-      load: [appConfig, databaseConfig, authConfig, mailerConfig, smsConfig],
+      load: [appConfig, databaseConfig, authConfig, mailerConfig, smsConfig, storageConfig],
       isGlobal: true,
     }),
 
@@ -85,6 +87,7 @@ import { SessionEntity, UserEntity } from './entities';
     UserModule,
     OrganizationModule,
     RoleModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [

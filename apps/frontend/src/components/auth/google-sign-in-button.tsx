@@ -80,8 +80,8 @@ export function GoogleSignInButton({
       disabled={disabled || isLoading}
       className={clsx(
         'w-full inline-flex items-center justify-center gap-3',
-        'px-5 py-2.5 text-sm font-medium',
-        'text-gray-900 bg-white rounded-lg border border-gray-300',
+        'px-5 py-2 text-sm font-medium',
+        'text-gray-900 bg-white rounded-sm border border-gray-300',
         'hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100',
         'dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700',
         'transition-colors disabled:opacity-50 disabled:cursor-not-allowed',

@@ -649,7 +649,7 @@ export class AuthService implements IAuthService {
       firstName: user.first_name,
       lastName: user.last_name,
       fullName: user.full_name,
-      avatarUrl: null, // TODO: Add avatar_url field to user entity if needed
+      avatarUrl: user.avatar_url ?? null,
       signupMethod: user.auth_provider === 'google' ? 'google' : 'email',
       emailNotifications: user.email_notifications,
       role: user.role?.role,
@@ -678,10 +678,9 @@ export class AuthService implements IAuthService {
       updateData.last_name = dto.lastName;
     }
 
-    // TODO: Handle avatar URL if avatar_url field is added to entity
-    // if (dto.avatarUrl !== undefined) {
-    //   updateData.avatar_url = dto.avatarUrl;
-    // }
+    if (dto.avatarUrl !== undefined) {
+      updateData.avatar_url = dto.avatarUrl;
+    }
 
     await user.update(updateData);
 

@@ -3,11 +3,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/auth.store';
+import { useProfile } from '@/hooks/useSettings';
 
 export function Header() {
   const [menuOpened, setMenuOpened] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuthStore();
+  const { data: profile } = useProfile();
+
+  // Get avatar URL from profile (most up-to-date) or fallback to user or default
+  const avatarUrl =
+    profile?.avatarUrl || user?.avatarUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
 
   const handleSignOut = async () => {
     setMenuOpened(false);
@@ -132,7 +138,7 @@ export function Header() {
             <div className="flex items-center">
               <button
                 type="button"
-                className="shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                className="shrink-0 rounded-full  p-1 text-gray-400 hover:text-blue  focus:ring-2  focus:ring-offset-blue-800"
               >
                 <span className="sr-only">View notifications</span>
                 <svg
@@ -156,16 +162,16 @@ export function Header() {
                   <button
                     onClick={() => setMenuOpened(!menuOpened)}
                     type="button"
-                    className="flex rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                    className="flex rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 focus:ring-offset-blue-800"
                     id="user-menu-button"
                     aria-expanded="false"
                     aria-haspopup="true"
                   >
                     <span className="sr-only">Open user menu</span>
                     <img
-                      className="h-8 w-8 rounded-full"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      alt=""
+                      className="h-8 w-8 rounded-full object-cover"
+                      src={avatarUrl}
+                      alt={user?.firstName || 'User'}
                     />
                   </button>
                 </div>
@@ -296,9 +302,9 @@ export function Header() {
             <div className="flex items-center px-5">
               <div className="shrink-0">
                 <img
-                  className="h-10 w-10 rounded-full"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
+                  className="h-10 w-10 rounded-full object-cover"
+                  src={avatarUrl}
+                  alt={user?.firstName || 'User'}
                 />
               </div>
               <div className="ml-3">

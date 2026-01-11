@@ -18,17 +18,17 @@ export const generalInfoFormFields: FormFieldConfig[] = [
     label: 'Issuer Description',
     type: 'textarea',
     placeholder: 'Write a few words about your organization...',
-    description:
-      'This description will be displayed on each credential page under your organization\'s name.',
+    description: '',
     rows: 4,
+    tooltipText: 'Write a few words about your organization to let people know what you specialize in. This description will be displayed on each credential page under your organization’s name.',
   },
   {
     name: 'support_email',
     label: 'Support Email',
     type: 'email',
     placeholder: 'support@company.com',
-    description:
-      'Enter the preferred email address your recipients can use to contact you regarding changes or problems with their credential.',
+    description: '',
+    tooltipText: 'Enter the preferred email address your recipients can use to contact you regarding changes or problems with their credential.',
   },
   {
     name: 'slogan',
@@ -43,6 +43,8 @@ export const generalInfoFormFields: FormFieldConfig[] = [
     placeholder: '12345678',
     description:
       'To find your LinkedIn Company ID, open your company\'s profile being logged in as an admin, and copy the numbers before "/admin" in the URL.',
+    tooltipText: 'Providing the Linkedin Company ID ensures that all certificates your recipients add to their LinkedIn profiles will have your organization automatically selected as an issuer. ',
+    icon: 'linkedin',
   },
 ];
 
@@ -55,26 +57,30 @@ export const socialLinksFormFields: FormFieldConfig[] = [
   {
     name: 'linkedin_url',
     label: 'LinkedIn Profile Link',
-    type: 'url',
+    type: 'text',
     placeholder: 'https://linkedin.com/company/your-company',
+    icon: 'linkedin',
   },
   {
     name: 'facebook_url',
     label: 'Facebook Profile Link',
-    type: 'url',
+    type: 'text',
     placeholder: 'https://facebook.com/your-page',
+    icon: 'facebook',
   },
   {
     name: 'twitter_url',
     label: 'Twitter/X Profile Link',
-    type: 'url',
+    type: 'text',
     placeholder: 'https://twitter.com/your-handle',
+    icon: 'twitter',
   },
   {
     name: 'website',
     label: 'Website Link',
-    type: 'url',
+    type: 'text',
     placeholder: 'https://www.company.com',
+    icon: 'globe',
   },
 ];
 
