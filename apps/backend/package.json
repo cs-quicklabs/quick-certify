@@ -126,6 +126,7 @@
     }
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
     "@crownstack/mailer": "*",
     "@crownstack/sms": "*",
     "@nestjs/common": "^11.0.0",
@@ -159,6 +160,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/morgan": "^1.9.10",
+    "@types/multer": "^1.4.11",
     "@types/sequelize": "^4.28.20",
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.11",

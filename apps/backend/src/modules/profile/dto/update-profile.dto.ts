@@ -1,29 +1,45 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
+/**
+ * DTO for updating user profile
+ *
+ * Allows users to update their profile information
+ */
 export class UpdateProfileDto {
-  @ApiPropertyOptional({ example: 'John', description: 'First name of the user' })
+  @ApiPropertyOptional({ example: 'John', description: 'First name' })
   @IsString()
   @IsOptional()
-  first_name?: string;
+  @MaxLength(100, { message: 'First name must not exceed 100 characters' })
+  firstName?: string;
 
-  @ApiPropertyOptional({ example: 'Doe', description: 'Last name of the user' })
+  @ApiPropertyOptional({ example: 'Doe', description: 'Last name' })
   @IsString()
   @IsOptional()
-  last_name?: string;
+  @MaxLength(100, { message: 'Last name must not exceed 100 characters' })
+  lastName?: string;
 
-  @ApiPropertyOptional({ example: 'john.doe@example.com', description: 'Email address' })
-  @IsEmail()
-  @IsOptional()
-  email?: string;
-
-  @ApiPropertyOptional({ description: 'Profile picture URL' })
+  @ApiPropertyOptional({
+    example: 'https://example.com/avatar.jpg',
+    description: 'Avatar URL',
+  })
   @IsString()
   @IsOptional()
-  profile_picture?: string;
+  @MaxLength(500, { message: 'Avatar URL must not exceed 500 characters' })
+  avatarUrl?: string | null;
+}
 
-  @ApiPropertyOptional({ default: true, description: 'Whether notifications are enabled' })
+/**
+ * DTO for updating email preferences
+ *
+ * Allows users to update their email notification settings
+ */
+export class UpdateEmailPreferencesDto {
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Enable or disable all email notifications',
+  })
   @IsBoolean()
   @IsOptional()
-  is_notifications_enabled?: boolean;
+  emailNotifications?: boolean;
 }

@@ -38,8 +38,8 @@ export class UpdateUserDto {
   @IsOptional()
   roleId?: string;
 
-  @ApiPropertyOptional({ default: true, description: 'Whether notifications are enabled' })
+  @ApiPropertyOptional({ default: true, description: 'Whether email notifications are enabled' })
   @IsBoolean()
   @IsOptional()
-  is_notifications_enabled?: boolean;
+  is_email_notifications_enabled?: boolean;
 }

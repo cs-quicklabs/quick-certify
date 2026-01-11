@@ -13,7 +13,6 @@ import { OrganizationEntity } from '@src/entities/organization.entity';
 import { PasswordService, SessionService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
 import { CurrentUser } from '../auth/interfaces';
-import { UserTypeEnum } from '@src/commons/enums';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
 
@@ -106,7 +105,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  async create(dto: CreateUserDto, currentUser?: CurrentUser): Promise<UserEntity> {
+  override async create(dto: CreateUserDto, currentUser?: CurrentUser): Promise<UserEntity> {
     // Check if email belongs to a deactivated/archived user
     await this.validateEmailNotDeactivated(dto.email);
 
@@ -135,7 +134,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       organization_id: dto.organizationId,
       role_id: dto.roleId,
       status: 'active',
-      email_notifications: true,
+      is_email_notifications_enabled: true,
     });
 
     // Send welcome email (fire and forget)
@@ -310,9 +309,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     if (dto.first_name) updateData.first_name = dto.first_name;
     if (dto.last_name) updateData.last_name = dto.last_name;
     if (dto.email) updateData.email = dto.email.toLowerCase();
-    if (dto.profile_picture !== undefined) updateData.profile_picture = dto.profile_picture;
-    if (dto.is_notifications_enabled !== undefined)
-      updateData.is_notifications_enabled = dto.is_notifications_enabled;
+    if (dto.profile_picture !== undefined) updateData.avatar_url = dto.profile_picture;
+    if (dto.is_email_notifications_enabled !== undefined)
+      updateData.is_email_notifications_enabled = dto.is_email_notifications_enabled;
     if (dto.email !== undefined) updateData.email = dto.email.toLowerCase();
     if (dto.roleId !== undefined) updateData.role_id = dto.roleId;
 

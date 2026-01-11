@@ -16,10 +16,15 @@ const sizeClasses = {
 };
 
 export function Logo({ size = 'md', className, asLink = true }: LogoProps) {
+
+  const title = "Quick Certify";
+  const logo = "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg";
+
   const content = (
-    <div className={clsx('flex items-center gap-2', className)}>
+    <div className={clsx('flex items-center', className)}>
+
       {/* Logo Icon */}
-      <svg
+      {/* <svg
         className={clsx('text-primary-600', {
           'w-6 h-6': size === 'sm',
           'w-8 h-8': size === 'md',
@@ -37,15 +42,16 @@ export function Logo({ size = 'md', className, asLink = true }: LogoProps) {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-      </svg>
+      </svg> */}
       {/* Logo Text */}
+      <img className="w-8 h-8 mr-2" src={logo} alt="logo" />
       <span
         className={clsx(
           'font-bold text-gray-900 dark:text-white',
           sizeClasses[size],
         )}
       >
-        Quick Certify
+        {title}
       </span>
     </div>
   );

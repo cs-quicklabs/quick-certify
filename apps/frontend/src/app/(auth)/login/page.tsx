@@ -11,11 +11,6 @@ import { authService } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
 
-/**
- * Login Page
- *
- * Based on design: https://designs.quicklabs.in/quick-certify/login
- */
 export default function LoginPage() {
   const router = useRouter();
   const { setUser } = useAuthStore();
@@ -74,7 +69,7 @@ export default function LoginPage() {
       )}
 
       {/* Login Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-4">
         {/* Email Field */}
         <Input
           label="Your email"
@@ -95,7 +90,7 @@ export default function LoginPage() {
         />
 
         {/* Remember Me & Forgot Password */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between ">
           <Checkbox label="Remember me" {...register('rememberMe')} />
           <Link
             href="/forgot-password"
@@ -119,11 +114,11 @@ export default function LoginPage() {
         <GoogleSignInButton mode="login" disabled={isSubmitting} />
 
         {/* Sign Up Link */}
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+        <p className="flex justify-center text-sm font-light text-gray-500 dark:text-gray-400">
           Don&apos;t have an account yet?{' '}
           <Link
             href="/signup"
-            className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+            className="ml-1 font-medium text-primary-600 hover:underline dark:text-primary-500"
           >
             Sign up
           </Link>

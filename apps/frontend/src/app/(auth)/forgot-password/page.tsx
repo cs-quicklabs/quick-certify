@@ -66,11 +66,8 @@ export default function ForgotPasswordPage() {
     <div className="p-6 sm:p-8">
       {/* Header */}
       <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
-        Forgot your password?
+        Forgot password?
       </h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        No worries! Enter your email and we&apos;ll send you a reset link.
-      </p>
 
       {/* Server Error Alert */}
       {serverError && (
@@ -85,7 +82,7 @@ export default function ForgotPasswordPage() {
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
-          label="Your email"
+          label="Enter email to recover password"
           type="email"
           placeholder="name@company.com"
           error={errors.email?.message}
@@ -93,7 +90,7 @@ export default function ForgotPasswordPage() {
         />
 
         <Button type="submit" fullWidth isLoading={isSubmitting}>
-          Send reset link
+          Send Reset Password Instruction
         </Button>
       </form>
 
@@ -104,7 +101,7 @@ export default function ForgotPasswordPage() {
           className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to login
+          Return Back to Login
         </Link>
       </div>
     </div>

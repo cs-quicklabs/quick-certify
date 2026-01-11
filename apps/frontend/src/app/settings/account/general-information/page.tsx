@@ -22,26 +22,48 @@ export default function GeneralInformationPage() {
 
     if (settings.issuer_verified) {
       return (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
-          <div className="flex items-center">
-            <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <p className="text-green-700 text-sm font-medium">Your issuer status has been verified.</p>
+        <div
+          className="flex items-center p-2.5 mb-4 text-sm text-green-800 border border-green-300 rounded-sm bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:border-green-800"
+          role="alert">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            className="lucide lucide-circle-check shrink-0 inline w-4 h-4 me-2"
+          ><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+          <span className="sr-only">Info</span>
+          <div>
+            <span className="font-medium"></span> Your issuer status has been verified.
           </div>
         </div>
       );
     }
 
     return (
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
-        <div className="flex items-center">
-          <svg className="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-          <p className="text-blue-700 text-sm font-medium">
-            Your issuer status is currently unverified. It will be verified within next few days but this will not affect any operations till then.
-          </p>
+      <div
+        className="flex items-center p-2.5 mb-4 text-sm text-yellow-800 border border-yellow-300 rounded-sm bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 dark:border-yellow-800"
+        role="alert">
+        <svg
+          className="lucide lucide-triangle-alert shrink-0 inline w-4 h-4 me-2"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        ><path
+            d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path
+            d="M12 9v4" /><path d="M12 17h.01" /></svg>
+        <span className="sr-only">Info</span>
+        <div>
+          <span className="font-medium"></span> Your issuer status is currently unverified. It will be verified
+          within next few days but this will not affect any operations till then.
         </div>
       </div>
     );
@@ -67,12 +89,12 @@ export default function GeneralInformationPage() {
   // Prepare initial values from settings
   const initialValues = settings
     ? {
-        name: settings.name || '',
-        description: settings.description || '',
-        support_email: settings.support_email || '',
-        slogan: settings.slogan || '',
-        linkedin_company_id: settings.linkedin_company_id || '',
-      }
+      name: settings.name || '',
+      description: settings.description || '',
+      support_email: settings.support_email || '',
+      slogan: settings.slogan || '',
+      linkedin_company_id: settings.linkedin_company_id || '',
+    }
     : undefined;
 
   return (

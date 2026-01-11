@@ -82,23 +82,23 @@ export class UserEntity extends BaseNanoidEntity {
   declare status: 'active' | 'inactive' | 'invited' | 'archived';
 
   @Column({
+    type: DataType.STRING(500),
+    allowNull: true,
+  })
+  declare avatar_url: string | null;
+
+  @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
   })
-  declare email_notifications: boolean;
+  declare is_email_notifications_enabled: boolean;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
   declare deleted_at: Date | null;
-
-  @Column({
-    type: DataType.BOOLEAN,
-    allowNull: true,
-  })
-  declare is_notifications_enabled: boolean;
 
   @Column({
     type: DataType.DATE,

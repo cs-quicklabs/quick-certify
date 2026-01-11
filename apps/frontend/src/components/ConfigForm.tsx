@@ -6,6 +6,9 @@ import { formatZodErrors } from '../lib/validation';
 import { getApiErrorMessage, getApiFieldErrors } from '../lib/api-error';
 import { FormFieldConfig, FormConfig } from '../types/form.types';
 import { validateImageFile } from '../schemas/settings.schema';
+import { InfoTooltip, ConfirmationDialog } from './ui';
+import { replaceImage } from '../lib/image-upload';
+import { FileCategory } from '../services/api/file.service';
 
 interface ConfigFormProps<T extends z.ZodObject<z.ZodRawShape>> {
   config: FormConfig<T>;
@@ -18,7 +21,15 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   initialValues = {},
   isLoading = false,
 }: ConfigFormProps<T>) {
-  const [formData, setFormData] = useState<Record<string, unknown>>(initialValues);
+  // Sanitize initial values: convert null to undefined for schema compatibility
+  const sanitizedInitialValues = Object.entries(initialValues).reduce(
+    (acc, [key, value]) => {
+      acc[key] = value === null ? undefined : value;
+      return acc;
+    },
+    {} as Record<string, unknown>,
+  );
+  const [formData, setFormData] = useState<Record<string, unknown>>(sanitizedInitialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -27,14 +38,33 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   // Update form data when initialValues changes (e.g., after data fetch)
   useEffect(() => {
     if (initialValues && Object.keys(initialValues).length > 0) {
-      setFormData(initialValues);
+      // Sanitize null values to undefined or empty strings for schema validation
+      const sanitizedValues = Object.entries(initialValues).reduce(
+        (acc, [key, value]) => {
+          acc[key] = value === null ? undefined : value;
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+      setFormData(sanitizedValues);
     }
   }, [initialValues]);
+
+  // Auto-hide success message after 3 seconds
+  useEffect(() => {
+    if (submitSuccess) {
+      const timer = setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [submitSuccess]);
 
   // Image upload state
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = useCallback(
@@ -78,12 +108,65 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
     });
   };
 
-  const handleImageUpload = () => {
-    if (selectedImage && imagePreview) {
-      // In a real app, you'd upload the file to a server and get a URL back
-      // For now, we'll use the preview URL
-      setFormData((prev) => ({ ...prev, avatarUrl: imagePreview }));
-      setSelectedImage(null);
+  const handleImageUpload = async () => {
+    if (!selectedImage) return;
+
+    setIsUploadingImage(true);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.avatarUrl;
+      return newErrors;
+    });
+
+    try {
+      // Determine category based on field name
+      const category: FileCategory = 'avatar';
+      const currentImageUrl = formData.avatarUrl as string | undefined;
+
+      // Upload image (and replace old one if exists)
+      const result = await replaceImage(
+        {
+          file: selectedImage,
+          category,
+        },
+        currentImageUrl,
+      );
+
+      if (result.success && result.url) {
+        setFormData((prev) => ({ ...prev, avatarUrl: result.url }));
+
+        // Call onImageUpload callback if provided to save to DB immediately
+        if (config.onImageUpload) {
+          try {
+            await config.onImageUpload('avatarUrl', result.url);
+          } catch (error) {
+            // If callback fails, show error but don't prevent form update
+            console.error('Failed to save image URL:', error);
+            setErrors((prev) => ({
+              ...prev,
+              avatarUrl: getApiErrorMessage(error, 'Image uploaded but failed to save URL'),
+            }));
+          }
+        }
+
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          avatarUrl: result.error || 'Failed to upload image',
+        }));
+      }
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        avatarUrl: getApiErrorMessage(error, 'Failed to upload image'),
+      }));
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -99,13 +182,27 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
     setShowDeleteConfirm(true);
   };
 
-  const confirmImageDelete = () => {
-    setFormData((prev) => ({ ...prev, avatarUrl: '' }));
+  const confirmImageDelete = async () => {
+    setFormData((prev) => ({ ...prev, avatarUrl: undefined }));
     setSelectedImage(null);
     setImagePreview(null);
     setShowDeleteConfirm(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+
+    // Call onImageDelete callback if provided to save to DB immediately
+    if (config.onImageDelete) {
+      try {
+        await config.onImageDelete('avatarUrl');
+      } catch (error) {
+        // If callback fails, show error
+        console.error('Failed to delete image URL:', error);
+        setErrors((prev) => ({
+          ...prev,
+          avatarUrl: getApiErrorMessage(error, 'Failed to delete image from database'),
+        }));
+      }
     }
   };
 
@@ -142,6 +239,94 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
     }
   };
 
+  const renderFieldLabel = (field: FormFieldConfig) => (
+    <div className="flex items-center gap-2">
+      <label htmlFor={field.name} className="form-input-label">
+        {field.label}
+      </label>
+      {field.tooltipText && (
+        <InfoTooltip
+          tooltipText={field.tooltipText}
+          id={`tooltip-${field.name}`}
+        />
+      )}
+    </div>
+  );
+
+  const renderFieldIcon = (field: FormFieldConfig) => {
+    switch (field.icon) {
+      case 'linkedin':
+        return <span
+          className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-e-0 border-gray-300 border-e-0 rounded-s-sm dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-linkedin w-4 h-4 text-gray-500 dark:text-gray-400">
+            <path
+              d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+            <rect
+              width="4"
+              height="12"
+              x="2"
+              y="9" />
+            <circle cx="4" cy="4" r="2" />
+          </svg>
+        </span>
+      case 'facebook':
+        return <span
+          className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-e-0 border-gray-300 border-e-0 rounded-s-sm dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-facebook w-4 h-4 text-gray-500 dark:text-gray-400"
+          ><path
+              d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+        </span>
+      case 'twitter':
+        return <span
+          className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-e-0 border-gray-300 border-e-0 rounded-s-sm dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-twitter w-4 h-4 text-gray-500 dark:text-gray-400"
+          ><path
+              d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" /></svg>
+        </span>
+      case 'globe':
+        return <span
+          className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-e-0 border-gray-300 border-e-0 rounded-s-sm dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-globe w-4 h-4 text-gray-500 dark:text-gray-400"
+          ><circle cx="12" cy="12" r="10" /><path
+              d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path
+              d="M2 12h20" /></svg>
+        </span>
+
+      default:
+        return null;
+    }
+  };
+
   const renderField = (field: FormFieldConfig) => {
     const value = formData[field.name] ?? '';
     const error = errors[field.name];
@@ -168,9 +353,18 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
               />
             </div>
             <div className="ms-2 text-sm">
-              <label htmlFor={field.name} className="form-input-label">
-                {field.label}
-              </label>
+              <div className="flex items-center gap-2">
+                <label htmlFor={field.name} className="form-input-label">
+                  {field.label}
+                </label>
+                {field.tooltipText && (
+                  <InfoTooltip
+                    tooltipText={field.tooltipText}
+                    id={`tooltip-${field.name}`}
+                    iconSize={14}
+                  />
+                )}
+              </div>
               {field.description && (
                 <p className="form-input-description -mt-2">{field.description}</p>
               )}
@@ -181,9 +375,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       case 'select':
         return (
           <div key={field.name}>
-            <label htmlFor={field.name} className="form-input-label">
-              {field.label}
-            </label>
+            {renderFieldLabel(field)}
             <select
               id={field.name}
               name={field.name}
@@ -207,9 +399,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       case 'textarea':
         return (
           <div key={field.name}>
-            <label htmlFor={field.name} className="form-input-label">
-              {field.label}
-            </label>
+            {renderFieldLabel(field)}
             <textarea
               id={field.name}
               name={field.name}
@@ -231,7 +421,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
         return (
           <div key={field.name} className="sm:col-span-2">
-            <label className="form-input-label">{field.label}</label>
+            {renderFieldLabel(field)}
             <div className="items-center w-full">
               {/* Image with hover edit icon */}
               <div className="relative inline-block group">
@@ -278,14 +468,16 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
                   <button
                     type="button"
                     onClick={handleImageUpload}
-                    className="btn-primary text-xs px-3 py-1"
+                    disabled={isUploadingImage}
+                    className="btn-primary text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Upload
+                    {isUploadingImage ? 'Uploading...' : 'Upload'}
                   </button>
                   <button
                     type="button"
                     onClick={handleImageCancel}
-                    className="btn-secondary text-xs px-3 py-1"
+                    disabled={isUploadingImage}
+                    className="btn-secondary text-xs px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -312,35 +504,18 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
               )}
 
               {/* Delete confirmation modal */}
-              {showDeleteConfirm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-                    <h3 className="text-lg font-semibold mb-2">Delete Profile Image?</h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      Are you sure you want to remove your profile image? This will revert to the
-                      default image.
-                    </p>
-                    <div className="flex gap-3 justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="btn-secondary text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={confirmImageDelete}
-                        className="btn-red text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <ConfirmationDialog
+                isOpen={showDeleteConfirm}
+                title="Delete Profile Image?"
+                message="Are you sure you want to remove your profile image? This will revert to the default image."
+                confirmLabel="Delete"
+                cancelLabel="Cancel"
+                confirmVariant="danger"
+                onConfirm={confirmImageDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+              />
             </div>
-            <p className="form-input-description mt-2">PNG, JPG, or JPEG (max 1MB)</p>
+            {/* <p className="form-input-description mt-2">PNG, JPG, or JPEG (max 1MB)</p> */}
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           </div>
         );
@@ -349,20 +524,21 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       default:
         return (
           <div key={field.name}>
-            <label htmlFor={field.name} className="form-input-label">
-              {field.label}
-            </label>
-            <input
-              id={field.name}
-              name={field.name}
-              type={field.type}
-              value={String(value)}
-              onChange={handleChange}
-              placeholder={field.placeholder}
-              disabled={isDisabled}
-              required={field.required}
-              className="form-input-field"
-            />
+            {renderFieldLabel(field)}
+            <div className="flex">
+              {renderFieldIcon(field)}
+              <input
+                id={field.name}
+                name={field.name}
+                type={field.type}
+                value={String(value)}
+                onChange={handleChange}
+                placeholder={field.placeholder}
+                disabled={isDisabled}
+                required={field.required}
+                className="form-input-field"
+              />
+            </div>
             {field.description && <p className="form-input-description">{field.description}</p>}
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           </div>
