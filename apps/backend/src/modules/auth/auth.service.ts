@@ -19,8 +19,6 @@ import {
   ChangePasswordDto,
   GoogleLoginDto,
   GoogleSignupCompleteDto,
-  UpdateProfileDto,
-  UpdateEmailPreferencesDto,
 } from './dtos';
 import { JwtTokens, IAuthService } from './interfaces';
 import { PasswordService, TokenService, SessionService, GoogleOAuthService, GoogleUserInfo } from './services';
@@ -131,7 +129,7 @@ export class AuthService implements IAuthService {
       organization_id: organization.id,
       role_id: superAdminRole.id,
       status: 'active',
-      email_notifications: true,
+      is_email_notifications_enabled: true,
     });
 
     this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
@@ -544,7 +542,7 @@ export class AuthService implements IAuthService {
       organization_id: organization.id,
       role_id: superAdminRole.id,
       status: 'active',
-      email_notifications: true,
+      is_email_notifications_enabled: true,
     });
 
     this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
@@ -631,99 +629,6 @@ export class AuthService implements IAuthService {
     return this.createSessionAndTokens(user, ipAddress, userAgent);
   }
 
-  /**
-   * Get full user profile with additional details
-   */
-  async getFullProfile(userId: string) {
-    const user = await this.userModel.findByPk(userId, {
-      include: [{ model: RoleEntity, as: 'role' }],
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      fullName: user.full_name,
-      avatarUrl: user.avatar_url ?? null,
-      signupMethod: user.auth_provider === 'google' ? 'google' : 'email',
-      emailNotifications: user.email_notifications,
-      role: user.role?.role,
-      status: user.status,
-      lastLoginAt: user.last_login_at,
-    };
-  }
-
-  /**
-   * Update user profile
-   */
-  async updateProfile(userId: string, dto: UpdateProfileDto) {
-    const user = await this.userModel.findByPk(userId);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const updateData: Partial<UserEntity> = {};
-
-    if (dto.firstName !== undefined) {
-      updateData.first_name = dto.firstName;
-    }
-
-    if (dto.lastName !== undefined) {
-      updateData.last_name = dto.lastName;
-    }
-
-    if (dto.avatarUrl !== undefined) {
-      updateData.avatar_url = dto.avatarUrl;
-    }
-
-    await user.update(updateData);
-
-    return {
-      message: 'Profile updated successfully',
-      user: await this.getFullProfile(userId),
-    };
-  }
-
-  /**
-   * Update email preferences
-   */
-  async updateEmailPreferences(userId: string, dto: UpdateEmailPreferencesDto) {
-    const user = await this.userModel.findByPk(userId);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    if (dto.emailNotifications !== undefined) {
-      await user.update({ email_notifications: dto.emailNotifications });
-    }
-
-    return {
-      message: 'Email preferences updated successfully',
-      emailNotifications: user.email_notifications,
-    };
-  }
-
-  /**
-   * Get email preferences
-   */
-  async getEmailPreferences(userId: string) {
-    const user = await this.userModel.findByPk(userId);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return {
-      emailNotifications: user.email_notifications,
-    };
-  }
 
   private createTempGoogleToken(googleUser: GoogleUserInfo): string {
     const tempToken = `temp_${generateNanoid()}`;

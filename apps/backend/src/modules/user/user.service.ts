@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
@@ -7,6 +12,9 @@ import { RoleEntity } from '@src/entities/role.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { PasswordService, SessionService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
+import { CurrentUser } from '../auth/interfaces';
+import { EmailService } from '@src/commons/services';
+import { Role } from '../role/enums';
 
 /**
  * User Service
@@ -30,6 +38,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     @InjectModel(OrganizationEntity)
     private readonly organizationModel: typeof OrganizationEntity,
     private readonly passwordService: PasswordService,
+    private readonly mailService: EmailService,
     private readonly sessionService: SessionService,
   ) {
     super();
@@ -96,7 +105,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  override async create(dto: CreateUserDto): Promise<UserEntity> {
+  override async create(dto: CreateUserDto, currentUser?: CurrentUser): Promise<UserEntity> {
     // Check if email belongs to a deactivated/archived user
     await this.validateEmailNotDeactivated(dto.email);
 
@@ -107,7 +116,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     await this.validateOrganization(dto.organizationId);
 
     // Validate role
-    await this.validateRole(dto.roleId);
+    const role = await this.validateRole(dto.roleId);
+
+    // Super admin users can only be created by super admin users
+    if (currentUser?.role !== Role.SUPER_ADMIN && role.role === Role.SUPER_ADMIN) {
+      throw new ForbiddenException('You are not authorized to create a super admin user.');
+    }
 
     // Hash password using injected service (DIP)
     const hashedPassword = await this.passwordService.hash(dto.password);
@@ -120,8 +134,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       organization_id: dto.organizationId,
       role_id: dto.roleId,
       status: 'active',
-      email_notifications: true,
+      is_email_notifications_enabled: true,
     });
+
+    // Send welcome email (fire and forget)
+    this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
 
     return this.findOne(user.id) as Promise<UserEntity>;
   }
@@ -186,9 +203,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  override async findOneByOrganization(id: string, organizationId: string): Promise<UserEntity | null> {
+  async findOneByUuidAndOrganization(
+    uuid: string,
+    organizationId: number,
+  ): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { id, organization_id: organizationId, status: { [Op.ne]: 'archived' } },
+      where: { uuid, organization_id: organizationId, deleted_at: null },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
@@ -241,7 +261,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       },
     });
 
-    if (existingUser && (existingUser.status === 'archived' || existingUser.status === 'inactive')) {
+    if (
+      existingUser &&
+      (existingUser.status === 'archived' || existingUser.status === 'inactive')
+    ) {
       throw new ConflictException(
         'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
       );
@@ -272,18 +295,23 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  private async validateRole(roleId: string): Promise<void> {
+  private async validateRole(roleId: string): Promise<RoleEntity> {
     const role = await this.roleModel.findByPk(roleId);
     if (!role) {
       throw new NotFoundException('Role not found');
     }
+    return role;
   }
 
   private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {
     const updateData: Partial<UserEntity> = {};
 
-    if (dto.firstName !== undefined) updateData.first_name = dto.firstName;
-    if (dto.lastName !== undefined) updateData.last_name = dto.lastName;
+    if (dto.first_name) updateData.first_name = dto.first_name;
+    if (dto.last_name) updateData.last_name = dto.last_name;
+    if (dto.email) updateData.email = dto.email.toLowerCase();
+    if (dto.profile_picture !== undefined) updateData.avatar_url = dto.profile_picture;
+    if (dto.is_email_notifications_enabled !== undefined)
+      updateData.is_email_notifications_enabled = dto.is_email_notifications_enabled;
     if (dto.email !== undefined) updateData.email = dto.email.toLowerCase();
     if (dto.roleId !== undefined) updateData.role_id = dto.roleId;
 

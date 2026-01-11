@@ -6,7 +6,7 @@ import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { AuthModule } from '@src/modules/auth';
-
+import { EmailService } from '@src/commons/services';
 /**
  * User Module
  *
@@ -18,7 +18,7 @@ import { AuthModule } from '@src/modules/auth';
     AuthModule, // For PasswordService
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, EmailService],
   exports: [UserService],
 })
 export class UserModule {}

@@ -9,7 +9,7 @@ import { AllConfigType } from './config/config.type';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { SequelizeConfigService } from './database/sequelize-config.service';
 import { MailerModule } from '@crownstack/mailer';
-import { SmsModule } from '@crownstack/sms';
+// import { SmsModule } from '@crownstack/sms';
 import { EmailService } from '@src/commons/services';
 
 // Modules
@@ -22,6 +22,7 @@ import { FileModule } from './modules/file';
 // Entities for guards
 import { SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
 import { SessionEntity, UserEntity } from './entities';
+import { ProfileModule } from './modules/profile/profile.module';
 
 /**
  * Application Root Module
@@ -66,26 +67,27 @@ import { SessionEntity, UserEntity } from './entities';
       inject: [ConfigService],
     }),
 
+    // TODO: Disabled for now
     // SMS Package (only for sending)
-    SmsModule.forRootAsync({
-      isGlobal: true,
-      useFactory: (...args: unknown[]) => {
-        const configService = args[0] as ConfigService<AllConfigType>;
-        const smsCfg = configService.getOrThrow('sms', { infer: true });
-        return {
-          accountSid: smsCfg.accountSid,
-          authToken: smsCfg.authToken,
-          fromNumber: smsCfg.fromNumber,
-          previewMode: smsCfg.previewMode,
-        };
-      },
-      inject: [ConfigService],
-    }),
+    // SmsModule.forRootAsync({
+    //   isGlobal: true,
+    //   useFactory: (configService: ConfigService<AllConfigType>) => {
+    //     const smsCfg = configService.getOrThrow('sms', { infer: true });
+    //     return {
+    //       accountSid: smsCfg.accountSid,
+    //       authToken: smsCfg.authToken,
+    //       fromNumber: smsCfg.fromNumber,
+    //       previewMode: smsCfg.previewMode,
+    //     };
+    //   },
+    //   inject: [ConfigService],
+    // }),
 
     // Feature Modules
     AuthModule,
     UserModule,
     OrganizationModule,
+    ProfileModule,
     RoleModule,
     FileModule,
   ],

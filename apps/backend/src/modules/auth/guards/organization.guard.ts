@@ -26,10 +26,12 @@ export class OrganizationGuard implements CanActivate {
       return true;
     }
 
+    // const orgIdNumber = parseInt(requestOrgId, 10);
+    // TODO: Uncomment this when we have a system level super admin
     // Super admins can access any organization (you might want to customize this)
-    if (user.role === 'super_admin') {
-      return true;
-    }
+    // if (user.userTypeCode === 'SUPER_ADMIN') {
+    //   return true;
+    // }
 
     // Check if user belongs to the requested organization
     if (user.organizationId !== requestOrgId) {
