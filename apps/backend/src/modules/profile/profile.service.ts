@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { UserEntity, RoleEntity } from '@src/entities';
+import { UserEntity, RoleEntity, OrganizationEntity } from '@src/entities';
 import { UpdateProfileDto, UpdateEmailPreferencesDto } from './dto';
 
 /**
@@ -23,7 +23,11 @@ export class ProfileService {
    */
   async getFullProfile(userId: string) {
     const user = await this.userModel.findByPk(userId, {
-      include: [{ model: RoleEntity, as: 'role' }],
+      include: [
+        { model: RoleEntity, attributes: ['id', 'role'] },
+        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
+      ],
+      attributes: { exclude: ['password_hash'] },
     });
 
     if (!user) {
@@ -37,9 +41,11 @@ export class ProfileService {
       lastName: user.last_name,
       fullName: user.full_name,
       avatarUrl: user.avatar_url ?? null,
+      organizationId: user.organization_id,
+      roleId: user.role_id,
+      role: user.role?.role || '',
       signupMethod: user.auth_provider === 'google' ? 'google' : 'email',
       emailNotifications: user.is_email_notifications_enabled,
-      role: user.role?.role,
       status: user.status,
       lastLoginAt: user.last_login_at,
     };
