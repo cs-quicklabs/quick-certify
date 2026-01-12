@@ -149,10 +149,8 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    if (user.status === 'archived') {
-      throw new UnauthorizedException(
-        'Your account is deactivated. For more queries reach out to admin.',
-      );
+    if (user.status === 'archived' || user.status === 'inactive') {
+      throw new UnauthorizedException('Your account is deactivated. Please connect with your admin.');
     }
 
     if (user.status !== 'active') {

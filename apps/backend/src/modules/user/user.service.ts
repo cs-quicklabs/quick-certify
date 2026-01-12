@@ -29,6 +29,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   protected override readonly model = UserEntity;
   protected override readonly entityName = 'User';
   protected override readonly softDeleteField: string | null = null; // Use status field instead
+  protected override readonly defaultSortField: string = 'last_login_at';
+  protected override readonly defaultSortOrder: 'ASC' | 'DESC' = 'DESC';
 
   constructor(
     @InjectModel(UserEntity)
@@ -106,14 +108,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   }
 
   override async create(dto: CreateUserDto, currentUser?: CurrentUser): Promise<UserEntity> {
-    // Check if email belongs to a deactivated/archived user
-    await this.validateEmailNotDeactivated(dto.email);
-
-    // Validate email uniqueness
+    // Validate email uniqueness globally (across all organizations)
     await this.validateEmailUniqueness(dto.email);
 
     // Validate organization
-    await this.validateOrganization(dto.organizationId);
+    const organization = await this.validateOrganization(dto.organizationId);
 
     // Validate role
     const role = await this.validateRole(dto.roleId);
@@ -123,8 +122,15 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       throw new ForbiddenException('You are not authorized to create a super admin user.');
     }
 
-    // Hash password using injected service (DIP)
-    const hashedPassword = await this.passwordService.hash(dto.password);
+    // Determine if this is an invitation (no password provided)
+    const isInvitation = !dto.password;
+    const status = isInvitation ? 'invited' : 'active';
+
+    // Hash password if provided
+    let hashedPassword: string | null = null;
+    if (dto.password) {
+      hashedPassword = await this.passwordService.hash(dto.password);
+    }
 
     const user = await this.userModel.create({
       first_name: dto.firstName,
@@ -133,12 +139,26 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       password_hash: hashedPassword,
       organization_id: dto.organizationId,
       role_id: dto.roleId,
-      status: 'active',
+      status,
       is_email_notifications_enabled: true,
     });
 
-    // Send welcome email (fire and forget)
-    this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+    // Send invitation email if invitation, otherwise welcome email
+    if (isInvitation) {
+      const inviterName = currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
+        : 'Administrator';
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.uuid}`;
+      this.mailService
+        .sendInvitationEmail(user.email, {
+          inviterName,
+          organizationName: organization.name,
+          inviteLink,
+        })
+        .catch(console.error);
+    } else {
+      this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+    }
 
     return this.findOne(user.id) as Promise<UserEntity>;
   }
@@ -146,6 +166,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   override async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
     const previousRoleId = user.role_id;
+    const previousStatus = user.status;
 
     // Validate email if changing
     if (dto.email && dto.email.toLowerCase() !== user.email) {
@@ -162,6 +183,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // If role changed, logout user from all devices (force re-login)
     if (dto.roleId && dto.roleId !== previousRoleId) {
+      await this.logoutUserFromAllDevices(user.id);
+    }
+
+    // If status changed to inactive, logout user from all devices
+    if (dto.status && dto.status !== previousStatus && dto.status === 'inactive') {
       await this.logoutUserFromAllDevices(user.id);
     }
 
@@ -194,21 +220,49 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     organizationId: string,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
+    const whereClause: Record<string, unknown> = {
+      ...options.where,
+      organization_id: organizationId,
+    };
+
+    // Handle role filtering - need to find role IDs first
+    let roleIds: string[] | undefined;
+    if ((options as any).role) {
+      const roleFilter = (options as any).role.toLowerCase();
+      // Admin filter should include both admin and super_admin
+      if (roleFilter === 'admin') {
+        const roles = await this.roleModel.findAll({
+          where: { role: { [Op.in]: ['admin', 'super_admin'] } },
+        });
+        roleIds = roles.map((r) => r.id);
+      } else {
+        const role = await this.roleModel.findOne({
+          where: { role: roleFilter },
+        });
+        if (role) {
+          roleIds = [role.id];
+        }
+      }
+      if (roleIds && roleIds.length > 0) {
+        whereClause.role_id = { [Op.in]: roleIds };
+      } else {
+        // Return empty result if role not found
+        whereClause.role_id = { [Op.eq]: null };
+      }
+    }
+
     return this.findAll({
       ...options,
-      where: {
-        ...options.where,
-        organization_id: organizationId,
-      },
+      where: whereClause,
     });
   }
 
   async findOneByUuidAndOrganization(
     uuid: string,
-    organizationId: number,
+    organizationId: string,
   ): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { uuid, organization_id: organizationId, deleted_at: null },
+      where: { uuid, organization_id: organizationId },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
@@ -230,13 +284,41 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ],
     };
 
+    const whereClause: Record<string, unknown> = {
+      ...options.where,
+      organization_id: organizationId,
+      ...searchCondition,
+    };
+
+    // Handle role filtering - need to find role IDs first
+    let roleIds: string[] | undefined;
+    if ((options as any).role) {
+      const roleFilter = (options as any).role.toLowerCase();
+      // Admin filter should include both admin and super_admin
+      if (roleFilter === 'admin') {
+        const roles = await this.roleModel.findAll({
+          where: { role: { [Op.in]: ['admin', 'super_admin'] } },
+        });
+        roleIds = roles.map((r) => r.id);
+      } else {
+        const role = await this.roleModel.findOne({
+          where: { role: roleFilter },
+        });
+        if (role) {
+          roleIds = [role.id];
+        }
+      }
+      if (roleIds && roleIds.length > 0) {
+        whereClause.role_id = { [Op.in]: roleIds };
+      } else {
+        // Return empty result if role not found
+        whereClause.role_id = { [Op.eq]: null };
+      }
+    }
+
     return this.findAll({
       ...options,
-      where: {
-        ...options.where,
-        organization_id: organizationId,
-        ...searchCondition,
-      },
+      where: whereClause,
     });
   }
 
@@ -254,27 +336,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return user;
   }
 
-  private async validateEmailNotDeactivated(email: string): Promise<void> {
-    const existingUser = await this.userModel.findOne({
-      where: {
-        email: email.toLowerCase(),
-      },
-    });
-
-    if (
-      existingUser &&
-      (existingUser.status === 'archived' || existingUser.status === 'inactive')
-    ) {
-      throw new ConflictException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
-  }
-
   private async validateEmailUniqueness(email: string, excludeId?: string): Promise<void> {
+    // Email must be unique globally across all organizations (including archived users)
     const whereClause: Record<string, unknown> = {
       email: email.toLowerCase(),
-      status: { [Op.ne]: 'archived' },
     };
 
     if (excludeId) {
@@ -288,11 +353,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  private async validateOrganization(organizationId: string): Promise<void> {
+  private async validateOrganization(organizationId: string): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findByPk(organizationId);
     if (!organization || !organization.is_active) {
       throw new NotFoundException('Organization not found or inactive');
     }
+    return organization;
   }
 
   private async validateRole(roleId: string): Promise<RoleEntity> {
@@ -314,6 +380,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       updateData.is_email_notifications_enabled = dto.is_email_notifications_enabled;
     if (dto.email !== undefined) updateData.email = dto.email.toLowerCase();
     if (dto.roleId !== undefined) updateData.role_id = dto.roleId;
+    if (dto.status !== undefined) updateData.status = dto.status;
 
     return updateData;
   }
