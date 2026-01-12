@@ -23,7 +23,7 @@ interface EmailPreferencesResponse {
 
 // API functions
 async function fetchProfile(): Promise<ProfileSettingsData> {
-  const response = await apiClient.get<ApiResponse<UserProfile>>('/auth/me');
+  const response = await apiClient.get<ApiResponse<UserProfile>>('/profile/me');
   const user = response.data.data;
   return {
     firstName: user.firstName || '',
@@ -56,7 +56,7 @@ async function updateProfile(data: Partial<ProfileSettingsData & { avatarUrl?: s
     }
   }
 
-  const response = await apiClient.patch<ApiResponse<UserProfile>>('/auth/me', payload);
+  const response = await apiClient.patch<ApiResponse<UserProfile>>('/profile/me', payload);
   const user = response.data.data;
   return {
     firstName: user.firstName || '',
@@ -75,14 +75,14 @@ async function changePassword(data: ChangePasswordData): Promise<void> {
 }
 
 async function fetchEmailPreferences(): Promise<EmailPreferencesData> {
-  const response = await apiClient.get<ApiResponse<EmailPreferencesResponse>>('/auth/me/email-preferences');
+  const response = await apiClient.get<ApiResponse<EmailPreferencesResponse>>('/profile/email-preferences');
   return {
     enableAllAlerts: response.data.data.emailNotifications,
   };
 }
 
 async function updateEmailPreferences(data: EmailPreferencesData): Promise<EmailPreferencesData> {
-  const response = await apiClient.patch<ApiResponse<EmailPreferencesResponse>>('/auth/me/email-preferences', {
+  const response = await apiClient.patch<ApiResponse<EmailPreferencesResponse>>('/profile/email-preferences', {
     emailNotifications: data.enableAllAlerts,
   });
   return {

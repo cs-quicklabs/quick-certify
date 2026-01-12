@@ -30,7 +30,7 @@ export interface CreateTeamMemberRequest {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
+  password?: string; // Optional for invitations
   roleId: string;
 }
 
@@ -67,6 +67,7 @@ export const teamService = {
     if (filters?.page) params.append('page', filters.page.toString());
     if (filters?.limit) params.append('limit', filters.limit.toString());
     if (filters?.search) params.append('search', filters.search);
+    if (filters?.role) params.append('role', filters.role);
     const response = await apiClient.get<ApiResponse<PaginatedResponse<TeamMember>>>(`/users?${params.toString()}`);
     return response.data.data;
   },

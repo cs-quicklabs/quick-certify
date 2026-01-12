@@ -9,13 +9,7 @@ export const addTeamMemberSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   roleId: z.string().min(1, 'Role is required'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Must contain uppercase')
-    .regex(/[a-z]/, 'Must contain lowercase')
-    .regex(/[0-9]/, 'Must contain number')
-    .regex(/[@$!%*?&]/, 'Must contain special character'),
+  password: z.string().optional(), // Optional for invitations
 });
 
 export type AddTeamMemberFormData = z.infer<typeof addTeamMemberSchema>;

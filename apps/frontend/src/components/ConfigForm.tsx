@@ -333,9 +333,9 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
     const isDisabled = field.disabled || isSubmitting || isLoading;
 
     // Skip email field if signup method is google
-    if (field.name === 'email' && formData.signupMethod === 'google') {
-      return null;
-    }
+    // if (field.name === 'email' && formData.signupMethod === 'google') {
+    //   return null;
+    // }
 
     switch (field.type) {
       case 'checkbox':

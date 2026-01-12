@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { editTeamMemberSchema, EditTeamMemberFormData } from '@/schemas/team.schema';
 import { useTeamMember, useUpdateTeamMember, useRoles } from '@/hooks/useTeam';
+import { useAuthStore } from '@/store/auth.store';
 
 /**
  * Edit Team Member Page
@@ -15,10 +16,23 @@ export default function EditTeamMemberPage() {
   const router = useRouter();
   const params = useParams();
   const uuid = params?.uuid as string;
+  const { user } = useAuthStore();
+
+  // Authorization check - only Admin and Super Admin can access
+  useEffect(() => {
+    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const { data: member, isLoading: memberLoading } = useTeamMember(uuid);
   const updateMutation = useUpdateTeamMember(uuid);
   const { data: roles, isLoading: rolesLoading } = useRoles();
+
+  // Don't render if user is not authorized
+  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    return null;
+  }
 
   const {
     register,
