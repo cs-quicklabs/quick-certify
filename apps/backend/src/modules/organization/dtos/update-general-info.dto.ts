@@ -45,7 +45,7 @@ export class UpdateGeneralInfoDto {
   })
   @IsString()
   @IsOptional()
-  @Matches(/^[a-zA-Z0-9]*$/, { message: 'LinkedIn Company ID should contain only alphanumeric characters' })
+  @Matches(/^[0-9]*$/, { message: 'LinkedIn Company ID should contain only numeric characters' })
   @MaxLength(10, { message: 'LinkedIn Company ID must not exceed 10 characters' })
   linkedin_company_id?: string;
 }
