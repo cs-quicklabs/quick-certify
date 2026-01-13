@@ -17,7 +17,7 @@ export interface TeamMember {
   };
   status: 'active' | 'inactive' | 'invited' | 'archived';
   last_login_at: string | null;
-  created_at: string;
+  createdAt: string;
   updated_at: string;
 }
 

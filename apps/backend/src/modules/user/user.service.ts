@@ -63,7 +63,6 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const { count, rows } = await this.userModel.findAndCountAll({
       where: {
         ...where,
-        status: { [Op.ne]: 'archived' },
       },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },

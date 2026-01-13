@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Edit2, X, Mail, UserCheck } from 'lucide-react';
 import { useTeamMembers, useCancelInvitation, useDeleteTeamMember, useResendInvitation, useRestoreUser } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
-import { ConfirmationDialog } from '@/components';
+import { ConfirmationDialog, TableHeader } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
 
 /**
@@ -18,14 +19,12 @@ export default function TeamsPage() {
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     type: 'cancel' | 'remove' | 'invite' | 'activate' | null;
     member: TeamMember | null;
   }>({ isOpen: false, type: null, member: null });
   const pageSize = 10;
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const cancelInvitationMutation = useCancelInvitation();
   const deleteTeamMemberMutation = useDeleteTeamMember();
@@ -39,19 +38,6 @@ export default function TeamsPage() {
     }
   }, [user, router]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!openMenuId) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openMenuId]);
 
   // Use backend filtering instead of client-side
   const { data, isLoading } = useTeamMembers({
@@ -108,33 +94,23 @@ export default function TeamsPage() {
     setCurrentPage(1); // Reset to first page on filter change
   };
 
-  const handleMenuToggle = (memberId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setOpenMenuId(openMenuId === memberId ? null : memberId);
-  };
-
   const handleEdit = (memberUuid: string) => {
-    setOpenMenuId(null);
     router.push(`/settings/team/${memberUuid}/edit`);
   };
 
   const handleCancelInvitation = (member: TeamMember) => {
-    setOpenMenuId(null);
     setConfirmDialog({ isOpen: true, type: 'cancel', member: { ...member } });
   };
 
   const handleRemove = (member: TeamMember) => {
-    setOpenMenuId(null);
     setConfirmDialog({ isOpen: true, type: 'remove', member: { ...member } });
   };
 
   const handleInvite = (member: TeamMember) => {
-    setOpenMenuId(null);
     setConfirmDialog({ isOpen: true, type: 'invite', member: { ...member } });
   };
 
   const handleActivate = (member: TeamMember) => {
-    setOpenMenuId(null);
     setConfirmDialog({ isOpen: true, type: 'activate', member: { ...member } });
   };
 
@@ -265,33 +241,26 @@ export default function TeamsPage() {
             Manage all your existing <span className="font-semibold text-gray-900">{totalCount}</span> team member{totalCount !== 1 ? 's' : ''} or add a new one.
           </p>
         </div>
-        <Link
-          href="/settings/team/add"
-          className="inline-flex items-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Add new member
-        </Link>
+        <div className="flex space-x-4">
+          <div className="flex space-x-2 items-center w-full">
+            <Link
+              href="/settings/team/add"
+              className="btn-primary w-full"
+            >
+              Add new member
+            </Link>
+          </div>
+        </div>
+
       </div>
 
       {/* Search and Filters */}
-      <div className="px-6 py-5 space-y-4 border-b border-gray-200">
-        {/* Search */}
-        {/* <div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search member..."
-            className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div> */}
-
+      <div className="px-4 py-5 space-y-4 border-b border-gray-200">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-sm text-gray-600">Show records only for:</span>
-
+          <span className="text-sm font-semibold text-gray-700">Show records only for:</span>
           {/* Admin Radio */}
-          <label className="inline-flex items-center cursor-pointer">
+          <label className="ml-4 inline-flex items-center cursor-pointer">
             <input
               type="radio"
               name="roleFilter"
@@ -299,7 +268,7 @@ export default function TeamsPage() {
               onChange={() => handleRoleFilterChange('admin')}
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
             />
-            <span className="ml-2 text-sm text-gray-700">Admin</span>
+            <span className="ml-2 text-sm font-semibold text-gray-700">Admin</span>
           </label>
 
           {/* Managers Radio */}
@@ -311,7 +280,7 @@ export default function TeamsPage() {
               onChange={() => handleRoleFilterChange('manager')}
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
             />
-            <span className="ml-2 text-sm text-gray-700">Managers</span>
+            <span className="ml-2 text-sm font-semibold text-gray-700">Managers</span>
           </label>
 
           {/* Designers Radio */}
@@ -323,7 +292,7 @@ export default function TeamsPage() {
               onChange={() => handleRoleFilterChange('designer')}
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
             />
-            <span className="ml-2 text-sm text-gray-700">Designers</span>
+            <span className="ml-2 text-sm font-semibold text-gray-700">Designers</span>
           </label>
 
           {/* Show All Link */}
@@ -332,7 +301,7 @@ export default function TeamsPage() {
               setRoleFilter('');
               setCurrentPage(1);
             }}
-            className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+            className="text-sm font-semibold text-blue-600 hover:text-blue-700 underline"
           >
             Show All
           </button>
@@ -341,30 +310,16 @@ export default function TeamsPage() {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-t border-gray-200 bg-gray-50/50">
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                User
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Role
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Last Login
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Added On
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <TableHeader>User</TableHeader>
+              <TableHeader>Role</TableHeader>
+              <TableHeader>Email</TableHeader>
+              <TableHeader>Status</TableHeader>
+              <TableHeader>Last Login</TableHeader>
+              <TableHeader>Added On</TableHeader>
+              <TableHeader>Actions</TableHeader>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -384,25 +339,25 @@ export default function TeamsPage() {
               </tr>
             ) : (
               members.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50/50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={member.id} className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <Link
                       href={`/settings/team/${member.uuid}`}
-                      className="text-sm font-medium text-gray-900 hover:text-blue-600"
+                      className="text-sm font-medium text-gray-900 hover:underline"
                     >
                       {member.first_name} {member.last_name}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded border border-blue-100">
                       <PersonIcon />
                       <span>{getRoleDisplay(member.role?.role)}</span>
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                     {member.email}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <span
                         className={`w-2 h-2 rounded-full ${member.status === 'active'
@@ -417,69 +372,63 @@ export default function TeamsPage() {
                       <span className="text-sm text-gray-900 capitalize">{member.status}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                     {formatDate(member.last_login_at)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(member.created_at)}
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(member.createdAt)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 relative">
-                    <div className="relative" ref={openMenuId === member.id ? menuRef : null}>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={(e) => handleMenuToggle(member.id, e)}
-                        className="p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                        aria-label="Actions"
+                        onClick={() => handleEdit(member.uuid)}
+                        className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
+                        aria-label="Edit"
+                        title="Edit"
                       >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                        </svg>
+                        <Edit2 className="w-4 h-4" />
                       </button>
-                      {openMenuId === member.id && (
-                        <div className="absolute right-0 z-10 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
-                          <div className="py-1" role="menu">
-                            <button
-                              onClick={() => handleEdit(member.uuid)}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              role="menuitem"
-                            >
-                              Edit
-                            </button>
-                            {member.status === 'invited' ? (
-                              <button
-                                onClick={() => handleCancelInvitation(member)}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                role="menuitem"
-                              >
-                                Cancel
-                              </button>
-                            ) : member.status === 'inactive' ? (
-                              <button
-                                onClick={() => handleInvite(member)}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                role="menuitem"
-                              >
-                                Invite
-                              </button>
-                            ) : member.status === 'archived' ? (
-                              <button
-                                onClick={() => handleActivate(member)}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                role="menuitem"
-                              >
-                                Activate
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleRemove(member)}
-                                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                role="menuitem"
-                              >
-                                Remove
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                      {member.status === 'invited' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleCancelInvitation(member)}
+                          className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+                          aria-label="Cancel Invitation"
+                          title="Cancel Invitation"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      ) : member.status === 'inactive' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleInvite(member)}
+                          className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
+                          aria-label="Resend Invitation"
+                          title="Resend Invitation"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </button>
+                      ) : member.status === 'archived' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleActivate(member)}
+                          className="p-2 text-gray-600 hover:text-green-600 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
+                          aria-label="Activate"
+                          title="Activate"
+                        >
+                          <UserCheck className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(member)}
+                          className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+                          aria-label="Remove"
+                          title="Remove"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
                   </td>

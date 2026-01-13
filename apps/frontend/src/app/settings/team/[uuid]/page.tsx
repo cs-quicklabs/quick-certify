@@ -119,7 +119,7 @@ export default function TeamMemberPage() {
           </div>
           <div>
             <p className="text-sm text-gray-500">Added On</p>
-            <p className="mt-1 text-sm text-gray-900">{formatDate(member.created_at)}</p>
+            <p className="mt-1 text-sm text-gray-900">{formatDate(member.createdAt)}</p>
           </div>
         </div>
       </div>
