@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 /**
  * DTO for updating organization general information
@@ -8,17 +9,21 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'c
  */
 export class UpdateGeneralInfoDto {
   @ApiProperty({ example: 'Acme Corporation', description: 'Issuer or Organisation Name' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
-  @IsNotEmpty({ message: 'Organization name is required' })
+  @Matches(/^[A-Za-z][A-Za-z '-]*$/, { message: 'Organization name should contail only alphanumerics value' })
+  @MinLength(4, { message: 'Organization name is required' })
   @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
-  name = '';
+  name!: string;
 
   @ApiPropertyOptional({
     example: 'We specialize in professional certifications...',
     description: 'Issuer description shown on credential pages',
   })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsOptional()
+  @MinLength(1, { message: 'Description is required' })
   @MaxLength(2000, { message: 'Description must not exceed 2000 characters' })
   description?: string;
 
@@ -45,7 +50,7 @@ export class UpdateGeneralInfoDto {
   })
   @IsString()
   @IsOptional()
-  @Matches(/^[a-zA-Z0-9]*$/, { message: 'LinkedIn Company ID should contain only alphanumeric characters' })
+  @Matches(/^[0-9]*$/, { message: 'LinkedIn Company ID should contain only numeric characters' })
   @MaxLength(10, { message: 'LinkedIn Company ID must not exceed 10 characters' })
   linkedin_company_id?: string;
 }
