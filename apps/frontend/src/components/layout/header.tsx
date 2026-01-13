@@ -85,7 +85,7 @@ export function Header() {
                 <input
                   id="search"
                   name="search"
-                  className="block w-full rounded-sm border border-transparent bg-gray-700 py-1.5 pl-10 pr-3 leading-5 text-gray-300 placeholder-gray-400 focus:border-white focus:bg-white focus:text-gray-900 focus:outline-none focus:ring-white sm:text-sm"
+                  className="block w-full rounded-sm border border-transparent bg-white py-1.5 pl-10 pr-3 leading-5 text-gray-300 placeholder-gray-400 focus:border-white focus:bg-white focus:text-gray-900 focus:outline-none focus:ring-white sm:text-sm"
                   placeholder="Search Events or Participants"
                   type="search"
                 />
