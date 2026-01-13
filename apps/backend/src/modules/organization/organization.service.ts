@@ -191,17 +191,17 @@ export class OrganizationService implements IOrganizationService {
       await organization.update({
         name: dto.name,
         slug: newSlug,
-        description: dto.description,
-        support_email: dto.support_email,
-        slogan: dto.slogan,
-        linkedin_company_id: dto.linkedin_company_id,
+        description: dto.description || null,
+        support_email: dto.support_email || null,
+        slogan: dto.slogan || null,
+        linkedin_company_id: dto.linkedin_company_id || null,
       });
     } else {
       await organization.update({
-        description: dto.description,
-        support_email: dto.support_email,
-        slogan: dto.slogan,
-        linkedin_company_id: dto.linkedin_company_id,
+        description: dto.description || null,
+        support_email: dto.support_email || null,
+        slogan: dto.slogan || null,
+        linkedin_company_id: dto.linkedin_company_id || null,
       });
     }
 
