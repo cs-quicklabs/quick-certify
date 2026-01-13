@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTeamMember } from '@/hooks/useTeam';
+import { useAuthStore } from '@/store/auth.store';
 
 /**
  * Team Member Detail Page
@@ -12,6 +13,7 @@ export default function TeamMemberPage() {
   const router = useRouter();
   const params = useParams();
   const uuid = params?.uuid as string;
+  const { user } = useAuthStore();
 
   const { data: member, isLoading } = useTeamMember(uuid);
 
@@ -76,16 +78,18 @@ export default function TeamMemberPage() {
           </div>
           <p className="mt-1 text-sm text-gray-500 ml-8">Team member details</p>
         </div>
-        <div className="flex space-x-4">
-          <div className="flex space-x-2 items-center w-full">
-            <Link
-              href={`/settings/team/${uuid}/edit`}
-              className="btn-primary w-full"
-            >
-              Edit Member
-            </Link>
+        {member.status === 'active' && user?.email !== member.email && (
+          <div className="flex space-x-4">
+            <div className="flex space-x-2 items-center w-full">
+              <Link
+                href={`/settings/team/${uuid}/edit`}
+                className="btn-primary w-full"
+              >
+                Edit Member
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Details */}

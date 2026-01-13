@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -13,8 +12,8 @@ import { getApiErrorMessage } from '@/lib/api-error';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { setUser, setError: setGlobalError, clearError } = useAuthStore();
+  const globalError = useAuthStore((state) => state.error);
 
   const {
     register,
@@ -33,7 +32,7 @@ export default function LoginPage() {
    * Handle form submission
    */
   const onSubmit = async (data: LoginFormData) => {
-    setServerError(null);
+    clearError();
 
     try {
       await authService.login({
@@ -48,7 +47,7 @@ export default function LoginPage() {
       // Redirect to dashboard
       router.push('/dashboard');
     } catch (error) {
-      setServerError(getApiErrorMessage(error));
+      setGlobalError(getApiErrorMessage(error));
     }
   };
 
@@ -60,11 +59,11 @@ export default function LoginPage() {
       </h1>
 
       {/* Server Error Alert */}
-      {serverError && (
+      {globalError && (
         <Alert
           type="error"
-          message={serverError}
-          onClose={() => setServerError(null)}
+          message={globalError}
+          onClose={clearError}
         />
       )}
 
