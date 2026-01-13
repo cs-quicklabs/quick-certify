@@ -25,7 +25,7 @@ export class OrganizationService implements IOrganizationService {
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -221,10 +221,10 @@ export class OrganizationService implements IOrganizationService {
     }
 
     await organization.update({
-      linkedin_url: dto.linkedin_url,
-      facebook_url: dto.facebook_url,
-      twitter_url: dto.twitter_url,
-      website: dto.website,
+      linkedin_url: dto.linkedin_url || null,
+      facebook_url: dto.facebook_url || null,
+      twitter_url: dto.twitter_url || null,
+      website: dto.website || null,
     });
 
     return organization.reload();
