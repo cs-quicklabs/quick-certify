@@ -25,7 +25,7 @@ export class OrganizationService implements IOrganizationService {
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -191,17 +191,17 @@ export class OrganizationService implements IOrganizationService {
       await organization.update({
         name: dto.name,
         slug: newSlug,
-        description: dto.description,
-        support_email: dto.support_email,
-        slogan: dto.slogan,
-        linkedin_company_id: dto.linkedin_company_id,
+        description: dto.description || null,
+        support_email: dto.support_email || null,
+        slogan: dto.slogan || null,
+        linkedin_company_id: dto.linkedin_company_id || null,
       });
     } else {
       await organization.update({
-        description: dto.description,
-        support_email: dto.support_email,
-        slogan: dto.slogan,
-        linkedin_company_id: dto.linkedin_company_id,
+        description: dto.description || null,
+        support_email: dto.support_email || null,
+        slogan: dto.slogan || null,
+        linkedin_company_id: dto.linkedin_company_id || null,
       });
     }
 
@@ -221,10 +221,10 @@ export class OrganizationService implements IOrganizationService {
     }
 
     await organization.update({
-      linkedin_url: dto.linkedin_url,
-      facebook_url: dto.facebook_url,
-      twitter_url: dto.twitter_url,
-      website: dto.website,
+      linkedin_url: dto.linkedin_url || null,
+      facebook_url: dto.facebook_url || null,
+      twitter_url: dto.twitter_url || null,
+      website: dto.website || null,
     });
 
     return organization.reload();

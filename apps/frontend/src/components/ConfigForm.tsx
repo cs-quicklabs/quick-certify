@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { z } from 'zod';
 import { formatZodErrors } from '../lib/validation';
 import { getApiErrorMessage, getApiFieldErrors } from '../lib/api-error';
@@ -29,11 +29,22 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
     },
     {} as Record<string, unknown>,
   );
+  const initialFormDataRef = useRef<Record<string, unknown>>(sanitizedInitialValues);
+
   const [formData, setFormData] = useState<Record<string, unknown>>(sanitizedInitialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const isDirty = useMemo(() => {
+    const keys = Object.keys(initialFormDataRef.current);
+    return keys.some((key) => {
+      const initial = initialFormDataRef.current[key] ?? '';
+      const current = formData[key] ?? '';
+      return initial !== current;
+    });
+  }, [formData]);
 
   // Update form data when initialValues changes (e.g., after data fetch)
   useEffect(() => {
@@ -47,6 +58,8 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
         {} as Record<string, unknown>,
       );
       setFormData(sanitizedValues);
+      //reset baseline
+      initialFormDataRef.current = sanitizedValues;
     }
   }, [initialValues]);
 
@@ -224,6 +237,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
     try {
       await config.onSubmit(result.data as z.infer<T>);
+      initialFormDataRef.current = { ...formData };
       setSubmitSuccess(true);
     } catch (error) {
       // Extract proper error message from API response
@@ -581,7 +595,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
         <div className={config.layout === 'grid' ? 'col-span-2' : ''}>
           <div className="flex items-center gap-3">
-        <button type="submit" disabled={isSubmitting || isLoading} className="btn-primary">
+        <button type="submit" disabled={isSubmitting || isLoading || !isDirty} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
           {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
         </button>
             {config.onCancel && (

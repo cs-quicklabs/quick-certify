@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
 /**
  * DTO for updating organization general information
@@ -11,7 +11,7 @@ export class UpdateGeneralInfoDto {
   @IsString()
   @IsNotEmpty({ message: 'Organization name is required' })
   @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
-  name: string = '';
+  name = '';
 
   @ApiPropertyOptional({
     example: 'We specialize in professional certifications...',
@@ -45,7 +45,8 @@ export class UpdateGeneralInfoDto {
   })
   @IsString()
   @IsOptional()
-  @MaxLength(100, { message: 'LinkedIn Company ID must not exceed 100 characters' })
+  @Matches(/^[a-zA-Z0-9]*$/, { message: 'LinkedIn Company ID should contain only alphanumeric characters' })
+  @MaxLength(10, { message: 'LinkedIn Company ID must not exceed 10 characters' })
   linkedin_company_id?: string;
 }
 
