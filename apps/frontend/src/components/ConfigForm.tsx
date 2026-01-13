@@ -347,9 +347,9 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
     const isDisabled = field.disabled || isSubmitting || isLoading;
 
     // Skip email field if signup method is google
-    if (field.name === 'email' && formData.signupMethod === 'google') {
-      return null;
-    }
+    // if (field.name === 'email' && formData.signupMethod === 'google') {
+    //   return null;
+    // }
 
     switch (field.type) {
       case 'checkbox':
@@ -388,23 +388,32 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
       case 'select':
         return (
-          <div key={field.name}>
+          <div key={field.name} className="relative">
             {renderFieldLabel(field)}
+            <div className="relative">
             <select
               id={field.name}
               name={field.name}
               value={String(value)}
               onChange={handleChange}
               disabled={isDisabled}
-              className="form-input-field"
+                className="form-input-field pr-8"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 0.5rem center',
+                  backgroundSize: '1.5em 1.5em',
+                  paddingRight: '2.5rem',
+                }}
             >
-              <option value="">Select...</option>
+                <option value="">Select Role</option>
               {field.options?.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
+            </div>
             {field.description && <p className="form-input-description">{field.description}</p>}
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
           </div>
@@ -577,12 +586,30 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="w-full mt-6 space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className={`w-full mt-6 ${config.layout === 'grid' ? 'grid grid-cols-2 gap-4' : 'space-y-4'
+          }`}
+      >
         {config.fields.map(renderField)}
 
+        <div className={config.layout === 'grid' ? 'col-span-2' : ''}>
+          <div className="flex items-center gap-3">
         <button type="submit" disabled={isSubmitting || isLoading || !isDirty} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
           {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
         </button>
+            {config.onCancel && (
+              <button
+                type="button"
+                onClick={config.onCancel}
+                disabled={isSubmitting || isLoading}
+                className="px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition-colors border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {config.cancelLabel || 'Cancel'}
+              </button>
+            )}
+          </div>
+        </div>
       </form>
     </div>
   );

@@ -46,6 +46,11 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
+export interface AcceptInvitationRequest {
+  token: string;
+  password: string;
+}
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -160,6 +165,17 @@ export const authService = {
       '/auth/reset-password',
       data,
     );
+    return response.data.data;
+  },
+
+  /**
+   * Accept invitation and set password
+   */
+  async acceptInvitation(data: AcceptInvitationRequest): Promise<AuthTokens> {
+    const response = await apiClient.post<ApiResponse<AuthTokens>>('/auth/accept-invitation', data);
+    if (response.data.success) {
+      setTokens(response.data.data.accessToken, response.data.data.refreshToken);
+    }
     return response.data.data;
   },
 

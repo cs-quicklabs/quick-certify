@@ -42,4 +42,13 @@ export class UpdateUserDto {
   @IsBoolean()
   @IsOptional()
   is_email_notifications_enabled?: boolean;
+
+  @ApiPropertyOptional({
+    enum: ['active', 'inactive'],
+    description: 'User status',
+    example: 'active',
+  })
+  @IsEnum(['active', 'inactive'])
+  @IsOptional()
+  status?: 'active' | 'inactive';
 }

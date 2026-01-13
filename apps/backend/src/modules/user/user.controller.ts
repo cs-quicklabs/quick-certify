@@ -23,30 +23,31 @@ import { Role } from '@src/modules/role/enums';
 @ApiBearerAuth()
 @Controller({ path: 'users', version: '1' })
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: 'Get all users (Admin only)' })
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all users (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Users list' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'role', required: false, description: 'Filter by role (admin, manager, designer)' })
   async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
-    // Super admin can see all users, admin can see only their organization
-    // if (user.role === 'super_admin') {
-    //   const result = pagination.search
-    //     ? await this.userService.searchUsers(user.organizationId, pagination.search, pagination)
-    //     : await this.userService.findAll(pagination);
-    //   return new SuccessResponse('Users retrieved successfully', result);
-    // }
-
+    // Only Admin and Super Admin can access team listing
+    const options: any = {
+      page: pagination.page,
+      limit: pagination.limit,
+      sortBy: pagination.sortBy || 'last_login_at',
+      sortOrder: pagination.sortOrder || 'DESC',
+      role: pagination.role,
+    };
     const result = pagination.search
-      ? await this.userService.searchUsers(user.organizationId, pagination.search, pagination)
-      : await this.userService.findAllByOrganization(user.organizationId, pagination);
+      ? await this.userService.searchUsers(user.organizationId, pagination.search, options)
+      : await this.userService.findAllByOrganization(user.organizationId, options);
     return new SuccessResponse('Users retrieved successfully', result);
   }
 
@@ -57,10 +58,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     // Admin can access their own org users, super admin can access all
-    const foundUser = await this.userService.findOneByUuidAndOrganization(
-      uuid,
-      +user.organizationId,
-    );
+    const foundUser = await this.userService.findOneByUuidAndOrganization(uuid, user.organizationId);
     if (!foundUser) {
       return new SuccessResponse('User not found', null);
     }
@@ -69,12 +67,12 @@ export class UserController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: 'Create a new user (Admin only)' })
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiOperation({ summary: 'Create a new user/invitation (Admin/Super Admin only)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
   async create(@CurrentUser() user: CurrentUserType, @Body() dto: CreateUserDto) {
-    // user creations are only allowed for managers and super admins
+    // Only Admin and Super Admin can create users/invitations
     dto.organizationId = user.organizationId;
     const newUser = await this.userService.create(dto, user);
     return new SuccessResponse('User created successfully', newUser);
@@ -82,8 +80,8 @@ export class UserController {
 
   @Patch(':uuid')
   @UseGuards(RolesGuard, OrganizationGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: 'Update user (Admin only)' })
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update user (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async update(
@@ -93,7 +91,7 @@ export class UserController {
   ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      +user.organizationId,
+      user.organizationId,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
@@ -105,14 +103,14 @@ export class UserController {
 
   @Delete(':uuid')
   @UseGuards(RolesGuard, OrganizationGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: 'Delete user (soft delete) (Admin only)' })
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Delete user (soft delete - archives user) (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      +user.organizationId,
+      user.organizationId,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
@@ -127,16 +125,54 @@ export class UserController {
     return new SuccessResponse('User deleted successfully', { deleted: true });
   }
 
+  @Post(':uuid/cancel-invitation')
+  @UseGuards(RolesGuard, OrganizationGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Cancel invitation (Admin/Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Invitation cancelled successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async cancelInvitation(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const existingUser = await this.userService.findOneByUuidAndOrganization(
+      uuid,
+      user.organizationId,
+    );
+    if (!existingUser) {
+      return new SuccessResponse('User not found', null);
+    }
+
+    const updatedUser = await this.userService.cancelInvitation(existingUser.id);
+    return new SuccessResponse('Invitation cancelled successfully', updatedUser);
+  }
+
+  @Post(':uuid/resend-invitation')
+  @UseGuards(RolesGuard, OrganizationGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Resend invitation to inactive user (Admin/Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Invitation sent successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async resendInvitation(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const existingUser = await this.userService.findOneByUuidAndOrganization(
+      uuid,
+      user.organizationId,
+    );
+    if (!existingUser) {
+      return new SuccessResponse('User not found', null);
+    }
+
+    const updatedUser = await this.userService.resendInvitation(existingUser.id, user);
+    return new SuccessResponse('Invitation sent successfully', updatedUser);
+  }
+
   @Post(':uuid/restore')
-  @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.MANAGER, Role.ADMIN)
-  @ApiOperation({ summary: 'Restore deleted user (Super Admin only)' })
+  @UseGuards(RolesGuard, OrganizationGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiOperation({ summary: 'Restore deleted user (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User restored successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async restore(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      +user.organizationId,
+      user.organizationId,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);

@@ -20,6 +20,7 @@ export interface ApiError {
   success: false;
   message: string;
   statusCode: number;
+  errorCode?: number;
   errors?: Record<string, string>;
 }
 
@@ -72,32 +73,55 @@ function createApiClient(): AxiosInstance {
         return Promise.reject({ response: { data: networkError } });
       }
 
-      // Handle 401 - Attempt token refresh
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
+      // Handle 401 - Check for "Access token is required" error
+      if (error.response?.status === 401) {
+        const errorData = error.response.data;
+        const isAccessTokenRequiredError =
+          errorData?.message === 'Access token is required' || errorData?.errorCode === 401;
 
-        try {
-          const refreshToken = getRefreshToken();
-          if (refreshToken) {
-            const response = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
-              `${env.API_BASE_URL}/auth/refresh-token`,
-              { refreshToken },
-              { withCredentials: true },
-            );
-
-            if (response.data.success) {
-              setTokens(response.data.data.accessToken, response.data.data.refreshToken);
-              if (originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
-              }
-              return client(originalRequest);
-            }
-          }
-        } catch {
-          // Refresh failed - clear tokens and redirect to login
+        if (isAccessTokenRequiredError) {
+          // Clear tokens and storage immediately - don't attempt refresh
           clearTokens();
           if (typeof window !== 'undefined') {
+            // Clear auth store (Zustand persist storage)
+            localStorage.removeItem('auth-storage');
+            // Clear React Query cache
+            localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+            // Redirect to login
             window.location.href = '/login';
+          }
+          return Promise.reject(error);
+        }
+
+        // For other 401 errors, attempt token refresh
+        if (!originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            const refreshToken = getRefreshToken();
+            if (refreshToken) {
+              const response = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
+                `${env.API_BASE_URL}/auth/refresh-token`,
+                { refreshToken },
+                { withCredentials: true },
+              );
+
+              if (response.data.success) {
+                setTokens(response.data.data.accessToken, response.data.data.refreshToken);
+                if (originalRequest.headers) {
+                  originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+                }
+                return client(originalRequest);
+              }
+            }
+          } catch {
+            // Refresh failed - clear tokens and redirect to login
+            clearTokens();
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('auth-storage');
+              localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+              window.location.href = '/login';
+            }
           }
         }
       }
@@ -114,6 +138,7 @@ function createApiClient(): AxiosInstance {
  */
 const TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
+export const SESSION_ID_KEY = 'authSessionId';
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -129,12 +154,20 @@ export function setTokens(accessToken: string, refreshToken: string): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(TOKEN_KEY, accessToken);
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  // Set session identifier to detect cross-tab logins
+  localStorage.setItem(SESSION_ID_KEY, Date.now().toString());
 }
 
 export function clearTokens(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(SESSION_ID_KEY);
+}
+
+export function getSessionId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(SESSION_ID_KEY);
 }
 
 export function isAuthenticated(): boolean {

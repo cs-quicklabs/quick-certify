@@ -30,6 +30,7 @@ import {
   GoogleAuthInitDto,
   GoogleCallbackDto,
   GoogleAuthAction,
+  AcceptInvitationDto,
 } from './dtos';
 import { Public, CurrentUser } from './decorators';
 import * as AuthInterfaces from './interfaces';
@@ -130,6 +131,21 @@ export class AuthController {
   async resetPassword(@Body() dto: ResetPasswordDto) {
     const result = await this.authService.resetPassword(dto);
     return new SuccessResponse(result.message, result);
+  }
+
+  @Public()
+  @Post('accept-invitation')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Accept invitation and set password' })
+  @ApiResponse({ status: 200, description: 'Invitation accepted successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid invitation token' })
+  async acceptInvitation(
+    @Body() dto: AcceptInvitationDto,
+    @Ip() ipAddress: string,
+    @Headers('user-agent') userAgent: string,
+  ) {
+    const result = await this.authService.acceptInvitation(dto, ipAddress, userAgent);
+    return new SuccessResponse('Invitation accepted successfully', result);
   }
 
   @Post('change-password')

@@ -21,6 +21,9 @@ export function Header() {
     window.location.href = '/login';
   };
 
+  // Check if user is admin or super_admin
+  const isAdminOrSuperAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+
   return (
     <nav className="bg-gray-800">
       <div className="mx-auto px-2 sm:px-4 lg:px-8">
@@ -30,7 +33,8 @@ export function Header() {
               <div className="shrink-0 flex items-center">
                 <span
                   data-cy="Quick Test-label"
-                  className="text-white font-extrabold font-mono px-3 hidden lg:block tracking-wider">
+                  className="text-white font-extrabold font-mono px-3 hidden lg:block tracking-wider"
+                >
                   Quick Certify
                 </span>
                 <span className="text-white font-medium px-3 block lg:hidden"></span>
@@ -110,11 +114,7 @@ export function Header() {
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
                 <svg
@@ -200,14 +200,16 @@ export function Header() {
                       >
                         Profile Settings
                       </Link>
-                      <Link
-                        href="/settings/account/general-information"
-                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                        role="menuitem"
-                        tabIndex={-1}
-                      >
-                        Account Settings
-                      </Link>
+                      {isAdminOrSuperAdmin && (
+                        <Link
+                          href="/settings/account/general-information"
+                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                          role="menuitem"
+                          tabIndex={-1}
+                        >
+                          Account Settings
+                        </Link>
+                      )}
                       <Link
                         href="/settings/event/type"
                         className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
@@ -216,14 +218,16 @@ export function Header() {
                       >
                         Event Settings
                       </Link>
-                      <Link
-                        href="/settings/account/team"
-                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                        role="menuitem"
-                        tabIndex={-1}
-                      >
-                        Team
-                      </Link>
+                      {isAdminOrSuperAdmin && (
+                        <Link
+                          href="/settings/team"
+                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                          role="menuitem"
+                          tabIndex={-1}
+                        >
+                          Team
+                        </Link>
+                      )}
                     </div>
                     <div className="py-1" role="none">
                       <button
@@ -311,9 +315,7 @@ export function Header() {
                 <div className="text-base font-medium text-white">
                   {user?.firstName} {user?.lastName}
                 </div>
-                <div className="text-sm font-medium text-gray-400">
-                  {user?.email || 'User'}
-                </div>
+                <div className="text-sm font-medium text-gray-400">{user?.email || 'User'}</div>
               </div>
             </div>
             <div className="mt-3 space-y-1 px-2">
@@ -324,13 +326,15 @@ export function Header() {
               >
                 Profile Settings
               </Link>
-              <Link
-                href="/settings/account/general-information"
-                className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Account Settings
-              </Link>
+              {isAdminOrSuperAdmin && (
+                <Link
+                  href="/settings/account/general-information"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Account Settings
+                </Link>
+              )}
               <Link
                 href="/settings/event/type"
                 className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -338,13 +342,15 @@ export function Header() {
               >
                 Event Settings
               </Link>
-              <Link
-                href="/settings/account/team"
-                className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Team
-              </Link>
+              {isAdminOrSuperAdmin && (
+                <Link
+                  href="/settings/team"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Team
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={handleSignOut}

@@ -42,6 +42,15 @@ export interface FormConfig<T extends z.ZodObject<z.ZodRawShape>> {
    * @param fieldName - Name of the field that was deleted
    */
   onImageDelete?: (fieldName: string) => Promise<void> | void;
+  /**
+   * Optional layout type - 'vertical' (default) or 'grid' for two-column layout
+   */
+  layout?: 'vertical' | 'grid';
+  /**
+   * Optional cancel button configuration
+   */
+  onCancel?: () => void;
+  cancelLabel?: string;
 }
 
 export interface FormState {
