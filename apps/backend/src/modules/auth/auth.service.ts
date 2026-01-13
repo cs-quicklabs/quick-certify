@@ -19,6 +19,7 @@ import {
   ChangePasswordDto,
   GoogleLoginDto,
   GoogleSignupCompleteDto,
+  AcceptInvitationDto,
 } from './dtos';
 import { JwtTokens, IAuthService } from './interfaces';
 import { PasswordService, TokenService, SessionService, GoogleOAuthService, GoogleUserInfo } from './services';
@@ -48,6 +49,7 @@ interface TempGoogleUserData {
 export class AuthService implements IAuthService {
   private readonly refreshTokenExpiresIn: number;
   private readonly passwordResetExpiresIn: number;
+  private readonly invitationExpiresIn: number;
   private readonly frontendDomain: string;
 
   // Temporary store for Google user data during signup flow
@@ -75,6 +77,9 @@ export class AuthService implements IAuthService {
       infer: true,
     });
     this.passwordResetExpiresIn = this.configService.getOrThrow('auth.passwordResetExpiresIn', {
+      infer: true,
+    });
+    this.invitationExpiresIn = this.configService.getOrThrow('auth.invitationExpiresIn', {
       infer: true,
     });
     this.frontendDomain = this.configService.getOrThrow('app.frontendDomain', { infer: true });
@@ -343,6 +348,47 @@ export class AuthService implements IAuthService {
     await user.update({ password_hash: hashedPassword });
 
     return { success: true, message: 'Password changed successfully' };
+  }
+
+  async acceptInvitation(dto: AcceptInvitationDto, ipAddress?: string, userAgent?: string) {
+    // Find user by token (token is the user's ID)
+    const user = await this.userModel.findByPk(dto.token, {
+      include: [RoleEntity],
+    });
+    if (!user) {
+      throw new NotFoundException('Invalid invitation token');
+    }
+
+    // Verify user is in invited status
+    if (user.status !== 'invited') {
+      if (user.status === 'archived') {
+        throw new UnauthorizedException('Your account has been deactivated');
+      }
+      throw new BadRequestException('This invitation has already been accepted or is invalid');
+    }
+
+    // Check if invitation has expired based on created_at timestamp
+    const invitationAge = Math.floor((Date.now() - user.createdAt.getTime()) / 1000); // in seconds
+    if (invitationAge > this.invitationExpiresIn) {
+      throw new BadRequestException('This invitation has expired. Please contact your administrator for a new invitation.');
+    }
+
+    // Hash and set password
+    const hashedPassword = await this.passwordService.hash(dto.password);
+    await user.update({
+      password_hash: hashedPassword,
+      status: 'active',
+    });
+
+    // Create session and return tokens using helper method
+    const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      accessTokenExpiresAt: tokens.accessTokenExpiresAt,
+      refreshTokenExpiresAt: tokens.refreshTokenExpiresAt,
+    };
   }
 
   async getActiveSessions(userId: string) {

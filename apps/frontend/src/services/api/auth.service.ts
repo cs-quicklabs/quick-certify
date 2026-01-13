@@ -46,6 +46,11 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
+export interface AcceptInvitationRequest {
+  token: string;
+  password: string;
+}
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -164,6 +169,17 @@ export const authService = {
   },
 
   /**
+   * Accept invitation and set password
+   */
+  async acceptInvitation(data: AcceptInvitationRequest): Promise<AuthTokens> {
+    const response = await apiClient.post<ApiResponse<AuthTokens>>('/auth/accept-invitation', data);
+    if (response.data.success) {
+      setTokens(response.data.data.accessToken, response.data.data.refreshToken);
+    }
+    return response.data.data;
+  },
+
+  /**
    * Logout current session
    */
   async logout(): Promise<void> {
@@ -189,8 +205,21 @@ export const authService = {
    * Get current user
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<ApiResponse<User>>('/profile/me');
-    return response.data.data;
+    const response = await apiClient.get<ApiResponse<any>>('/profile/me');
+    const profileData = response.data.data;
+    // Map profile response to User interface format
+    return {
+      id: profileData.id,
+      email: profileData.email,
+      firstName: profileData.firstName,
+      lastName: profileData.lastName,
+      avatarUrl: profileData.avatarUrl,
+      organizationId: profileData.organizationId,
+      roleId: profileData.roleId,
+      role: profileData.role,
+      // sessionHash is not available from profile endpoint, but it's optional
+      sessionHash: undefined,
+    };
   },
 };
 

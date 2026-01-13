@@ -66,3 +66,33 @@ export function useDeleteTeamMember() {
     },
   });
 }
+
+export function useCancelInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (uuid: string) => teamService.cancelInvitation(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TEAM_KEYS.lists() });
+    },
+  });
+}
+
+export function useResendInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (uuid: string) => teamService.resendInvitation(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TEAM_KEYS.lists() });
+    },
+  });
+}
+
+export function useRestoreUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (uuid: string) => teamService.restoreUser(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TEAM_KEYS.lists() });
+    },
+  });
+}

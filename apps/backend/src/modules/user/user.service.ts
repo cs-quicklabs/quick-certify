@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -148,7 +149,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       const inviterName = currentUser
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.uuid}`;
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
       this.mailService
         .sendInvitationEmail(user.email, {
           inviterName,
@@ -215,6 +216,54 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return this.findOne(id) as Promise<UserEntity>;
   }
 
+  async cancelInvitation(id: string): Promise<UserEntity> {
+    const user = await this.userModel.findByPk(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.status !== 'invited') {
+      throw new BadRequestException('User is not in invited status');
+    }
+
+    await user.update({ status: 'inactive' });
+    return this.findOne(id) as Promise<UserEntity>;
+  }
+
+  async resendInvitation(id: string, currentUser?: CurrentUser): Promise<UserEntity> {
+    const user = await this.userModel.findByPk(id, {
+      include: [OrganizationEntity],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.status !== 'inactive') {
+      throw new BadRequestException('User is not in inactive status');
+    }
+
+    // Update status to invited
+    await user.update({ status: 'invited' });
+
+    // Send invitation email
+    const inviterName = currentUser
+      ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
+      : 'Administrator';
+    const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
+    const organization = await this.organizationModel.findByPk(user.organization_id);
+    if (organization) {
+      this.mailService
+        .sendInvitationEmail(user.email, {
+          inviterName,
+          organizationName: organization.name,
+          inviteLink,
+        })
+        .catch(console.error);
+    }
+
+    return this.findOne(id) as Promise<UserEntity>;
+  }
+
   // Multi-tenant methods
   override async findAllByOrganization(
     organizationId: string,
@@ -262,7 +311,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     organizationId: string,
   ): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { uuid, organization_id: organizationId },
+      where: { id: uuid, organization_id: organizationId },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },

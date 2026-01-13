@@ -32,6 +32,7 @@ export interface CreateTeamMemberRequest {
   email: string;
   password?: string; // Optional for invitations
   roleId: string;
+  organizationId: string;
 }
 
 export interface UpdateTeamMemberRequest {
@@ -89,6 +90,21 @@ export const teamService = {
 
   async deleteTeamMember(uuid: string): Promise<{ deleted: boolean }> {
     const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(`/users/${uuid}`);
+    return response.data.data;
+  },
+
+  async cancelInvitation(uuid: string): Promise<TeamMember> {
+    const response = await apiClient.post<ApiResponse<TeamMember>>(`/users/${uuid}/cancel-invitation`, {});
+    return response.data.data;
+  },
+
+  async resendInvitation(uuid: string): Promise<TeamMember> {
+    const response = await apiClient.post<ApiResponse<TeamMember>>(`/users/${uuid}/resend-invitation`, {});
+    return response.data.data;
+  },
+
+  async restoreUser(uuid: string): Promise<TeamMember> {
+    const response = await apiClient.post<ApiResponse<TeamMember>>(`/users/${uuid}/restore`, {});
     return response.data.data;
   },
 

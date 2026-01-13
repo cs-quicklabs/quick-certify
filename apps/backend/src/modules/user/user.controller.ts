@@ -104,7 +104,7 @@ export class UserController {
   @Delete(':uuid')
   @UseGuards(RolesGuard, OrganizationGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Delete user (soft delete) (Admin/Super Admin only)' })
+  @ApiOperation({ summary: 'Delete user (soft delete - archives user) (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
@@ -125,8 +125,46 @@ export class UserController {
     return new SuccessResponse('User deleted successfully', { deleted: true });
   }
 
+  @Post(':uuid/cancel-invitation')
+  @UseGuards(RolesGuard, OrganizationGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Cancel invitation (Admin/Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Invitation cancelled successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async cancelInvitation(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const existingUser = await this.userService.findOneByUuidAndOrganization(
+      uuid,
+      user.organizationId,
+    );
+    if (!existingUser) {
+      return new SuccessResponse('User not found', null);
+    }
+
+    const updatedUser = await this.userService.cancelInvitation(existingUser.id);
+    return new SuccessResponse('Invitation cancelled successfully', updatedUser);
+  }
+
+  @Post(':uuid/resend-invitation')
+  @UseGuards(RolesGuard, OrganizationGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Resend invitation to inactive user (Admin/Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Invitation sent successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async resendInvitation(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const existingUser = await this.userService.findOneByUuidAndOrganization(
+      uuid,
+      user.organizationId,
+    );
+    if (!existingUser) {
+      return new SuccessResponse('User not found', null);
+    }
+
+    const updatedUser = await this.userService.resendInvitation(existingUser.id, user);
+    return new SuccessResponse('Invitation sent successfully', updatedUser);
+  }
+
   @Post(':uuid/restore')
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard, OrganizationGuard)
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Restore deleted user (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User restored successfully' })

@@ -8,6 +8,7 @@ export interface AuthConfig {
   jwtRefreshTokenExpiresIn: number;
   bcryptSaltRounds: number;
   passwordResetExpiresIn: number;
+  invitationExpiresIn: number;
   googleClientId?: string;
   googleClientSecret?: string;
   googleCallbackUrl?: string;
@@ -33,6 +34,10 @@ class EnvironmentVariablesValidator {
   @IsNumber()
   @IsOptional()
   PASSWORD_RESET_EXPIRES_IN?: number;
+
+  @IsNumber()
+  @IsOptional()
+  INVITATION_EXPIRES_IN?: number;
 
   @IsString()
   @IsOptional()
@@ -67,6 +72,10 @@ export default registerAs<AuthConfig>('auth', () => {
     passwordResetExpiresIn: process.env.PASSWORD_RESET_EXPIRES_IN
       ? parseInt(process.env.PASSWORD_RESET_EXPIRES_IN, 10)
       : 600,
+    // Invitation expires in 7 days (in seconds)
+    invitationExpiresIn: process.env.INVITATION_EXPIRES_IN
+      ? parseInt(process.env.INVITATION_EXPIRES_IN, 10)
+      : 604800,
     googleClientId: process.env.GOOGLE_CLIENT_ID,
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL,

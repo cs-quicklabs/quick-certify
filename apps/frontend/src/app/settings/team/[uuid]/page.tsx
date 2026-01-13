@@ -47,7 +47,7 @@ export default function TeamMemberPage() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
         <p className="text-gray-500">Team member not found.</p>
         <button
-          onClick={() => router.push('/dashboard/teams')}
+          onClick={() => router.push('/settings/team')}
           className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
         >
           ← Back to team
@@ -77,7 +77,7 @@ export default function TeamMemberPage() {
           <p className="mt-1 text-sm text-gray-500 ml-8">Team member details</p>
         </div>
         <Link
-          href={`/dashboard/teams/${uuid}/edit`}
+          href={`/settings/team/${uuid}/edit`}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
         >
           Edit Member
