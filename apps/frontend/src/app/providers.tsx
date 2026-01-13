@@ -5,14 +5,18 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
+import { useCrossTabLogout } from '@/hooks/useCrossTabLogout';
 import { env } from '@/config';
 
 /**
  * Auth Initializer
- * Initializes auth state on app load
+ * Initializes auth state on app load and handles cross-tab logout
  */
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { initialize, isInitialized } = useAuthStore();
+
+  // Handle cross-tab logout - when user logs in from another tab, logout current tab
+  useCrossTabLogout();
 
   useEffect(() => {
     if (!isInitialized) {

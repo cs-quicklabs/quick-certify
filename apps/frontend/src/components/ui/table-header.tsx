@@ -15,7 +15,7 @@ export function TableHeader({ children, className = '' }: TableHeaderProps) {
     return (
         <th
             scope="col"
-            className={`px-4 py-3 text-xs text-gray-700 uppercase ${className}`}
+            className={`px-4 py-2 text-xs text-gray-700 uppercase ${className}`}
         >
             {children}
         </th>

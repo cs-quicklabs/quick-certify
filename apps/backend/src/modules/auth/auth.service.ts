@@ -612,6 +612,9 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
+    // Revoke all existing sessions for this user (single active session policy)
+    await this.sessionService.revokeAllForUser(user.id);
+
     const session = await this.sessionService.create({
       userId: user.id,
       expiresAt: new Date(Date.now() + this.refreshTokenExpiresIn * 1000),

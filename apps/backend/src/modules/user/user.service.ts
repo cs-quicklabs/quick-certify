@@ -157,7 +157,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         })
         .catch(console.error);
     } else {
-      this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+    this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
     }
 
     return this.findOne(user.id) as Promise<UserEntity>;

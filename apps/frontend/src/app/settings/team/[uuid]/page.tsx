@@ -76,12 +76,16 @@ export default function TeamMemberPage() {
           </div>
           <p className="mt-1 text-sm text-gray-500 ml-8">Team member details</p>
         </div>
-        <Link
-          href={`/settings/team/${uuid}/edit`}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Edit Member
-        </Link>
+        <div className="flex space-x-4">
+          <div className="flex space-x-2 items-center w-full">
+            <Link
+              href={`/settings/team/${uuid}/edit`}
+              className="btn-primary w-full"
+            >
+              Edit Member
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Details */}
@@ -106,9 +110,8 @@ export default function TeamMemberPage() {
             <p className="text-sm text-gray-500">Status</p>
             <p className="mt-1 flex items-center gap-2">
               <span
-                className={`w-2 h-2 rounded-full ${
-                  member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                }`}
+                className={`w-2 h-2 rounded-full ${member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                  }`}
               />
               <span className="text-sm text-gray-900 capitalize">{member.status}</span>
             </p>

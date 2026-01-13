@@ -21,6 +21,9 @@ export function Header() {
     window.location.href = '/login';
   };
 
+  // Check if user is admin or super_admin
+  const isAdminOrSuperAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+
   return (
     <nav className="bg-gray-800">
       <div className="mx-auto px-2 sm:px-4 lg:px-8">
@@ -197,14 +200,16 @@ export function Header() {
                       >
                         Profile Settings
                       </Link>
-                      <Link
-                        href="/settings/account/general-information"
-                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                        role="menuitem"
-                        tabIndex={-1}
-                      >
-                        Account Settings
-                      </Link>
+                      {isAdminOrSuperAdmin && (
+                        <Link
+                          href="/settings/account/general-information"
+                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                          role="menuitem"
+                          tabIndex={-1}
+                        >
+                          Account Settings
+                        </Link>
+                      )}
                       <Link
                         href="/settings/event/type"
                         className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
@@ -213,14 +218,16 @@ export function Header() {
                       >
                         Event Settings
                       </Link>
-                      <Link
-                        href="/settings/team"
-                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                        role="menuitem"
-                        tabIndex={-1}
-                      >
-                        Team
-                      </Link>
+                      {isAdminOrSuperAdmin && (
+                        <Link
+                          href="/settings/team"
+                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                          role="menuitem"
+                          tabIndex={-1}
+                        >
+                          Team
+                        </Link>
+                      )}
                     </div>
                     <div className="py-1" role="none">
                       <button
@@ -319,13 +326,15 @@ export function Header() {
               >
                 Profile Settings
               </Link>
-              <Link
-                href="/settings/account/general-information"
-                className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Account Settings
-              </Link>
+              {isAdminOrSuperAdmin && (
+                <Link
+                  href="/settings/account/general-information"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Account Settings
+                </Link>
+              )}
               <Link
                 href="/settings/event/type"
                 className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -333,13 +342,15 @@ export function Header() {
               >
                 Event Settings
               </Link>
-              <Link
-                href="/settings/team"
-                className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Team
-              </Link>
+              {isAdminOrSuperAdmin && (
+                <Link
+                  href="/settings/team"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Team
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={handleSignOut}

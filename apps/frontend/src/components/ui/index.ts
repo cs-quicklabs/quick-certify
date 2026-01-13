@@ -1,6 +1,7 @@
 export * from './input';
 export * from './checkbox';
 export * from './table-header';
+export * from './table';
 export * from './button';
 export * from './alert';
 export * from './divider';

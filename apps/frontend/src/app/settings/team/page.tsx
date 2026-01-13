@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Edit2, X, Mail, UserCheck } from 'lucide-react';
+import { Edit2, X, Mail, UserCheck, Eye } from 'lucide-react';
 import { useTeamMembers, useCancelInvitation, useDeleteTeamMember, useResendInvitation, useRestoreUser } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
-import { ConfirmationDialog, TableHeader } from '@/components';
+import { ConfirmationDialog, Table } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
 
 /**
@@ -77,21 +77,14 @@ export default function TeamsPage() {
     return roleMap[role] || role;
   };
 
-  // Person icon for role badge
-  const PersonIcon = () => (
-    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-      <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-    </svg>
-  );
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
-  };
 
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
     setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  const handleView = (memberUuid: string) => {
+    router.push(`/settings/team/${memberUuid}`);
   };
 
   const handleEdit = (memberUuid: string) => {
@@ -309,134 +302,180 @@ export default function TeamsPage() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <TableHeader>User</TableHeader>
-              <TableHeader>Role</TableHeader>
-              <TableHeader>Email</TableHeader>
-              <TableHeader>Status</TableHeader>
-              <TableHeader>Last Login</TableHeader>
-              <TableHeader>Added On</TableHeader>
-              <TableHeader>Actions</TableHeader>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {isLoading ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
-                  <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  </div>
-                </td>
-              </tr>
-            ) : members.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  {searchQuery ? 'No matching team members found.' : 'No team members found.'}
-                </td>
-              </tr>
-            ) : (
-              members.map((member) => (
-                <tr key={member.id} className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <Link
-                      href={`/settings/team/${member.uuid}`}
-                      className="text-sm font-medium text-gray-900 hover:underline"
+      <div>
+        <Table<TeamMember>
+          columns={[
+            {
+              key: 'user',
+              header: 'User',
+              render: (member) => {
+                const isCurrentUser = user?.email === member.email;
+                return (
+                  <Link
+                    href={`/settings/team/${member.uuid || member.id}`}
+                    className="text-sm font-medium text-gray-900 hover:underline"
+                  >
+                    {member.first_name} {member.last_name}
+                    {isCurrentUser && <span className="text-gray-500 ml-1">(You)</span>}
+                  </Link>
+                );
+              },
+            },
+            {
+              key: 'role',
+              header: 'Role',
+              render: (member) => (
+                <span className="inline-flex font-semibold items-center bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 gap-1">
+                  <svg
+                    className="h-3.5 w-3.5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                    />
+                  </svg>
+                  <span>{getRoleDisplay(member.role?.role)}</span>
+                </span>
+              ),
+            },
+            {
+              key: 'email',
+              header: 'Email',
+              render: (member) => <span className="text-sm text-gray-500">{member.email}</span>,
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (member) => (
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-2 h-2 rounded-full ${member.status === 'active'
+                      ? 'bg-green-500'
+                      : member.status === 'inactive'
+                        ? 'bg-yellow-500'
+                        : member.status === 'invited'
+                          ? 'bg-blue-500'
+                          : 'bg-gray-400'
+                      }`}
+                  />
+                  <span className="text-sm text-gray-900 capitalize">{member.status}</span>
+                </div>
+              ),
+            },
+            {
+              key: 'last_login_at',
+              header: 'Last Login',
+              render: (member) => (
+                <span className="text-sm text-gray-500">{formatDate(member.last_login_at)}</span>
+              ),
+            },
+            {
+              key: 'createdAt',
+              header: 'Added On',
+              render: (member) => (
+                <span className="text-sm text-gray-500">{formatDate(member.createdAt)}</span>
+              ),
+            },
+            {
+              key: 'actions',
+              header: 'Actions',
+              render: (member) => {
+                const isCurrentUser = user?.email === member.email;
+                return (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(member.uuid || member.id);
+                      }}
+                      className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
+                      aria-label="View"
+                      title="View"
                     >
-                      {member.first_name} {member.last_name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded border border-blue-100">
-                      <PersonIcon />
-                      <span>{getRoleDisplay(member.role?.role)}</span>
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                    {member.email}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2 h-2 rounded-full ${member.status === 'active'
-                          ? 'bg-green-500'
-                          : member.status === 'inactive'
-                            ? 'bg-yellow-500'
-                            : member.status === 'invited'
-                              ? 'bg-blue-500'
-                              : 'bg-gray-400'
-                          }`}
-                      />
-                      <span className="text-sm text-gray-900 capitalize">{member.status}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(member.last_login_at)}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(member.createdAt)}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center gap-2">
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    {!isCurrentUser && member.status === 'active' && (
                       <button
                         type="button"
-                        onClick={() => handleEdit(member.uuid)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(member.uuid || member.id);
+                        }}
                         className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
                         aria-label="Edit"
                         title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      {member.status === 'invited' ? (
-                        <button
-                          type="button"
-                          onClick={() => handleCancelInvitation(member)}
-                          className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
-                          aria-label="Cancel Invitation"
-                          title="Cancel Invitation"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      ) : member.status === 'inactive' ? (
-                        <button
-                          type="button"
-                          onClick={() => handleInvite(member)}
-                          className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
-                          aria-label="Resend Invitation"
-                          title="Resend Invitation"
-                        >
-                          <Mail className="w-4 h-4" />
-                        </button>
-                      ) : member.status === 'archived' ? (
-                        <button
-                          type="button"
-                          onClick={() => handleActivate(member)}
-                          className="p-2 text-gray-600 hover:text-green-600 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
-                          aria-label="Activate"
-                          title="Activate"
-                        >
-                          <UserCheck className="w-4 h-4" />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleRemove(member)}
-                          className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
-                          aria-label="Remove"
-                          title="Remove"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                    )}
+                    {!isCurrentUser && member.status === 'invited' ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelInvitation(member);
+                        }}
+                        className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+                        aria-label="Cancel Invitation"
+                        title="Cancel Invitation"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    ) : !isCurrentUser && member.status === 'inactive' ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInvite(member);
+                        }}
+                        className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
+                        aria-label="Resend Invitation"
+                        title="Resend Invitation"
+                      >
+                        <Mail className="w-4 h-4" />
+                      </button>
+                    ) : !isCurrentUser && member.status === 'archived' ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleActivate(member);
+                        }}
+                        className="p-2 text-gray-600 hover:text-green-600 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
+                        aria-label="Activate"
+                        title="Activate"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                      </button>
+                    ) : !isCurrentUser && member.status === 'active' ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemove(member);
+                        }}
+                        className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+                        aria-label="Remove"
+                        title="Remove"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              },
+            },
+          ]}
+          data={members}
+          isLoading={isLoading}
+          emptyMessage={searchQuery ? 'No matching team members found.' : 'No team members found.'}
+        />
       </div>
 
       {/* Pagination */}
