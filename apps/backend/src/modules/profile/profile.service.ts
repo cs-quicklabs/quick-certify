@@ -61,16 +61,10 @@ export class ProfileService {
       throw new NotFoundException('User not found');
     }
 
-    const updateData: Partial<UserEntity> = {};
-
-    if (dto.firstName !== undefined) {
-      updateData.first_name = dto.firstName;
-    }
-
-    if (dto.lastName !== undefined) {
-      updateData.last_name = dto.lastName;
-    }
-
+    const updateData: Partial<UserEntity> = {
+      first_name: dto.firstName,
+      last_name: dto.lastName || null,
+    };
     if (dto.avatarUrl !== undefined) {
       updateData.avatar_url = dto.avatarUrl;
     }
