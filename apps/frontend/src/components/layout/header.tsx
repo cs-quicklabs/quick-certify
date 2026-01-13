@@ -177,14 +177,14 @@ export function Header() {
                 </div>
                 {menuOpened && (
                   <div
-                    className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none"
+                    className="absolute right-0 z-10 mt-2 w-64 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg border border-gray-200 focus:outline-none"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="menu-button"
                     tabIndex={-1}
                   >
                     <div className="px-4 py-3" role="none">
-                      <p className="text-sm" role="none">
+                      <p className="text-sm break-words max-w-xs" role="none" style={{ wordBreak: 'break-all' }}>
                         {user?.email || 'User'}
                       </p>
                       <p className="text-xs text-gray-700" role="none">

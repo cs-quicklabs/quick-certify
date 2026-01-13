@@ -80,6 +80,12 @@ function createApiClient(): AxiosInstance {
           errorData?.message === 'Access token is required' || errorData?.errorCode === 401;
 
         if (isAccessTokenRequiredError) {
+          // Skip redirect/clear for auth endpoints to prevent reload flicker on auth failures
+          const isAuthEndpoint = originalRequest.url?.includes('/auth/');
+          if (isAuthEndpoint) {
+            return Promise.reject(error);
+          }
+
           // Clear tokens and storage immediately - don't attempt refresh
           clearTokens();
           if (typeof window !== 'undefined') {
@@ -94,7 +100,9 @@ function createApiClient(): AxiosInstance {
         }
 
         // For other 401 errors, attempt token refresh
-        if (!originalRequest._retry) {
+        // Skip refresh for auth-related endpoints (login, register, etc.) to prevent redirect loop
+        const isAuthEndpoint = originalRequest.url?.includes('/auth/');
+        if (!originalRequest._retry && !isAuthEndpoint) {
           originalRequest._retry = true;
 
           try {

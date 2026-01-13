@@ -42,29 +42,24 @@ export default function EditTeamMemberPage() {
     ) || [];
   }, [roles]);
 
-  // Create form fields with role and status options
+  // Create form fields with role options
   const formFields = useMemo(() => {
-    return editTeamMemberFormFields.map((field) => {
-      if (field.name === 'roleId') {
-        return {
-          ...field,
-          options: filteredRoles.map((role) => ({
-            label: role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
-            value: role.id,
-          })),
-        };
-      }
-      if (field.name === 'status') {
-        return {
-          ...field,
-          options: [
-            { label: 'Active', value: 'active' },
-            { label: 'Inactive', value: 'inactive' },
-          ],
-        };
-      }
-      return field;
-    });
+    const roleField = editTeamMemberFormFields.find((field) => field.name === 'roleId');
+    if (roleField) {
+      return editTeamMemberFormFields.map((field) => {
+        if (field.name === 'roleId') {
+          return {
+            ...field,
+            options: filteredRoles.map((role) => ({
+              label: role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
+              value: role.id,
+            })),
+          };
+        }
+        return field;
+      });
+    }
+    return editTeamMemberFormFields;
   }, [filteredRoles]);
 
   const formConfig: FormConfig<typeof editTeamMemberSchema> = {
@@ -73,6 +68,9 @@ export default function EditTeamMemberPage() {
     fields: formFields,
     schema: editTeamMemberSchema,
     submitLabel: 'Edit Member',
+    layout: 'grid',
+    onCancel: () => router.back(),
+    cancelLabel: 'Cancel',
     onSubmit: async (data: EditTeamMemberFormData) => {
       await updateMutation.mutateAsync(data);
       router.push('/settings/team');
@@ -86,7 +84,6 @@ export default function EditTeamMemberPage() {
       last_name: member.last_name || '',
       email: member.email || '',
       roleId: member.role_id || '',
-      status: (member.status === 'active' || member.status === 'inactive' ? member.status : 'active') as 'active' | 'inactive',
     }
     : undefined;
 
@@ -115,8 +112,8 @@ export default function EditTeamMemberPage() {
   }
 
   return (
-    <div className="flex justify-center">
-      <div className="w-full max-w-xl">
+    <div className="flex mt-8 justify-center">
+      <div className="w-full max-w-2xl">
         <ConfigForm
           config={formConfig}
           initialValues={initialValues}
