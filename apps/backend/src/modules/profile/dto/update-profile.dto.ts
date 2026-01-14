@@ -10,9 +10,10 @@ export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'John', description: 'First name' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
+  @IsOptional()
   @MinLength(1, { message: 'First name cannot be empty' })
   @MaxLength(100, { message: 'First name must not exceed 100 characters' })
-  firstName!: string;
+  firstName?: string;
 
   @ApiPropertyOptional({ example: 'Doe', description: 'Last name' })
   @IsString()
