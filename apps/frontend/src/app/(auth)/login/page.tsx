@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -15,11 +16,17 @@ export default function LoginPage() {
   const { setUser, setError: setGlobalError, clearError } = useAuthStore();
   const globalError = useAuthStore((state) => state.error);
 
+  // Clear error on page mount/refresh
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
+    // @ts-expect-error - Type compatibility issue between zod 3.23.8 and @hookform/resolvers 3.9.0
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
