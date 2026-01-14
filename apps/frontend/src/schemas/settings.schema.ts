@@ -6,7 +6,7 @@ export const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
 
 // Profile Settings Schema
 export const profileSettingsSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
+  firstName: z.string().regex(/\S/, 'First name must not be only spaces').min(1, { message: 'First name is Required' }),
   lastName: z.string().optional(),
   email: z.string().email('Invalid email address').optional(),
   avatarUrl: z.string().optional(),
