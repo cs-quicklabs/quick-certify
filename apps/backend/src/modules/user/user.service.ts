@@ -157,7 +157,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         })
         .catch(console.error);
     } else {
-    this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+      this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
     }
 
     return this.findOne(user.id) as Promise<UserEntity>;
@@ -167,6 +167,23 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const user = await this.findOneOrThrow(id);
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
+
+    // If status is being changed to archived, handle it as soft delete
+    if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
+      // Update status to archived (soft delete)
+      await user.update({ status: 'archived' });
+      // Logout user from all devices when archived
+      await this.logoutUserFromAllDevices(user.id);
+      // Return the archived user (need to find it without the archived filter)
+      return this.userModel.findOne({
+        where: { id },
+        include: [
+          { model: RoleEntity, attributes: ['id', 'role'] },
+          { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
+        ],
+        attributes: { exclude: ['password_hash'] },
+      }) as Promise<UserEntity>;
+    }
 
     // Validate email if changing
     if (dto.email && dto.email.toLowerCase() !== user.email) {

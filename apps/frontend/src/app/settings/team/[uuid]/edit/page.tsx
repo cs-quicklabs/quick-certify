@@ -72,7 +72,15 @@ export default function EditTeamMemberPage() {
     onCancel: () => router.back(),
     cancelLabel: 'Cancel',
     onSubmit: async (data: EditTeamMemberFormData) => {
-      await updateMutation.mutateAsync(data);
+      // Map form data to API request format
+      const updateData = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        roleId: data.roleId,
+        status: data.status || undefined,
+      };
+      await updateMutation.mutateAsync(updateData);
       router.push('/settings/team');
     },
   };
@@ -84,6 +92,7 @@ export default function EditTeamMemberPage() {
       last_name: member.last_name || '',
       email: member.email || '',
       roleId: member.role_id || '',
+      status: member.status === 'active' ? 'active' : 'archived',
     }
     : undefined;
 
