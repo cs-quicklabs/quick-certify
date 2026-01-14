@@ -25,6 +25,10 @@ export function useTeamMember(uuid: string, enabled = true) {
     queryKey: TEAM_KEYS.detail(uuid),
     queryFn: () => teamService.getTeamMember(uuid),
     enabled: enabled && !!uuid,
+    // Always refresh when visiting the detail/edit page, even if cached
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 

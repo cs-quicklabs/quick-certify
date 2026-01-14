@@ -145,7 +145,50 @@ module.exports = {
                 transaction,
             });
 
-            // 3. Create user table (depends on organization and role)
+            // 3. Create skill table (depends on organization)
+            await queryInterface.createTable(
+                'skill',
+                {
+                    id: {
+                        type: DataTypes.STRING(21),
+                        primaryKey: true,
+                        allowNull: false,
+                    },
+                    organization_id: {
+                        type: DataTypes.STRING(21),
+                        allowNull: false,
+                        references: {
+                            model: 'organization',
+                            key: 'id',
+                        },
+                        onUpdate: 'CASCADE',
+                        onDelete: 'CASCADE',
+                    },
+                    name: {
+                        type: DataTypes.STRING(150),
+                        allowNull: false,
+                    },
+                    created_at: {
+                        type: DataTypes.DATE,
+                        allowNull: false,
+                        defaultValue: DataTypes.NOW,
+                    },
+                    updated_at: {
+                        type: DataTypes.DATE,
+                        allowNull: false,
+                        defaultValue: DataTypes.NOW,
+                    },
+                },
+                { transaction },
+            );
+
+            await queryInterface.addIndex('skill', ['organization_id', 'name'], {
+                name: 'IDX_SKILL_ORG_NAME',
+                unique: true,
+                transaction,
+            });
+
+            // 4. Create user table (depends on organization and role)
             await queryInterface.createTable(
                 'user',
                 {
@@ -241,7 +284,7 @@ module.exports = {
                 transaction,
             });
 
-            // 4. Create session table (depends on user)
+            // 5. Create session table (depends on user)
             await queryInterface.createTable(
                 'session',
                 {
@@ -318,7 +361,7 @@ module.exports = {
                 transaction,
             });
 
-            // 5. Create password_reset table (depends on user)
+            // 6. Create password_reset table (depends on user)
             await queryInterface.createTable(
                 'password_reset',
                 {
@@ -399,6 +442,7 @@ module.exports = {
             await queryInterface.dropTable('password_reset', { transaction });
             await queryInterface.dropTable('session', { transaction });
             await queryInterface.dropTable('user', { transaction });
+            await queryInterface.dropTable('skill', { transaction });
             await queryInterface.dropTable('organization', { transaction });
             await queryInterface.dropTable('role', { transaction });
 

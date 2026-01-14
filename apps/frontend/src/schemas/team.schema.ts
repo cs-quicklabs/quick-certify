@@ -19,6 +19,7 @@ export const editTeamMemberSchema = z.object({
   last_name: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   roleId: z.string().min(1, 'Role is required'),
+  status: z.enum(['active', 'archived']).optional(),
 });
 
 export type EditTeamMemberFormData = z.infer<typeof editTeamMemberSchema>;

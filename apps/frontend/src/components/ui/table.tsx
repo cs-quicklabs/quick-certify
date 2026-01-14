@@ -44,58 +44,67 @@ export function Table<T = unknown>({
     };
 
     return (
-        <div className={`overflow-x-auto ${className}`}>
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        {columns.map((column) => (
-                            <TableHeader key={column.key} className={column.headerClassName}>
-                                {column.header}
-                            </TableHeader>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                    {isLoading ? (
+        <>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    .table-component tbody tr:last-child {
+                        border-bottom: none !important;
+                    }
+                `
+            }} />
+            <div className={`overflow-x-auto table-component ${className}`}>
+                <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
-                            <td colSpan={columns.length} className="px-6 py-12 text-center">
-                                <div className="flex justify-center">
-                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                                </div>
-                                {loadingMessage && (
-                                    <p className="mt-2 text-sm text-gray-500">{loadingMessage}</p>
-                                )}
-                            </td>
+                            {columns.map((column) => (
+                                <TableHeader key={column.key} className={column.headerClassName}>
+                                    {column.header}
+                                </TableHeader>
+                            ))}
                         </tr>
-                    ) : data.length === 0 ? (
-                        <tr>
-                            <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">
-                                {emptyMessage}
-                            </td>
-                        </tr>
-                    ) : (
-                        data.map((item, index) => (
-                            <tr
-                                key={index}
-                                className={getRowClassName(item, index)}
-                                onClick={() => onRowClick?.(item, index)}
-                            >
-                                {columns.map((column) => (
-                                    <td
-                                        key={column.key}
-                                        className={`px-4 py-1.5 whitespace-nowrap ${column.className || ''}`}
-                                    >
-                                        {column.render
-                                            ? column.render(item, index)
-                                            : ((item as Record<string, unknown>)[column.key] as React.ReactNode)}
-                                    </td>
-                                ))}
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {isLoading ? (
+                            <tr>
+                                <td colSpan={columns.length} className="px-6 py-12 text-center">
+                                    <div className="flex justify-center">
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                    </div>
+                                    {loadingMessage && (
+                                        <p className="mt-2 text-sm text-gray-500">{loadingMessage}</p>
+                                    )}
+                                </td>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-        </div>
+                        ) : data.length === 0 ? (
+                            <tr>
+                                <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">
+                                    {emptyMessage}
+                                </td>
+                            </tr>
+                        ) : (
+                            data.map((item, index) => (
+                                <tr
+                                    key={index}
+                                    className={getRowClassName(item, index)}
+                                    onClick={() => onRowClick?.(item, index)}
+                                >
+                                    {columns.map((column) => (
+                                        <td
+                                            key={column.key}
+                                            className={`px-4 py-1.5 whitespace-nowrap ${column.className || ''}`}
+                                        >
+                                            {column.render
+                                                ? column.render(item, index)
+                                                : ((item as Record<string, unknown>)[column.key] as React.ReactNode)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </>
     );
 }
 

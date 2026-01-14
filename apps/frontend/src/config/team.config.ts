@@ -62,8 +62,20 @@ export const editTeamMemberFormFields: FormFieldConfig[] = [
         label: 'User Role',
         type: 'select',
         required: true,
-        description: 'A team member can be either Admin, Manager or Designer.',
+        description: '',
         tooltipText: 'A team member can be either Admin, Manager or Designer.',
+    },
+    {
+        name: 'status',
+        label: 'Active',
+        type: 'select',
+        required: false,
+        description: '',
+        tooltipText: 'Mark member as active or inactive.',
+        options: [
+            { label: 'Active', value: 'active' },
+            { label: 'Inactive', value: 'archived' },
+        ],
     },
 ];
 
