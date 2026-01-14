@@ -14,10 +14,12 @@ const websiteUrlRegex = /^https?:\/\/.+$/i;
 export const generalInfoSchema = z.object({
   name: z
     .string()
+    .regex(/\S/, 'Organization name must not be only spaces')
     .min(1, 'Organization name is required')
     .max(150, 'Organization name must not exceed 150 characters'),
   description: z
     .string()
+    .regex(/\S/, 'Description must not be only spaces')
     .max(2000, 'Description must not exceed 2000 characters')
     .optional()
     .or(z.literal('')),
@@ -33,9 +35,15 @@ export const generalInfoSchema = z.object({
     .or(z.literal('')),
   linkedin_company_id: z
     .string()
-    .max(100, 'LinkedIn Company ID must not exceed 100 characters')
+    .transform((val) => val.trim())
+    .refine(
+      (val) => val === '' || /^\d{1,10}$/.test(val),
+      { message: 'LinkedIn Company ID must be up to 10 digits and numeric only' }
+    )
     .optional()
     .or(z.literal('')),
+
+
 });
 
 export type GeneralInfoFormData = z.infer<typeof generalInfoSchema>;
