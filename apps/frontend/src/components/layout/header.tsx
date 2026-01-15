@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
 
@@ -10,6 +11,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuthStore();
   const { data: profile } = useProfile();
+  const pathname = usePathname();
 
   // Get avatar URL from profile (most up-to-date) or fallback to user or default
   const avatarUrl =
@@ -42,25 +44,46 @@ export function Header() {
             </Link>
             <div className="hidden lg:ml-6 lg:block">
               <div className="flex space-x-2">
-                <Link href="/dashboard" className="selected-nav">
+                <Link
+                  href="/dashboard"
+                  className={pathname === '/dashboard' ? 'selected-nav' : 'unselected-nav'}
+                >
                   Dashboard
                 </Link>
-                <Link href="/events" className="unselected-nav">
+                <Link
+                  href="/events"
+                  className={pathname?.startsWith('/events') ? 'selected-nav' : 'unselected-nav'}
+                >
                   Events
                 </Link>
-                <Link href="/credentials" className="unselected-nav">
+                <Link
+                  href="/credentials"
+                  className={pathname === '/credentials' ? 'selected-nav' : 'unselected-nav'}
+                >
                   Credentials
                 </Link>
-                <Link href="/designs" className="unselected-nav">
+                <Link
+                  href="/designs"
+                  className={pathname === '/designs' ? 'selected-nav' : 'unselected-nav'}
+                >
                   Designs
                 </Link>
-                <Link href="/emails" className="unselected-nav">
+                <Link
+                  href="/emails"
+                  className={pathname === '/emails' ? 'selected-nav' : 'unselected-nav'}
+                >
                   Emails
                 </Link>
-                <Link href="/analytics" className="unselected-nav">
+                <Link
+                  href="/analytics"
+                  className={pathname === '/analytics' ? 'selected-nav' : 'unselected-nav'}
+                >
                   Analytics
                 </Link>
-                <Link href="/integrations" className="unselected-nav">
+                <Link
+                  href="/integrations"
+                  className={pathname === '/integrations' ? 'selected-nav' : 'unselected-nav'}
+                >
                   Integrations
                 </Link>
               </div>
@@ -211,7 +234,7 @@ export function Header() {
                         </Link>
                       )}
                       <Link
-                        href="/settings/event/type"
+                        href="/events"
                         className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
                         role="menuitem"
                         tabIndex={-1}
@@ -254,14 +277,20 @@ export function Header() {
           <div className="space-y-1 px-2 pb-3 pt-2">
             <Link
               href="/dashboard"
-              className="block rounded-sm bg-gray-900 px-3 py-2 text-base font-medium text-white"
+              className={`block rounded-sm px-3 py-2 text-base font-medium ${pathname === '/dashboard'
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Dashboard
             </Link>
             <Link
               href="/events"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={`block rounded-sm px-3 py-2 text-base font-medium ${pathname?.startsWith('/events')
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Events
@@ -336,7 +365,7 @@ export function Header() {
                 </Link>
               )}
               <Link
-                href="/settings/event/type"
+                href="/events"
                 className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >

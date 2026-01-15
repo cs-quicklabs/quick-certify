@@ -182,3 +182,73 @@ export const accountSidebarItems: SidebarItem[] = [
     ),
   },
 ];
+
+// Events Sidebar
+export const eventSidebarItems: SidebarItem[] = [
+  {
+    name: 'event-types',
+    label: 'Event Types',
+    href: '/events/event-types',
+    icon: (
+      <svg
+        className="w-6 h-6 text-gray-800 dark:text-white"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: 'event-levels',
+    label: 'Event Levels',
+    href: '/events/event-levels',
+    icon: (
+      <svg
+        className="w-6 h-6 text-gray-800 dark:text-white"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M4 6h16M4 12h16M4 18h16"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: 'event-formats',
+    label: 'Event Formats',
+    href: '/events/event-formats',
+    icon: (
+      <svg
+        className="w-6 h-6 text-gray-800 dark:text-white"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 0v16"
+        />
+      </svg>
+    ),
+  },
+];
