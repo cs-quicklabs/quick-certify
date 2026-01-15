@@ -1,16 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { Logo } from '@/components';
 
-/**
- * Authentication Error Page
- *
- * Displayed when Google OAuth authentication fails.
- */
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error') || 'Authentication failed';
 
@@ -54,3 +50,27 @@ export default function AuthErrorPage() {
   );
 }
 
+function AuthErrorSkeleton() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="mb-8">
+        <Logo size="lg" asLink={false} />
+      </div>
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+        <div className="flex justify-center mb-4">
+          <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+        </div>
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mx-auto mb-2"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-64 mx-auto"></div>
+      </div>
+    </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={<AuthErrorSkeleton />}>
+      <AuthErrorContent />
+    </Suspense>
+  );
+}

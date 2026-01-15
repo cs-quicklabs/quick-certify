@@ -6,10 +6,7 @@
 
 export const env = {
   // API Configuration
-  API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-
-  // Google OAuth
-  GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+  API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api',
 
   // App Configuration
   APP_NAME: 'Quick Certify',

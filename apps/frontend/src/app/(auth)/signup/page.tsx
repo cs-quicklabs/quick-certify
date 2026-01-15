@@ -1,20 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input, Button, Alert, Divider, GoogleSignInButton } from '@/components';
+import { Input, Button, Alert, GoogleSignInButton } from '@/components';
 import { registerSchema, RegisterFormData } from '@/schemas/auth.schema';
 import { authService } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
 
-/**
- * Signup Page
- */
-export default function SignupPage() {
+function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setUser } = useAuthStore();
@@ -174,5 +171,35 @@ export default function SignupPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+function SignupSkeleton() {
+  return (
+    <div className="p-6 sm:p-8 space-y-4 md:space-y-6 animate-pulse">
+      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-64 mb-6"></div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<SignupSkeleton />}>
+      <SignupContent />
+    </Suspense>
   );
 }

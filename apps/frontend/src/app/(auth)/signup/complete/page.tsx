@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -11,15 +11,7 @@ import { authService } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
 
-/**
- * Complete Google Signup Page
- *
- * This page is shown when a new user signs up with Google
- * and needs to provide organization details.
- *
- * Based on design: https://designs.quicklabs.in/quick-certify/signup/complete
- */
-export default function CompleteSignupPage() {
+function CompleteSignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setUser } = useAuthStore();
@@ -34,7 +26,6 @@ export default function CompleteSignupPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<GoogleSignupCompleteFormData>({
-    // @ts-ignore - Type compatibility issue between zod and hookform resolver
     resolver: zodResolver(googleSignupCompleteSchema),
     defaultValues: {
       firstName: '',
@@ -144,5 +135,28 @@ export default function CompleteSignupPage() {
         </p>
       </form>
     </div>
+  );
+}
+
+function CompleteSignupSkeleton() {
+  return (
+    <div className="p-6 sm:p-8 space-y-4 md:space-y-6 animate-pulse">
+      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-72 mb-6"></div>
+      <div className="space-y-4 md:space-y-6">
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </div>
+  );
+}
+
+export default function CompleteSignupPage() {
+  return (
+    <Suspense fallback={<CompleteSignupSkeleton />}>
+      <CompleteSignupContent />
+    </Suspense>
   );
 }

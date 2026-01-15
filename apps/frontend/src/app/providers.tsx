@@ -2,11 +2,11 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { GoogleOAuthProvider } from '@react-oauth/google';
+// import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useCrossTabLogout } from '@/hooks/useCrossTabLogout';
-import { env } from '@/config';
+// import { env } from '@/config';
 
 /**
  * Auth Initializer
@@ -52,13 +52,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   // Wrap with Google OAuth Provider if configured
-  if (env.GOOGLE_CLIENT_ID) {
-    return (
-      <GoogleOAuthProvider clientId={env.GOOGLE_CLIENT_ID}>
-        {content}
-      </GoogleOAuthProvider>
-    );
-  }
+  // if (env.GOOGLE_CLIENT_ID) {
+  //   return (
+  //     <GoogleOAuthProvider clientId={env.GOOGLE_CLIENT_ID}>
+  //       {content}
+  //     </GoogleOAuthProvider>
+  //   );
+  // }
 
   return content;
 }

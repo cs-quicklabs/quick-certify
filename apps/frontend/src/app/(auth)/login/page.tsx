@@ -26,7 +26,6 @@ export default function LoginPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
-    // @ts-expect-error - Type compatibility issue between zod 3.23.8 and @hookform/resolvers 3.9.0
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',

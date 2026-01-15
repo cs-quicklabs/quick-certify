@@ -2,6 +2,7 @@
  * Skill Service - API client for skill management
  */
 
+import { PaginatedResponse } from '@/types';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface Skill {
@@ -18,18 +19,6 @@ export interface CreateSkillRequest {
 
 export interface UpdateSkillRequest {
   name?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
 }
 
 export interface SkillFilters {
