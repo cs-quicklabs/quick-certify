@@ -9,7 +9,7 @@ import { useState } from 'react';
  */
 export default function EventFormatsPage() {
     const [newEventFormat, setNewEventFormat] = useState('');
-    const [eventFormats, setEventFormats] = useState<string[]>([]);
+    const [eventFormats, setEventFormats] = useState<string[]>(['Online', 'Offline', 'Hybrid']);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editingValue, setEditingValue] = useState('');
 
@@ -47,13 +47,13 @@ export default function EventFormatsPage() {
             <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Event Formats</h1>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Event formats specify the format or delivery method of the event. You can add new event
-                    formats, edit existing ones, or delete them.
+                    Event formats specify the structure of the event. You can add new event formats, edit
+                    existing ones, or delete them.
                 </p>
             </div>
 
             {/* Add New Event Format */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                     Add New Event Format
                 </h2>
@@ -70,9 +70,9 @@ export default function EventFormatsPage() {
                             id="new-event-format"
                             value={newEventFormat}
                             onChange={(e) => setNewEventFormat(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                             className="form-input-field w-full"
-                            placeholder="Enter event format name"
+                            placeholder="New event format"
                         />
                     </div>
                     <button onClick={handleAdd} className="btn-primary">
@@ -82,70 +82,67 @@ export default function EventFormatsPage() {
             </div>
 
             {/* Existing Event Formats */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Existing Event Formats</h2>
-                </div>
+            <div className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="table">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th className="table-head">EVENT FORMAT</th>
-                                <th className="table-head">ACTION</th>
+                                <th className="px-6 py-4 font-bold text-sm text-left text-gray-700">EVENT FORMAT</th>
+                                <th className="px-10 py-4 font-bold text-sm text-right text-gray-700">ACTION</th>
                             </tr>
                         </thead>
                         <tbody className="table-body">
-                            {eventFormats.length === 0 ? (
-                                <tr>
-                                    <td colSpan={2} className="table-cell text-center text-gray-500 dark:text-gray-400 py-8">
-                                        No event formats yet. Add your first event format above.
+                            {eventFormats.map((eventFormat, index) => (
+                                <tr
+                                    key={index}
+                                    className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
+                                        ? 'bg-white dark:bg-gray-800'
+                                        : index % 2 === 1
+                                            ? 'bg-gray-50 dark:bg-gray-700'
+                                            : 'bg-white dark:bg-gray-800'
+                                        }`}
+                                >
+                                    <td className="px-6 py-4">
+                                        {editingIndex === index ? (
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={editingValue}
+                                                    onChange={(e) => setEditingValue(e.target.value)}
+                                                    className="form-input-field flex-1 text-sm"
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(index)}
+                                                />
+                                                <button
+                                                    onClick={() => handleSaveEdit(index)}
+                                                    className="btn-primary text-sm px-3 py-1.5"
+                                                >
+                                                    Save
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-gray-900 dark:text-white">{eventFormat}</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        {editingIndex !== index && (
+                                            <div className="flex items-center justify-end gap-4 w-full">
+                                                <button
+                                                    onClick={() => handleEdit(index)}
+                                                    className="btn-inline-blue text-sm"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(index)}
+                                                    className="btn-inline-red text-sm"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
-                            ) : (
-                                eventFormats.map((eventFormat, index) => (
-                                    <tr key={index} className="border-b border-gray-200 dark:border-gray-700">
-                                        <td className="table-cell">
-                                            {editingIndex === index ? (
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={editingValue}
-                                                        onChange={(e) => setEditingValue(e.target.value)}
-                                                        className="form-input-field flex-1"
-                                                        onKeyPress={(e) => e.key === 'Enter' && handleSaveEdit(index)}
-                                                    />
-                                                    <button
-                                                        onClick={() => handleSaveEdit(index)}
-                                                        className="btn-primary text-sm px-3 py-1"
-                                                    >
-                                                        Save
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <span className="text-gray-900 dark:text-white">{eventFormat}</span>
-                                            )}
-                                        </td>
-                                        <td className="table-cell">
-                                            {editingIndex !== index && (
-                                                <div className="flex items-center gap-4">
-                                                    <button
-                                                        onClick={() => handleEdit(index)}
-                                                        className="btn-inline-blue"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(index)}
-                                                        className="btn-inline-red"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
+                            ))}
                         </tbody>
                     </table>
                 </div>

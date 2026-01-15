@@ -9,7 +9,13 @@ import { useState } from 'react';
  */
 export default function EventLevelsPage() {
     const [newEventLevel, setNewEventLevel] = useState('');
-    const [eventLevels, setEventLevels] = useState<string[]>([]);
+    const [eventLevels, setEventLevels] = useState<string[]>([
+        'Introductory',
+        'Foundational',
+        'Intermediate',
+        'Advanced',
+        'Professional',
+    ]);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editingValue, setEditingValue] = useState('');
 
@@ -47,13 +53,13 @@ export default function EventLevelsPage() {
             <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Event Levels</h1>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Event levels specify the level or tier of the event. You can add new event levels, edit
-                    existing ones, or delete them.
+                    Event levels specify the difficulty or complexity of the event. For example, beginner,
+                    advanced, or expert. You can add new event levels, edit existing ones, or delete them.
                 </p>
             </div>
 
             {/* Add New Event Level */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                     Add New Event Level
                 </h2>
@@ -70,9 +76,9 @@ export default function EventLevelsPage() {
                             id="new-event-level"
                             value={newEventLevel}
                             onChange={(e) => setNewEventLevel(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                             className="form-input-field w-full"
-                            placeholder="Enter event level name"
+                            placeholder="New event Level"
                         />
                     </div>
                     <button onClick={handleAdd} className="btn-primary">
@@ -82,70 +88,67 @@ export default function EventLevelsPage() {
             </div>
 
             {/* Existing Event Levels */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Existing Event Levels</h2>
-                </div>
+            <div className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="table">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th className="table-head">EVENT LEVEL</th>
-                                <th className="table-head">ACTION</th>
+                                <th className="px-6 py-4 font-bold text-sm text-left text-gray-700">EVENT LEVEL</th>
+                                <th className="px-10 py-4 font-bold text-sm text-right text-gray-700">ACTION</th>
                             </tr>
                         </thead>
                         <tbody className="table-body">
-                            {eventLevels.length === 0 ? (
-                                <tr>
-                                    <td colSpan={2} className="table-cell text-center text-gray-500 dark:text-gray-400 py-8">
-                                        No event levels yet. Add your first event level above.
+                            {eventLevels.map((eventLevel, index) => (
+                                <tr
+                                    key={index}
+                                    className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
+                                        ? 'bg-white dark:bg-gray-800'
+                                        : index % 2 === 1
+                                            ? 'bg-gray-50 dark:bg-gray-700'
+                                            : 'bg-white dark:bg-gray-800'
+                                        }`}
+                                >
+                                    <td className="px-6 py-4">
+                                        {editingIndex === index ? (
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={editingValue}
+                                                    onChange={(e) => setEditingValue(e.target.value)}
+                                                    className="form-input-field flex-1 text-sm"
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(index)}
+                                                />
+                                                <button
+                                                    onClick={() => handleSaveEdit(index)}
+                                                    className="btn-primary text-sm px-3 py-1.5"
+                                                >
+                                                    Save
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-gray-900 dark:text-white">{eventLevel}</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        {editingIndex !== index && (
+                                            <div className="flex items-center justify-end gap-4 w-full">
+                                                <button
+                                                    onClick={() => handleEdit(index)}
+                                                    className="btn-inline-blue text-sm"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(index)}
+                                                    className="btn-inline-red text-sm"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
-                            ) : (
-                                eventLevels.map((eventLevel, index) => (
-                                    <tr key={index} className="border-b border-gray-200 dark:border-gray-700">
-                                        <td className="table-cell">
-                                            {editingIndex === index ? (
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={editingValue}
-                                                        onChange={(e) => setEditingValue(e.target.value)}
-                                                        className="form-input-field flex-1"
-                                                        onKeyPress={(e) => e.key === 'Enter' && handleSaveEdit(index)}
-                                                    />
-                                                    <button
-                                                        onClick={() => handleSaveEdit(index)}
-                                                        className="btn-primary text-sm px-3 py-1"
-                                                    >
-                                                        Save
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <span className="text-gray-900 dark:text-white">{eventLevel}</span>
-                                            )}
-                                        </td>
-                                        <td className="table-cell">
-                                            {editingIndex !== index && (
-                                                <div className="flex items-center gap-4">
-                                                    <button
-                                                        onClick={() => handleEdit(index)}
-                                                        className="btn-inline-blue"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(index)}
-                                                        className="btn-inline-red"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
+                            ))}
                         </tbody>
                     </table>
                 </div>
