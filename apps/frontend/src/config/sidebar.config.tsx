@@ -188,7 +188,7 @@ export const eventSidebarItems: SidebarItem[] = [
   {
     name: 'event-types',
     label: 'Event Types',
-    href: '/events/event-types',
+    href: '/settings/event/type',
     icon: (
       <svg
         className="w-6 h-6 text-gray-800 dark:text-white"
@@ -210,7 +210,7 @@ export const eventSidebarItems: SidebarItem[] = [
   {
     name: 'event-levels',
     label: 'Event Levels',
-    href: '/events/event-levels',
+    href: '/settings/event/level',
     icon: (
       <svg
         className="w-6 h-6 text-gray-800 dark:text-white"
@@ -232,7 +232,7 @@ export const eventSidebarItems: SidebarItem[] = [
   {
     name: 'event-formats',
     label: 'Event Formats',
-    href: '/events/event-formats',
+    href: '/settings/event/format',
     icon: (
       <svg
         className="w-6 h-6 text-gray-800 dark:text-white"
