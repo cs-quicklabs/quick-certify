@@ -16,6 +16,7 @@ import { CreateUserDto, UpdateUserDto } from './dtos';
 import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
+import { capitalizeFirst } from '@src/commons/utils';
 
 /**
  * User Service
@@ -133,8 +134,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     const user = await this.userModel.create({
-      first_name: dto.firstName,
-      last_name: dto.lastName,
+      first_name: capitalizeFirst(dto.firstName),
+      last_name: capitalizeFirst(dto.lastName),
       email: dto.email.toLowerCase(),
       password_hash: hashedPassword,
       organization_id: dto.organizationId,
@@ -437,8 +438,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {
     const updateData: Partial<UserEntity> = {};
 
-    if (dto.first_name) updateData.first_name = dto.first_name;
-    if (dto.last_name) updateData.last_name = dto.last_name;
+    if (dto.first_name) updateData.first_name = capitalizeFirst(dto.first_name);
+    if (dto.last_name) updateData.last_name = capitalizeFirst(dto.last_name);
     if (dto.email) updateData.email = dto.email.toLowerCase();
     if (dto.profile_picture !== undefined) updateData.avatar_url = dto.profile_picture;
     if (dto.is_email_notifications_enabled !== undefined)

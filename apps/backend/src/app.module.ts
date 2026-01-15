@@ -6,6 +6,7 @@ import databaseConfig from './database/config/database.config';
 import { authConfig, mailerConfig, smsConfig, appConfig } from './config';
 import storageConfig from './config/storage.config';
 import { AllConfigType } from './config/config.type';
+import * as path from 'path';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { SequelizeConfigService } from './database/sequelize-config.service';
 import { MailerModule } from '@crownstack/mailer';
@@ -33,8 +34,13 @@ import { ProfileModule } from './modules/profile/profile.module';
  */
 @Module({
   imports: [
-    // Configuration
+    // Configuration - loads from project root .env
     ConfigModule.forRoot({
+      envFilePath: [
+        path.resolve(process.cwd(), '.env'),           // Root .env (when running from root)
+        path.resolve(__dirname, '../../../.env'),      // Root .env (when running from apps/backend)
+        path.resolve(__dirname, '../../.env'),         // Fallback
+      ],
       load: [appConfig, databaseConfig, authConfig, mailerConfig, smsConfig, storageConfig],
       isGlobal: true,
     }),

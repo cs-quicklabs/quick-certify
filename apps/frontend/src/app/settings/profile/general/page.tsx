@@ -31,18 +31,21 @@ export default function ProfileSettingsPage() {
     },
     onImageUpload: async (fieldName: string, imageUrl: string) => {
       // Save avatar URL to database immediately after upload
-      if (fieldName === 'avatarUrl') {
+      // Always include firstName as it's required by the backend
+      if (fieldName === 'avatarUrl' && profile?.firstName) {
         await updateProfile.mutateAsync({
+          firstName: profile.firstName,
           avatarUrl: imageUrl,
         });
       }
     },
     onImageDelete: async (fieldName: string) => {
       // Remove avatar URL from database immediately after deletion
-      // Pass null explicitly to indicate deletion
-      if (fieldName === 'avatarUrl') {
+      // Always include firstName as it's required by the backend
+      if (fieldName === 'avatarUrl' && profile?.firstName) {
         await updateProfile.mutateAsync({
-          avatarUrl: null as any, // Explicitly set to null for deletion - mutation accepts null
+          firstName: profile.firstName,
+          avatarUrl: null as any, // Explicitly set to null for deletion
         });
       }
     },

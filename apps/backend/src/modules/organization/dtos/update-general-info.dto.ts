@@ -11,7 +11,7 @@ export class UpdateGeneralInfoDto {
   @ApiProperty({ example: 'Acme Corporation', description: 'Issuer or Organisation Name' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
-  @Matches(/^[A-Za-z][A-Za-z '-]*$/, { message: 'Organization name should contail only alphanumerics value' })
+  @Matches(/^[A-Za-z0-9][A-Za-z0-9 '&.-]*$/, { message: 'Organization name should contain only alphanumeric values' })
   @MinLength(4, { message: 'Organization name is required' })
   @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
   name!: string;
