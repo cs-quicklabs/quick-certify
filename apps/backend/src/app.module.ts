@@ -20,6 +20,7 @@ import { OrganizationModule } from './modules/organization';
 import { RoleModule } from './modules/role';
 import { FileModule } from './modules/file';
 import { SkillModule } from './modules/skill';
+import { EventModule } from './modules/event';
 
 // Entities for guards
 import { SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
@@ -98,6 +99,7 @@ import { ProfileModule } from './modules/profile/profile.module';
     RoleModule,
     FileModule,
     SkillModule,
+    EventModule,
   ],
   controllers: [AppController],
   providers: [
