@@ -92,7 +92,7 @@ export default function EditTeamMemberPage() {
       last_name: member.last_name || '',
       email: member.email || '',
       roleId: member.role_id || '',
-      status: member.status === 'active' ? 'active' : 'archived',
+      status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
     }
     : undefined;
 
