@@ -17,7 +17,8 @@ export default function BrandingPage() {
   const { data: settings, isLoading, refetch } = useOrganizationSettings();
   const updateBranding = useUpdateBranding();
 
-  const [isUploading, setIsUploading] = useState(false);
+  const [isLogoUploading, setIsLogoUploading] = useState(false);
+  const [isFaviconUploading, setIsFaviconUploading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
 
@@ -25,7 +26,7 @@ export default function BrandingPage() {
   const handleLogoChange = async (url: string | null) => {
     try {
       setSubmitError(null);
-      setIsUploading(true);
+      setIsLogoUploading(true);
 
       await updateBranding.mutateAsync({
         logo_url: url || '',
@@ -37,7 +38,7 @@ export default function BrandingPage() {
     } catch (error) {
       setSubmitError(getApiErrorMessage(error, 'Failed to update logo'));
     } finally {
-      setIsUploading(false);
+      setIsLogoUploading(false);
     }
   };
 
@@ -45,7 +46,7 @@ export default function BrandingPage() {
   const handleFaviconChange = async (url: string | null) => {
     try {
       setSubmitError(null);
-      setIsUploading(true);
+      setIsFaviconUploading(true);
 
       await updateBranding.mutateAsync({
         favicon_url: url || '',
@@ -57,7 +58,7 @@ export default function BrandingPage() {
     } catch (error) {
       setSubmitError(getApiErrorMessage(error, 'Failed to update favicon'));
     } finally {
-      setIsUploading(false);
+      setIsFaviconUploading(false);
     }
   };
 
@@ -106,8 +107,8 @@ export default function BrandingPage() {
         onImageChange={handleLogoChange}
         category="logo"
         maxSizeMB={1}
-        isUploading={isUploading}
-        setIsUploading={setIsUploading}
+        isUploading={isLogoUploading}
+        setIsUploading={setIsLogoUploading}
       />
 
       {/* Favicon */}
@@ -119,8 +120,8 @@ export default function BrandingPage() {
         onImageChange={handleFaviconChange}
         category="favicon"
         maxSizeMB={1}
-        isUploading={isUploading}
-        setIsUploading={setIsUploading}
+        isUploading={isFaviconUploading}
+        setIsUploading={setIsFaviconUploading}
       />
     </div>
   );
