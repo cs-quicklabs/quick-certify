@@ -15,6 +15,7 @@ export default function ChangePasswordPage() {
     fields: passwordFormFields,
     schema: changePasswordSchema,
     submitLabel: 'Save',
+    resetOnSuccess: true,
     onSubmit: async (data: ChangePasswordData) => {
       await changePassword.mutateAsync(data);
     },
