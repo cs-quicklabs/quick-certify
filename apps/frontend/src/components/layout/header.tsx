@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
@@ -12,6 +12,22 @@ export function Header() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { user, logout } = useAuthStore();
   const { data: profile } = useProfile();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setMenuOpened(false);
+      }
+    }
+    if (menuOpened) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpened]);
 
   // Get avatar URL from profile (most up-to-date) or fallback to user or default
   const avatarUrl =
@@ -165,7 +181,7 @@ export function Header() {
                 </svg>
               </button>
               {/* Profile dropdown */}
-              <div className="relative ml-4 shrink-0">
+              <div className="relative ml-4 shrink-0" ref={dropdownRef}>
                 <div>
                   <button
                     onClick={() => setMenuOpened(!menuOpened)}
@@ -195,8 +211,8 @@ export function Header() {
                       <p className="text-sm break-words max-w-xs" role="none" style={{ wordBreak: 'break-all' }}>
                         {user?.email || 'User'}
                       </p>
-                      <p className="text-xs text-gray-700" role="none">
-                        {user?.firstName} {user?.lastName}
+                      <p className="text-xs text-gray-500" role="none">
+                        {profile?.organizationName || ''}
                       </p>
                     </div>
                     <div className="py-1" role="none">

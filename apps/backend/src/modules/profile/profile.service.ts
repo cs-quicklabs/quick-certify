@@ -45,6 +45,7 @@ export class ProfileService {
       fullName: user.full_name,
       avatarUrl: user.avatar_url ?? null,
       organizationId: user.organization_id,
+      organizationName: user.organization?.name || '',
       roleId: user.role_id,
       role: user.role?.role || '',
       signupMethod: user.auth_provider === 'google' ? 'google' : 'email',
