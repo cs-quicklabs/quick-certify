@@ -59,7 +59,7 @@ export function Alert({ type, title, message, onClose, className }: AlertProps) 
       )}
       role="alert"
     >
-      <Icon className={clsx('flex-shrink-0 w-5 h-5', styles.icon)} />
+      {/* <Icon className={clsx('flex-shrink-0 w-5 h-5', styles.icon)} /> */}
       <div className="ml-3 flex-1">
         {title && <h3 className={clsx('text-sm font-medium', styles.title)}>{title}</h3>}
         <div className={clsx('text-sm', title && 'mt-1', styles.message)}>{message}</div>

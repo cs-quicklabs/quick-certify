@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useOrganizationSettings, useUpdatePortalSettings } from '@/hooks/useAccountSettings';
-import { FileDropzone } from '@/components/ui';
+import { FileDropzone, Alert } from '@/components/ui';
 import { getApiErrorMessage } from '@/lib/api-error';
 
 /**
@@ -84,15 +84,21 @@ export default function IssuerPortalPage() {
       </p>
 
       {submitSuccess && (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
-          <p className="text-green-700 text-sm">{submitSuccess}</p>
-        </div>
+        <Alert
+          type="success"
+          message={submitSuccess}
+          onClose={() => setSubmitSuccess(null)}
+          className="mb-6"
+        />
       )}
 
       {submitError && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6">
-          <p className="text-red-700 text-sm">{submitError}</p>
-        </div>
+        <Alert
+          type="error"
+          message={submitError}
+          onClose={() => setSubmitError(null)}
+          className="mb-6"
+        />
       )}
 
       {/* Banner Image */}

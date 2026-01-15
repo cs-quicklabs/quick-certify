@@ -51,6 +51,10 @@ export interface FormConfig<T extends z.ZodObject<z.ZodRawShape>> {
    */
   onCancel?: () => void;
   cancelLabel?: string;
+  /**
+   * Reset form fields to empty after successful submission
+   */
+  resetOnSuccess?: boolean;
 }
 
 export interface FormState {

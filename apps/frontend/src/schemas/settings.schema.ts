@@ -10,6 +10,7 @@ export const profileSettingsSchema = z.object({
   lastName: z.string().optional(),
   email: z.string().email('Invalid email address').optional(),
   avatarUrl: z.string().optional(),
+  organizationName: z.string().optional(),
   signupMethod: z.enum(['email', 'google']).optional(),
 });
 
