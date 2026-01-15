@@ -6,7 +6,7 @@ import { formatZodErrors } from '../lib/validation';
 import { getApiErrorMessage, getApiFieldErrors } from '../lib/api-error';
 import { FormFieldConfig, FormConfig } from '../types/form.types';
 import { validateImageFile } from '../schemas/settings.schema';
-import { InfoTooltip, ConfirmationDialog } from './ui';
+import { InfoTooltip, ConfirmationDialog, Alert } from './ui';
 import { replaceImage } from '../lib/image-upload';
 import { FileCategory } from '../services/api/file.service';
 
@@ -257,7 +257,13 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
     try {
       await config.onSubmit(result.data as z.infer<T>);
-      initialFormDataRef.current = { ...formData };
+      // Reset form if resetOnSuccess is enabled
+      if (config.resetOnSuccess) {
+        setFormData({});
+        initialFormDataRef.current = {};
+      } else {
+        initialFormDataRef.current = { ...formData };
+      }
       setSubmitSuccess(true);
     } catch (error) {
       // Extract proper error message from API response
@@ -595,15 +601,21 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       {config.subtitle && <p className="form-subtitle">{config.subtitle}</p>}
 
       {submitSuccess && (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mt-4">
-          <p className="text-green-700 text-sm">Changes saved successfully!</p>
-        </div>
+        <Alert
+          type="success"
+          message="Changes saved successfully!"
+          onClose={() => setSubmitSuccess(false)}
+          className="mt-4"
+        />
       )}
 
       {submitError && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mt-4">
-          <p className="text-red-700 text-sm">{submitError}</p>
-        </div>
+        <Alert
+          type="error"
+          message={submitError}
+          onClose={() => setSubmitError(null)}
+          className="mt-4"
+        />
       )}
 
       <form

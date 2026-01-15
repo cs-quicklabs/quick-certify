@@ -344,6 +344,12 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
+    // Check if new password is same as old password
+    const isSameAsOldPassword = await this.passwordService.compare(dto.newPassword, user.password_hash);
+    if (isSameAsOldPassword) {
+      throw new BadRequestException("New password shouldn't be same as old password");
+    }
+
     const hashedPassword = await this.passwordService.hash(dto.newPassword);
     await user.update({ password_hash: hashedPassword });
 

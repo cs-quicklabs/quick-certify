@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useEmailPreferences, useUpdateEmailPreferences } from '@/hooks/useSettings';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { Alert } from '@/components/ui';
 
 /**
  * Email Preferences Page
@@ -25,6 +26,12 @@ export default function EmailPreferencesPage() {
       setEnableAllAlerts(preferences.enableAllAlerts);
     }
   }, [preferences]);
+
+  // Check if the value has changed from original
+  const isDirty = useMemo(() => {
+    if (!preferences) return false;
+    return enableAllAlerts !== preferences.enableAllAlerts;
+  }, [enableAllAlerts, preferences]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,15 +66,21 @@ export default function EmailPreferencesPage() {
       <p className="form-subtitle mb-6">Change your personal preferences</p>
 
       {submitSuccess && (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
-          <p className="text-green-700 text-sm">Email preferences updated successfully!</p>
-        </div>
+        <Alert
+          type="success"
+          message="Email preferences updated successfully!"
+          onClose={() => setSubmitSuccess(false)}
+          className="mb-6"
+        />
       )}
 
       {submitError && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6">
-          <p className="text-red-700 text-sm">{submitError}</p>
-        </div>
+        <Alert
+          type="error"
+          message={submitError}
+          onClose={() => setSubmitError(null)}
+          className="mb-6"
+        />
       )}
 
       <form onSubmit={handleSubmit}>
@@ -97,8 +110,8 @@ export default function EmailPreferencesPage() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="btn-primary"
+          disabled={isSubmitting || !isDirty}
+          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Saving...' : 'Save'}
         </button>

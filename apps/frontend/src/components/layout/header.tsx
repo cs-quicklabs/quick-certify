@@ -4,10 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
+import { ConfirmationDialog } from '@/components/ui';
 
 export function Header() {
   const [menuOpened, setMenuOpened] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { user, logout } = useAuthStore();
   const { data: profile } = useProfile();
 
@@ -15,8 +17,14 @@ export function Header() {
   const avatarUrl =
     profile?.avatarUrl || user?.avatarUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
 
-  const handleSignOut = async () => {
+  const handleSignOutClick = () => {
     setMenuOpened(false);
+    setMobileMenuOpen(false);
+    setShowLogoutConfirm(true);
+  };
+
+  const handleSignOutConfirm = async () => {
+    setShowLogoutConfirm(false);
     await logout();
     window.location.href = '/login';
   };
@@ -232,7 +240,7 @@ export function Header() {
                     <div className="py-1" role="none">
                       <button
                         type="button"
-                        onClick={handleSignOut}
+                        onClick={handleSignOutClick}
                         className="hover:bg-gray-50 text-gray-700 block w-full px-4 py-2 text-left text-sm"
                         role="menuitem"
                         tabIndex={-1}
@@ -353,7 +361,7 @@ export function Header() {
               )}
               <button
                 type="button"
-                onClick={handleSignOut}
+                onClick={handleSignOutClick}
                 className="block w-full rounded-sm px-3 py-2 text-left text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
               >
                 Sign out
@@ -362,6 +370,18 @@ export function Header() {
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showLogoutConfirm}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmLabel="Yes"
+        cancelLabel="No"
+        confirmVariant="danger"
+        onConfirm={handleSignOutConfirm}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </nav>
   );
 }
