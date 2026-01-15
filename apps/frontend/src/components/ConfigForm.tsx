@@ -38,33 +38,33 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const isDirty = useMemo(() => {
-    const keys = Object.keys(initialFormDataRef.current);
-    return keys.some((key) => {
+    const initialKeys = Object.keys(initialFormDataRef.current);
+    const currentKeys = Object.keys(formData);
+    const allKeys = [...new Set([...initialKeys, ...currentKeys])];
+    return allKeys.some((key) => {
       const initial = initialFormDataRef.current[key] ?? '';
       const current = formData[key] ?? '';
       return initial !== current;
     });
   }, [formData]);
 
-  // Check if form is valid
-  const isValid = useMemo(() => {
-    const result = config.schema.safeParse(formData);
-    return result.success;
-  }, [formData, config.schema]);
-
   // Determine if this is a new form (empty initial values) or edit form
   const isNewForm = useMemo(() => {
     return Object.keys(initialValues).length === 0;
   }, [initialValues]);
 
+  // Check if form has any input (for new forms)
+  const hasAnyInput = useMemo(() => {
+    return Object.values(formData).some((value) => value !== '' && value !== undefined && value !== null);
+  }, [formData]);
+
   // Button should be enabled when:
-  // - For new forms: form is valid
-  // - For edit forms: form is valid AND dirty
+  // - For new forms: has any input (validation happens on submit)
+  // - For edit forms: has changes (isDirty) - validation happens on submit
   const canSubmit = useMemo(() => {
-    if (!isValid) return false;
-    if (isNewForm) return true;
+    if (isNewForm) return hasAnyInput;
     return isDirty;
-  }, [isValid, isNewForm, isDirty]);
+  }, [isNewForm, isDirty, hasAnyInput]);
 
   // Update form data when initialValues changes (e.g., after data fetch)
   useEffect(() => {
@@ -91,6 +91,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       }, 3000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [submitSuccess]);
 
   // Image upload state
