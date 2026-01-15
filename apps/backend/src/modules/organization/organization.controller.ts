@@ -58,8 +58,8 @@ export class OrganizationController {
 
   @Get('settings')
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get all organization settings (Super Admin only)' })
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiOperation({ summary: 'Get all organization settings (Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization settings retrieved' })
   async getSettings(@CurrentUser() user: CurrentUserType) {
     const organization = await this.organizationService.findOne(user.organizationId);
@@ -132,8 +132,8 @@ export class OrganizationController {
 
   @Patch('settings/general')
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Update organization general information (Super Admin only)' })
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiOperation({ summary: 'Update organization general information (Admin only)' })
   @ApiResponse({ status: 200, description: 'General information updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   @ApiResponse({ status: 409, description: 'Organization name already exists' })

@@ -13,6 +13,7 @@ interface UserProfile {
   firstName?: string;
   lastName?: string;
   avatarUrl?: string;
+  organizationName?: string;
   signupMethod?: 'email' | 'google';
   emailNotifications?: boolean;
 }
@@ -30,6 +31,7 @@ async function fetchProfile(): Promise<ProfileSettingsData> {
     lastName: user.lastName ?? undefined,
     email: user.email,
     avatarUrl: user.avatarUrl ?? undefined,
+    organizationName: user.organizationName ?? undefined,
     signupMethod: user.signupMethod,
   };
 }
