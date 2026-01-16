@@ -1,4 +1,4 @@
-import { DesignType } from "../../app/(designs)/design.data";
+import { DesignType } from "../design.data";
 import Link from "next/link";
 
 export default function DesignCard({ design }: { design: DesignType }) {
