@@ -1,28 +1,24 @@
-import { QueryInterface, DataTypes, Sequelize } from 'sequelize';
+import { QueryInterface, DataTypes } from 'sequelize';
 
 /**
  * Migration: Create event tables
  *
  * Creates event_types, event_levels, event_formats, and events tables
- * with UUID primary keys, foreign keys, and indexes
+ * with nanoid primary keys, foreign keys, and indexes
  */
 module.exports = {
     async up(queryInterface: QueryInterface) {
         const transaction = await queryInterface.sequelize.transaction();
 
         try {
-            // Enable UUID extension if not already enabled
-            await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"', { transaction });
-
             // 1. Create event_types table
             await queryInterface.createTable(
                 'event_types',
                 {
                     id: {
-                        type: DataTypes.UUID,
+                        type: DataTypes.STRING(21),
                         primaryKey: true,
                         allowNull: false,
-                        defaultValue: Sequelize.literal('uuid_generate_v4()'),
                     },
                     name: {
                         type: DataTypes.STRING(150),
@@ -58,10 +54,9 @@ module.exports = {
                 'event_levels',
                 {
                     id: {
-                        type: DataTypes.UUID,
+                        type: DataTypes.STRING(21),
                         primaryKey: true,
                         allowNull: false,
-                        defaultValue: Sequelize.literal('uuid_generate_v4()'),
                     },
                     name: {
                         type: DataTypes.STRING(150),
@@ -97,10 +92,9 @@ module.exports = {
                 'event_formats',
                 {
                     id: {
-                        type: DataTypes.UUID,
+                        type: DataTypes.STRING(21),
                         primaryKey: true,
                         allowNull: false,
-                        defaultValue: Sequelize.literal('uuid_generate_v4()'),
                     },
                     name: {
                         type: DataTypes.STRING(150),
@@ -136,17 +130,16 @@ module.exports = {
                 'events',
                 {
                     id: {
-                        type: DataTypes.UUID,
+                        type: DataTypes.STRING(21),
                         primaryKey: true,
                         allowNull: false,
-                        defaultValue: Sequelize.literal('uuid_generate_v4()'),
                     },
                     name: {
                         type: DataTypes.STRING(255),
                         allowNull: false,
                     },
                     event_type_id: {
-                        type: DataTypes.UUID,
+                        type: DataTypes.STRING(21),
                         allowNull: false,
                         references: {
                             model: 'event_types',
@@ -156,7 +149,7 @@ module.exports = {
                         onDelete: 'RESTRICT',
                     },
                     event_level_id: {
-                        type: DataTypes.UUID,
+                        type: DataTypes.STRING(21),
                         allowNull: false,
                         references: {
                             model: 'event_levels',
@@ -166,7 +159,7 @@ module.exports = {
                         onDelete: 'RESTRICT',
                     },
                     event_format_id: {
-                        type: DataTypes.UUID,
+                        type: DataTypes.STRING(21),
                         allowNull: false,
                         references: {
                             model: 'event_formats',

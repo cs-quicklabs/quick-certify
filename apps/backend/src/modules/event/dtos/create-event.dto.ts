@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID, MaxLength, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, Matches } from 'class-validator';
 
 export class CreateEventDto {
   @ApiProperty({
@@ -16,27 +16,27 @@ export class CreateEventDto {
   name!: string;
 
   @ApiProperty({
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'Event type ID (UUID)',
+    example: 'abc123xyz789',
+    description: 'Event type ID (nanoid)',
   })
   @IsNotEmpty({ message: 'Event type ID is required' })
-  @IsUUID('4', { message: 'Event type ID must be a valid UUID' })
+  @IsString({ message: 'Event type ID must be a string' })
   eventTypeId!: string;
 
   @ApiProperty({
-    example: '123e4567-e89b-12d3-a456-426614174001',
-    description: 'Event level ID (UUID)',
+    example: 'def456uvw012',
+    description: 'Event level ID (nanoid)',
   })
   @IsNotEmpty({ message: 'Event level ID is required' })
-  @IsUUID('4', { message: 'Event level ID must be a valid UUID' })
+  @IsString({ message: 'Event level ID must be a string' })
   eventLevelId!: string;
 
   @ApiProperty({
-    example: '123e4567-e89b-12d3-a456-426614174002',
-    description: 'Event format ID (UUID)',
+    example: 'ghi789rst345',
+    description: 'Event format ID (nanoid)',
   })
   @IsNotEmpty({ message: 'Event format ID is required' })
-  @IsUUID('4', { message: 'Event format ID must be a valid UUID' })
+  @IsString({ message: 'Event format ID must be a string' })
   eventFormatId!: string;
 }
 

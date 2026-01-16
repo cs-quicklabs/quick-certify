@@ -1,5 +1,5 @@
 import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
-import { BaseUuidEntity } from './base-uuid.entity';
+import { BaseNanoidEntity } from './base-nanoid.entity';
 import { EventTypeEntity } from './event-type.entity';
 import { EventLevelEntity } from './event-level.entity';
 import { EventFormatEntity } from './event-format.entity';
@@ -13,7 +13,7 @@ import { EventFormatEntity } from './event-format.entity';
   tableName: 'events',
   underscored: true,
 })
-export class EventEntity extends BaseUuidEntity {
+export class EventEntity extends BaseNanoidEntity {
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
@@ -23,7 +23,7 @@ export class EventEntity extends BaseUuidEntity {
   @ForeignKey(() => EventTypeEntity)
   @Index({ name: 'IDX_EVENT_TYPE_ID' })
   @Column({
-    type: DataType.UUID,
+    type: DataType.STRING(21),
     allowNull: false,
     field: 'event_type_id',
   })
@@ -35,7 +35,7 @@ export class EventEntity extends BaseUuidEntity {
   @ForeignKey(() => EventLevelEntity)
   @Index({ name: 'IDX_EVENT_LEVEL_ID' })
   @Column({
-    type: DataType.UUID,
+    type: DataType.STRING(21),
     allowNull: false,
     field: 'event_level_id',
   })
@@ -47,7 +47,7 @@ export class EventEntity extends BaseUuidEntity {
   @ForeignKey(() => EventFormatEntity)
   @Index({ name: 'IDX_EVENT_FORMAT_ID' })
   @Column({
-    type: DataType.UUID,
+    type: DataType.STRING(21),
     allowNull: false,
     field: 'event_format_id',
   })

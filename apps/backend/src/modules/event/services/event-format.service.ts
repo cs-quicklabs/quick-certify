@@ -45,7 +45,7 @@ export class EventFormatService extends BaseCrudService<
   override async create(dto: CreateEventFormatDto): Promise<EventFormatEntity> {
     const normalizedName = dto.name.trim();
 
-    // Check for duplicate name
+    // Check for duplicate name (including soft-deleted)
     const existing = await this.eventFormatModel.findOne({
       where: {
         name: { [Op.iLike]: normalizedName },
@@ -53,6 +53,12 @@ export class EventFormatService extends BaseCrudService<
     });
 
     if (existing) {
+      // If exists but is soft-deleted, restore it
+      if (!existing.is_active) {
+        await existing.update({ is_active: true });
+        return existing.reload();
+      }
+      // If exists and is active, throw error
       throw new ConflictException(`Event format "${normalizedName}" already exists`);
     }
 

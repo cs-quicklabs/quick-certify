@@ -22,6 +22,7 @@ export default function EventFormatSettingsPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingValue, setEditingValue] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const { data, isLoading, error: queryError } = useEventFormats({ limit: 20 });
     const createMutation = useCreateEventFormat();
@@ -71,10 +72,13 @@ export default function EventFormatSettingsPage() {
         if (!confirm('Are you sure you want to delete this event format?')) return;
 
         setError(null);
+        setDeletingId(id);
         try {
             await deleteMutation.mutateAsync(id);
         } catch (err) {
             setError(getApiErrorMessage(err, 'Failed to delete event format'));
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -209,16 +213,16 @@ export default function EventFormatSettingsPage() {
                                                                     <button
                                                                         onClick={() => handleEdit(eventFormat.id, eventFormat.name)}
                                                                         className="btn-inline-blue text-sm whitespace-nowrap"
-                                                                        disabled={deleteMutation.isPending}
+                                                                        disabled={deletingId !== null}
                                                                     >
                                                                         Edit
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleDelete(eventFormat.id)}
                                                                         className="btn-inline-red text-sm whitespace-nowrap"
-                                                                        disabled={deleteMutation.isPending}
+                                                                        disabled={deletingId !== null}
                                                                     >
-                                                                        {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                                                                        {deletingId === eventFormat.id ? 'Deleting...' : 'Delete'}
                                                                     </button>
                                                                 </div>
                                                             )}

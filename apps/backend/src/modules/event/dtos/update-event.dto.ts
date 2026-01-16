@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID, MaxLength, Matches } from 'class-validator';
+import { IsOptional, IsString, MaxLength, Matches } from 'class-validator';
 
 export class UpdateEventDto {
   @ApiPropertyOptional({
@@ -16,27 +16,27 @@ export class UpdateEventDto {
   name?: string;
 
   @ApiPropertyOptional({
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'Event type ID (UUID)',
+    example: 'abc123xyz789',
+    description: 'Event type ID (nanoid)',
   })
   @IsOptional()
-  @IsUUID('4', { message: 'Event type ID must be a valid UUID' })
+  @IsString({ message: 'Event type ID must be a string' })
   eventTypeId?: string;
 
   @ApiPropertyOptional({
-    example: '123e4567-e89b-12d3-a456-426614174001',
-    description: 'Event level ID (UUID)',
+    example: 'def456uvw012',
+    description: 'Event level ID (nanoid)',
   })
   @IsOptional()
-  @IsUUID('4', { message: 'Event level ID must be a valid UUID' })
+  @IsString({ message: 'Event level ID must be a string' })
   eventLevelId?: string;
 
   @ApiPropertyOptional({
-    example: '123e4567-e89b-12d3-a456-426614174002',
-    description: 'Event format ID (UUID)',
+    example: 'ghi789rst345',
+    description: 'Event format ID (nanoid)',
   })
   @IsOptional()
-  @IsUUID('4', { message: 'Event format ID must be a valid UUID' })
+  @IsString({ message: 'Event format ID must be a string' })
   eventFormatId?: string;
 }
 

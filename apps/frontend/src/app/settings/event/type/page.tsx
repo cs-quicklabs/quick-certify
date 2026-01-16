@@ -23,6 +23,7 @@ export default function EventTypeSettingsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const observerTarget = useRef<HTMLTableCellElement>(null);
 
   const {
@@ -104,10 +105,13 @@ export default function EventTypeSettingsPage() {
     if (!confirm('Are you sure you want to delete this event type?')) return;
 
     setError(null);
+    setDeletingId(id);
     try {
       await deleteMutation.mutateAsync(id);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to delete event type'));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -243,16 +247,16 @@ export default function EventTypeSettingsPage() {
                                     <button
                                       onClick={() => handleEdit(eventType.id, eventType.name)}
                                       className="btn-inline-blue text-sm whitespace-nowrap"
-                                      disabled={deleteMutation.isPending}
+                                      disabled={deletingId !== null}
                                     >
                                       Edit
                                     </button>
                                     <button
                                       onClick={() => handleDelete(eventType.id)}
                                       className="btn-inline-red text-sm whitespace-nowrap"
-                                      disabled={deleteMutation.isPending}
+                                      disabled={deletingId !== null}
                                     >
-                                      {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                                      {deletingId === eventType.id ? 'Deleting...' : 'Delete'}
                                     </button>
                                   </div>
                                 )}

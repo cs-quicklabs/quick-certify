@@ -22,6 +22,7 @@ export default function EventLevelSettingsPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingValue, setEditingValue] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const { data, isLoading, error: queryError } = useEventLevels({ limit: 20 });
     const createMutation = useCreateEventLevel();
@@ -71,10 +72,13 @@ export default function EventLevelSettingsPage() {
         if (!confirm('Are you sure you want to delete this event level?')) return;
 
         setError(null);
+        setDeletingId(id);
         try {
             await deleteMutation.mutateAsync(id);
         } catch (err) {
             setError(getApiErrorMessage(err, 'Failed to delete event level'));
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -151,30 +155,30 @@ export default function EventLevelSettingsPage() {
                                         No event levels found. Create your first event level above.
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
-                                        <table className="table">
-                                            <thead className="bg-gray-50 dark:bg-gray-700">
-                                                <tr>
+                                <div className="overflow-x-auto">
+                                    <table className="table">
+                                        <thead className="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
                                                     <th className="px-6 py-4 font-bold text-sm text-left text-gray-700 dark:text-gray-300">
                                                         EVENT LEVEL
                                                     </th>
                                                     <th className="px-10 py-4 font-bold text-sm text-right text-gray-700 dark:text-gray-300">
                                                         ACTION
                                                     </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="table-body">
-                                                {eventLevels.map((eventLevel, index) => (
-                                                    <tr
+                                            </tr>
+                                        </thead>
+                                        <tbody className="table-body">
+                                            {eventLevels.map((eventLevel, index) => (
+                                                <tr
                                                         key={eventLevel.id}
-                                                        className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
-                                                                ? 'bg-white dark:bg-gray-800'
-                                                                : index % 2 === 1
-                                                                    ? 'bg-gray-50 dark:bg-gray-700'
-                                                                    : 'bg-white dark:bg-gray-800'
-                                                            }`}
-                                                    >
-                                                        <td className="px-6 py-4">
+                                                    className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
+                                                        ? 'bg-white dark:bg-gray-800'
+                                                        : index % 2 === 1
+                                                            ? 'bg-gray-50 dark:bg-gray-700'
+                                                            : 'bg-white dark:bg-gray-800'
+                                                        }`}
+                                                >
+                                                    <td className="px-6 py-4">
                                                             {editingId === eventLevel.id ? (
                                                                 <input
                                                                     type="text"
@@ -204,30 +208,30 @@ export default function EventLevelSettingsPage() {
                                                                 >
                                                                     {updateMutation.isPending ? 'Saving...' : 'Save'}
                                                                 </button>
-                                                            ) : (
+                                                        ) : (
                                                                 <div className="flex items-center justify-end gap-4">
-                                                                    <button
+                                                                <button
                                                                         onClick={() => handleEdit(eventLevel.id, eventLevel.name)}
                                                                         className="btn-inline-blue text-sm whitespace-nowrap"
-                                                                        disabled={deleteMutation.isPending}
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-                                                                    <button
+                                                                        disabled={deletingId !== null}
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
                                                                         onClick={() => handleDelete(eventLevel.id)}
                                                                         className="btn-inline-red text-sm whitespace-nowrap"
-                                                                        disabled={deleteMutation.isPending}
-                                                                    >
-                                                                        {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                                        disabled={deletingId !== null}
+                                                                >
+                                                                        {deletingId === eventLevel.id ? 'Deleting...' : 'Delete'}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                                 )}
                             </div>
                         </div>

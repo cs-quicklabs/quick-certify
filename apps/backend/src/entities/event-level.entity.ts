@@ -1,5 +1,5 @@
 import { Column, DataType, Index, Table } from 'sequelize-typescript';
-import { BaseUuidEntity } from './base-uuid.entity';
+import { BaseNanoidEntity } from './base-nanoid.entity';
 
 /**
  * Event Level Entity
@@ -10,7 +10,7 @@ import { BaseUuidEntity } from './base-uuid.entity';
   tableName: 'event_levels',
   underscored: true,
 })
-export class EventLevelEntity extends BaseUuidEntity {
+export class EventLevelEntity extends BaseNanoidEntity {
   @Index({ name: 'IDX_EVENT_LEVEL_NAME', unique: true })
   @Column({
     type: DataType.STRING(150),
