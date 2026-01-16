@@ -6,7 +6,7 @@ export const profileFormFields: FormFieldConfig[] = [
     label: 'Upload avatar',
     type: 'file',
     accept: 'image/png,image/jpg,image/jpeg',
-    defaultValue: 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/helene-engels.png',
+    defaultValue: '/profile-placeholder.png',
   },
   {
     name: 'firstName',
