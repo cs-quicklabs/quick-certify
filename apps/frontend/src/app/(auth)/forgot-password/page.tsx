@@ -63,10 +63,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
       {/* Header */}
-      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
-        Forgot password?
+      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-4 lg:mb-5">
+        Forgot Password?
       </h1>
 
       {/* Server Error Alert */}
@@ -95,12 +95,11 @@ export default function ForgotPasswordPage() {
       </form>
 
       {/* Back to login */}
-      <div className="mt-6 text-center">
+      <div className="mt-2 text-center">
         <Link
           href="/login"
           className="inline-flex items-center text-sm font-bold text-primary-600 hover:underline dark:text-primary-500"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
           Return Back to Login
         </Link>
       </div>

@@ -77,80 +77,85 @@ function AcceptInvitationContent() {
 
   if (isSuccess) {
     return (
-      <div className="p-6 sm:p-8 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-green-600 dark:text-green-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+      <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+
+        <div className="p-6 sm:p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-green-600 dark:text-green-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invitation Accepted!</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            Your account has been activated. Redirecting to dashboard...
+          </p>
         </div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invitation Accepted!</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">
-          Your account has been activated. Redirecting to dashboard...
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 sm:p-8">
-      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
-        Accept Invitation
-      </h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        Set your password to activate your account and join the team.
-      </p>
-
-      {serverError && (
-        <Alert
-          type="error"
-          message={serverError}
-          onClose={() => setServerError(null)}
-          className="mb-6"
-        />
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label="Password"
-          type="password"
-          placeholder="••••••••"
-          showPasswordToggle
-          error={errors.password?.message}
-          {...register('password')}
-        />
-
-        <Input
-          label="Confirm Password"
-          type="password"
-          placeholder="••••••••"
-          showPasswordToggle
-          error={errors.confirmPassword?.message}
-          {...register('confirmPassword')}
-        />
-
-        <Button type="submit" fullWidth isLoading={isSubmitting}>
+    <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+      <div className="p-6 sm:p-8">
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
           Accept Invitation
-        </Button>
-      </form>
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          Set your password to activate your account and join the team.
+        </p>
 
-      <div className="mt-6 text-center">
-        <Link
-          href="/login"
-          className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to login
-        </Link>
+        {serverError && (
+          <Alert
+            type="error"
+            message={serverError}
+            onClose={() => setServerError(null)}
+            className="mb-6"
+          />
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Input
+            label="Password"
+            type="password"
+            placeholder="••••••••"
+            showPasswordToggle
+            error={errors.password?.message}
+            {...register('password')}
+          />
+
+          <Input
+            label="Confirm Password"
+            type="password"
+            placeholder="••••••••"
+            showPasswordToggle
+            error={errors.confirmPassword?.message}
+            {...register('confirmPassword')}
+          />
+
+          <Button type="submit" fullWidth isLoading={isSubmitting}>
+            Accept Invitation
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <Link
+            href="/login"
+            className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to login
+          </Link>
+        </div>
       </div>
     </div>
   );
