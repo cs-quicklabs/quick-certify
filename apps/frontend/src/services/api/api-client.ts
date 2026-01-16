@@ -57,6 +57,9 @@ function createApiClient(): AxiosInstance {
   );
 
   // Response interceptor - Handle errors and token refresh
+  // Session expiry is handled automatically here based on backend token expiry.
+  // When access token expires (401), it automatically refreshes using the refresh token.
+  // User is only logged out when refresh token is expired/invalid.
   client.interceptors.response.use(
     (response) => response,
     async (error: AxiosError<ApiError>) => {
@@ -73,64 +76,74 @@ function createApiClient(): AxiosInstance {
         return Promise.reject({ response: { data: networkError } });
       }
 
-      // Handle 401 - Check for "Access token is required" error
+      // Handle 401 - Automatically refresh access token
+      // Only logout when refresh token is expired/invalid
       if (error.response?.status === 401) {
-        const errorData = error.response.data;
-        const isAccessTokenRequiredError =
-          errorData?.message === 'Access token is required' || errorData?.errorCode === 401;
+        const isAuthEndpoint = originalRequest.url?.includes('/auth/');
 
-        if (isAccessTokenRequiredError) {
-          // Skip redirect/clear for auth endpoints to prevent reload flicker on auth failures
-          const isAuthEndpoint = originalRequest.url?.includes('/auth/');
-          if (isAuthEndpoint) {
-            return Promise.reject(error);
-          }
+        // Skip refresh for auth endpoints (login, register, refresh-token itself) to prevent loops
+        // For these endpoints, return error as-is
+        if (isAuthEndpoint) {
+          return Promise.reject(error);
+        }
 
-          // Clear tokens and storage immediately - don't attempt refresh
+        // Prevent infinite retry loops
+        if (originalRequest._retry) {
+          // Already tried to refresh, refresh token must be expired - logout
           clearTokens();
           if (typeof window !== 'undefined') {
-            // Clear auth store (Zustand persist storage)
             localStorage.removeItem('auth-storage');
-            // Clear React Query cache
             localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
-            // Redirect to login
             window.location.href = '/login';
           }
           return Promise.reject(error);
         }
 
-        // For other 401 errors, attempt token refresh
-        // Skip refresh for auth-related endpoints (login, register, etc.) to prevent redirect loop
-        const isAuthEndpoint = originalRequest.url?.includes('/auth/');
-        if (!originalRequest._retry && !isAuthEndpoint) {
-          originalRequest._retry = true;
+        // Mark request as retried to prevent infinite loops
+        originalRequest._retry = true;
 
-          try {
-            const refreshToken = getRefreshToken();
-            if (refreshToken) {
-              const response = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
-                `${env.API_BASE_URL}/auth/refresh-token`,
-                { refreshToken },
-                { withCredentials: true },
-              );
-
-              if (response.data.success) {
-                setTokens(response.data.data.accessToken, response.data.data.refreshToken);
-                if (originalRequest.headers) {
-                  originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
-                }
-                return client(originalRequest);
-              }
-            }
-          } catch {
-            // Refresh failed - clear tokens and redirect to login
-            clearTokens();
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('auth-storage');
-              localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
-              window.location.href = '/login';
-            }
+        // Attempt to refresh the access token
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) {
+          // No refresh token available - logout
+          clearTokens();
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('auth-storage');
+            localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+            window.location.href = '/login';
           }
+          return Promise.reject(error);
+        }
+
+        try {
+          // Call refresh token endpoint
+          const response = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
+            `${env.API_BASE_URL}/auth/refresh-token`,
+            { refreshToken },
+            { withCredentials: true },
+          );
+
+          if (response.data.success && response.data.data) {
+            // Store new tokens
+            setTokens(response.data.data.accessToken, response.data.data.refreshToken);
+
+            // Update original request with new access token
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+            }
+
+            // Retry original request with new access token
+            return client(originalRequest);
+          }
+        } catch (refreshError) {
+          // Refresh token is expired or invalid - logout user
+          clearTokens();
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('auth-storage');
+            localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+            window.location.href = '/login';
+          }
+          return Promise.reject(refreshError);
         }
       }
 
