@@ -20,7 +20,7 @@ export class EventFormatService extends BaseCrudService<
   protected override readonly model = EventFormatEntity;
   protected override readonly entityName = 'EventFormat';
   protected override readonly softDeleteField: string | null = null; // Use is_active boolean instead
-  protected override readonly defaultSortField: string = 'createdAt';
+  protected override readonly defaultSortField: string = 'created_at';
   protected override readonly defaultSortOrder: 'ASC' | 'DESC' = 'ASC';
 
   constructor(

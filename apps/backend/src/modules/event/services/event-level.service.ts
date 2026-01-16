@@ -20,7 +20,7 @@ export class EventLevelService extends BaseCrudService<
   protected override readonly model = EventLevelEntity;
   protected override readonly entityName = 'EventLevel';
   protected override readonly softDeleteField: string | null = null; // Use is_active boolean instead
-  protected override readonly defaultSortField: string = 'createdAt';
+  protected override readonly defaultSortField: string = 'created_at';
   protected override readonly defaultSortOrder: 'ASC' | 'DESC' = 'ASC';
 
   constructor(

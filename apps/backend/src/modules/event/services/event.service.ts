@@ -18,7 +18,7 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
   protected override readonly model = EventEntity;
   protected override readonly entityName = 'Event';
   protected override readonly softDeleteField: string | null = null; // Use is_active boolean instead
-  protected override readonly defaultSortField: string = 'createdAt';
+  protected override readonly defaultSortField: string = 'created_at';
   protected override readonly defaultSortOrder: 'ASC' | 'DESC' = 'DESC';
 
   constructor(
