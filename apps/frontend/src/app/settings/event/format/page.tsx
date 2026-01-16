@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Header, Sidebar } from '@/components';
+import { Header, Sidebar, ConfirmationDialog } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import {
     useEventFormats,
@@ -10,6 +10,7 @@ import {
     useDeleteEventFormat,
 } from '@/hooks/useEvents';
 import { getApiErrorMessage } from '@/lib/api-error';
+import type { EventFormat } from '@/services/api/event.service';
 
 /**
  * Event Formats Page (Settings Route)
@@ -23,6 +24,10 @@ export default function EventFormatSettingsPage() {
     const [editingValue, setEditingValue] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        eventFormat: EventFormat | null;
+    }>({ isOpen: false, eventFormat: null });
 
     const { data, isLoading, error: queryError } = useEventFormats({ limit: 20 });
     const createMutation = useCreateEventFormat();
@@ -68,15 +73,22 @@ export default function EventFormatSettingsPage() {
         setError(null);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this event format?')) return;
+    const handleDelete = (eventFormat: EventFormat) => {
+        setConfirmDialog({ isOpen: true, eventFormat });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmDialog.eventFormat) return;
 
         setError(null);
-        setDeletingId(id);
+        setDeletingId(confirmDialog.eventFormat.id);
         try {
-            await deleteMutation.mutateAsync(id);
+            await deleteMutation.mutateAsync(confirmDialog.eventFormat.id);
+            setConfirmDialog({ isOpen: false, eventFormat: null });
+            setError(null);
         } catch (err) {
             setError(getApiErrorMessage(err, 'Failed to delete event format'));
+            setConfirmDialog({ isOpen: false, eventFormat: null });
         } finally {
             setDeletingId(null);
         }
@@ -94,8 +106,8 @@ export default function EventFormatSettingsPage() {
                         <div className="space-y-6">
                             {/* Page Header */}
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Event Formats</h1>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                <h1 className="form-title">Event Formats</h1>
+                                <p className="form-subtitle">
                                     Event formats specify the structure of the event. You can add new event formats, edit
                                     existing ones, or delete them.
                                 </p>
@@ -110,17 +122,11 @@ export default function EventFormatSettingsPage() {
 
                             {/* Add New Event Format */}
                             <div className="">
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                <h2 className="form-input-label mb-4">
                                     Add New Event Format
                                 </h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label
-                                            htmlFor="new-event-format"
-                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                                        >
-                                            New Event Format
-                                        </label>
                                         <input
                                             type="text"
                                             id="new-event-format"
@@ -128,7 +134,7 @@ export default function EventFormatSettingsPage() {
                                             onChange={(e) => setNewEventFormat(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                                             className="form-input-field w-full"
-                                            placeholder="New event format"
+                                            placeholder="New Event Format"
                                             disabled={createMutation.isPending}
                                         />
                                     </div>
@@ -142,15 +148,18 @@ export default function EventFormatSettingsPage() {
                                 </div>
                             </div>
 
+                            {/* API Error Message */}
+                            {queryError && (
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+                                    Something went wrong
+                                </div>
+                            )}
+
                             {/* Existing Event Formats */}
                             <div className="overflow-hidden">
                                 {isLoading ? (
                                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
-                                ) : queryError ? (
-                                    <div className="text-center py-8 text-red-500">
-                                        {getApiErrorMessage(queryError, 'Failed to load event formats')}
-                                    </div>
-                                ) : eventFormats.length === 0 ? (
+                                ) : queryError ? null : eventFormats.length === 0 ? (
                                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                         No event formats found. Create your first event format above.
                                     </div>
@@ -218,7 +227,7 @@ export default function EventFormatSettingsPage() {
                                                                         Edit
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => handleDelete(eventFormat.id)}
+                                                                        onClick={() => handleDelete(eventFormat)}
                                                                         className="btn-inline-red text-sm whitespace-nowrap"
                                                                         disabled={deletingId !== null}
                                                                     >
@@ -238,6 +247,18 @@ export default function EventFormatSettingsPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={confirmDialog.isOpen}
+                title="Delete Event Format?"
+                message={`Are you sure you want to delete "${confirmDialog.eventFormat?.name}"? This action cannot be undone.`}
+                confirmLabel="Delete"
+                cancelLabel="Cancel"
+                confirmVariant="danger"
+                onConfirm={confirmDelete}
+                onCancel={() => setConfirmDialog({ isOpen: false, eventFormat: null })}
+            />
         </>
     );
 }
