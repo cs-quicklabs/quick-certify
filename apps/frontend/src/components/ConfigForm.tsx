@@ -38,33 +38,23 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const isDirty = useMemo(() => {
-    const keys = Object.keys(initialFormDataRef.current);
-    return keys.some((key) => {
+    const initialKeys = Object.keys(initialFormDataRef.current);
+    const currentKeys = Object.keys(formData);
+    const allKeys = [...new Set([...initialKeys, ...currentKeys])];
+    return allKeys.some((key) => {
       const initial = initialFormDataRef.current[key] ?? '';
       const current = formData[key] ?? '';
       return initial !== current;
     });
   }, [formData]);
 
-  // Check if form is valid
-  const isValid = useMemo(() => {
-    const result = config.schema.safeParse(formData);
-    return result.success;
-  }, [formData, config.schema]);
-
   // Determine if this is a new form (empty initial values) or edit form
   const isNewForm = useMemo(() => {
     return Object.keys(initialValues).length === 0;
   }, [initialValues]);
 
-  // Button should be enabled when:
-  // - For new forms: form is valid
-  // - For edit forms: form is valid AND dirty
-  const canSubmit = useMemo(() => {
-    if (!isValid) return false;
-    if (isNewForm) return true;
-    return isDirty;
-  }, [isValid, isNewForm, isDirty]);
+  // Note: Submit button is always enabled - validation happens on submit
+  // This allows users to see validation errors when they click Save
 
   // Update form data when initialValues changes (e.g., after data fetch)
   useEffect(() => {
@@ -91,6 +81,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       }, 3000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [submitSuccess]);
 
   // Image upload state
@@ -627,7 +618,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
         <div className={config.layout === 'grid' ? 'col-span-2' : ''}>
           <div className="flex items-center gap-3">
-            <button type="submit" disabled={isSubmitting || isLoading || !canSubmit} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+            <button type="submit" disabled={isSubmitting || isLoading} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
               {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
             </button>
             {config.onCancel && (

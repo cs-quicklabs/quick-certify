@@ -165,7 +165,7 @@ export default function SkillsPage() {
                     <button
                         type="submit"
                         className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={createSkillMutation.isPending || !newSkillName.trim()}
+                        disabled={createSkillMutation.isPending}
                     >
                         {createSkillMutation.isPending ? 'Saving...' : 'Save'}
                     </button>
@@ -237,7 +237,7 @@ export default function SkillsPage() {
                                                     type="button"
                                                     onClick={() => handleEditSave(skill.id)}
                                                     className="px-3 py-1 text-sm btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    disabled={!editSkillName.trim() || isUpdating}
+                                                    disabled={isUpdating}
                                                 >
                                                     {isUpdating ? 'Saving...' : 'Save'}
                                                 </button>

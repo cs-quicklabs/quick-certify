@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useTeamMember } from '@/hooks/useTeam';
+import { useTeamMember, useCancelInvitation, useDeleteTeamMember, useResendInvitation, useRestoreUser } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
+import { ConfirmationDialog } from '@/components/ui';
 
 /**
  * Team Member Detail Page
@@ -15,7 +16,16 @@ export default function TeamMemberPage() {
   const uuid = params?.uuid as string;
   const { user } = useAuthStore();
 
-  const { data: member, isLoading } = useTeamMember(uuid);
+  const { data: member, isLoading, refetch } = useTeamMember(uuid);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'cancel' | 'remove' | 'invite' | 'activate' | null;
+  }>({ isOpen: false, type: null });
+
+  const cancelInvitationMutation = useCancelInvitation();
+  const deleteTeamMemberMutation = useDeleteTeamMember();
+  const resendInvitationMutation = useResendInvitation();
+  const restoreUserMutation = useRestoreUser();
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '—';
@@ -34,6 +44,133 @@ export default function TeamMemberPage() {
       designer: 'Designer',
     };
     return roleMap[role] || role;
+  };
+
+  const isCurrentUser = user?.email === member?.email;
+
+  const handleCancelInvitation = () => {
+    setConfirmDialog({ isOpen: true, type: 'cancel' });
+  };
+
+  const handleRemove = () => {
+    setConfirmDialog({ isOpen: true, type: 'remove' });
+  };
+
+  const handleInvite = () => {
+    setConfirmDialog({ isOpen: true, type: 'invite' });
+  };
+
+  const handleActivate = () => {
+    setConfirmDialog({ isOpen: true, type: 'activate' });
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!uuid) return;
+    try {
+      await cancelInvitationMutation.mutateAsync(uuid);
+      setConfirmDialog({ isOpen: false, type: null });
+      router.push('/settings/team');
+    } catch (error) {
+      console.error('Failed to cancel invitation:', error);
+    }
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!uuid) return;
+    try {
+      await deleteTeamMemberMutation.mutateAsync(uuid);
+      setConfirmDialog({ isOpen: false, type: null });
+      router.push('/settings/team');
+    } catch (error) {
+      console.error('Failed to remove user:', error);
+    }
+  };
+
+  const handleConfirmInvite = async () => {
+    if (!uuid) return;
+    try {
+      await resendInvitationMutation.mutateAsync(uuid);
+      setConfirmDialog({ isOpen: false, type: null });
+      refetch();
+    } catch (error) {
+      console.error('Failed to send invitation:', error);
+    }
+  };
+
+  const handleConfirmActivate = async () => {
+    if (!uuid) return;
+    try {
+      await restoreUserMutation.mutateAsync(uuid);
+      setConfirmDialog({ isOpen: false, type: null });
+      refetch();
+    } catch (error) {
+      console.error('Failed to activate user:', error);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setConfirmDialog({ isOpen: false, type: null });
+  };
+
+  const getConfirmDialogTitle = () => {
+    switch (confirmDialog.type) {
+      case 'cancel':
+        return 'Cancel Invitation?';
+      case 'invite':
+        return 'Resend Invitation?';
+      case 'activate':
+        return 'Activate User?';
+      case 'remove':
+        return 'Remove Team Member?';
+      default:
+        return '';
+    }
+  };
+
+  const getConfirmDialogMessage = () => {
+    const memberName = `${member?.first_name} ${member?.last_name}`;
+    switch (confirmDialog.type) {
+      case 'cancel':
+        return `Are you sure you want to cancel the invitation for ${memberName}? They will not be able to accept the invitation or login.`;
+      case 'invite':
+        return `Are you sure you want to resend the invitation to ${memberName}? They will receive a new invitation email.`;
+      case 'activate':
+        return `Are you sure you want to activate ${memberName}? They will be able to access the system again.`;
+      case 'remove':
+        return `Are you sure you want to remove ${memberName}? They will be archived and logged out from all devices. They can be restored later.`;
+      default:
+        return '';
+    }
+  };
+
+  const getConfirmLabel = () => {
+    switch (confirmDialog.type) {
+      case 'cancel':
+        return 'Cancel Invitation';
+      case 'invite':
+        return 'Send Invitation';
+      case 'activate':
+        return 'Activate';
+      case 'remove':
+        return 'Remove';
+      default:
+        return 'Confirm';
+    }
+  };
+
+  const getConfirmHandler = () => {
+    switch (confirmDialog.type) {
+      case 'cancel':
+        return handleConfirmCancel;
+      case 'invite':
+        return handleConfirmInvite;
+      case 'activate':
+        return handleConfirmActivate;
+      case 'remove':
+        return handleConfirmRemove;
+      default:
+        return handleCloseDialog;
+    }
   };
 
   if (isLoading) {
@@ -78,16 +215,52 @@ export default function TeamMemberPage() {
           </div>
           <p className="mt-1 text-sm text-gray-500 ml-8">Team member details</p>
         </div>
-        {member.status === 'active' && user?.email !== member.email && (
-          <div className="flex space-x-4">
-            <div className="flex space-x-2 items-center w-full">
-              <Link
-                href={`/settings/team/${uuid}/edit`}
-                className="btn-primary w-full"
+        {!isCurrentUser && (
+          <div className="flex items-center">
+            {member.status === 'active' && (
+              <>
+                <Link
+                  href={`/settings/team/${uuid}/edit`}
+                  className="btn-primary"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  className="btn-red"
+                >
+                  Remove
+                </button>
+              </>
+            )}
+            {member.status === 'invited' && (
+              <button
+                type="button"
+                onClick={handleCancelInvitation}
+                className="btn-red"
               >
-                Edit Member
-              </Link>
-            </div>
+                Cancel Invitation
+              </button>
+            )}
+            {member.status === 'inactive' && (
+              <button
+                type="button"
+                onClick={handleInvite}
+                className="btn-primary"
+              >
+                Resend Invitation
+              </button>
+            )}
+            {member.status === 'archived' && (
+              <button
+                type="button"
+                onClick={handleActivate}
+                className="btn-primary"
+              >
+                Activate
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -114,7 +287,13 @@ export default function TeamMemberPage() {
             <p className="text-sm text-gray-500">Status</p>
             <p className="mt-1 flex items-center gap-2">
               <span
-                className={`w-2 h-2 rounded-full ${member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                className={`w-2 h-2 rounded-full ${member.status === 'active'
+                  ? 'bg-green-500'
+                  : member.status === 'inactive'
+                    ? 'bg-yellow-500'
+                    : member.status === 'invited'
+                      ? 'bg-blue-500'
+                      : 'bg-gray-400'
                   }`}
               />
               <span className="text-sm text-gray-900 capitalize">{member.status}</span>
@@ -130,6 +309,18 @@ export default function TeamMemberPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        title={getConfirmDialogTitle()}
+        message={getConfirmDialogMessage()}
+        confirmLabel={getConfirmLabel()}
+        cancelLabel="Cancel"
+        confirmVariant={confirmDialog.type === 'remove' || confirmDialog.type === 'cancel' ? 'danger' : 'primary'}
+        onConfirm={getConfirmHandler()}
+        onCancel={handleCloseDialog}
+      />
     </div>
   );
 }

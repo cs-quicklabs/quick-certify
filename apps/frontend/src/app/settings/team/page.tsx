@@ -3,10 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Edit2, X, Mail, UserCheck, Eye } from 'lucide-react';
-import { useTeamMembers, useCancelInvitation, useDeleteTeamMember, useResendInvitation, useRestoreUser } from '@/hooks/useTeam';
+import { useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
-import { ConfirmationDialog, Table } from '@/components';
+import { Table } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
 
 /**
@@ -17,19 +16,9 @@ export default function TeamsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [roleFilter, setRoleFilter] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    type: 'cancel' | 'remove' | 'invite' | 'activate' | null;
-    member: TeamMember | null;
-  }>({ isOpen: false, type: null, member: null });
   const pageSize = 10;
-
-  const cancelInvitationMutation = useCancelInvitation();
-  const deleteTeamMemberMutation = useDeleteTeamMember();
-  const resendInvitationMutation = useResendInvitation();
-  const restoreUserMutation = useRestoreUser();
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
@@ -83,145 +72,8 @@ export default function TeamsPage() {
     setCurrentPage(1); // Reset to first page on filter change
   };
 
-  const handleView = (memberUuid: string) => {
-    router.push(`/settings/team/${memberUuid}`);
-  };
-
-  const handleEdit = (memberUuid: string) => {
-    router.push(`/settings/team/${memberUuid}/edit`);
-  };
-
-  const handleCancelInvitation = (member: TeamMember) => {
-    setConfirmDialog({ isOpen: true, type: 'cancel', member: { ...member } });
-  };
-
-  const handleRemove = (member: TeamMember) => {
-    setConfirmDialog({ isOpen: true, type: 'remove', member: { ...member } });
-  };
-
-  const handleInvite = (member: TeamMember) => {
-    setConfirmDialog({ isOpen: true, type: 'invite', member: { ...member } });
-  };
-
-  const handleActivate = (member: TeamMember) => {
-    setConfirmDialog({ isOpen: true, type: 'activate', member: { ...member } });
-  };
-
-  const handleConfirmCancel = async () => {
-    if (!confirmDialog.member) return;
-    const memberUuid = confirmDialog.member.uuid || confirmDialog.member.id;
-    if (!memberUuid) return;
-
-    try {
-      await cancelInvitationMutation.mutateAsync(memberUuid);
-      setConfirmDialog({ isOpen: false, type: null, member: null });
-    } catch (error) {
-      console.error('Failed to cancel invitation:', error);
-    }
-  };
-
-  const handleConfirmRemove = async () => {
-    if (!confirmDialog.member) return;
-    const memberUuid = confirmDialog.member.uuid || confirmDialog.member.id;
-    if (!memberUuid) return;
-
-    try {
-      await deleteTeamMemberMutation.mutateAsync(memberUuid);
-      setConfirmDialog({ isOpen: false, type: null, member: null });
-    } catch (error) {
-      console.error('Failed to remove user:', error);
-    }
-  };
-
-  const handleConfirmInvite = async () => {
-    if (!confirmDialog.member) return;
-    const memberUuid = confirmDialog.member.uuid || confirmDialog.member.id;
-    if (!memberUuid) return;
-
-    try {
-      await resendInvitationMutation.mutateAsync(memberUuid);
-      setConfirmDialog({ isOpen: false, type: null, member: null });
-    } catch (error) {
-      console.error('Failed to send invitation:', error);
-    }
-  };
-
-  const handleConfirmActivate = async () => {
-    if (!confirmDialog.member) return;
-    const memberUuid = confirmDialog.member.uuid || confirmDialog.member.id;
-    if (!memberUuid) return;
-
-    try {
-      await restoreUserMutation.mutateAsync(memberUuid);
-      setConfirmDialog({ isOpen: false, type: null, member: null });
-    } catch (error) {
-      console.error('Failed to activate user:', error);
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setConfirmDialog({ isOpen: false, type: null, member: null });
-  };
-
-  const getConfirmDialogTitle = () => {
-    switch (confirmDialog.type) {
-      case 'cancel':
-        return 'Cancel Invitation?';
-      case 'invite':
-        return 'Resend Invitation?';
-      case 'activate':
-        return 'Activate User?';
-      case 'remove':
-        return 'Remove Team Member?';
-      default:
-        return '';
-    }
-  };
-
-  const getConfirmDialogMessage = () => {
-    const memberName = `${confirmDialog.member?.first_name} ${confirmDialog.member?.last_name}`;
-    switch (confirmDialog.type) {
-      case 'cancel':
-        return `Are you sure you want to cancel the invitation for ${memberName}? They will not be able to accept the invitation or login.`;
-      case 'invite':
-        return `Are you sure you want to resend the invitation to ${memberName}? They will receive a new invitation email.`;
-      case 'activate':
-        return `Are you sure you want to activate ${memberName}? They will be able to access the system again.`;
-      case 'remove':
-        return `Are you sure you want to remove ${memberName}? They will be archived and logged out from all devices. They can be restored later.`;
-      default:
-        return '';
-    }
-  };
-
-  const getConfirmLabel = () => {
-    switch (confirmDialog.type) {
-      case 'cancel':
-        return 'Cancel Invitation';
-      case 'invite':
-        return 'Send Invitation';
-      case 'activate':
-        return 'Activate';
-      case 'remove':
-        return 'Remove';
-      default:
-        return 'Confirm';
-    }
-  };
-
-  const getConfirmHandler = () => {
-    switch (confirmDialog.type) {
-      case 'cancel':
-        return handleConfirmCancel;
-      case 'invite':
-        return handleConfirmInvite;
-      case 'activate':
-        return handleConfirmActivate;
-      case 'remove':
-        return handleConfirmRemove;
-      default:
-        return handleCloseDialog;
-    }
+  const handleRowClick = (member: TeamMember) => {
+    router.push(`/settings/team/${member.uuid || member.id}`);
   };
 
   return (
@@ -311,13 +163,10 @@ export default function TeamsPage() {
               render: (member) => {
                 const isCurrentUser = user?.email === member.email;
                 return (
-                  <Link
-                    href={`/settings/team/${member.uuid || member.id}`}
-                    className="text-sm font-medium text-gray-900 hover:underline"
-                  >
+                  <span className="text-sm font-medium text-gray-900">
                     {member.first_name} {member.last_name}
                     {isCurrentUser && <span className="text-gray-500 ml-1">(You)</span>}
-                  </Link>
+                  </span>
                 );
               },
             },
@@ -381,100 +230,11 @@ export default function TeamsPage() {
                 <span className="text-sm text-gray-500">{formatDate(member.createdAt)}</span>
               ),
             },
-            {
-              key: 'actions',
-              header: 'Actions',
-              render: (member) => {
-                const isCurrentUser = user?.email === member.email;
-                return (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleView(member.uuid || member.id);
-                      }}
-                      className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
-                      aria-label="View"
-                      title="View"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    {!isCurrentUser && member.status === 'active' && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(member.uuid || member.id);
-                        }}
-                        className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
-                        aria-label="Edit"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    )}
-                    {!isCurrentUser && member.status === 'invited' ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCancelInvitation(member);
-                        }}
-                        className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
-                        aria-label="Cancel Invitation"
-                        title="Cancel Invitation"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    ) : !isCurrentUser && member.status === 'inactive' ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInvite(member);
-                        }}
-                        className="p-2 text-gray-600 hover:text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
-                        aria-label="Resend Invitation"
-                        title="Resend Invitation"
-                      >
-                        <Mail className="w-4 h-4" />
-                      </button>
-                    ) : !isCurrentUser && member.status === 'archived' ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleActivate(member);
-                        }}
-                        className="p-2 text-gray-600 hover:text-green-600 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
-                        aria-label="Activate"
-                        title="Activate"
-                      >
-                        <UserCheck className="w-4 h-4" />
-                      </button>
-                    ) : !isCurrentUser && member.status === 'active' ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemove(member);
-                        }}
-                        className="p-2 text-gray-600 hover:text-red-600 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
-                        aria-label="Remove"
-                        title="Remove"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    ) : null}
-                  </div>
-                );
-              },
-            },
           ]}
           data={members}
           isLoading={isLoading}
           emptyMessage={searchQuery ? 'No matching team members found.' : 'No team members found.'}
+          onRowClick={handleRowClick}
         />
       </div>
 
@@ -504,17 +264,6 @@ export default function TeamsPage() {
         </div>
       )}
 
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={confirmDialog.isOpen}
-        title={getConfirmDialogTitle()}
-        message={getConfirmDialogMessage()}
-        confirmLabel={getConfirmLabel()}
-        cancelLabel="Cancel"
-        confirmVariant={confirmDialog.type === 'remove' ? 'danger' : 'primary'}
-        onConfirm={getConfirmHandler()}
-        onCancel={handleCloseDialog}
-      />
     </div>
   );
 }

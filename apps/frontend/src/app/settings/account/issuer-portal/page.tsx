@@ -130,7 +130,7 @@ export default function IssuerPortalPage() {
           />
         </div>
         <div className="ml-3">
-          <label htmlFor="portal_enabled" className="text-sm font-medium text-gray-900 dark:text-white">
+          <label htmlFor="portal_enabled" className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
             Enable Issuer Portal
           </label>
           <p className="text-sm text-gray-500 dark:text-gray-400">
