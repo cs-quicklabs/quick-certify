@@ -73,7 +73,7 @@ export class EmailService {
    */
   async sendInvitationEmail(
     to: string,
-    data: { inviterName: string; organizationName: string; inviteLink: string },
+    data: { name: string; inviterName: string; organizationName: string; inviteLink: string },
   ): Promise<MailResponse> {
     const html = this.renderTemplate('invitation', data);
     return this.mailerService.sendMail({

@@ -152,6 +152,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
       this.mailService
         .sendInvitationEmail(user.email, {
+          name: user.first_name,
           inviterName,
           organizationName: organization.name,
           inviteLink,
@@ -271,6 +272,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     if (organization) {
       this.mailService
         .sendInvitationEmail(user.email, {
+          name: user.first_name,
           inviterName,
           organizationName: organization.name,
           inviteLink,
