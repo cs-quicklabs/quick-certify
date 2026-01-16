@@ -23,7 +23,14 @@ module.exports = {
       compiler: 'tsc',
       main: './src/main.ts',
       tsConfig: './tsconfig.app.json',
-      assets: ['./src/assets'],
+      assets: [
+        './src/assets',
+        {
+          input: './templates',
+          glob: '**/*',
+          output: 'templates',
+        },
+      ],
       optimization: false,
       outputHashing: 'none',
       generatePackageJson: false,

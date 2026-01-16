@@ -10,7 +10,7 @@ export class EmailService {
   private templatesDir: string;
 
   constructor(private readonly mailerService: MailerService) {
-    this.templatesDir = path.join(process.cwd(), 'templates');
+    this.templatesDir = path.join(__dirname, 'templates');
     this.registerHelpers();
   }
 

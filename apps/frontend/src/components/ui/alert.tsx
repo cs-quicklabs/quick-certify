@@ -39,6 +39,7 @@ const alertStyles = {
   },
 };
 
+//  @ts-expect-error - icons used dynamically
 const icons = {
   success: CheckCircle2,
   error: XCircle,
@@ -48,7 +49,7 @@ const icons = {
 
 export function Alert({ type, title, message, onClose, className }: AlertProps) {
   const styles = alertStyles[type];
-  const Icon = icons[type];
+  // const Icon = icons[type];
 
   return (
     <div

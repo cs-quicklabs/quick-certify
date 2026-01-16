@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -11,10 +11,7 @@ import { Input, Button, Alert } from '@/components';
 import { resetPasswordSchema, ResetPasswordFormData } from '@/schemas/auth.schema';
 import { authService, ApiError } from '@/services';
 
-/**
- * Reset Password Page
- */
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -138,3 +135,24 @@ export default function ResetPasswordPage() {
   );
 }
 
+function ResetPasswordSkeleton() {
+  return (
+    <div className="p-6 sm:p-8 animate-pulse">
+      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-56 mb-6"></div>
+      <div className="space-y-4">
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordSkeleton />}>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}

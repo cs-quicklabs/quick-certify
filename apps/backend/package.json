@@ -25,6 +25,11 @@
             "args": [
               "--node-env=dev"
             ]
+          },
+          "prod": {
+            "args": [
+              "--node-env=prod"
+            ]
           }
         }
       },

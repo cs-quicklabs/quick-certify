@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Alert, Logo } from '@/components';
@@ -8,16 +8,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { authService, setTokens } from '@/services';
 import { getApiErrorMessage } from '@/lib/api-error';
 
-/**
- * Google OAuth Callback Page
- *
- * Handles the redirect from the backend after Google OAuth.
- * The backend redirects here with either:
- * - tokens (accessToken, refreshToken, expiresAt) for successful login
- * - tempToken for new users who need to complete signup
- * - error for failed authentication
- */
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setUser = useAuthStore((state) => state.setUser);
@@ -101,3 +92,26 @@ export default function AuthCallbackPage() {
   );
 }
 
+function AuthCallbackSkeleton() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="mb-8">
+        <Logo size="lg" asLink={false} />
+      </div>
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-10 h-10 animate-spin text-primary-600 mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Processing authentication...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<AuthCallbackSkeleton />}>
+      <AuthCallbackContent />
+    </Suspense>
+  );
+}
