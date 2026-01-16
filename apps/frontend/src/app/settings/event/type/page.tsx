@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Header, Sidebar } from '@/components';
+import { Header, Sidebar, ConfirmationDialog } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import {
   useEventTypesInfinite,
@@ -10,6 +10,7 @@ import {
   useDeleteEventType,
 } from '@/hooks/useEvents';
 import { getApiErrorMessage } from '@/lib/api-error';
+import type { EventType } from '@/services/api/event.service';
 
 /**
  * Event Types Page (Settings Route)
@@ -24,6 +25,10 @@ export default function EventTypeSettingsPage() {
   const [editingValue, setEditingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    eventType: EventType | null;
+  }>({ isOpen: false, eventType: null });
   const observerTarget = useRef<HTMLTableCellElement>(null);
 
   const {
@@ -101,15 +106,22 @@ export default function EventTypeSettingsPage() {
     setError(null);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this event type?')) return;
+  const handleDelete = (eventType: EventType) => {
+    setConfirmDialog({ isOpen: true, eventType });
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDialog.eventType) return;
 
     setError(null);
-    setDeletingId(id);
+    setDeletingId(confirmDialog.eventType.id);
     try {
-      await deleteMutation.mutateAsync(id);
+      await deleteMutation.mutateAsync(confirmDialog.eventType.id);
+      setConfirmDialog({ isOpen: false, eventType: null });
+      setError(null);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to delete event type'));
+      setConfirmDialog({ isOpen: false, eventType: null });
     } finally {
       setDeletingId(null);
     }
@@ -127,8 +139,8 @@ export default function EventTypeSettingsPage() {
             <div className="space-y-6">
               {/* Page Header */}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Event Types</h1>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <h1 className="form-title">Event Types</h1>
+                <p className="form-subtitle">
                   Event types specify the category of the event. For example, a conference, workshop, or
                   seminar. You can add new event types, edit existing ones, or delete them.
                 </p>
@@ -143,17 +155,11 @@ export default function EventTypeSettingsPage() {
 
               {/* Add New Event Type */}
               <div className="">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <h2 className="form-input-label mb-4">
                   Add New Event Type
                 </h2>
                 <div className="space-y-4">
                   <div>
-                    <label
-                      htmlFor="new-event-type"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                    >
-                      New Event Type
-                    </label>
                     <input
                       type="text"
                       id="new-event-type"
@@ -161,7 +167,7 @@ export default function EventTypeSettingsPage() {
                       onChange={(e) => setNewEventType(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                       className="form-input-field w-full"
-                      placeholder="Enter event type name"
+                      placeholder="New Event Type"
                       disabled={createMutation.isPending}
                     />
                   </div>
@@ -175,15 +181,18 @@ export default function EventTypeSettingsPage() {
                 </div>
               </div>
 
+              {/* API Error Message */}
+              {queryError && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+                  Something went wrong
+                </div>
+              )}
+
               {/* Existing Event Types */}
               <div className="overflow-hidden">
                 {isLoading ? (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
-                ) : queryError ? (
-                  <div className="text-center py-8 text-red-500">
-                    {getApiErrorMessage(queryError, 'Failed to load event types')}
-                  </div>
-                ) : eventTypes.length === 0 ? (
+                ) : queryError ? null : eventTypes.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     No event types found. Create your first event type above.
                   </div>
@@ -252,7 +261,7 @@ export default function EventTypeSettingsPage() {
                                       Edit
                                     </button>
                                     <button
-                                      onClick={() => handleDelete(eventType.id)}
+                                      onClick={() => handleDelete(eventType)}
                                       className="btn-inline-red text-sm whitespace-nowrap"
                                       disabled={deletingId !== null}
                                     >
@@ -284,6 +293,18 @@ export default function EventTypeSettingsPage() {
           </div>
         </div>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        title="Delete Event Type?"
+        message={`Are you sure you want to delete "${confirmDialog.eventType?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmDialog({ isOpen: false, eventType: null })}
+      />
     </>
   );
 }
