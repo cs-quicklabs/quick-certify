@@ -61,75 +61,79 @@ function ResetPasswordContent() {
 
   if (isSuccess) {
     return (
-      <div className="p-6 sm:p-8 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-          <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+      <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
+        <div className="p-6 sm:p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Password reset successful</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            Your password has been reset. You can now sign in with your new password.
+          </p>
+          <Link href="/login" className="btn-primary inline-block">
+            Sign in
+          </Link>
         </div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Password reset successful</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">
-          Your password has been reset. You can now sign in with your new password.
-        </p>
-        <Link href="/login" className="btn-primary inline-block">
-          Sign in
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="p-6 sm:p-8">
-      {/* Header */}
-      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
-        Reset your password
-      </h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-        Enter your new password below.
-      </p>
+    <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
+      <div className="p-6 sm:p-8">
+        {/* Header */}
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
+          Reset your password
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          Enter your new password below.
+        </p>
 
-      {/* Server Error Alert */}
-      {serverError && (
-        <Alert
-          type="error"
-          message={serverError}
-          onClose={() => setServerError(null)}
-          className="mb-6"
-        />
-      )}
+        {/* Server Error Alert */}
+        {serverError && (
+          <Alert
+            type="error"
+            message={serverError}
+            onClose={() => setServerError(null)}
+            className="mb-6"
+          />
+        )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          label="New password"
-          type="password"
-          placeholder="••••••••"
-          showPasswordToggle
-          error={errors.newPassword?.message}
-          {...register('newPassword')}
-        />
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Input
+            label="New password"
+            type="password"
+            placeholder="••••••••"
+            showPasswordToggle
+            error={errors.newPassword?.message}
+            {...register('newPassword')}
+          />
 
-        <Input
-          label="Confirm password"
-          type="password"
-          placeholder="••••••••"
-          showPasswordToggle
-          error={errors.confirmPassword?.message}
-          {...register('confirmPassword')}
-        />
+          <Input
+            label="Confirm password"
+            type="password"
+            placeholder="••••••••"
+            showPasswordToggle
+            error={errors.confirmPassword?.message}
+            {...register('confirmPassword')}
+          />
 
-        <Button type="submit" fullWidth isLoading={isSubmitting}>
-          Reset password
-        </Button>
-      </form>
+          <Button type="submit" fullWidth isLoading={isSubmitting}>
+            Reset password
+          </Button>
+        </form>
 
-      {/* Back to login */}
-      <div className="mt-6 text-center">
-        <Link
-          href="/login"
-          className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to login
-        </Link>
+        {/* Back to login */}
+        <div className="mt-6 text-center">
+          <Link
+            href="/login"
+            className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to login
+          </Link>
+        </div>
       </div>
     </div>
   );
