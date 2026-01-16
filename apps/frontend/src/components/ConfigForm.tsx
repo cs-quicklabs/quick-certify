@@ -53,18 +53,8 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
     return Object.keys(initialValues).length === 0;
   }, [initialValues]);
 
-  // Check if form has any input (for new forms)
-  const hasAnyInput = useMemo(() => {
-    return Object.values(formData).some((value) => value !== '' && value !== undefined && value !== null);
-  }, [formData]);
-
-  // Button should be enabled when:
-  // - For new forms: has any input (validation happens on submit)
-  // - For edit forms: has changes (isDirty) - validation happens on submit
-  const canSubmit = useMemo(() => {
-    if (isNewForm) return hasAnyInput;
-    return isDirty;
-  }, [isNewForm, isDirty, hasAnyInput]);
+  // Note: Submit button is always enabled - validation happens on submit
+  // This allows users to see validation errors when they click Save
 
   // Update form data when initialValues changes (e.g., after data fetch)
   useEffect(() => {
@@ -628,7 +618,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
         <div className={config.layout === 'grid' ? 'col-span-2' : ''}>
           <div className="flex items-center gap-3">
-            <button type="submit" disabled={isSubmitting || isLoading || !canSubmit} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+            <button type="submit" disabled={isSubmitting || isLoading} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
               {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
             </button>
             {config.onCancel && (
