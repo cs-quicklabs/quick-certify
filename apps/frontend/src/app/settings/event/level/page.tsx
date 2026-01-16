@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Header, Sidebar } from '@/components';
+import { Header, Sidebar, ConfirmationDialog } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import {
     useEventLevels,
@@ -10,6 +10,7 @@ import {
     useDeleteEventLevel,
 } from '@/hooks/useEvents';
 import { getApiErrorMessage } from '@/lib/api-error';
+import type { EventLevel } from '@/services/api/event.service';
 
 /**
  * Event Levels Page (Settings Route)
@@ -23,6 +24,10 @@ export default function EventLevelSettingsPage() {
     const [editingValue, setEditingValue] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        eventLevel: EventLevel | null;
+    }>({ isOpen: false, eventLevel: null });
 
     const { data, isLoading, error: queryError } = useEventLevels({ limit: 20 });
     const createMutation = useCreateEventLevel();
@@ -68,15 +73,22 @@ export default function EventLevelSettingsPage() {
         setError(null);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this event level?')) return;
+    const handleDelete = (eventLevel: EventLevel) => {
+        setConfirmDialog({ isOpen: true, eventLevel });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmDialog.eventLevel) return;
 
         setError(null);
-        setDeletingId(id);
+        setDeletingId(confirmDialog.eventLevel.id);
         try {
-            await deleteMutation.mutateAsync(id);
+            await deleteMutation.mutateAsync(confirmDialog.eventLevel.id);
+            setConfirmDialog({ isOpen: false, eventLevel: null });
+            setError(null);
         } catch (err) {
             setError(getApiErrorMessage(err, 'Failed to delete event level'));
+            setConfirmDialog({ isOpen: false, eventLevel: null });
         } finally {
             setDeletingId(null);
         }
@@ -94,8 +106,8 @@ export default function EventLevelSettingsPage() {
                         <div className="space-y-6">
                             {/* Page Header */}
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Event Levels</h1>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                <h1 className="form-title">Event Levels</h1>
+                                <p className="form-subtitle">
                                     Event levels specify the difficulty or complexity of the event. For example, beginner,
                                     advanced, or expert. You can add new event levels, edit existing ones, or delete them.
                                 </p>
@@ -110,17 +122,11 @@ export default function EventLevelSettingsPage() {
 
                             {/* Add New Event Level */}
                             <div className="">
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                <h2 className="form-input-label mb-4">
                                     Add New Event Level
                                 </h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label
-                                            htmlFor="new-event-level"
-                                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                                        >
-                                            New Event Level
-                                        </label>
                                         <input
                                             type="text"
                                             id="new-event-level"
@@ -128,7 +134,7 @@ export default function EventLevelSettingsPage() {
                                             onChange={(e) => setNewEventLevel(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
                                             className="form-input-field w-full"
-                                            placeholder="New event Level"
+                                            placeholder="New Event Level"
                                             disabled={createMutation.isPending}
                                         />
                                     </div>
@@ -142,43 +148,46 @@ export default function EventLevelSettingsPage() {
                                 </div>
                             </div>
 
+                            {/* API Error Message */}
+                            {queryError && (
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+                                    Something went wrong
+                                </div>
+                            )}
+
                             {/* Existing Event Levels */}
                             <div className="overflow-hidden">
                                 {isLoading ? (
                                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
-                                ) : queryError ? (
-                                    <div className="text-center py-8 text-red-500">
-                                        {getApiErrorMessage(queryError, 'Failed to load event levels')}
-                                    </div>
-                                ) : eventLevels.length === 0 ? (
+                                ) : queryError ? null : eventLevels.length === 0 ? (
                                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                         No event levels found. Create your first event level above.
                                     </div>
                                 ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="table">
-                                        <thead className="bg-gray-50 dark:bg-gray-700">
-                                            <tr>
+                                    <div className="overflow-x-auto">
+                                        <table className="table">
+                                            <thead className="bg-gray-50 dark:bg-gray-700">
+                                                <tr>
                                                     <th className="px-6 py-4 font-bold text-sm text-left text-gray-700 dark:text-gray-300">
                                                         EVENT LEVEL
                                                     </th>
                                                     <th className="px-10 py-4 font-bold text-sm text-right text-gray-700 dark:text-gray-300">
                                                         ACTION
                                                     </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="table-body">
-                                            {eventLevels.map((eventLevel, index) => (
-                                                <tr
+                                                </tr>
+                                            </thead>
+                                            <tbody className="table-body">
+                                                {eventLevels.map((eventLevel, index) => (
+                                                    <tr
                                                         key={eventLevel.id}
-                                                    className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
-                                                        ? 'bg-white dark:bg-gray-800'
-                                                        : index % 2 === 1
-                                                            ? 'bg-gray-50 dark:bg-gray-700'
-                                                            : 'bg-white dark:bg-gray-800'
-                                                        }`}
-                                                >
-                                                    <td className="px-6 py-4">
+                                                        className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
+                                                            ? 'bg-white dark:bg-gray-800'
+                                                            : index % 2 === 1
+                                                                ? 'bg-gray-50 dark:bg-gray-700'
+                                                                : 'bg-white dark:bg-gray-800'
+                                                            }`}
+                                                    >
+                                                        <td className="px-6 py-4">
                                                             {editingId === eventLevel.id ? (
                                                                 <input
                                                                     type="text"
@@ -208,36 +217,48 @@ export default function EventLevelSettingsPage() {
                                                                 >
                                                                     {updateMutation.isPending ? 'Saving...' : 'Save'}
                                                                 </button>
-                                                        ) : (
+                                                            ) : (
                                                                 <div className="flex items-center justify-end gap-4">
-                                                                <button
+                                                                    <button
                                                                         onClick={() => handleEdit(eventLevel.id, eventLevel.name)}
                                                                         className="btn-inline-blue text-sm whitespace-nowrap"
                                                                         disabled={deletingId !== null}
-                                                                >
-                                                                    Edit
-                                                                </button>
-                                                                <button
-                                                                        onClick={() => handleDelete(eventLevel.id)}
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDelete(eventLevel)}
                                                                         className="btn-inline-red text-sm whitespace-nowrap"
                                                                         disabled={deletingId !== null}
-                                                                >
+                                                                    >
                                                                         {deletingId === eventLevel.id ? 'Deleting...' : 'Delete'}
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
             </main>
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={confirmDialog.isOpen}
+                title="Delete Event Level?"
+                message={`Are you sure you want to delete "${confirmDialog.eventLevel?.name}"? This action cannot be undone.`}
+                confirmLabel="Delete"
+                cancelLabel="Cancel"
+                confirmVariant="danger"
+                onConfirm={confirmDelete}
+                onCancel={() => setConfirmDialog({ isOpen: false, eventLevel: null })}
+            />
         </>
     );
 }
