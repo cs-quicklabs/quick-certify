@@ -63,113 +63,115 @@ function SignupContent() {
   };
 
   return (
-    <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
-      {/* Header */}
-      <h1 className="text-xl font-extrabold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-6">
-        Register new issuer account
-      </h1>
+    <div className='w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700'>
+      <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
+        {/* Header */}
+        <h1 className="text-xl font-extrabold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-6">
+          Register new issuer account
+        </h1>
 
-      {/* Server Error Alert */}
-      {serverError && (
-        <Alert
-          type="error"
-          message={serverError}
-          onClose={() => setServerError(null)}
-          className="mb-6"
-        />
-      )}
-
-      {/* Google Token Notice */}
-      {googleToken && (
-        <Alert
-          type="info"
-          message="Complete your registration by providing the required details below."
-          className="mb-6"
-        />
-      )}
-
-
-      {/* Registration Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="First Name"
-            placeholder="John"
-            error={errors.firstName?.message}
-            {...register('firstName')}
+        {/* Server Error Alert */}
+        {serverError && (
+          <Alert
+            type="error"
+            message={serverError}
+            onClose={() => setServerError(null)}
+            className="mb-6"
           />
-          <Input
-            label="Last Name"
-            placeholder="Doe"
-            error={errors.lastName?.message}
-            {...register('lastName')}
-          />
-        </div>
-
-        <Input
-          label="Your email"
-          type="email"
-          placeholder="name@company.com"
-          error={errors.email?.message}
-          {...register('email')}
-        />
-
-        <Input
-          label="Issuer name"
-          placeholder="Issuer or company name"
-          error={errors.companyName?.message}
-          {...register('companyName')}
-        />
-
-        <Input
-          label="Issuer Website URL"
-          type="url"
-          placeholder="Website URL"
-          error={errors.websiteUrl?.message}
-          {...register('websiteUrl')}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Password"
-            type="password"
-            placeholder="••••••••"
-            showPasswordToggle
-            error={errors.password?.message}
-            {...register('password')}
-          />
-          <Input
-            label="Confirm password"
-            type="password"
-            placeholder="••••••••"
-            showPasswordToggle
-            error={errors.confirmPassword?.message}
-            {...register('confirmPassword')}
-          />
-        </div>
-
-        <Button type="submit" fullWidth isLoading={isSubmitting} disabled={isSubmitting}>
-          Create New Issuer Account
-        </Button>
-
-        {/* Google Sign-Up (if no token) */}
-        {!googleToken && (
-          <>
-            <GoogleSignInButton mode="signup" disabled={isSubmitting} />
-          </>
         )}
-      </form>
 
-      {/* Login Link */}
-      <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-        Already have an account?{' '}
-        <Link
-          href="/login"
-          className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-        >
-          Login
-        </Link>
-      </p>
+        {/* Google Token Notice */}
+        {googleToken && (
+          <Alert
+            type="info"
+            message="Complete your registration by providing the required details below."
+            className="mb-6"
+          />
+        )}
+
+
+        {/* Registration Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="First Name"
+              placeholder="John"
+              error={errors.firstName?.message}
+              {...register('firstName')}
+            />
+            <Input
+              label="Last Name"
+              placeholder="Doe"
+              error={errors.lastName?.message}
+              {...register('lastName')}
+            />
+          </div>
+
+          <Input
+            label="Your email"
+            type="email"
+            placeholder="name@company.com"
+            error={errors.email?.message}
+            {...register('email')}
+          />
+
+          <Input
+            label="Issuer name"
+            placeholder="Issuer or company name"
+            error={errors.companyName?.message}
+            {...register('companyName')}
+          />
+
+          <Input
+            label="Issuer Website URL"
+            type="url"
+            placeholder="Website URL"
+            error={errors.websiteUrl?.message}
+            {...register('websiteUrl')}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              showPasswordToggle
+              error={errors.password?.message}
+              {...register('password')}
+            />
+            <Input
+              label="Confirm password"
+              type="password"
+              placeholder="••••••••"
+              showPasswordToggle
+              error={errors.confirmPassword?.message}
+              {...register('confirmPassword')}
+            />
+          </div>
+
+          <Button type="submit" fullWidth isLoading={isSubmitting} disabled={isSubmitting}>
+            Create New Issuer Account
+          </Button>
+
+          {/* Google Sign-Up (if no token) */}
+          {!googleToken && (
+            <>
+              <GoogleSignInButton mode="signup" disabled={isSubmitting} />
+            </>
+          )}
+        </form>
+
+        {/* Login Link */}
+        <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
+          Already have an account?{' '}
+          <Link
+            href="/login"
+            className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+          >
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
