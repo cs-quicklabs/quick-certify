@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
 import { ConfirmationDialog } from '@/components/ui';
+import { getInitials } from '@/utils';
 
 export function Header() {
   const [menuOpened, setMenuOpened] = useState(false);
@@ -31,7 +32,7 @@ export function Header() {
 
   // Get avatar URL from profile (most up-to-date) or fallback to user or default
   const avatarUrl =
-    profile?.avatarUrl || user?.avatarUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
+    profile?.avatarUrl || user?.avatarUrl || "";
 
   const handleSignOutClick = () => {
     setMenuOpened(false);
@@ -186,17 +187,22 @@ export function Header() {
                   <button
                     onClick={() => setMenuOpened(!menuOpened)}
                     type="button"
-                    className="flex rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 focus:ring-offset-blue-800"
+                    className="flex items-center justify-center h-10 w-10 rounded-full bg-gray-400 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 focus:ring-offset-blue-800"
                     id="user-menu-button"
                     aria-expanded="false"
                     aria-haspopup="true"
                   >
                     <span className="sr-only">Open user menu</span>
-                    <img
-                      className="h-8 w-8 rounded-full object-cover"
+                    {avatarUrl && (<img
+                      className="h-full w-full rounded-full object-cover"
                       src={avatarUrl}
                       alt={user?.firstName || 'User'}
-                    />
+                    />)}
+                    {!avatarUrl && (
+                      <span className="text-lg font-medium">
+                        {getInitials(user?.firstName, user?.lastName)}
+                      </span>
+                    )}
                   </button>
                 </div>
                 {menuOpened && (
@@ -328,12 +334,17 @@ export function Header() {
           </div>
           <div className="border-t border-gray-700 pb-3 pt-4">
             <div className="flex items-center px-5">
-              <div className="shrink-0">
-                <img
-                  className="h-10 w-10 rounded-full object-cover"
+              <div className="shrink-0 flex items-center justify-center h-10 w-10 bg-gray-400 rounded-full text-white">
+                {avatarUrl && (<img
+                  className="h-full w-full rounded-full object-cover"
                   src={avatarUrl}
                   alt={user?.firstName || 'User'}
-                />
+                />)}
+                {!avatarUrl && (
+                  <span className="text-lg font-medium">
+                    {getInitials(user?.firstName, user?.lastName)}
+                  </span>
+                )}
               </div>
               <div className="ml-3">
                 <div className="text-base font-medium text-white">
