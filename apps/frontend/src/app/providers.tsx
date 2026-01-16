@@ -6,21 +6,19 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useCrossTabLogout } from '@/hooks/useCrossTabLogout';
-import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 // import { env } from '@/config';
 
 /**
  * Auth Initializer
- * Initializes auth state on app load and handles cross-tab logout and idle timeout
+ * Initializes auth state on app load and handles cross-tab logout.
+ * Session expiry is handled automatically by the API client interceptor
+ * based on backend token expiry.
  */
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { initialize, isInitialized } = useAuthStore();
 
   // Handle cross-tab logout - when user logs in from another tab, logout current tab
   useCrossTabLogout();
-
-  // Handle idle timeout - 30-minute inactivity logout with proactive token refresh
-  useIdleTimeout();
 
   useEffect(() => {
     if (!isInitialized) {

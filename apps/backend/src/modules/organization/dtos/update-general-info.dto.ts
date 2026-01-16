@@ -12,7 +12,7 @@ export class UpdateGeneralInfoDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @Matches(/^[A-Za-z0-9][A-Za-z0-9 '&.-]*$/, { message: 'Organization name should contain only alphanumeric values' })
-  @MinLength(4, { message: 'Organization name is required' })
+  @MinLength(4, { message: 'Organization name is required and should be at least 4 characters long' })
   @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
   name!: string;
 

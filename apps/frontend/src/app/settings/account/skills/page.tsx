@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSkills, useCreateSkill, useDeleteSkill } from '@/hooks/useSkills';
 import { useAuthStore } from '@/store/auth.store';
-import { ConfirmationDialog } from '@/components';
+import { Alert, ConfirmationDialog } from '@/components';
 import type { Skill } from '@/services/api/skill.service';
 import { skillService } from '@/services';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -29,6 +29,7 @@ export default function SkillsPage() {
     const [error, setError] = useState<string | null>(null);
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [showQueryError, setShowQueryError] = useState<boolean>(true);
 
     const createSkillMutation = useCreateSkill();
     const deleteSkillMutation = useDeleteSkill();
@@ -47,6 +48,13 @@ export default function SkillsPage() {
     });
 
     const skills = data?.data || [];
+
+    // Reset showQueryError when queryError changes
+    useEffect(() => {
+        if (queryError) {
+            setShowQueryError(true);
+        }
+    }, [queryError]);
 
     // Don't render if user is not authorized
     if (user && user.role !== 'admin' && user.role !== 'super_admin') {
@@ -144,9 +152,11 @@ export default function SkillsPage() {
 
             {/* Error Message */}
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
-                    {error}
-                </div>
+                <Alert
+                    type="error"
+                    message={error}
+                    onClose={() => setError(null)}
+                />
             )}
 
             {/* Add New Skill Form */}
@@ -178,17 +188,19 @@ export default function SkillsPage() {
             )}
 
             {/* API Error Message */}
-            {queryError && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
-                    Something went wrong
-                </div>
+            {queryError && showQueryError && (
+                <Alert
+                    type="error"
+                    message={getApiErrorMessage(queryError)}
+                    onClose={() => setShowQueryError(false)}
+                />
             )}
 
             {/* Skills Table */}
             <div className="overflow-hidden">
                 {isLoading ? (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
-                ) : queryError ? null : skills.length === 0 ? (
+                ) : queryError && showQueryError ? null : skills.length === 0 ? (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                         No skills found. Create your first skill above.
                     </div>

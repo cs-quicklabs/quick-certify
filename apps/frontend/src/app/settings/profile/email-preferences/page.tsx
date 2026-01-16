@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useEmailPreferences, useUpdateEmailPreferences } from '@/hooks/useSettings';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { Alert } from '@/components/ui';
@@ -16,7 +16,6 @@ export default function EmailPreferencesPage() {
   const updatePreferences = useUpdateEmailPreferences();
 
   const [enableAllAlerts, setEnableAllAlerts] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -27,26 +26,22 @@ export default function EmailPreferencesPage() {
     }
   }, [preferences]);
 
-  // Check if the value has changed from original
-  // @ts-expect-error TODO: fix this error
-  const isDirty = useMemo(() => {
-    if (!preferences) return false;
-    return enableAllAlerts !== preferences.enableAllAlerts;
-  }, [enableAllAlerts, preferences]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleCheckboxChange = async (checked: boolean) => {
+    setEnableAllAlerts(checked);
     setSubmitError(null);
     setSubmitSuccess(false);
 
     try {
-      await updatePreferences.mutateAsync({ enableAllAlerts });
+      await updatePreferences.mutateAsync({ enableAllAlerts: checked });
       setSubmitSuccess(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 3000);
     } catch (error) {
+      // Revert checkbox state on error
+      setEnableAllAlerts(preferences?.enableAllAlerts ?? false);
       setSubmitError(getApiErrorMessage(error));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -55,8 +50,7 @@ export default function EmailPreferencesPage() {
       <div className="animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/4 mb-2"></div>
         <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-        <div className="h-12 bg-gray-200 rounded mb-4"></div>
-        <div className="h-10 bg-gray-200 rounded w-24"></div>
+        <div className="h-12 bg-gray-200 rounded"></div>
       </div>
     );
   }
@@ -84,39 +78,24 @@ export default function EmailPreferencesPage() {
         />
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="flex items-start mb-6 align-center">
-          <div className="flex items-center h-7">
-            <input
-              id="enableAllAlerts"
-              type="checkbox"
-              checked={enableAllAlerts}
-              onChange={(e) => setEnableAllAlerts(e.target.checked)}
-              disabled={isSubmitting}
-              className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-            />
-          </div>
-          <div className="ml-3">
-            <label
-              htmlFor="enableAllAlerts"
-              className="text-sm font-medium text-gray-900 dark:text-white"
-            >
-              Enable All Email Alerts
-            </label>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              If disabled, no email alert will land in your inbox.
-            </p>
-          </div>
-        </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? 'Saving...' : 'Save'}
-        </button>
-      </form>
+      <div className="flex mt-6">
+        <div className="flex items-center h-5">
+          <input
+            id="enableAllAlerts"
+            type="checkbox"
+            checked={enableAllAlerts}
+            onChange={(e) => handleCheckboxChange(e.target.checked)}
+            disabled={updatePreferences.isPending || isLoading}
+            className="checkbox" />
+        </div>
+        <div className="ms-2 text-sm">
+          <label htmlFor="enableAllAlerts" className="form-input-label">Enable All Email Alerts</label>
+          <p className="form-input-description -mt-2">
+            If disabled, no email alert will land in your inbox.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
