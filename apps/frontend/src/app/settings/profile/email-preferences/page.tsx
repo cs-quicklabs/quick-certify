@@ -110,7 +110,7 @@ export default function EmailPreferencesPage() {
 
         <button
           type="submit"
-          disabled={isSubmitting || !isDirty}
+          disabled={isSubmitting}
           className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Saving...' : 'Save'}
