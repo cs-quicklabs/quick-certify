@@ -320,7 +320,7 @@ export function FileDropzone({
                                 type="button"
                                 onClick={handleRemoveClick}
                                 disabled={isDisabled}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors disabled:opacity-50"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                                 title="Remove image"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,7 +338,7 @@ export function FileDropzone({
                         type="button"
                         onClick={handleClick}
                         disabled={isDisabled}
-                        className="block mt-2 text-sm text-primary-600 hover:underline disabled:opacity-50"
+                        className="block mt-2 text-sm text-primary-600 hover:underline disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                     >
                         {uploading ? 'Uploading...' : 'Change image'}
                     </button>
