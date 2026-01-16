@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Header, Sidebar, ConfirmationDialog } from '@/components';
+import { Header, Sidebar, ConfirmationDialog, Alert } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import {
   useEventTypesInfinite,
@@ -25,6 +25,7 @@ export default function EventTypeSettingsPage() {
   const [editingValue, setEditingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showQueryError, setShowQueryError] = useState<boolean>(true);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     eventType: EventType | null;
@@ -45,6 +46,13 @@ export default function EventTypeSettingsPage() {
 
   // Flatten all pages into a single array
   const eventTypes = data?.pages.flatMap((page) => page.data) || [];
+
+  // Reset showQueryError when queryError changes
+  useEffect(() => {
+    if (queryError) {
+      setShowQueryError(true);
+    }
+  }, [queryError]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -148,9 +156,11 @@ export default function EventTypeSettingsPage() {
 
               {/* Error Message */}
               {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
-                  {error}
-                </div>
+                <Alert
+                  type="error"
+                  message={error}
+                  onClose={() => setError(null)}
+                />
               )}
 
               {/* Add New Event Type */}
@@ -182,17 +192,19 @@ export default function EventTypeSettingsPage() {
               </div>
 
               {/* API Error Message */}
-              {queryError && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
-                  Something went wrong
-                </div>
+              {queryError && showQueryError && (
+                <Alert
+                  type="error"
+                  message={getApiErrorMessage(queryError)}
+                  onClose={() => setShowQueryError(false)}
+                />
               )}
 
               {/* Existing Event Types */}
               <div className="overflow-hidden">
                 {isLoading ? (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
-                ) : queryError ? null : eventTypes.length === 0 ? (
+                ) : queryError && showQueryError ? null : eventTypes.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     No event types found. Create your first event type above.
                   </div>
