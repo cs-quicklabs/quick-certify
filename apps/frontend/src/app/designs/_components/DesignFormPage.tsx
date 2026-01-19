@@ -23,8 +23,8 @@ export default function DesignFormPage({
       title={isEdit ? 'Edit Design' : 'Add New Design'}
       subtitle={
         isEdit
-          ? 'Edit certificate or badge design By Updating Name and Image'
-          : 'Add new certificate or badge design By selecting Name and Image'
+          ? 'Edit certificate or badge design by Updating Name and Image'
+          : 'Add new certificate or badge design by selecting Name and Image'
       }
       defaultName={design?.name}
       imageUrl={design?.imageUrl}
