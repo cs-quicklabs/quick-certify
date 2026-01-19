@@ -66,7 +66,7 @@ function SignupContent() {
     <div className='w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700'>
       <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
         {/* Header */}
-        <h1 className="text-xl font-extrabold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-6">
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-6">
           Register new issuer account
         </h1>
 
