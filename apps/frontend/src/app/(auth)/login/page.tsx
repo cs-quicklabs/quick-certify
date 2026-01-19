@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input, Checkbox, Button, Alert, GoogleSignInButton } from '@/components';
-import { loginSchema, LoginFormData } from '@/schemas/auth.schema';
+import { loginSchema } from '@/schemas/auth.schema';
+import type { z } from 'zod';
 import { authService } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -25,7 +26,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
+  } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
@@ -37,7 +38,7 @@ export default function LoginPage() {
   /**
    * Handle form submission
    */
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: z.output<typeof loginSchema>) => {
     clearError();
 
     try {
