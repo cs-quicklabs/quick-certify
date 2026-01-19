@@ -8,18 +8,13 @@
     ],
     "targets": {
       "e2e": {
-        "executor": "@nx/jest:jest",
+        "executor": "@nx/playwright:playwright",
         "outputs": [
-          "{projectRoot}/test-output/jest/coverage"
+          "{workspaceRoot}/dist/.playwright/apps/backend-e2e"
         ],
         "options": {
-          "jestConfig": "apps/backend-e2e/jest.config.cts",
-          "passWithNoTests": true
-        },
-        "dependsOn": [
-          "backend:build",
-          "backend:serve"
-        ]
+          "config": "apps/backend-e2e/playwright.config.ts"
+        }
       }
     }
   }
