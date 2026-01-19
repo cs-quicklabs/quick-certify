@@ -3,3 +3,8 @@ export enum UserTypeEnum {
   MANAGER = 'MANAGER',
   DESIGNER = 'DESIGNER',
 }
+
+export enum DesignType {
+  CERTIFICATE = 'certificate',
+  BADGE = 'badge',
+}
