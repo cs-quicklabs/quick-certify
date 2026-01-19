@@ -26,14 +26,14 @@ export default function DesignForm({
         ) as HTMLInputElement).value;
         onSubmit({ name, image });
       }}
-      className="max-w-2xl mx-auto py-6 px-5"
+      className="max-w-100 mx-auto py-6 px-5"
     >
-      <div className="mb-8">
-        <h1 className="text-xl font-semibold">{title}</h1>
-        <p className="text-sm text-gray-500">{subtitle}</p>
+      <div className="mb-4">
+        <h1 className="text-medium font-semibold">{title}</h1>
+        <p className="text-xs text-gray-500">{subtitle}</p>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <label className="block text-sm font-semibold mb-1">
           {title.includes('Edit') ? 'Edit Name' : 'Add Name'}
         </label>
@@ -53,9 +53,9 @@ export default function DesignForm({
           Upload A4 (11008×800) or (440×400) for badge
         </p>
 
-        <label className="border-2 border-dashed rounded-lg transition-colors cursor-pointer border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-dark-600 p-10 text-center  block">
+        <label className="border-2 border-dashed  rounded-lg transition-colors cursor-pointer border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-dark-600 p-10 text-center  block">
           {imageUrl ? (
-            <img src={imageUrl} className="mx-auto max-h-40" />
+            <img src={imageUrl} className="mx-auto max-h-100" />
           ) : (
             <>
               <p className="text-gray-400">
