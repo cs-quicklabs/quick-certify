@@ -1,10 +1,10 @@
-import DesignsList from "../../components/designs/DesignsList";
+import DesignsList from './_components/DesignsList';
+import Link from 'next/link';
 
 export default function DesignsPage() {
   return (
-    <div className="max-w-full mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
+    <div>
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Designs Library</h1>
           <p className="text-sm text-gray-600">
@@ -12,12 +12,14 @@ export default function DesignsPage() {
           </p>
         </div>
 
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        <Link
+          href="/designs/add"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
+        >
           Add New Design
-        </button>
+        </Link>
       </div>
 
-      {/* List */}
       <DesignsList />
     </div>
   );

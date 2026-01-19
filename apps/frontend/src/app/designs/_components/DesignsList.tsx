@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { designs as designsList } from "../../app/(designs)/design.data";
+import { designs as designsList } from "../design.data";
 import DesignCard from "./DesignCard";
 
 export default function DesignsList() {
