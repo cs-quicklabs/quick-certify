@@ -28,10 +28,6 @@ test.describe('Frontend Onboarding', () => {
 
         // Expect redirect to dashboard
         await expect(page).toHaveURL(/\/dashboard/);
-
-        // Logout for next test? Or Login test starts with a fresh context usually (Playwright default), 
-        // BUT we are in serial mode. Shared context? No, 'page' is fresh per test by default.
-        // So we are logged out in the next test.
     });
 
     test('Login: Sign in with registered user', async ({ page }) => {
