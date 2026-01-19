@@ -39,10 +39,10 @@ export class GoogleSignupCompleteDto {
   @ApiProperty({ example: 'Acme Corporation', description: 'Company / Issuer Name' })
   @IsString()
   @IsNotEmpty({ message: 'Company / Issuer Name is required' })
-  companyName: string = '';
+  companyName = '';
 
   @ApiProperty({ example: 'https://acme.com', description: 'Website URL' })
   @IsUrl({}, { message: 'Please provide a valid website URL' })
   @IsNotEmpty({ message: 'Website URL is required' })
-  websiteUrl: string = '';
+  websiteUrl = '';
 }

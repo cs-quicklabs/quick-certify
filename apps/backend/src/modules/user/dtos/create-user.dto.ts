@@ -19,17 +19,17 @@ export class CreateUserDto {
   @ApiProperty({ example: 'John', description: 'First name of the user' })
   @IsString()
   @IsNotEmpty({ message: 'First name is required' })
-  firstName: string = '';
+  firstName = '';
 
   @ApiProperty({ example: 'Doe', description: 'Last name of the user' })
   @IsString()
   @IsNotEmpty({ message: 'Last name is required' })
-  lastName: string = '';
+  lastName = '';
 
   @ApiProperty({ example: 'john.doe@example.com', description: 'Email address' })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
-  email: string = '';
+  email = '';
 
   @ApiPropertyOptional({
     example: 'StrongP@ssw0rd!',
@@ -62,10 +62,10 @@ export class CreateUserDto {
   @ApiProperty({ example: 'abc123', description: 'Organization ID (nanoid)' })
   @IsString()
   @IsNotEmpty({ message: 'Organization ID is required' })
-  organizationId: string = '';
+  organizationId = '';
 
   @ApiProperty({ example: 'xyz789', description: 'Role ID (nanoid)' })
   @IsString()
   @IsNotEmpty({ message: 'Role ID is required' })
-  roleId: string = '';
+  roleId = '';
 }

@@ -87,10 +87,10 @@ function extractBucketName(bucketConfig: string): string {
 
 /**
  * Clean and validate CDN endpoint URL
- * 
+ *
  * Note: CDN endpoint only works if CDN is enabled for the Space.
  * If CDN is not enabled, use the regular Spaces endpoint instead.
- * 
+ *
  * Regular endpoint format: https://bucket.region.digitaloceanspaces.com
  * CDN endpoint format: https://bucket.region.cdn.digitaloceanspaces.com
  */
@@ -98,7 +98,7 @@ function cleanCdnEndpoint(
   cdnEndpoint: string | undefined,
   bucket: string,
   region: string,
-  useCdn: boolean = false,
+  useCdn = false,
 ): string {
   // If CDN is explicitly enabled and CDN endpoint is provided
   if (useCdn && cdnEndpoint) {
@@ -140,7 +140,7 @@ function cleanCdnEndpoint(
 export default registerAs<StorageConfig>('storage', () => {
   const region = process.env.DO_SPACES_REGION || 'sfo3';
   const bucketConfig = process.env.DO_SPACES_BUCKET || '';
-  
+
   // Extract bucket name (handle both URL and bucket name formats)
   const bucket = extractBucketName(bucketConfig);
 

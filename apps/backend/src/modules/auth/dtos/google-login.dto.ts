@@ -8,6 +8,6 @@ export class GoogleLoginDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'Google ID token is required' })
-  idToken: string = '';
+  idToken = '';
 }
 
