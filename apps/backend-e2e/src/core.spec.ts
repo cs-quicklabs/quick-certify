@@ -4,7 +4,6 @@ test.describe.configure({ mode: 'serial' });
 
 test.describe('Core Modules: Organization & Users', () => {
     let accessToken: string;
-    let organizationSlug: string;
     let registeredUserEmail: string;
 
     const timestamp = Date.now();
@@ -37,7 +36,6 @@ test.describe('Core Modules: Organization & Users', () => {
         expect(response.status()).toBe(200);
         const body = await response.json();
         expect(body.data.name).toBe(adminData.companyName);
-        organizationSlug = body.data.slug;
     });
 
     test('Organization: Update General Info', async ({ request }) => {
@@ -65,9 +63,6 @@ test.describe('Core Modules: Organization & Users', () => {
         expect(response.status()).toBe(200);
         const body = await response.json();
         expect(Array.isArray(body.data.data)).toBeTruthy();
-
-        // Debug
-        // console.log('Users list:', JSON.stringify(body.data, null, 2));
 
         // Should contain the registered admin
         const adminUser = body.data.data.find((u: any) => u.email === registeredUserEmail);

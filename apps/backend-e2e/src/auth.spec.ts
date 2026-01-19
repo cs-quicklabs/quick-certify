@@ -36,7 +36,9 @@ test.describe('Authentication', () => {
 
         if (response.status() !== 409) {
             console.log('Duplicate Register status:', response.status());
-            try { console.log('Duplicate Register body:', await response.json()); } catch { }
+            try { console.log('Duplicate Register body:', await response.json()); } catch {
+                console.log('Duplicate Register Error:', await response.text());
+             }
         }
         expect(response.status()).toBe(409);
     });
@@ -51,7 +53,9 @@ test.describe('Authentication', () => {
 
         if (response.status() !== 200) {
             console.log('Login failed status:', response.status());
-            try { console.log('Login failed body:', await response.json()); } catch { }
+            try { console.log('Login failed body:', await response.json()); } catch {
+                console.log('Login failed Error:', await response.text());
+            }
         }
 
         expect(response.status()).toBe(200);
