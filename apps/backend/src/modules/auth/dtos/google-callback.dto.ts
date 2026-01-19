@@ -12,7 +12,7 @@ export class GoogleCallbackDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'Authorization code is required' })
-  code: string = '';
+  code = '';
 
   @ApiProperty({
     example: 'abc123xyz',
@@ -20,7 +20,7 @@ export class GoogleCallbackDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'State parameter is required' })
-  state: string = '';
+  state = '';
 
   @ApiPropertyOptional({
     example: 'openid email profile',

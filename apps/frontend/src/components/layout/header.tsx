@@ -58,7 +58,7 @@ export function Header() {
               <div className="shrink-0 flex items-center">
                 <span
                   data-cy="Quick Test-label"
-                  className="text-white font-extrabold font-mono px-3 hidden lg:block tracking-wider"
+                  className="text-white font-bold font-mono px-3 hidden lg:block tracking-wider"
                 >
                   Quick Certify
                 </span>
