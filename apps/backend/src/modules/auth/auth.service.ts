@@ -270,12 +270,15 @@ export class AuthService implements IAuthService {
 
     const resetLink = `${this.frontendDomain}/reset-password?token=${resetToken}`;
     const expiresInHours = Math.round(this.passwordResetExpiresIn / 3600);
+    const expiresInMinutes = Math.round(this.passwordResetExpiresIn / 60);
+
+    const expiresIn = this.passwordResetExpiresIn > 60 ? `${expiresInMinutes} minute${expiresInMinutes > 1 ? 's' : ''}` : `${expiresInHours} hour${expiresInHours > 1 ? 's' : ''}`;
 
     this.emailService
       .sendPasswordResetEmail(user.email, {
         name: user.first_name,
         resetLink,
-        expiresIn: `${expiresInHours} hour${expiresInHours > 1 ? 's' : ''}`,
+        expiresIn,
       })
       .catch(console.error);
 
