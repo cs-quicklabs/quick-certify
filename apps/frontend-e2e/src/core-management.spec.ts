@@ -21,35 +21,15 @@ test.describe('Frontend Core Management', () => {
         await page.getByLabel('Confirm password').fill(password);
         await page.getByRole('button', { name: 'Create New Issuer Account' }).click();
         await expect(page).toHaveURL(/\/dashboard/);
-
-        // We are now logged in.
-        // Save state if needed, but since we use the same 'page' in serial mode? 
-        // No, 'beforeAll' page is closed? 
-        // Actually, 'beforeAll' usually uses 'browser', not 'page'. 
-        // If we want to persist state across tests, we should use 'storageState' or login in beforeEach.
-        // Given complexity, I'll use a simpler approach: Login in each test or share context carefully.
-        // Or just one long test flow? 
-        // Let's use 'test.beforeEach' with a check or just login.
-        // But creating a user every time is slow.
-        // Better: Create user via API in beforeAll, then Login UI in beforeEach.
     });
 
-    // Re-architecture: API creation is faster.
     test('Dashboard: Verify access', async ({ page }) => {
-        // Reuse login flow or assuming we are logged in if using the same context?
-        // Playwright default context is fresh per test.
-        // So we must login.
-
         // Quick Login
         await page.goto('/login');
         await page.getByLabel('Your email').fill(userEmail);
         await page.getByLabel('Password').fill(password);
         await page.getByRole('button', { name: 'Sign in', exact: true }).click();
         await expect(page).toHaveURL(/\/dashboard/);
-
-        // Verify Dashboard elements
-        // Check for "Overview" or "Welcome"
-        // Note: The dashboard content depends on implementation.
     });
 
     test('Profile: Update General Info', async ({ page }) => {
