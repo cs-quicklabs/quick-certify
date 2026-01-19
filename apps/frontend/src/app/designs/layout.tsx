@@ -37,7 +37,7 @@ export default function DesignsLayout({
   return (
     <>
       <Header />
-      <main className="max-w-6xl mx-auto px-6 py-8">{children}</main>
+      <main className="mx-auto px-16">{children}</main>
     </>
   );
 }

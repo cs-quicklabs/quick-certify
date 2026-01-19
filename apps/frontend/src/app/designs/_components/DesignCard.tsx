@@ -5,7 +5,7 @@ export default function DesignCard({ design }: { design: DesignType }) {
   return (
 
 
-    <div className="flex items-center justify-between p-4 m-0 bg-white rounded shadow mb-4">
+    <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 rounded shadow ">
 
       {/* Certificate Display */}
       <div className="flex items-center gap-2">
@@ -20,17 +20,17 @@ export default function DesignCard({ design }: { design: DesignType }) {
 
           <div className="flex flex-col gap-1 mt-1">
             <div className="flex items-center gap-1">
-              <span className="inline-flex bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-xs font-medium">
+              <span className="inline-flex bg-blue-100 text-primary-800 px-3 py-1 rounded-md text-xs font-medium">
                 Created On: {design.createdOn}
               </span>
               <span className="h-1 w-1 rounded-full bg-blue-800"></span>
             </div>
 
             <div className="flex items-center gap-1">
-              <span className="inline-flex capitalize bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-xs font-medium">
+              <span className="inline-flex capitalize bg-blue-100 text-primary-800 px-3 py-1 rounded-md text-xs font-medium">
                 {design.type}
               </span>
-              <span className="h-1 w-1 rounded-full bg-blue-800x"></span>
+              <span className="h-1 w-1 rounded-full bg-blue-800"></span>
             </div>
           </div>
 
@@ -42,7 +42,7 @@ export default function DesignCard({ design }: { design: DesignType }) {
 
 
       {/* Actions  */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 text-sm font-bold">
         <button className="px-3 py-1 text-blue-600 border border-blue-200 rounded hover:bg-blue-50">
           Preview
         </button>

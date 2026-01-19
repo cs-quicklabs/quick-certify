@@ -12,13 +12,13 @@ export const designs = [
     title: "Course Completion Certificate",
     createdOn: "12 Dec 2024",
     type: "Certificate",
-    thumbnail: "/images/sample-certificate.png",
+    thumbnail: "../../public/credential/image_720.png",
   },
   {
     id: "2",
     title: "Top Performer Badge",
     createdOn: "08 Dec 2024",
     type: "Badge",
-    thumbnail: "/images/sample-badge.png",
+    thumbnail: "../../../../public/credential/image_720.png",
   },
 ];

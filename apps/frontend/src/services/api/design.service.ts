@@ -1,12 +1,22 @@
-import { Design, DesignPayload } from "@/types/design.types";
+import { DesignPayload } from "@/types/design.types";
 
-export async function getDesign(id: string): Promise<Design> {
-  // replace with real API
-  return {
-    id,
-    name: "Certificate Design",
-    imageUrl: "/placeholder.png",
-  };
+// export async function getDesign(id: string): Promise<Design> {
+//   // replace with real API
+//   return {
+//     id,
+//     name: "Certificate Design",
+//     imageUrl: "/placeholder.png",
+//   };
+// }
+
+export interface Design {
+  id: string;
+  uuid: string;
+  design_type: 'badge' | 'certificate',
+  desgin_url: string,
+  createdAt: string;
+  updatedAt: string;
+
 }
 
 export async function createDesign(payload: DesignPayload) {

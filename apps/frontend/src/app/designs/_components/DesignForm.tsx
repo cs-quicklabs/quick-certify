@@ -26,7 +26,7 @@ export default function DesignForm({
         ) as HTMLInputElement).value;
         onSubmit({ name, image });
       }}
-      className="max-w-2xl mx-auto"
+      className="max-w-2xl mx-auto py-6 px-5"
     >
       <div className="mb-8">
         <h1 className="text-xl font-semibold">{title}</h1>
@@ -34,26 +34,26 @@ export default function DesignForm({
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-sm font-semibold mb-1">
           {title.includes('Edit') ? 'Edit Name' : 'Add Name'}
         </label>
         <input
           name="name"
           defaultValue={defaultName}
-          className="w-full border rounded-md px-3 py-2"
+          className="w-full border text-sm border-gray-200 font-semibold rounded-md px-3 py-2"
           placeholder="Name"
         />
       </div>
 
       <div className="mb-8">
-        <label className="block text-sm font-medium mb-1">
+        <label className="block text-sm font-semibold mb-1">
           Upload Image
         </label>
-        <p className="text-xs text-gray-500 mb-2">
+        <p className="text-xs text-gray-400 mb-2 font-semibold">
           Upload A4 (11008×800) or (440×400) for badge
         </p>
 
-        <label className="border-2 border-dashed rounded-lg p-10 text-center cursor-pointer block">
+        <label className="border-2 border-dashed rounded-lg transition-colors cursor-pointer border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-dark-600 p-10 text-center  block">
           {imageUrl ? (
             <img src={imageUrl} className="mx-auto max-h-40" />
           ) : (
@@ -75,13 +75,13 @@ export default function DesignForm({
         </label>
       </div>
 
-      <div className="flex gap-4">
-        <button className="bg-blue-600 text-white px-6 py-2 rounded-md">
+      <div className="flex gap-4 items-center justify-between" >
+        <button className="bg-blue-800 pre font-semibold text-sm text-white px-6 py-2 rounded-md">
           Save Design
         </button>
         <button
           type="button"
-          className="border px-6 py-2 rounded-md"
+          className="border px-6 py-2 rounded-md font-semibold text-sm border-gray-200 hover:border-gray-400"
         >
           Replace Image
         </button>

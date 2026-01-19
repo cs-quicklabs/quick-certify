@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
       {/* Header */}
-      <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-4 lg:mb-5">
+      <h1 className="text-xl pre font-extrabold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-4 lg:mb-5">
         Forgot Password?
       </h1>
 

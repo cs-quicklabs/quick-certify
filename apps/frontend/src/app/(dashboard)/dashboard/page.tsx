@@ -27,9 +27,8 @@ function StatsCard({
           <p className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{value}</p>
           {trendLabel && (
             <p
-              className={`mt-1 text-sm ${
-                trend === 'up' ? 'text-green-600' : 'text-red-600'
-              }`}
+              className={`mt-1 text-sm ${trend === 'up' ? 'text-green-600' : 'text-red-600'
+                }`}
             >
               {trend === 'up' ? '↑' : '↓'} {trendLabel}
             </p>
