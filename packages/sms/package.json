@@ -38,15 +38,15 @@
     "name": "sms"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
-    "twilio": "^5.5.0"
+    "twilio": "^5.11.2"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0"
+    "@types/node": "^25.0.9"
   },
   "peerDependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2"
   },
   "engines": {
