@@ -9,16 +9,18 @@ import { authService } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { ROUTES } from '@/config/routes';
-import type { z } from 'zod';
-
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormInput = {
+    email: string;
+    password: string;
+    rememberMe?: boolean;
+};
 
 export const useLogin = () => {
     const router = useRouter();
     const { setUser, setError: setGlobalError, clearError, error: globalError } = useAuthStore();
     const [isLoading, setIsLoading] = useState(false);
 
-    const formMethods = useForm<LoginFormData>({
+    const formMethods = useForm<LoginFormInput>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
             email: '',
@@ -27,7 +29,7 @@ export const useLogin = () => {
         },
     });
 
-    const onSubmit = async (data: LoginFormData) => {
+    const onSubmit = async (data: LoginFormInput) => {
         clearError();
         setIsLoading(true);
 
