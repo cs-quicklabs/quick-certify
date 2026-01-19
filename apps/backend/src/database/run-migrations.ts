@@ -124,7 +124,7 @@ class MigrationRunner {
     }
   }
 
-  async rollbackMigration(): Promise<void> {
+  async rollbackMigration(): Promise<boolean> {
     try {
       await this.sequelize.authenticate();
       console.log('✅ Database connection established');
@@ -135,7 +135,7 @@ class MigrationRunner {
 
       if (executed.length === 0) {
         console.log('ℹ️ No migrations to rollback');
-        return;
+        return false;
       }
 
       const lastMigration = executed[executed.length - 1];
@@ -149,6 +149,7 @@ class MigrationRunner {
       });
 
       console.log(`✅ Rolled back: ${lastMigration}`);
+      return true;
     } catch (error) {
       console.error('❌ Rollback failed:', error);
       throw error;
@@ -244,11 +245,7 @@ async function main() {
         // Rollback all migrations first
         let hasMore = true;
         while (hasMore) {
-          try {
-            await runner.rollbackMigration();
-          } catch {
-            hasMore = false;
-          }
+          hasMore = await runner.rollbackMigration();
         }
         // Then run all migrations
         await runner.runMigrations();
