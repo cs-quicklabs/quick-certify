@@ -1,0 +1,199 @@
+# Quick Certify Coding Standards
+
+You are an expert full-stack developer working on Quick Certify - a multi-tenant NestJS + Next.js monorepo.
+
+## Tech Stack
+- **Backend**: NestJS, Sequelize, PostgreSQL, JWT, class-validator
+- **Frontend**: Next.js 16 (App Router), React 19, TanStack Query, Zustand, Zod, Tailwind CSS
+- **Monorepo**: Nx workspace
+
+## SOLID Principles - ALWAYS Follow
+
+### Single Responsibility (SRP)
+- Each service handles ONE domain (AuthService, OrganizationService, not GodService)
+- Split services >500 lines into smaller services
+- Controllers only handle HTTP routing - delegate logic to services
+
+### Open/Closed (OCP)
+- Define interfaces in `interfaces/` directory for all services
+- Use BaseCrudService for common CRUD operations
+- Extend via composition, not modification
+
+### Liskov Substitution (LSP)
+- Child classes MUST implement all parent methods
+- Never throw "not supported" from inherited methods
+
+### Interface Segregation (ISP)
+- Interfaces should have 3-7 methods max
+- Split large interfaces into role-specific ones
+
+### Dependency Inversion (DIP)
+- Always inject dependencies via constructor
+- Use @InjectModel for Sequelize models
+- Never use `new Service()` inside services
+
+## DRY - Don't Repeat Yourself
+
+### Backend DRY
+```typescript
+// ✅ Use BaseCrudService for CRUD
+export class SkillService extends BaseCrudService<SkillEntity, CreateSkillDto, UpdateSkillDto> { }
+
+// ✅ Use shared DTOs
+async findAll(@Query() pagination: PaginationDto) { }
+
+// ✅ Use SuccessResponse wrapper
+return new SuccessResponse('Created successfully', entity);
+```
+
+### Frontend DRY
+```typescript
+// ✅ Query key factories
+export const settingsKeys = {
+  all: ['settings'] as const,
+  detail: (id: string) => [...settingsKeys.all, id] as const,
+};
+
+// ✅ Shared Zod schemas
+export const emailSchema = z.string().email('Invalid email');
+export const passwordSchema = z.string().min(8);
+```
+
+## ACID Properties - Database Operations
+
+```typescript
+// ✅ Use transactions for multi-table operations
+const transaction = await this.sequelize.transaction();
+try {
+  await this.organizationModel.create({...}, { transaction });
+  await this.userModel.create({...}, { transaction });
+  await transaction.commit();
+} catch (error) {
+  await transaction.rollback();
+  throw error;
+}
+```
+
+## CAP Theorem - Consistency First
+
+- Use transactions for data integrity
+- Invalidate cache on mutations (not optimistic updates for critical data)
+- Single active session policy for users
+- Fire-and-forget only for non-critical operations (emails, analytics)
+
+## Design Patterns
+
+1. **Repository**: Use Sequelize models with @InjectModel
+2. **Service Layer**: Business logic in services, NOT controllers
+3. **DTO Pattern**: Separate Create/Update DTOs with validation
+4. **Factory**: TokenService for JWT generation
+5. **Decorator**: Custom decorators (@CurrentUser, @Roles)
+6. **Observer**: TanStack Query for reactive data
+
+## Module Structure
+
+```
+modules/[feature]/
+├── dtos/
+│   ├── create-[feature].dto.ts
+│   └── update-[feature].dto.ts
+├── interfaces/
+│   └── [feature]-service.interface.ts
+├── [feature].controller.ts
+├── [feature].service.ts
+├── [feature].module.ts
+└── index.ts
+```
+
+## Naming Conventions
+
+```
+Backend:
+- user.entity.ts, user.service.ts, user.controller.ts
+- create-user.dto.ts, user-service.interface.ts
+
+Frontend:
+- SettingsForm.tsx (components)
+- useSettings.ts (hooks)
+- auth.store.ts (stores)
+- auth.schema.ts (schemas)
+```
+
+## Error Handling
+
+```typescript
+// Backend - Use NestJS exceptions
+throw new NotFoundException('User not found');
+throw new ConflictException('Email already exists');
+throw new UnauthorizedException('Invalid credentials');
+throw new BadRequestException('Invalid input');
+
+// Frontend - Use TanStack Query error handling
+onError: (error: AxiosError<ApiError>) => {
+  toast.error(error.response?.data?.message || 'Something went wrong');
+}
+```
+
+## Security Rules
+
+1. Validate ALL inputs (DTOs backend, Zod frontend)
+2. Always check organization scope for multi-tenant data
+3. Use RolesGuard for authorization
+4. Revoke sessions on password change
+5. Use parameterized queries (Sequelize handles this)
+
+## Code Quality Checklist
+
+Before writing code, verify:
+- [ ] Single responsibility per class
+- [ ] Interface defined for service
+- [ ] No code duplication (use base classes/utilities)
+- [ ] Transactions for multi-table operations
+- [ ] Proper error handling with appropriate exception types
+- [ ] All inputs validated
+- [ ] Proper TypeScript types (no `any`)
+- [ ] Descriptive variable names
+
+## Anti-Patterns to AVOID
+
+```typescript
+// ❌ God service with multiple responsibilities
+class AuthService {
+  async hashPassword() { }
+  async sendEmail() { }
+  async generatePDF() { }
+}
+
+// ❌ Business logic in controller
+@Post()
+async create(@Body() dto) {
+  const slug = dto.name.toLowerCase(); // Should be in service
+  return this.model.create({ ...dto, slug });
+}
+
+// ❌ No transaction for related operations
+await this.orgModel.create({...});
+await this.userModel.create({...}); // If this fails, orphan org!
+
+// ❌ Hardcoded query keys
+useQuery({ queryKey: ['settings'] }); // Use factory
+
+// ❌ Using `any` type
+async createUser(params: any) { } // Define interface
+```
+
+## Quick Commands
+
+```bash
+# Generate migration
+npx nx run backend:migration:generate --name=add-field
+
+# Run migrations
+npx nx run backend:migration:run
+
+# Start dev servers
+npx nx run-many --target=serve --projects=frontend,backend
+
+# Lint
+npx nx affected --target=lint
+```
