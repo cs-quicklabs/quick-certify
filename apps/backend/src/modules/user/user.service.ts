@@ -61,10 +61,18 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
 
+    // Exclude current logged-in user if specified
+    const excludeUserId = (options as any).excludeUserId;
+    const whereClause: Record<string, unknown> = {
+      ...where,
+      status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
+    };
+    if (excludeUserId) {
+      whereClause.id = { [Op.ne]: excludeUserId }; // Exclude current user from listing
+    }
+
     const { count, rows } = await this.userModel.findAndCountAll({
-      where: {
-        ...where,
-      },
+      where: whereClause,
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
@@ -293,6 +301,18 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       organization_id: organizationId,
     };
 
+    // Apply role-based visibility filtering
+    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
+    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
+    let excludedRoleIds: string[] = [];
+    const currentUserRole = (options as any).currentUserRole as string | undefined;
+    if (currentUserRole) {
+      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
+      if (excludedRoles.length > 0) {
+        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
+      }
+    }
+
     // Handle role filtering - need to find role IDs first
     let roleIds: string[] | undefined;
     if ((options as any).role) {
@@ -312,11 +332,21 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         }
       }
       if (roleIds && roleIds.length > 0) {
-        whereClause.role_id = { [Op.in]: roleIds };
+        // Filter out excluded roles from the role filter
+        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
+        if (roleIds.length > 0) {
+          whereClause.role_id = { [Op.in]: roleIds };
+        } else {
+          // Return empty result if all roles are excluded
+          whereClause.role_id = { [Op.eq]: null };
+        }
       } else {
         // Return empty result if role not found
         whereClause.role_id = { [Op.eq]: null };
       }
+    } else if (excludedRoleIds.length > 0) {
+      // Apply role-based visibility exclusion when no specific role filter
+      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
     }
 
     return this.findAll({
@@ -358,6 +388,18 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ...searchCondition,
     };
 
+    // Apply role-based visibility filtering
+    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
+    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
+    let excludedRoleIds: string[] = [];
+    const currentUserRole = (options as any).currentUserRole as string | undefined;
+    if (currentUserRole) {
+      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
+      if (excludedRoles.length > 0) {
+        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
+      }
+    }
+
     // Handle role filtering - need to find role IDs first
     let roleIds: string[] | undefined;
     if ((options as any).role) {
@@ -377,11 +419,21 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         }
       }
       if (roleIds && roleIds.length > 0) {
-        whereClause.role_id = { [Op.in]: roleIds };
+        // Filter out excluded roles from the role filter
+        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
+        if (roleIds.length > 0) {
+          whereClause.role_id = { [Op.in]: roleIds };
+        } else {
+          // Return empty result if all roles are excluded
+          whereClause.role_id = { [Op.eq]: null };
+        }
       } else {
         // Return empty result if role not found
         whereClause.role_id = { [Op.eq]: null };
       }
+    } else if (excludedRoleIds.length > 0) {
+      // Apply role-based visibility exclusion when no specific role filter
+      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
     }
 
     return this.findAll({
@@ -419,6 +471,37 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
+  }
+
+  /**
+   * Get excluded roles based on current user's role for visibility filtering
+   * Super Admin can see: Admin, Manager, Designer (exclude: super_admin)
+   * Admin can see: Manager, Designer (exclude: super_admin, admin)
+   * Lower level users: exclude super_admin and admin (defense in depth)
+   */
+  private getExcludedRolesForVisibility(currentUserRole: string): string[] {
+    const role = currentUserRole.toLowerCase();
+
+    if (role === Role.SUPER_ADMIN) {
+      // Super Admin cannot see other Super Admins
+      return [Role.SUPER_ADMIN];
+    } else if (role === Role.ADMIN) {
+      // Admin cannot see Super Admin or other Admins
+      return [Role.SUPER_ADMIN, Role.ADMIN];
+    } else {
+      // Lower level users (manager, designer) cannot see Super Admin or Admin
+      return [Role.SUPER_ADMIN, Role.ADMIN];
+    }
+  }
+
+  /**
+   * Get role IDs by role names
+   */
+  private async getRoleIdsByNames(roleNames: string[]): Promise<string[]> {
+    const roles = await this.roleModel.findAll({
+      where: { role: { [Op.in]: roleNames } },
+    });
+    return roles.map((r) => r.id);
   }
 
   private async validateOrganization(organizationId: string): Promise<OrganizationEntity> {

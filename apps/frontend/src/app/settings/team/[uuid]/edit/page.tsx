@@ -92,6 +92,7 @@ export default function EditTeamMemberPage() {
       last_name: member.last_name || '',
       email: member.email || '',
       roleId: member.role_id || '',
+      // Map status: active -> active, everything else -> archived (inactive/archived/invited)
       status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
     }
     : undefined;
