@@ -78,7 +78,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password_hash'] },
-      order: [[sortBy, sortOrder]],
+      order: sortBy === 'last_login_at' ? [[sortBy, `${sortOrder} NULLS LAST`]] : [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,
     });
@@ -439,6 +439,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return this.findAll({
       ...options,
       where: whereClause,
+      sortBy: options.sortBy || 'last_login_at',
+      sortOrder: (options.sortOrder || 'DESC') as any,
     });
   }
 

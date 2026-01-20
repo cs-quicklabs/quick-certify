@@ -41,8 +41,8 @@ async function updateProfile(data: Partial<ProfileSettingsData & { avatarUrl?: s
     firstName: data.firstName,
   };
 
-  // Only include optional fields if they have values (not null, not undefined, not empty string)
-  if (data.lastName !== null && data.lastName !== undefined && data.lastName !== '') {
+  // Only include optional fields if they have values (not null, not undefined)
+  if (data.lastName !== null && data.lastName !== undefined) {
     payload.lastName = data.lastName;
   }
 
