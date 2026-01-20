@@ -38,7 +38,10 @@ export default function TeamsPage() {
 
   const totalCount = data?.meta?.total || 0;
   const totalPages = data?.meta?.totalPages || 0;
-  const members = data?.data || [];
+  // Filter out archived users and current logged-in user on frontend (backend should also filter, but adding safety check)
+  const members = (data?.data || []).filter(
+    (member) => member.status !== 'archived' && member.id !== user?.id && member.uuid !== user?.id,
+  );
 
   // Don't render if user is not authorized
   if (user && user.role !== 'admin' && user.role !== 'super_admin') {
@@ -73,7 +76,12 @@ export default function TeamsPage() {
   };
 
   const handleRowClick = (member: TeamMember) => {
-    router.push(`/settings/team/${member.uuid || member.id}`);
+    // Disable click for invited users
+    if (member.status === 'invited') {
+      return;
+    }
+    // Navigate directly to edit page
+    router.push(`/settings/team/${member.uuid || member.id}/edit`);
   };
 
   return (
@@ -161,11 +169,9 @@ export default function TeamsPage() {
               key: 'user',
               header: 'User',
               render: (member) => {
-                const isCurrentUser = user?.email === member.email;
                 return (
                   <span className="text-sm font-medium text-gray-900">
                     {member.first_name} {member.last_name}
-                    {isCurrentUser && <span className="text-gray-500 ml-1">(You)</span>}
                   </span>
                 );
               },
@@ -235,6 +241,13 @@ export default function TeamsPage() {
           isLoading={isLoading}
           emptyMessage={searchQuery ? 'No matching team members found.' : 'No team members found.'}
           onRowClick={handleRowClick}
+        // rowClassName={(member: TeamMember) => {
+        //   // Disable cursor pointer for invited users and prevent hover effect
+        //   if (member.status === 'invited') {
+        //     return 'cursor-not-allowed opacity-75 hover:bg-white';
+        //   }
+        //   return '';
+        // }}
         />
       </div>
 

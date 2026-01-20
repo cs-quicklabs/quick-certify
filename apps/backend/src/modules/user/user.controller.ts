@@ -38,12 +38,16 @@ export class UserController {
   @ApiQuery({ name: 'role', required: false, description: 'Filter by role (admin, manager, designer)' })
   async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
     // Only Admin and Super Admin can access team listing
+    // Exclude the current logged-in user from the listing
+    // Apply role-based visibility: Admin cannot see Super Admin, lower users cannot see Admin/Super Admin
     const options: any = {
       page: pagination.page,
       limit: pagination.limit,
       sortBy: pagination.sortBy || 'last_login_at',
       sortOrder: pagination.sortOrder || 'DESC',
       role: pagination.role,
+      excludeUserId: user.id, // Exclude current user from results
+      currentUserRole: user.role, // Pass current user's role for role-based filtering
     };
     const result = pagination.search
       ? await this.userService.searchUsers(user.organizationId, pagination.search, options)
