@@ -1,14 +1,6 @@
 import DesignPreview from '@/app/designs/_components/DesignPreview';
 
-/**
- * Full-page Design Preview
- * Route: /designs/preview/[id]
- *
- * Used when:
- * - User refreshes
- * - User opens link directly
- * - Preview opened outside designs list
- */
+
 export default async function PreviewDesignPage({
   params,
 }: {
