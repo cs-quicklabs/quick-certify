@@ -285,12 +285,10 @@ export class AuthService implements IAuthService {
     return { success: true, message: 'If the email exists, a reset link has been sent' };
   }
 
-  async resetPassword(dto: ResetPasswordDto) {
+  async checkForgotPasswordToken(token: string) {
     const passwordReset = await this.passwordResetModel.findOne({
-      where: { token: dto.token, is_used: false },
-      include: [UserEntity],
+      where: { token, is_used: false },
     });
-
     if (!passwordReset) {
       throw new BadRequestException('Invalid or expired reset token');
     }
@@ -299,6 +297,12 @@ export class AuthService implements IAuthService {
       await passwordReset.update({ is_used: true });
       throw new BadRequestException('Reset token has expired');
     }
+
+    return passwordReset;
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const passwordReset = await this.checkForgotPasswordToken(dto.token);
 
     const user = await this.userModel.findByPk(passwordReset.user_id);
     if (!user) {
