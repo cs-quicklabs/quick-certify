@@ -53,7 +53,7 @@ export default function DesignsList() {
           <button
             type="button"
             onClick={() => setFilter("All")}
-            className="text-xs font-bold text-blue-600 underline hover:text-blue-700"
+            className="font-bold text-blue-600 underline hover:text-blue-700"
           >
             Show All
           </button>

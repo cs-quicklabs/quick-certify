@@ -3,8 +3,3 @@ export type Design = {
   name: string;
   imageUrl: string;
 };
-
-export type DesignPayload = {
-  name: string;
-  image: File | null;
-};
