@@ -34,6 +34,8 @@ export default function TeamsPage() {
     limit: pageSize,
     role: roleFilter || undefined,
     search: searchQuery || undefined,
+    sortBy: 'last_login_at',
+    sortOrder: 'DESC',
   });
 
   const totalCount = data?.meta?.total || 0;

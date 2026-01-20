@@ -49,6 +49,8 @@ export interface TeamFilters {
   limit?: number;
   search?: string;
   role?: string;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export const teamService = {
@@ -58,6 +60,8 @@ export const teamService = {
     if (filters?.limit) params.append('limit', filters.limit.toString());
     if (filters?.search) params.append('search', filters.search);
     if (filters?.role) params.append('role', filters.role);
+    if (filters?.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
     const response = await apiClient.get<ApiResponse<PaginatedResponse<TeamMember>>>(`/users?${params.toString()}`);
     return response.data.data;
   },

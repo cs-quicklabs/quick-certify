@@ -25,7 +25,7 @@ export default function ProfileSettingsPage() {
     onSubmit: async (data: ProfileSettingsData) => {
       await updateProfile.mutateAsync({
         firstName: data.firstName,
-        lastName: data.lastName && data.lastName.trim() !== '' ? data.lastName : undefined,
+        lastName: data.lastName,
         avatarUrl: data.avatarUrl && data.avatarUrl.trim() !== '' ? data.avatarUrl : undefined,
       });
     },
