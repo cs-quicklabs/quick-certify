@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file if it exists (optional)
 // In production, environment variables are typically set directly in the environment
-const envPath = path.join(__dirname, '../../.env');
+const envPath = path.join(__dirname, '../../../../.env');
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
 } else {
@@ -204,8 +204,7 @@ class MigrationRunner {
 
       console.log('─'.repeat(60));
       console.log(
-        `\nTotal: ${files.length} | Executed: ${executed.length} | Pending: ${
-          files.length - executed.length
+        `\nTotal: ${files.length} | Executed: ${executed.length} | Pending: ${files.length - executed.length
         }`,
       );
     } catch (error) {

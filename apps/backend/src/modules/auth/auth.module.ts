@@ -13,6 +13,7 @@ import {
   SessionEntity,
   PasswordResetEntity,
 } from '@src/entities';
+import { OrganizationModule } from '../organization';
 
 /**
  * Auth Module
@@ -31,6 +32,7 @@ import {
       SessionEntity,
       PasswordResetEntity,
     ]),
+    OrganizationModule,
   ],
   controllers: [AuthController, SocialAuthController],
   providers: [
