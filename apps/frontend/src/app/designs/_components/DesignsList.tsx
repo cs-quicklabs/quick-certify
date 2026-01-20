@@ -84,8 +84,8 @@ export default function DesignsList() {
       </div>
 
 
-      {filtered.map((design) => (
-        <DesignCard key={design.id} design={design} />
+      {filtered.map((designs) => (
+        <DesignCard key={designs.id} design={designs} />
       ))}
     </>
   );

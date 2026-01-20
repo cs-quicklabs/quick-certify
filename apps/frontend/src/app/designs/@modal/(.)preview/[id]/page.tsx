@@ -1,5 +1,5 @@
 import DesignPreview from '@/app/designs/_components/DesignPreview';
-
+import { getDesignById } from '@/services/api/design.service';
 export default async function PreviewModalPage({
   params,
 }: {
@@ -10,16 +10,8 @@ export default async function PreviewModalPage({
   return (
     <DesignPreview
       name={design.name}
-      imageUrl={design.thumbnail}
+      imageUrl={design.imageUrl}
     />
   );
 }
 
-async function getDesignById(id: string) {
-  return {
-    id,
-    name: 'Customer Centricity',
-    thumbnail:
-      'https://dev.quick-certify.sfo3.digitaloceanspaces.com/organizations/r/avatar/WE7o9qv0SOFQ65ab0OZv3.png',
-  };
-}

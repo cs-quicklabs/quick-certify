@@ -1,31 +1,15 @@
-import { DesignPayload } from "@/types/design.types";
-
-// export async function getDesign(id: string): Promise<Design> {
-//   // replace with real API
-//   return {
-//     id,
-//     name: "Certificate Design",
-//     imageUrl: "/placeholder.png",
-//   };
-// }
-
-export interface Design {
+export type Design = {
   id: string;
-  uuid: string;
-  design_type: 'badge' | 'certificate',
-  desgin_url: string,
-  createdAt: string;
-  updatedAt: string;
+  name: string;
+  imageUrl: string;
+};
 
-}
-
-export async function createDesign(payload: DesignPayload) {
-  console.log("CREATE DESIGN", payload);
-}
-
-export async function updateDesign(
-  id: string,
-  payload: DesignPayload
-) {
-  console.log("UPDATE DESIGN", id, payload);
+export async function getDesignById(id: string): Promise<Design> {
+  // Replace with real DB / API call
+  return {
+    id,
+    name: 'Course Completion Certificate',
+    imageUrl:
+      'https://dev-quick-certify.sfo3.cdn.digitaloceanspaces.com/organizations/r/avatar/H7COHto2giyXNx7J8Ak5m.png',
+  };
 }
