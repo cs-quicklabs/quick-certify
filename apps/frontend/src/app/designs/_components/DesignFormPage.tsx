@@ -14,20 +14,22 @@ export default function DesignFormPage({
   id?: string;
 }) {
   const isEdit = mode === 'edit';
+  const isCertificate = designType === 'certificate';
 
-  // Mock data for edit (replace with API)
+  // Mock data for edit mode (replace with API call)
   const design = isEdit
     ? {
-        name: 'Course Completion Certificate',
-        imageUrl: 'https://dev-quick-certify.sfo3.cdn.digitaloceanspaces.com/organizations/r/avatar/H7COHto2giyXNx7J8Ak5m.png',
-        type: 'certificate' as DesignType,
-      }
+      name: 'Course Completion Certificate',
+      imageUrl:
+        'https://dev-quick-certify.sfo3.cdn.digitaloceanspaces.com/organizations/r/avatar/H7COHto2giyXNx7J8Ak5m.png',
+      type: designType,
+    }
     : null;
-
-  const isCertificate = designType === 'certificate';
 
   return (
     <DesignForm
+      mode={mode}
+      designType={designType}
       title={
         isEdit
           ? `Edit ${isCertificate ? 'Certificate' : 'Badge'} Design`
@@ -40,7 +42,6 @@ export default function DesignFormPage({
       }
       defaultName={design?.name}
       imageUrl={design?.imageUrl}
-      designType={designType}
       onSubmit={(data) => {
         console.log({
           mode,
@@ -48,6 +49,10 @@ export default function DesignFormPage({
           id,
           payload: data,
         });
+
+        // TODO:
+        // if (mode === 'add') createDesign(...)
+        // if (mode === 'edit') updateDesign(id, ...)
       }}
     />
   );
