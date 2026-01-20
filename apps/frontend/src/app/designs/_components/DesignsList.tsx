@@ -16,25 +16,14 @@ export default function DesignsList() {
 
   return (
     <>
-      {/*  */}
-      <div className="flex justify-between px-6 py-5 items-center border-b border-gray-200 shadow-sm">
+      {/* Search and Filter Section */}
+      <div className="flex justify-between items-center pt-3 pb-3 px-4 py-5 bg-white border-b border-t sm:flex sm:space-x-4 sm:space-y-0 border-gray-200 shadow-sm">
 
-        <div className="flex items-center gap-6 text-sm">
-          <span className="text-gray-700 text-xs font-extrabold">
+        {/* Filter Options  */}
+        <div className="flex items-center text-gray-900 gap-6 text-sm font-medium">
+          <span className="text-gray-900 text-sm font-medium">
             Show records only for:
           </span>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="designFilter"
-              value="Certificate"
-              checked={filter === "Certificate"}
-              onChange={() => setFilter("Certificate")}
-              className="h-4 w-4 accent-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
-            />
-            <span className="text-xs font-extrabold text-gray-700">Certificates</span>
-          </label>
 
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -46,7 +35,19 @@ export default function DesignsList() {
               className="h-4 w-4 accent-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
 
             />
-            <span className="text-xs font-extrabold text-gray-700">Badges</span>
+            <span>Badges</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="designFilter"
+              value="Certificate"
+              checked={filter === "Certificate"}
+              onChange={() => setFilter("Certificate")}
+              className="h-4 w-4 accent-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
+            />
+            <span>Certificates</span>
           </label>
 
           <button
@@ -58,7 +59,7 @@ export default function DesignsList() {
           </button>
         </div>
 
-
+        {/* Search Box */}
         <div className=" items-center text-sm text-gray-200 border-gray-400">
           <input
             type="text"
@@ -71,12 +72,13 @@ export default function DesignsList() {
       </div>
 
       {/* Design Action */}
-      <div className="bg-gray-50 border-b border-gray-200 shadow-sm flex items-center justify-between py-3 px-2">
-        <span className="text-xs font-extrabold text-gray-600 uppercase">
+
+      <div className="bg-gray-50 border-gray-100 flex shadow-[0_4px_6px_-2px_rgba(0,0,0,0.1)] border-t border-r border-b-0 items-center justify-between py-3 px-2">
+        <span className="text-xs font-extrabold text-gray-500 uppercase ml-2">
           Design
         </span>
 
-        <span className="text-xs font-extrabold text-gray-600 uppercase">
+        <span className="text-xs font-extrabold text-gray-500 uppercase mr-2">
           Actions
         </span>
       </div>

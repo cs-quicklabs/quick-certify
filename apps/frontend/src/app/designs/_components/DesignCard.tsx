@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function DesignCard({ design }: { design: DesignType }) {
   return (
-    <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 rounded shadow ">
+    <div className="flex items-center justify-between px-6 bg-white py-5 border-b border-gray-200 rounded shadow ">
 
       {/* Certificate Display */}
       <div className="flex items-center gap-2">
@@ -14,21 +14,19 @@ export default function DesignCard({ design }: { design: DesignType }) {
         />
 
         <div>
-          <h3 className="font-bold text-sm">{design.title}</h3>
+          <h3 className="font-semibold text-sm">{design.title}</h3>
 
           <div className="flex flex-col gap-1 mt-1">
             <div className="flex items-center gap-1">
-              <span className="inline-flex bg-blue-100 text-primary-800 px-3 py-1 rounded-md text-xs font-medium">
+              <span className="inline-flex text-gray-500 text-xs font-medium">
                 Created On: {design.createdOn}
               </span>
-              <span className="h-1 w-1 rounded-full bg-blue-800"></span>
             </div>
 
             <div className="flex items-center gap-1">
-              <span className="inline-flex capitalize bg-blue-100 text-primary-800 px-3 py-1 rounded-md text-xs font-medium">
+              <span className="inline-flex capitalize bg-blue-50 border border-blue-400/50 text-primary-800 px-1.5 py-0.5 rounded-md text-xs font-medium">
                 {design.type}
               </span>
-              <span className="h-1 w-1 rounded-full bg-blue-800"></span>
             </div>
           </div>
 
