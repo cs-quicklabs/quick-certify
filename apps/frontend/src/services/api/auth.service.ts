@@ -147,6 +147,17 @@ export const authService = {
   },
 
   /**
+   * Check if token is valid
+   */
+  async checkToken(token: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<ApiResponse<{ success: boolean; message: string }>>(
+      '/auth/check-forgot-password-token',
+      { token },
+    );
+    return response.data;
+  },
+
+  /**
    * Forgot password
    */
   async forgotPassword(data: ForgotPasswordRequest): Promise<{ success: boolean; message: string }> {
