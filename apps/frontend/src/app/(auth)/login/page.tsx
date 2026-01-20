@@ -1,62 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Input, Checkbox, Button, Alert, GoogleSignInButton } from '@/components';
-import { loginSchema } from '@/schemas/auth.schema';
-import type { z } from 'zod';
-import { authService } from '@/services';
-import { useAuthStore } from '@/store/auth.store';
-import { getApiErrorMessage } from '@/lib/api-error';
+import { useLogin } from '@/hooks/auth/useLogin';
+import { ROUTES } from '@/config/routes';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { setUser, setError: setGlobalError, clearError } = useAuthStore();
-  const globalError = useAuthStore((state) => state.error);
+  const { formMethods, onSubmit, globalError, clearError, isLoading } = useLogin();
+  const { register, formState: { errors } } = formMethods;
 
   // Clear error on page mount/refresh
   useEffect(() => {
     clearError();
   }, [clearError]);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      rememberMe: false,
-    },
-  });
-
-  /**
-   * Handle form submission
-   */
-  const onSubmit = async (data: z.output<typeof loginSchema>) => {
-    clearError();
-
-    try {
-      await authService.login({
-        email: data.email,
-        password: data.password,
-      });
-
-      // Fetch current user after login
-      const user = await authService.getCurrentUser();
-      setUser(user);
-
-      // Redirect to dashboard
-      router.push('/dashboard');
-    } catch (error) {
-      setGlobalError(getApiErrorMessage(error));
-    }
-  };
 
   return (
     <div className='w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700'>
@@ -76,7 +33,7 @@ export default function LoginPage() {
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4 md:space-y-4">
           {/* Email Field */}
           <Input
             label="Your email"
@@ -100,7 +57,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-between ">
             <Checkbox label="Remember me" {...register('rememberMe')} />
             <Link
-              href="/forgot-password"
+              href={ROUTES.AUTH.FORGOT_PASSWORD}
               className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
             >
               Forgot password?
@@ -111,20 +68,20 @@ export default function LoginPage() {
           <Button
             type="submit"
             fullWidth
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
+            isLoading={isLoading}
+            disabled={isLoading}
           >
             Sign in
           </Button>
 
           {/* Google Sign-In */}
-          <GoogleSignInButton mode="login" disabled={isSubmitting} />
+          <GoogleSignInButton mode="login" disabled={isLoading} />
 
           {/* Sign Up Link */}
           <p className="flex justify-center text-sm font-light text-gray-500 dark:text-gray-400">
             Don&apos;t have an account yet?{' '}
             <Link
-              href="/signup"
+              href={ROUTES.AUTH.REGISTER}
               className="ml-1 font-medium text-primary-600 hover:underline dark:text-primary-500"
             >
               Sign up

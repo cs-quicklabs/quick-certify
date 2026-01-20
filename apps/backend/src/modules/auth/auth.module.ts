@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthController } from './auth.controller';
+import { SocialAuthController } from './social-auth.controller';
 import { AuthService } from './auth.service';
 import { PasswordService, TokenService, SessionService, GoogleOAuthService } from './services';
 import { JwtAuthGuard, RolesGuard } from './guards';
@@ -12,6 +13,7 @@ import {
   SessionEntity,
   PasswordResetEntity,
 } from '@src/entities';
+import { OrganizationModule } from '../organization';
 
 /**
  * Auth Module
@@ -30,8 +32,9 @@ import {
       SessionEntity,
       PasswordResetEntity,
     ]),
+    OrganizationModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, SocialAuthController],
   providers: [
     // Core services (SRP - each has single responsibility)
     PasswordService,
@@ -51,4 +54,4 @@ import {
   ],
   exports: [AuthService, PasswordService, TokenService, SessionService, JwtAuthGuard, RolesGuard],
 })
-export class AuthModule {}
+export class AuthModule { }

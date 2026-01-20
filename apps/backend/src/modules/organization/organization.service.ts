@@ -1,9 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationEntity } from '@src/entities';
 import { StorageService } from '@src/commons/services';
+import { extractDomain } from '@src/commons/utils';
 import {
   CreateOrganizationDto,
   UpdateOrganizationDto,
@@ -220,11 +221,16 @@ export class OrganizationService implements IOrganizationService {
       throw new NotFoundException('Organization not found');
     }
 
+    // Check if website domain is being changed and is unique
+    if (dto.website) {
+      await this.validateWebsiteDomain(id, dto.website);
+    }
+
     await organization.update({
       linkedin_url: dto.linkedin_url || null,
       facebook_url: dto.facebook_url || null,
       twitter_url: dto.twitter_url || null,
-      website: dto.website || null,
+      ...(dto.website && { website: dto.website }),
     });
 
     return organization.reload();
@@ -305,9 +311,35 @@ export class OrganizationService implements IOrganizationService {
   }
 
   /**
-   * Generate URL-friendly slug from organization name
+   * Validate if a website domain is already in use
+   * @param websiteUrl - The website URL to validate
+   * @throws BadRequestException if the website URL is invalid
+   * @throws ConflictException if the website domain is already in use
    */
-  private generateSlug(name: string): string {
+  async validateWebsiteDomain(originalOrganizationId: string | null, websiteUrl: string): Promise<void> {
+    const domain = extractDomain(websiteUrl);
+    if (!domain) {
+      throw new BadRequestException('Invalid website URL');
+    }
+
+    // Find all organizations and check if any has the same domain
+    const organizations = await this.organizationModel.findAll({
+      where: { is_active: true, ...(originalOrganizationId && { id: { [Op.ne]: originalOrganizationId } }), website: { [Op.like]: `%${domain}%` } },
+      attributes: ['id', 'website'],
+    });
+
+    const existingOrg = organizations.find(org => extractDomain(org.website) === domain);
+    if (existingOrg) {
+      throw new ConflictException('An organization with this domain already exists');
+    }
+  }
+
+  /**
+   * Generate a URL-friendly slug from an organization name
+   * @param name - The organization name to generate a slug from
+   * @returns A URL-friendly slug
+   */
+  generateSlug(name: string): string {
     return name
       .toLowerCase()
       .trim()

@@ -53,11 +53,12 @@ export class OrganizationEntity extends BaseNanoidEntity {
   })
   declare linkedin_company_id: string | null;
 
+  @Index({ name: 'IDX_ORGANIZATION_WEBSITE', unique: true })
   @Column({
     type: DataType.STRING(500),
-    allowNull: true,
+    allowNull: false,
   })
-  declare website: string | null;
+  declare website: string;
 
   // ============================================
   // Social Links

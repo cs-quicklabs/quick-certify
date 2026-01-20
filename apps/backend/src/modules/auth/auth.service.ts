@@ -23,7 +23,7 @@ import {
 } from './dtos';
 import { JwtTokens, IAuthService } from './interfaces';
 import { PasswordService, TokenService, SessionService, GoogleOAuthService, GoogleUserInfo } from './services';
-
+import { OrganizationService } from '../organization/organization.service';
 /**
  * Temporary Google user data stored during signup flow
  */
@@ -72,6 +72,7 @@ export class AuthService implements IAuthService {
     private readonly organizationModel: typeof OrganizationEntity,
     @InjectModel(PasswordResetEntity)
     private readonly passwordResetModel: typeof PasswordResetEntity,
+    private readonly organizationService: OrganizationService,
   ) {
     this.refreshTokenExpiresIn = this.configService.getOrThrow('auth.jwtRefreshTokenExpiresIn', {
       infer: true,
@@ -98,7 +99,7 @@ export class AuthService implements IAuthService {
       throw new ConflictException('Email already registered');
     }
 
-    const slug = this.generateSlug(dto.companyName);
+    const slug = this.organizationService.generateSlug(dto.companyName);
     const existingSlug = await this.organizationModel.findOne({ where: { slug } });
     if (existingSlug) {
       throw new ConflictException('Organization with this name already exists');
@@ -107,6 +108,11 @@ export class AuthService implements IAuthService {
     const existingOrgName = await this.organizationModel.findOne({ where: { name: dto.companyName } });
     if (existingOrgName) {
       throw new ConflictException('Organization with this name already exists');
+    }
+
+    // Check if website URL is already in use
+    if (dto.websiteUrl) {
+      await this.organizationService.validateWebsiteDomain(null, dto.websiteUrl);
     }
 
     const superAdminRole = await this.roleModel.findOne({
@@ -120,6 +126,7 @@ export class AuthService implements IAuthService {
     const organization = await this.organizationModel.create({
       name: dto.companyName,
       slug,
+      website: dto.websiteUrl,
       is_active: true,
       issuer_verified: false,
     });
@@ -179,8 +186,6 @@ export class AuthService implements IAuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
-
-    await user.update({ last_login_at: new Date() });
 
     const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
 
@@ -285,12 +290,10 @@ export class AuthService implements IAuthService {
     return { success: true, message: 'If the email exists, a reset link has been sent' };
   }
 
-  async resetPassword(dto: ResetPasswordDto) {
+  async checkForgotPasswordToken(token: string) {
     const passwordReset = await this.passwordResetModel.findOne({
-      where: { token: dto.token, is_used: false },
-      include: [UserEntity],
+      where: { token, is_used: false },
     });
-
     if (!passwordReset) {
       throw new BadRequestException('Invalid or expired reset token');
     }
@@ -299,6 +302,12 @@ export class AuthService implements IAuthService {
       await passwordReset.update({ is_used: true });
       throw new BadRequestException('Reset token has expired');
     }
+
+    return passwordReset;
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const passwordReset = await this.checkForgotPasswordToken(dto.token);
 
     const user = await this.userModel.findByPk(passwordReset.user_id);
     if (!user) {
@@ -549,12 +558,11 @@ export class AuthService implements IAuthService {
         });
       }
 
-      await existingUser.update({ last_login_at: new Date() });
       return this.createSessionAndTokens(existingUser, ipAddress, userAgent);
     }
 
     // Validate organization name uniqueness
-    const slug = this.generateSlug(dto.companyName);
+    const slug = this.organizationService.generateSlug(dto.companyName);
     const existingSlug = await this.organizationModel.findOne({ where: { slug } });
     if (existingSlug) {
       throw new ConflictException('Organization with this name already exists');
@@ -563,6 +571,11 @@ export class AuthService implements IAuthService {
     const existingOrgName = await this.organizationModel.findOne({ where: { name: dto.companyName } });
     if (existingOrgName) {
       throw new ConflictException('Organization with this name already exists');
+    }
+
+    // Check if website URL is already in use
+    if (dto.websiteUrl) {
+      await this.organizationService.validateWebsiteDomain(null, dto.websiteUrl);
     }
 
     // Get Super Admin role
@@ -621,6 +634,9 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
+    // Update last login time
+    await user.update({ last_login_at: new Date() });
+
     // Revoke all existing sessions for this user (single active session policy)
     await this.sessionService.revokeAllForUser(user.id);
 
@@ -680,8 +696,6 @@ export class AuthService implements IAuthService {
       });
     }
 
-    await user.update({ last_login_at: new Date() });
-
     return this.createSessionAndTokens(user, ipAddress, userAgent);
   }
 
@@ -717,6 +731,9 @@ export class AuthService implements IAuthService {
     return data.googleUser;
   }
 
+
+
+
   private cleanExpiredTempTokens(): void {
     const now = Date.now();
     for (const [key, value] of this.tempGoogleUserStore.entries()) {
@@ -737,14 +754,5 @@ export class AuthService implements IAuthService {
       return 'tablet';
     }
     return 'desktop';
-  }
-
-  private generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
   }
 }

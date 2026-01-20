@@ -17,7 +17,7 @@ export interface AuthConfig {
 class EnvironmentVariablesValidator {
   @IsString()
   @IsNotEmpty({ message: 'JWT_SECRET is required' })
-  JWT_SECRET: string = '';
+  JWT_SECRET = '';
 
   @IsNumber()
   @IsOptional()
