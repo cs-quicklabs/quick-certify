@@ -8,8 +8,10 @@ import { useAuthStore } from '@/store/auth.store';
 
 export default function DesignsLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
   const router = useRouter();
   const { user, isInitialized, isLoading } = useAuthStore();
@@ -37,7 +39,12 @@ export default function DesignsLayout({
   return (
     <>
       <Header />
-      <main className="mx-auto px-16">{children}</main>
+
+      <main className="mx-auto px-16">
+        {children}
+      </main>
+
+      {modal}
     </>
   );
 }

@@ -41,14 +41,14 @@ export default function DesignCard({ design }: { design: DesignType }) {
 
       {/* Actions  */}
       <div className="flex gap-2 text-sm font-bold">
-        <button className="px-3 py-1 text-blue-600 border border-blue-200 rounded hover:bg-blue-50">
+        <Link href={`/designs/preview/${design.id}`}
+          className="px-3 py-1 text-blue-600 border border-blue-200 rounded hover:bg-blue-50">
           Preview
-        </button>
+        </Link>
 
         <Link
           href={`/designs/edit/${design.id}`}
-          className="px-3 py-1 text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
-        >
+          className="px-3 py-1 text-gray-700 border border-gray-300 rounded hover:bg-gray-100">
           Edit
         </Link>
 

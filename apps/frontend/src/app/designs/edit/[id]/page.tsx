@@ -1,4 +1,4 @@
-import DesignFormPage from '../../_components/DesignFormPage';
+import DesignFormPage from '@/app/designs/_components/DesignFormPage';
 
 export default function EditDesignPage({
   params,
