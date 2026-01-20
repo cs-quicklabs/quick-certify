@@ -187,8 +187,6 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    await user.update({ last_login_at: new Date() });
-
     const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
 
     return tokens;
@@ -560,7 +558,6 @@ export class AuthService implements IAuthService {
         });
       }
 
-      await existingUser.update({ last_login_at: new Date() });
       return this.createSessionAndTokens(existingUser, ipAddress, userAgent);
     }
 
@@ -637,6 +634,9 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
+    // Update last login time
+    await user.update({ last_login_at: new Date() });
+
     // Revoke all existing sessions for this user (single active session policy)
     await this.sessionService.revokeAllForUser(user.id);
 
@@ -695,8 +695,6 @@ export class AuthService implements IAuthService {
         auth_provider: user.password_hash ? 'both' : 'google',
       });
     }
-
-    await user.update({ last_login_at: new Date() });
 
     return this.createSessionAndTokens(user, ipAddress, userAgent);
   }
