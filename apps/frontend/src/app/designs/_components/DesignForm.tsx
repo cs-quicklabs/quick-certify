@@ -26,11 +26,11 @@ export default function DesignForm({
         ) as HTMLInputElement).value;
         onSubmit({ name, image });
       }}
-      className="max-w-100 mx-auto py-6 px-5"
+      className="max-w-xl mx-auto py-6 px-5"
     >
       <div className="mb-4">
         <h1 className="text-medium font-semibold">{title}</h1>
-        <p className="text-xs text-gray-500">{subtitle}</p>
+        <p className="text-xs font-medium text-gray-500">{subtitle}</p>
       </div>
 
       <div className="mb-4">
