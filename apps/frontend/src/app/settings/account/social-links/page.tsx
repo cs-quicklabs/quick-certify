@@ -38,7 +38,7 @@ export default function SocialLinksPage() {
         linkedin_url: settings.linkedin_url || '',
         facebook_url: settings.facebook_url || '',
         twitter_url: settings.twitter_url || '',
-        website: settings.website || '',
+        website: settings.website,
       }
     : undefined;
 

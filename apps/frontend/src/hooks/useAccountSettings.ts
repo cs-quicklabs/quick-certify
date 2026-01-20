@@ -12,7 +12,7 @@ export interface OrganizationSettings {
   support_email: string | null;
   slogan: string | null;
   linkedin_company_id: string | null;
-  website: string | null;
+  website: string;
   linkedin_url: string | null;
   facebook_url: string | null;
   twitter_url: string | null;
