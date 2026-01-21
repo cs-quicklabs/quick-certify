@@ -1,9 +1,12 @@
 /**
  * Team Service - API client for team management
+ *
+ * Uses centralized query params utility for consistent URL building.
  */
 
 import { PaginatedResponse } from '@/types';
 import { apiClient, ApiResponse } from './api-client';
+import { buildUrl } from '@/lib/query-params';
 
 export interface TeamMember {
   id: string;
@@ -51,18 +54,14 @@ export interface TeamFilters {
   role?: string;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
+  [key: string]: unknown;
 }
 
 export const teamService = {
   async getTeamMembers(filters?: TeamFilters): Promise<PaginatedResponse<TeamMember>> {
-    const params = new URLSearchParams();
-    if (filters?.page) params.append('page', filters.page.toString());
-    if (filters?.limit) params.append('limit', filters.limit.toString());
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.role) params.append('role', filters.role);
-    if (filters?.sortBy) params.append('sortBy', filters.sortBy);
-    if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
-    const response = await apiClient.get<ApiResponse<PaginatedResponse<TeamMember>>>(`/users?${params.toString()}`);
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<TeamMember>>>(
+      buildUrl('/users', filters)
+    );
     return response.data.data;
   },
 

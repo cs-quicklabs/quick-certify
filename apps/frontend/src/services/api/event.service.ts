@@ -1,8 +1,11 @@
 /**
  * Event Service - API client for event management
+ *
+ * Uses centralized query params utility for consistent URL building.
  */
 
 import { apiClient, ApiResponse } from './api-client';
+import { buildUrl } from '@/lib/query-params';
 
 export interface EventType {
     id: string;
@@ -92,9 +95,13 @@ export interface PaginatedResponse<T> {
     };
 }
 
-export interface EventFilters {
+export interface PaginationFilters {
     page?: number;
     limit?: number;
+    [key: string]: unknown;
+}
+
+export interface EventFilters extends PaginationFilters {
     type?: string;
     level?: string;
     format?: string;
@@ -104,11 +111,10 @@ export interface EventFilters {
 
 export const eventService = {
     // Event Types
-    async getEventTypes(filters?: { page?: number; limit?: number }): Promise<PaginatedResponse<EventType>> {
-        const params = new URLSearchParams();
-        if (filters?.page) params.append('page', filters.page.toString());
-        if (filters?.limit) params.append('limit', filters.limit.toString());
-        const response = await apiClient.get<ApiResponse<PaginatedResponse<EventType>>>(`/event-types?${params.toString()}`);
+    async getEventTypes(filters?: PaginationFilters): Promise<PaginatedResponse<EventType>> {
+        const response = await apiClient.get<ApiResponse<PaginatedResponse<EventType>>>(
+            buildUrl('/event-types', filters)
+        );
         return response.data.data;
     },
 
@@ -133,11 +139,10 @@ export const eventService = {
     },
 
     // Event Levels
-    async getEventLevels(filters?: { page?: number; limit?: number }): Promise<PaginatedResponse<EventLevel>> {
-        const params = new URLSearchParams();
-        if (filters?.page) params.append('page', filters.page.toString());
-        if (filters?.limit) params.append('limit', filters.limit.toString());
-        const response = await apiClient.get<ApiResponse<PaginatedResponse<EventLevel>>>(`/event-levels?${params.toString()}`);
+    async getEventLevels(filters?: PaginationFilters): Promise<PaginatedResponse<EventLevel>> {
+        const response = await apiClient.get<ApiResponse<PaginatedResponse<EventLevel>>>(
+            buildUrl('/event-levels', filters)
+        );
         return response.data.data;
     },
 
@@ -162,11 +167,10 @@ export const eventService = {
     },
 
     // Event Formats
-    async getEventFormats(filters?: { page?: number; limit?: number }): Promise<PaginatedResponse<EventFormat>> {
-        const params = new URLSearchParams();
-        if (filters?.page) params.append('page', filters.page.toString());
-        if (filters?.limit) params.append('limit', filters.limit.toString());
-        const response = await apiClient.get<ApiResponse<PaginatedResponse<EventFormat>>>(`/event-formats?${params.toString()}`);
+    async getEventFormats(filters?: PaginationFilters): Promise<PaginatedResponse<EventFormat>> {
+        const response = await apiClient.get<ApiResponse<PaginatedResponse<EventFormat>>>(
+            buildUrl('/event-formats', filters)
+        );
         return response.data.data;
     },
 
@@ -192,15 +196,9 @@ export const eventService = {
 
     // Events
     async getEvents(filters?: EventFilters): Promise<PaginatedResponse<Event>> {
-        const params = new URLSearchParams();
-        if (filters?.page) params.append('page', filters.page.toString());
-        if (filters?.limit) params.append('limit', filters.limit.toString());
-        if (filters?.type) params.append('type', filters.type);
-        if (filters?.level) params.append('level', filters.level);
-        if (filters?.format) params.append('format', filters.format);
-        if (filters?.sortBy) params.append('sortBy', filters.sortBy);
-        if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
-        const response = await apiClient.get<ApiResponse<PaginatedResponse<Event>>>(`/events?${params.toString()}`);
+        const response = await apiClient.get<ApiResponse<PaginatedResponse<Event>>>(
+            buildUrl('/events', filters)
+        );
         return response.data.data;
     },
 
@@ -224,4 +222,3 @@ export const eventService = {
         return response.data.data;
     },
 };
-
