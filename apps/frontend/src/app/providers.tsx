@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useCrossTabLogout } from '@/hooks/useCrossTabLogout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 // import { env } from '@/config';
 
 /**
@@ -52,15 +53,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
-
-  // Wrap with Google OAuth Provider if configured
-  // if (env.GOOGLE_CLIENT_ID) {
-  //   return (
-  //     <GoogleOAuthProvider clientId={env.GOOGLE_CLIENT_ID}>
-  //       {content}
-  //     </GoogleOAuthProvider>
-  //   );
-  // }
-
-  return content;
+  
+  return <ErrorBoundary>{content}</ErrorBoundary>;
 }
