@@ -37,7 +37,7 @@ type MulterFile = {
 /**
  * Categories that require admin privileges
  */
-const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner'];
+const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner', 'design'];
 
 /**
  * File Controller

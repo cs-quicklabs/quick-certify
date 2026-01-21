@@ -17,6 +17,7 @@ export const ALLOWED_FILE_TYPES = {
   favicon: ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/x-icon'],
   banner: ['image/png', 'image/jpeg', 'image/jpg'],
   avatar: ['image/png', 'image/jpeg', 'image/jpg'],
+  design: ['image/png', 'image/jpeg', 'image/jpg']
 } as const;
 
 /**
@@ -27,6 +28,7 @@ export const MAX_FILE_SIZES = {
   favicon: 10 * 1024 * 1024, // 10MB
   banner: 10 * 1024 * 1024, // 10MB
   avatar: 10 * 1024 * 1024, // 10MB
+  design: 1 * 1024 * 1024 // 1MB
 } as const;
 
 export type UploadCategory = keyof typeof ALLOWED_FILE_TYPES;

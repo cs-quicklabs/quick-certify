@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
+import { Op } from 'sequelize'
 import { DesignEntity } from "@src/entities";
 import { FindAllOptions, PaginatedResult } from "@src/commons/base";
 
@@ -40,6 +41,27 @@ export class DesignService {
       },
     };
   }
+
+  async searchDesigns(
+    searchQuery: string,
+    options: FindAllOptions = {},
+  ): Promise<PaginatedResult<DesignEntity>> {
+    const searchCondition = {
+      [Op.or]: [
+        { name: { [Op.iLike]: `%${searchQuery}%` } },
+        { type: { [Op.iLike]: `%${searchQuery}%` } },
+      ],
+    };
+
+    return this.findAll({
+      ...options,
+      where: {
+        ...options.where,
+        ...searchCondition,
+      },
+    });
+  }
+
   async findOne(id: string): Promise<DesignEntity | null> {
     return this.designModel.findByPk(id);
   }
