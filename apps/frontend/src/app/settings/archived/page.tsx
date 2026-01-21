@@ -41,7 +41,6 @@ export default function ArchivedMembersPage() {
     });
 
     const members = data?.data || [];
-    const totalCount = data?.meta?.total || 0;
     const totalPages = data?.meta?.totalPages || 0;
 
     const handleRestoreClick = (member: TeamMember) => {
