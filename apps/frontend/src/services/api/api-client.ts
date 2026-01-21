@@ -177,6 +177,11 @@ export function setTokens(accessToken: string, refreshToken: string): void {
   localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   // Set session identifier to detect cross-tab logins
   localStorage.setItem(SESSION_ID_KEY, Date.now().toString());
+
+  // Set cookie for middleware access
+  // We use a safe defaultmax-age (e.g., 7 days) if we don't have the exact expiry
+  // The backend will validate the token validity anyway
+  document.cookie = `${TOKEN_KEY}=${accessToken}; path=/; max-age=604800; SameSite=Lax`;
 }
 
 export function clearTokens(): void {
@@ -184,6 +189,9 @@ export function clearTokens(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(SESSION_ID_KEY);
+
+  // Clear cookie
+  document.cookie = `${TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
 }
 
 export function getSessionId(): string | null {
