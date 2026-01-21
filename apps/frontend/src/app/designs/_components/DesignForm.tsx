@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+// import { validateImageDimensions } from '@/lib/image/validateImage';
 
 type DesignType = 'certificate' | 'badge';
 
