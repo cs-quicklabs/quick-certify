@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-// import { validateImageDimensions } from '@/lib/image/validateImage';
+import { validateImageDimensions } from '@/lib/design';
 
 type DesignType = 'certificate' | 'badge';
 
@@ -25,6 +25,8 @@ export default function DesignForm({
   onSubmit,
 }: Props) {
   const [name, setName] = useState(defaultName);
+  const [error, setError] = useState<string | null>(null);
+
   const imageRef = useRef<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +60,7 @@ export default function DesignForm({
           onChange={(e) => setName(e.target.value)}
           className="w-full border text-sm border-gray-200 font-semibold rounded-md px-3 py-2"
           placeholder="Name"
+          required
         />
       </div>
 
@@ -96,13 +99,29 @@ export default function DesignForm({
             type="file"
             hidden
             accept="image/*"
-            onChange={(e) => {
-              if (e.target.files?.[0]) {
-                imageRef.current = e.target.files[0];
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              try {
+                await validateImageDimensions(file, designType);
+                imageRef.current = file;
+                setError(null);
+              } catch (err: any) {
+                imageRef.current = null;
+                setError(err.message);
+                e.target.value = ''; // reset input
               }
             }}
           />
         </label>
+
+        {/* Validation error */}
+        {error && (
+          <p className="mt-2 text-sm font-medium text-red-600">
+            {error}
+          </p>
+        )}
       </div>
 
       {/* Actions */}
