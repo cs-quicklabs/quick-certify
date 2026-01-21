@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Op } from 'sequelize'
 import { DesignEntity } from "@src/entities";
 import { FindAllOptions, PaginatedResult } from "@src/commons/base";
+import { UpdateDesignDto } from "./dtos/update-design.dto";
 
 @Injectable()
 export class DesignService {
@@ -62,12 +63,40 @@ export class DesignService {
     });
   }
 
-  async findOne(id: string): Promise<DesignEntity | null> {
-    return this.designModel.findByPk(id);
+  async findOne(id: string): Promise<DesignEntity> {
+    const design = await this.designModel.findByPk(id);
+    if (!design) {
+      throw new NotFoundException(`Design with id ${id} not found`);
+    }
+    return design;
   }
+
   async create(data: Partial<DesignEntity>): Promise<DesignEntity> {
-    return this.designModel.create(data);
+    return await this.designModel.create(data);
   }
+
+  async update(id: string, dto: UpdateDesignDto): Promise<DesignEntity> {
+    const design = await this.findOne(id);
+
+    const updateData: Partial<DesignEntity> = {};
+
+    if (dto.name !== undefined) {
+      updateData.name = dto.name;
+    }
+
+    if (dto.designUrl !== undefined && dto.designUrl !== '') {
+      updateData.url = dto.designUrl;
+    }
+
+    if (dto.designType !== undefined) {
+      updateData.type = dto.designType;
+    }
+
+    await design.update(updateData);
+
+    return design;
+  }
+
 
   async findByType(type: string): Promise<DesignEntity[]> {
     return this.designModel.findAll({ where: { type } });
