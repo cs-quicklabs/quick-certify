@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { AllConfigType } from '@src/config/config.type';
 import { UserEntity, RoleEntity, OrganizationEntity, PasswordResetEntity } from '@src/entities';
 import { EmailService } from '@src/commons/services';
-import { generateNanoid } from '@src/commons/utils';
+import { generateNanoid, Helpers } from '@src/commons/utils';
 import {
   RegisterDto,
   LoginDto,
@@ -131,7 +131,7 @@ export class AuthService implements IAuthService {
       issuer_verified: false,
     });
 
-    const hashedPassword = await this.passwordService.hash(dto.password);
+    const hashedPassword = await this.userModel.prototype.hash(dto.password);
     const user = await this.userModel.create({
       first_name: dto.firstName,
       last_name: dto.lastName,
@@ -182,7 +182,7 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Password authentication not available for this account');
     }
 
-    const isPasswordValid = await this.passwordService.compare(dto.password, user.password_hash);
+    const isPasswordValid = await this.userModel.prototype.compare(dto.password, user.password_hash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -266,7 +266,7 @@ export class AuthService implements IAuthService {
       { where: { user_id: user.id, is_used: false } },
     );
 
-    const resetToken = this.passwordService.generateResetToken();
+    const resetToken = Helpers.generateResetToken();
     await this.passwordResetModel.create({
       user_id: user.id,
       token: resetToken,
@@ -328,7 +328,7 @@ export class AuthService implements IAuthService {
       );
     }
 
-    const hashedPassword = await this.passwordService.hash(dto.newPassword);
+    const hashedPassword = await this.userModel.prototype.hash(dto.newPassword);
     await this.userModel.update(
       { password_hash: hashedPassword },
       { where: { id: passwordReset.user_id } },
@@ -351,18 +351,18 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Password authentication not available for this account');
     }
 
-    const isPasswordValid = await this.passwordService.compare(dto.currentPassword, user.password_hash);
+    const isPasswordValid = await this.userModel.prototype.compare(dto.currentPassword, user.password_hash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     // Check if new password is same as old password
-    const isSameAsOldPassword = await this.passwordService.compare(dto.newPassword, user.password_hash);
+    const isSameAsOldPassword = await this.userModel.prototype.compare(dto.newPassword, user.password_hash);
     if (isSameAsOldPassword) {
       throw new BadRequestException("New password shouldn't be same as old password");
     }
 
-    const hashedPassword = await this.passwordService.hash(dto.newPassword);
+    const hashedPassword = await this.userModel.prototype.hash(dto.newPassword);
     await user.update({ password_hash: hashedPassword });
 
     return { success: true, message: 'Password changed successfully' };
@@ -392,7 +392,7 @@ export class AuthService implements IAuthService {
     }
 
     // Hash and set password
-    const hashedPassword = await this.passwordService.hash(dto.password);
+    const hashedPassword = await this.userModel.prototype.hash(dto.password);
     await user.update({
       password_hash: hashedPassword,
       status: 'active',

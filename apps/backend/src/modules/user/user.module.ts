@@ -2,11 +2,10 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { UserEntity } from '@src/entities/user.entity';
-import { RoleEntity } from '@src/entities/role.entity';
-import { OrganizationEntity } from '@src/entities/organization.entity';
 import { AuthModule } from '@src/modules/auth';
 import { EmailService } from '@src/commons/services';
+import { OrganizationEntity, UserEntity } from '@src/entities';
+import { RoleModule } from '../role/role.module';
 /**
  * User Module
  *
@@ -14,11 +13,12 @@ import { EmailService } from '@src/commons/services';
  */
 @Module({
   imports: [
-    SequelizeModule.forFeature([UserEntity, RoleEntity, OrganizationEntity]),
+    SequelizeModule.forFeature([UserEntity, OrganizationEntity]),
     AuthModule, // For PasswordService
+    RoleModule,
   ],
   controllers: [UserController],
   providers: [UserService, EmailService],
   exports: [UserService],
 })
-export class UserModule {}
+export class UserModule { }

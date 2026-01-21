@@ -17,6 +17,7 @@ import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
 import { capitalizeFirst } from '@src/commons/utils';
+import { RoleService } from '../role/role.service';
 
 /**
  * User Service
@@ -44,6 +45,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     private readonly passwordService: PasswordService,
     private readonly mailService: EmailService,
     private readonly sessionService: SessionService,
+    private readonly roleService: RoleService,
   ) {
     super();
   }
@@ -138,7 +140,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Hash password if provided
     let hashedPassword: string | null = null;
     if (dto.password) {
-      hashedPassword = await this.passwordService.hash(dto.password);
+      hashedPassword = await this.userModel.prototype.hash(dto.password);
     }
 
     const user = await this.userModel.create({
@@ -314,22 +316,26 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     // Handle role filtering - need to find role IDs first
-    let roleIds: string[] | undefined;
+    let roleIds: number[] | undefined;
     if ((options as any).role) {
       const roleFilter = (options as any).role.toLowerCase();
       // Admin filter should include both admin and super_admin
       if (roleFilter === 'admin') {
-        const roles = await this.roleModel.findAll({
-          where: { role: { [Op.in]: ['admin', 'super_admin'] } },
+        // const roles = await this.roleModel.findAll({
+        //   where: { role: { [Op.in]: ['admin', 'super_admin'] } },
+        // });
+        // roleIds = roles.map((r) => r.id);
+        const rolesFromDb = await this.roleService.findAll({
+          where: { code: { [Op.in]: ['admin', 'super_admin'] } },
+          attributes: ['id'],
         });
-        roleIds = roles.map((r) => r.id);
+        roleIds = rolesFromDb as unknown as number[];
       } else {
-        const role = await this.roleModel.findOne({
-          where: { role: roleFilter },
+        const roleFromDb = await this.roleService.findOne({
+          where: { code: roleFilter },
+          attributes: ['id'],
         });
-        if (role) {
-          roleIds = [role.id];
-        }
+        roleIds = roleFromDb as unknown as number[];
       }
       if (roleIds && roleIds.length > 0) {
         // Filter out excluded roles from the role filter

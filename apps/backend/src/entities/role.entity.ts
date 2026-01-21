@@ -1,15 +1,20 @@
-import { Column, DataType, Index, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { Column, DataType, Table } from 'sequelize-typescript';
+import { BaseEntity } from './base.entity';
 
 @Table({
   tableName: 'role',
 })
-export class RoleEntity extends BaseNanoidEntity {
-  @Index({ name: 'IDX_ROLE_NAME', unique: true })
+export class RoleEntity extends BaseEntity {
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
   })
-  declare role: string;
+  declare name: string;
+
+  @Column({
+    type: DataType.STRING(255),
+    allowNull: false,
+  })
+  declare code: string;
 }
 

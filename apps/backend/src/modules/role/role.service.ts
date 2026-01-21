@@ -1,10 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { RoleEntity } from '@src/entities/role.entity';
-import { CreateRoleDto, UpdateRoleDto } from './dtos';
-import { Role, SYSTEM_ROLES } from './enums';
+import { FindOptions } from 'sequelize';
+import { t } from '@src/i18n/i18n.config';
 
 /**
  * Role Service
@@ -18,123 +16,22 @@ export class RoleService {
   constructor(
     @InjectModel(RoleEntity)
     private readonly roleModel: typeof RoleEntity,
-  ) {}
+  ) { }
 
-  async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<RoleEntity>> {
-    const { page = 1, limit = 10, sortBy = 'role', sortOrder = 'ASC', where = {} } = options;
-
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
-
-    const { count, rows } = await this.roleModel.findAndCountAll({
-      where,
-      order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
-    });
-
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+  async findAll(options: FindOptions<RoleEntity> = {}): Promise<RoleEntity[] | Partial<RoleEntity>[]> {
+    return this.roleModel.findAll(options);
   }
 
-  async findOne(id: string): Promise<RoleEntity | null> {
-    return this.roleModel.findByPk(id);
+  async findOne(options: FindOptions<RoleEntity> = {}): Promise<RoleEntity | Partial<RoleEntity> | null> {
+    return this.roleModel.findOne(options);
   }
 
-  async findByRole(role: Role | string): Promise<RoleEntity | null> {
-    const roleName = typeof role === 'string' ? role.toLowerCase() : role;
-    return this.roleModel.findOne({
-      where: { role: roleName },
-    });
-  }
-
-  async create(dto: CreateRoleDto): Promise<RoleEntity> {
-    // Check for duplicate role
-    const existingRole = await this.roleModel.findOne({
-      where: { role: dto.role },
-    });
-
-    if (existingRole) {
-      throw new ConflictException(`Role "${dto.role}" already exists`);
-    }
-
-    return this.roleModel.create({
-      role: dto.role,
-    });
-  }
-
-  async update(id: string, dto: UpdateRoleDto): Promise<RoleEntity> {
-    const role = await this.requireById(id);
-
-    if (dto.role !== undefined) {
-      // Check for duplicate role (excluding current)
-      const existingRole = await this.roleModel.findOne({
-        where: { role: dto.role, id: { [Op.ne]: id } },
-      });
-
-      if (existingRole) {
-        throw new ConflictException(`Role "${dto.role}" already exists`);
-      }
-
-      await role.update({ role: dto.role });
-    }
-
-    return role;
-  }
-
-  async delete(id: string): Promise<boolean> {
-    const role = await this.requireById(id);
-
-    // Check if it's a system role
-    if (this.isSystemRole(role.role)) {
-      throw new ConflictException('Cannot delete system roles');
-    }
-
-    await role.destroy();
-    return true;
-  }
-
-  async searchRoles(
-    searchQuery: string,
-    options: FindAllOptions = {},
-  ): Promise<PaginatedResult<RoleEntity>> {
-    const searchCondition = {
-      role: { [Op.iLike]: `%${searchQuery}%` },
-    };
-
-    return this.findAll({
-      ...options,
-      where: {
-        ...options.where,
-        ...searchCondition,
-      },
-    });
-  }
-
-  // Private helper methods
-
-  private async requireById(id: string): Promise<RoleEntity> {
-    const role = await this.roleModel.findByPk(id);
+  async ValidateRole(roleId: number): Promise<RoleEntity> {
+    const role = await this.roleModel.findOne({ where: { id: roleId, is_active: true } });
     if (!role) {
-      throw new NotFoundException('Role not found');
+      throw new BadRequestException(t('role.notFoundOrInactive'));
     }
     return role;
-  }
-
-  private isSystemRole(role: string): boolean {
-    return SYSTEM_ROLES.includes(role as Role);
   }
 }
 

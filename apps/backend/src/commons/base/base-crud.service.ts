@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Model, ModelStatic, FindOptions, Op } from 'sequelize';
+import { Model, ModelStatic, FindOptions, UpdateOptions, Op } from 'sequelize';
 import { BaseCrudServiceInterface, FindAllOptions, PaginatedResult } from './interfaces';
 
 @Injectable()
@@ -8,8 +8,7 @@ export abstract class BaseCrudService<
   CreateDto extends object,
   UpdateDto extends object,
   TId extends number | string = number,
-> implements BaseCrudServiceInterface<T, CreateDto, UpdateDto>
-{
+> implements BaseCrudServiceInterface<T, CreateDto, UpdateDto> {
   protected abstract readonly model: ModelStatic<T>;
   protected readonly entityName: string = 'Entity';
 
@@ -19,6 +18,15 @@ export abstract class BaseCrudService<
   protected readonly defaultLimit: number = 10;
   protected readonly maxLimit: number = 100;
   protected readonly softDeleteField: string | null = 'deleted_at'; // null to disable soft delete filtering
+
+  // Multi-tenant configuration
+  // Set to 'organization_id' for snake_case field or 'organizationId' for camelCase property
+  // Defaults to 'organization_id' for backward compatibility
+  protected readonly organizationField: string = 'organization_id';
+
+  // Whether this entity uses BaseNanoidEntity pattern (has uuid field)
+  // Override to false if entity extends BaseEntity instead of BaseNanoidEntity
+  protected readonly usesNanoid: boolean = true;
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<T>> {
     const {
@@ -256,36 +264,37 @@ export abstract class BaseCrudService<
   }
 
   // Multi-tenant helper methods
+  // These methods automatically filter by organization using the configured organizationField
   async findAllByOrganization(
-    organizationId: TId,
+    organizationId: number | string,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<T>> {
     return this.findAll({
       ...options,
       where: {
         ...options.where,
-        organization_id: organizationId,
+        [this.organizationField]: organizationId,
       },
     });
   }
 
   async findOneByOrganization(
     id: TId,
-    organizationId: TId,
+    organizationId: number | string,
     options: FindOptions = {},
   ): Promise<T | null> {
     return this.findOne(id, {
       ...options,
       where: {
         ...options.where,
-        organization_id: organizationId,
+        [this.organizationField]: organizationId,
       },
     });
   }
 
   async findOneByOrganizationOrFail(
     id: TId,
-    organizationId: TId,
+    organizationId: number | string,
     options: FindOptions = {},
   ): Promise<T> {
     const entity = await this.findOneByOrganization(id, organizationId, options);
@@ -297,5 +306,68 @@ export abstract class BaseCrudService<
     }
 
     return entity;
+  }
+
+  // Multi-tenant methods using UUID (preferred for BaseNanoidEntity entities)
+  async findByUuidAndOrganization(
+    uuid: string,
+    organizationId: number | string,
+    options: FindOptions = {},
+  ): Promise<T | null> {
+    return this.findByUuid(uuid, {
+      ...options,
+      where: {
+        ...options.where,
+        [this.organizationField]: organizationId,
+      },
+    });
+  }
+
+  async findByUuidAndOrganizationOrFail(
+    uuid: string,
+    organizationId: number | string,
+    options: FindOptions = {},
+  ): Promise<T> {
+    const entity = await this.findByUuidAndOrganization(uuid, organizationId, options);
+
+    if (!entity) {
+      throw new NotFoundException(
+        `${this.entityName} with UUID ${uuid} not found in this organization`,
+      );
+    }
+
+    return entity;
+  }
+
+  async updateByUuidAndOrganization(
+    uuid: string,
+    organizationId: number | string,
+    dto: UpdateDto,
+    options?: Omit<UpdateOptions, 'where'>,
+  ): Promise<T> {
+    const entity = await this.findByUuidAndOrganizationOrFail(uuid, organizationId);
+    await entity.update(dto as Record<string, unknown>, options);
+    return entity;
+  }
+
+  async deleteByUuidAndOrganization(
+    uuid: string,
+    organizationId: number | string,
+  ): Promise<boolean> {
+    const entity = await this.findByUuidAndOrganizationOrFail(uuid, organizationId);
+    await entity.destroy();
+    return true;
+  }
+
+  async softDeleteByUuidAndOrganization(
+    uuid: string,
+    organizationId: number | string,
+  ): Promise<boolean> {
+    if (!this.softDeleteField) {
+      throw new Error(`Soft delete is not configured for ${this.entityName}. Set softDeleteField property.`);
+    }
+    const entity = await this.findByUuidAndOrganizationOrFail(uuid, organizationId);
+    await entity.update({ [this.softDeleteField]: new Date() } as Record<string, unknown>);
+    return true;
   }
 }

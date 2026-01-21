@@ -249,9 +249,6 @@ JWT_SECRET=your_super_secret_key
 JWT_ACCESS_TOKEN_EXPIRES_IN=900        # 15 minutes
 JWT_REFRESH_TOKEN_EXPIRES_IN=604800    # 7 days
 
-# Password hashing
-BCRYPT_SALT_ROUNDS=12
-
 # Reset/Verification expiration (in seconds)
 PASSWORD_RESET_EXPIRES_IN=3600         # 1 hour
 EMAIL_VERIFICATION_EXPIRES_IN=86400    # 24 hours

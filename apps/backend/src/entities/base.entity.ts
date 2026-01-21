@@ -1,8 +1,16 @@
 import { Column, CreatedAt, DataType, Model, UpdatedAt } from 'sequelize-typescript';
 import { Sequelize } from 'sequelize';
 
-// these columns will be presented in all the entity
-// this will be extended.
+/**
+ * Base Entity with Integer Primary Key
+ *
+ * Use this for:
+ * - High-volume internal tables (logs, metrics)
+ * - Join tables where ID is never exposed
+ * - Tables requiring sequential ordering
+ *
+ * For public-facing resources, use BaseNanoidEntity instead.
+ */
 export abstract class BaseEntity extends Model<Record<string, unknown>> {
   @Column({
     type: DataType.INTEGER,

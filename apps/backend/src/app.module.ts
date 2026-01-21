@@ -17,10 +17,11 @@ import { EmailService } from '@src/commons/services';
 import { AuthModule, JwtAuthGuard, TokenService, SessionService } from './modules/auth';
 import { UserModule } from './modules/user';
 import { OrganizationModule } from './modules/organization';
-import { RoleModule } from './modules/role';
+import { RoleModule } from './modules/role/role.module';
 import { FileModule } from './modules/file';
 import { SkillModule } from './modules/skill';
 import { EventModule } from './modules/event';
+import { I18nModule } from './i18n/i18n.module';
 
 // Entities for guards
 import { SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
@@ -35,6 +36,9 @@ import { ProfileModule } from './modules/profile/profile.module';
  */
 @Module({
   imports: [
+    // i18n (always `en` for now)
+    I18nModule,
+
     // Configuration - loads from project root .env
     ConfigModule.forRoot({
       envFilePath: [

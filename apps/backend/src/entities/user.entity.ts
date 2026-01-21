@@ -3,6 +3,10 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
 import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
 import { Exclude } from 'class-transformer';
+import * as bcrypt from 'bcrypt';
+
+// TODO: Move to config
+const SALT_ROUNDS = 10;
 
 @Table({
   tableName: 'user',
@@ -10,10 +14,10 @@ import { Exclude } from 'class-transformer';
 export class UserEntity extends BaseNanoidEntity {
   @ForeignKey(() => OrganizationEntity)
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
   })
-  declare organization_id: string;
+  declare organization_id: number;
 
   @BelongsTo(() => OrganizationEntity)
   declare organization: OrganizationEntity;
@@ -44,6 +48,7 @@ export class UserEntity extends BaseNanoidEntity {
   })
   declare email: string;
 
+  @Exclude({ toPlainOnly: true })
   @Column({
     type: DataType.TEXT,
     allowNull: true,
@@ -58,6 +63,7 @@ export class UserEntity extends BaseNanoidEntity {
   })
   declare auth_provider: string;
 
+  @Exclude({ toPlainOnly: true })
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
@@ -82,7 +88,7 @@ export class UserEntity extends BaseNanoidEntity {
   declare status: 'active' | 'inactive' | 'invited' | 'archived';
 
   @Column({
-    type: DataType.STRING(500),
+    type: DataType.STRING(2048),
     allowNull: true,
   })
   declare avatar_url: string | null;
@@ -105,4 +111,12 @@ export class UserEntity extends BaseNanoidEntity {
     allowNull: true,
   })
   declare last_login_at: Date | null;
+
+  async hash(password: string): Promise<string> {
+    return bcrypt.hash(password, SALT_ROUNDS);
+  }
+
+  async compare(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(plainPassword, hashedPassword);
+  }
 }

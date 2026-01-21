@@ -115,7 +115,6 @@ DATABASE_SYNCHRONIZE=false
 JWT_SECRET=your_super_secret_key_here
 JWT_ACCESS_TOKEN_EXPIRES_IN=900        # 15 minutes (seconds)
 JWT_REFRESH_TOKEN_EXPIRES_IN=604800   # 7 days (seconds)
-BCRYPT_SALT_ROUNDS=10
 PASSWORD_RESET_EXPIRES_IN=3600        # 1 hour (seconds)
 
 # Email (for dev, set MAIL_PREVIEW=true)

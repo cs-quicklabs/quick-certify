@@ -6,7 +6,6 @@ export interface AuthConfig {
   jwtSecret: string;
   jwtAccessTokenExpiresIn: number;
   jwtRefreshTokenExpiresIn: number;
-  bcryptSaltRounds: number;
   passwordResetExpiresIn: number;
   invitationExpiresIn: number;
   googleClientId?: string;
@@ -26,10 +25,6 @@ class EnvironmentVariablesValidator {
   @IsNumber()
   @IsOptional()
   JWT_REFRESH_TOKEN_EXPIRES_IN?: number;
-
-  @IsNumber()
-  @IsOptional()
-  BCRYPT_SALT_ROUNDS?: number;
 
   @IsNumber()
   @IsOptional()
@@ -65,9 +60,6 @@ export default registerAs<AuthConfig>('auth', () => {
     jwtRefreshTokenExpiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN
       ? parseInt(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN, 10)
       : 604800,
-    bcryptSaltRounds: process.env.BCRYPT_SALT_ROUNDS
-      ? parseInt(process.env.BCRYPT_SALT_ROUNDS, 10)
-      : 12,
     // Password reset expires in 10 minutes (in seconds)
     passwordResetExpiresIn: process.env.PASSWORD_RESET_EXPIRES_IN
       ? parseInt(process.env.PASSWORD_RESET_EXPIRES_IN, 10)

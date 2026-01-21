@@ -9,12 +9,13 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { useContainer } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
-import { Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { setupSwagger } from './swagger';
 import { validationOptions } from './commons/utils';
 import { ExceptionResponseFilter } from './commons/filters';
 import { AllConfigType } from './config/config.type';
+import { resolveLocaleFromAcceptLanguage, runWithLocale } from './i18n';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -61,6 +62,12 @@ async function bootstrap() {
 
   // adding cookie parser
   app.use(cookieParser.default());
+
+  // i18n: resolve locale from `accept-language` header (fallback: en)
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    const locale = resolveLocaleFromAcceptLanguage(req.headers['accept-language']);
+    runWithLocale(locale, () => next());
+  });
 
   const configService = app.get(ConfigService<AllConfigType>);
 
