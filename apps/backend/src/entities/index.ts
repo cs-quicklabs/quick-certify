@@ -8,6 +8,7 @@ import { EventTypeEntity } from './event-type.entity';
 import { EventLevelEntity } from './event-level.entity';
 import { EventFormatEntity } from './event-format.entity';
 import { EventEntity } from './event.entity';
+import { DesignEntity } from './design.entity';
 
 export * from './base.entity';
 export * from './base-nanoid.entity';
@@ -21,6 +22,7 @@ export * from './event-type.entity';
 export * from './event-level.entity';
 export * from './event-format.entity';
 export * from './event.entity';
+export * from './design.entity';
 
 export const entities = [
   RoleEntity,
@@ -33,4 +35,5 @@ export const entities = [
   EventLevelEntity,
   EventFormatEntity,
   EventEntity,
+  DesignEntity,
 ];
