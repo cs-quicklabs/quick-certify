@@ -1,22 +1,34 @@
-import { z } from 'zod';
+/**
+ * Settings Schemas
+ *
+ * Validation schemas for settings forms.
+ * Uses shared schemas for consistent validation.
+ */
 
-// Allowed image types
+import { z } from 'zod';
+import {
+  passwordSchema,
+  optionalNameSchema,
+  PASSWORD_MESSAGES,
+} from './shared.schema';
+
+/**
+ * Image Upload Configuration
+ */
 export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpg', 'image/jpeg'];
 export const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
 
-// Profile Settings Schema
-export const profileSettingsSchema = z.object({
-  firstName: z.string().regex(/\S/, 'First name must not be only spaces').min(1, { message: 'First name is Required' }),
-  lastName: z.string().optional(),
-  email: z.string().email('Invalid email address').optional(),
-  avatarUrl: z.string().optional(),
-  organizationName: z.string().optional(),
-  signupMethod: z.enum(['email', 'google']).optional(),
-});
-
-export type ProfileSettingsData = z.infer<typeof profileSettingsSchema>;
-
-// Image validation helper
+/**
+ * Image validation helper
+ *
+ * @example
+ * ```ts
+ * const validation = validateImageFile(file);
+ * if (!validation.valid) {
+ *   showError(validation.error);
+ * }
+ * ```
+ */
 export const validateImageFile = (file: File): { valid: boolean; error?: string } => {
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
     return { valid: false, error: 'Only PNG, JPG, and JPEG formats are allowed' };
@@ -27,26 +39,46 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
   return { valid: true };
 };
 
-// Change Password Schema
+/**
+ * Profile Settings Schema
+ */
+export const profileSettingsSchema = z.object({
+  firstName: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
+    .regex(/\S/, 'Name must not be only spaces')
+    .regex(/^[a-zA-Z0-9\s]+$/, 'Name must only contain letters, numbers')
+    .regex(/[a-zA-Z]/, 'Name must contain at least one letter'),
+  lastName: optionalNameSchema,
+  email: z.string().email('Invalid email address').optional(),
+  avatarUrl: z.string().optional(),
+  organizationName: z.string().optional(),
+  signupMethod: z.enum(['email', 'google']).optional(),
+});
+
+export type ProfileSettingsData = z.infer<typeof profileSettingsSchema>;
+
+/**
+ * Change Password Schema
+ *
+ * Uses shared password schema for new password validation.
+ */
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, PASSWORD_MESSAGES.CONFIRM_REQUIRED),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: PASSWORD_MESSAGES.MISMATCH,
     path: ['confirmPassword'],
   });
 
 export type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 
-// Email Preferences Schema
+/**
+ * Email Preferences Schema
+ */
 export const emailPreferencesSchema = z.object({
   enableAllAlerts: z.boolean().default(false),
 });
