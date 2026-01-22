@@ -1,11 +1,22 @@
-import { Column, CreatedAt, DataType, Model, UpdatedAt } from 'sequelize-typescript';
+import {
+  BeforeValidate,
+  Column,
+  CreatedAt,
+  DataType,
+  Index,
+  Model,
+  UpdatedAt,
+} from 'sequelize-typescript';
 import { Sequelize } from 'sequelize';
+import { generateNanoid } from '@src/commons/utils/nanoid.util';
 
 /**
  * Base Entity
  *
- * Base class for entities using integer auto-increment primary keys.
- * Provides common fields: id, createdAt, updatedAt.
+ * Base class for all entities with:
+ * - id: integer auto-increment primary key (used for foreign keys and relations)
+ * - uuid: nanoid string (used for external API operations)
+ * - createdAt, updatedAt: timestamps
  * All entities extending this will have these columns.
  */
 export abstract class BaseEntity extends Model<Record<string, unknown>> {
@@ -15,6 +26,22 @@ export abstract class BaseEntity extends Model<Record<string, unknown>> {
     primaryKey: true,
   })
   declare id: number;
+
+  // UUID column - each entity should add @Index decorator with table-specific name
+  // Example: @Index({ name: 'IDX_USER_UUID', unique: true })
+  @Column({
+    type: DataType.STRING(21),
+    allowNull: false,
+    // unique: true removed - each entity should define its own index name
+  })
+  declare uuid: string;
+
+  @BeforeValidate
+  static generateUuid(instance: BaseEntity): void {
+    if (!instance.uuid) {
+      instance.uuid = generateNanoid();
+    }
+  }
 
   @CreatedAt
   @Column({

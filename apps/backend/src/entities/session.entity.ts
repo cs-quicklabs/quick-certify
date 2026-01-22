@@ -7,7 +7,7 @@ import {
   Index,
   Table,
 } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
 import { generateNanoid } from '@src/commons/utils/nanoid.util';
 
@@ -21,7 +21,11 @@ import { generateNanoid } from '@src/commons/utils/nanoid.util';
   tableName: 'session',
   underscored: true,
 })
-export class SessionEntity extends BaseNanoidEntity {
+export class SessionEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_SESSION_UUID', unique: true })
+  declare uuid: string;
+
   @Index({ name: 'IDX_SESSION_HASH', unique: true })
   @Column({
     type: DataType.STRING(21),
@@ -39,10 +43,10 @@ export class SessionEntity extends BaseNanoidEntity {
   @ForeignKey(() => UserEntity)
   @Index({ name: 'IDX_SESSION_USER_ID' })
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
   })
-  declare user_id: string;
+  declare user_id: number;
 
   @BelongsTo(() => UserEntity)
   declare user: UserEntity;

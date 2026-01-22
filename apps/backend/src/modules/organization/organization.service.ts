@@ -30,7 +30,7 @@ export class OrganizationService implements IOrganizationService {
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -64,9 +64,16 @@ export class OrganizationService implements IOrganizationService {
     };
   }
 
-  async findOne(id: string): Promise<OrganizationEntity | null> {
+  async findOne(id: number, transaction?: Transaction): Promise<OrganizationEntity | null> {
     return this.organizationModel.findOne({
       where: { id, is_active: true },
+      ...(transaction && { transaction }),
+    });
+  }
+
+  async findByUuid(uuid: string): Promise<OrganizationEntity | null> {
+    return this.organizationModel.findOne({
+      where: { uuid, is_active: true },
     });
   }
 
@@ -100,6 +107,7 @@ export class OrganizationService implements IOrganizationService {
 
     const createdOrganization = (await this.organizationModel.create(
       {
+        ...organization,
         name: organization?.name,
         slug,
         is_active: organization?.is_active !== undefined ? organization?.is_active : true,
@@ -114,7 +122,7 @@ export class OrganizationService implements IOrganizationService {
     return createdOrganization;
   }
 
-  async update(id: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
+  async update(id: number, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findOne({
       where: { id, is_active: true },
     });
@@ -154,6 +162,14 @@ export class OrganizationService implements IOrganizationService {
     return organization;
   }
 
+  async updateByUuid(uuid: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
+    const organization = await this.findByUuid(uuid);
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    return this.update(organization.id, dto);
+  }
+
   async searchOrganizations(
     searchQuery: string,
     options: FindAllOptions = {},
@@ -181,19 +197,23 @@ export class OrganizationService implements IOrganizationService {
   /**
    * Update organization general information
    */
-  async updateGeneralInfo(id: string, dto: UpdateGeneralInfoDto): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findOne({
-      where: { id, is_active: true },
+  async updateGeneralInfo(uuid: string, dto: UpdateGeneralInfoDto): Promise<OrganizationEntity> {
+    const organization = await this.findByUuid(uuid);
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    const org = await this.organizationModel.findOne({
+      where: { id: organization.id, is_active: true },
     });
 
-    if (!organization) {
+    if (!org) {
       throw new NotFoundException('Organization not found');
     }
 
     // Check if name is being changed and is unique
-    if (dto.name && dto.name !== organization.name) {
+    if (dto.name && dto.name !== org.name) {
       const existingName = await this.organizationModel.findOne({
-        where: { name: dto.name, id: { [Op.ne]: id } },
+        where: { name: dto.name, id: { [Op.ne]: org.id } },
       });
       if (existingName) {
         throw new ConflictException('Organization with this name already exists');
@@ -202,13 +222,13 @@ export class OrganizationService implements IOrganizationService {
       // Auto-generate new slug when name changes
       const newSlug = this.generateSlug(dto.name);
       const existingSlug = await this.organizationModel.findOne({
-        where: { slug: newSlug, id: { [Op.ne]: id } },
+        where: { slug: newSlug, id: { [Op.ne]: org.id } },
       });
       if (existingSlug) {
         throw new ConflictException('Organization with similar name already exists');
       }
 
-      await organization.update({
+      await org.update({
         name: dto.name,
         slug: newSlug,
         description: dto.description || null,
@@ -217,7 +237,7 @@ export class OrganizationService implements IOrganizationService {
         linkedin_company_id: dto.linkedin_company_id || null,
       });
     } else {
-      await organization.update({
+      await org.update({
         description: dto.description || null,
         support_email: dto.support_email || null,
         slogan: dto.slogan || null,
@@ -225,76 +245,84 @@ export class OrganizationService implements IOrganizationService {
       });
     }
 
-    return organization.reload();
+    return org.reload();
   }
 
   /**
    * Update organization social links
    */
-  async updateSocialLinks(id: string, dto: UpdateSocialLinksDto): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findOne({
-      where: { id, is_active: true },
+  async updateSocialLinks(uuid: string, dto: UpdateSocialLinksDto): Promise<OrganizationEntity> {
+    const organization = await this.findByUuid(uuid);
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    const org = await this.organizationModel.findOne({
+      where: { id: organization.id, is_active: true },
     });
 
-    if (!organization) {
+    if (!org) {
       throw new NotFoundException('Organization not found');
     }
 
     // Check if website domain is being changed and is unique
     if (dto.website) {
-      await this.validateWebsiteDomain(id, dto.website);
+      await this.validateWebsiteDomain(org.id, dto.website);
     }
 
-    await organization.update({
+    await org.update({
       linkedin_url: dto.linkedin_url || null,
       facebook_url: dto.facebook_url || null,
       twitter_url: dto.twitter_url || null,
       ...(dto.website && { website: dto.website }),
     });
 
-    return organization.reload();
+    return org.reload();
   }
 
   /**
    * Update organization branding
    * Deletes old images from storage when replaced
    */
-  async updateBranding(id: string, dto: UpdateBrandingDto): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findOne({
-      where: { id, is_active: true },
+  async updateBranding(uuid: string, dto: UpdateBrandingDto): Promise<OrganizationEntity> {
+    const organization = await this.findByUuid(uuid);
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    const org = await this.organizationModel.findOne({
+      where: { id: organization.id, is_active: true },
     });
 
-    if (!organization) {
+    if (!org) {
       throw new NotFoundException('Organization not found');
     }
 
     // Delete old logo from storage if being replaced or removed
-    if (dto.logo_url !== undefined && organization.logo_url) {
-      if (dto.logo_url !== organization.logo_url || dto.logo_url === '') {
+    if (dto.logo_url !== undefined && org.logo_url) {
+      if (dto.logo_url !== org.logo_url || dto.logo_url === '') {
         // Old logo is being replaced or removed
-        await this.storageService.deleteFileByUrl(organization.logo_url).catch(() => {
+        await this.storageService.deleteFileByUrl(org.logo_url).catch(() => {
           // Silently fail if deletion fails (file might not exist)
         });
       }
     }
 
     // Delete old favicon from storage if being replaced or removed
-    if (dto.favicon_url !== undefined && organization.favicon_url) {
-      if (dto.favicon_url !== organization.favicon_url || dto.favicon_url === '') {
+    if (dto.favicon_url !== undefined && org.favicon_url) {
+      if (dto.favicon_url !== org.favicon_url || dto.favicon_url === '') {
         // Old favicon is being replaced or removed
-        await this.storageService.deleteFileByUrl(organization.favicon_url).catch(() => {
+        await this.storageService.deleteFileByUrl(org.favicon_url).catch(() => {
           // Silently fail if deletion fails (file might not exist)
         });
       }
     }
 
     // Convert empty strings to null for cleaner database storage
-    await organization.update({
+    await org.update({
       logo_url: dto.logo_url === '' ? null : dto.logo_url,
       favicon_url: dto.favicon_url === '' ? null : dto.favicon_url,
     });
 
-    return organization.reload();
+    return org.reload();
   }
 
   /**
@@ -302,34 +330,38 @@ export class OrganizationService implements IOrganizationService {
    * Deletes old banner from storage when replaced
    */
   async updatePortalSettings(
-    id: string,
+    uuid: string,
     dto: UpdatePortalSettingsDto,
   ): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findOne({
-      where: { id, is_active: true },
+    const organization = await this.findByUuid(uuid);
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    const org = await this.organizationModel.findOne({
+      where: { id: organization.id, is_active: true },
     });
 
-    if (!organization) {
+    if (!org) {
       throw new NotFoundException('Organization not found');
     }
 
     // Delete old banner from storage if being replaced or removed
-    if (dto.banner_url !== undefined && organization.banner_url) {
-      if (dto.banner_url !== organization.banner_url || dto.banner_url === '') {
+    if (dto.banner_url !== undefined && org.banner_url) {
+      if (dto.banner_url !== org.banner_url || dto.banner_url === '') {
         // Old banner is being replaced or removed
-        await this.storageService.deleteFileByUrl(organization.banner_url).catch(() => {
+        await this.storageService.deleteFileByUrl(org.banner_url).catch(() => {
           // Silently fail if deletion fails (file might not exist)
         });
       }
     }
 
     // Convert empty strings to null for cleaner database storage
-    await organization.update({
+    await org.update({
       banner_url: dto.banner_url === '' ? null : dto.banner_url,
       portal_enabled: dto.portal_enabled,
     });
 
-    return organization.reload();
+    return org.reload();
   }
 
   /**
@@ -368,7 +400,7 @@ export class OrganizationService implements IOrganizationService {
    * @throws ConflictException if the website domain is already in use
    */
   async validateWebsiteDomain(
-    originalOrganizationId: string | null,
+    originalOrganizationId: number | null,
     websiteUrl: string,
   ): Promise<void> {
     const domain = extractDomain(websiteUrl);

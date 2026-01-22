@@ -1,5 +1,5 @@
 import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
 import { Exclude } from 'class-transformer';
@@ -14,13 +14,17 @@ import { Exclude } from 'class-transformer';
   tableName: 'user',
   underscored: true,
 })
-export class UserEntity extends BaseNanoidEntity {
+export class UserEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_USER_UUID', unique: true })
+  declare uuid: string;
+
   @ForeignKey(() => OrganizationEntity)
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
   })
-  declare organization_id: string;
+  declare organization_id: number;
 
   @BelongsTo(() => OrganizationEntity)
   declare organization: OrganizationEntity;
@@ -73,10 +77,10 @@ export class UserEntity extends BaseNanoidEntity {
 
   @ForeignKey(() => RoleEntity)
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
   })
-  declare role_id: string;
+  declare role_id: number;
 
   @BelongsTo(() => RoleEntity)
   declare role: RoleEntity;

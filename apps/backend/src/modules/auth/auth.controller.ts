@@ -29,7 +29,7 @@ import { SuccessResponse } from '@src/commons/dtos';
 @ApiTags('Authentication')
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Public()
   @Post('register')
@@ -91,7 +91,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout all sessions' })
   @ApiResponse({ status: 200, description: 'All sessions logged out' })
   async logoutAll(@CurrentUser() user: AuthInterfaces.CurrentUser) {
-    const result = await this.authService.logoutAll(user.id);
+    const result = await this.authService.logoutAll(user.uuid);
     return new SuccessResponse('All sessions logged out successfully', result);
   }
 
@@ -152,7 +152,7 @@ export class AuthController {
     @CurrentUser() user: AuthInterfaces.CurrentUser,
     @Body() dto: ChangePasswordDto,
   ) {
-    const result = await this.authService.changePassword(user.id, dto);
+    const result = await this.authService.changePassword(user.uuid, dto);
     return new SuccessResponse(result.message, result);
   }
 
@@ -161,7 +161,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get all active sessions' })
   @ApiResponse({ status: 200, description: 'Active sessions list' })
   async getSessions(@CurrentUser() user: AuthInterfaces.CurrentUser) {
-    const sessions = await this.authService.getActiveSessions(user.id);
+    const sessions = await this.authService.getActiveSessions(user.uuid);
     return new SuccessResponse('Active sessions retrieved', sessions);
   }
 
@@ -174,7 +174,7 @@ export class AuthController {
     @CurrentUser() user: AuthInterfaces.CurrentUser,
     @Param('sessionHash') sessionHash: string,
   ) {
-    const result = await this.authService.revokeSession(user.id, sessionHash);
+    const result = await this.authService.revokeSession(user.uuid, sessionHash);
     return new SuccessResponse(result.message, result);
   }
 }

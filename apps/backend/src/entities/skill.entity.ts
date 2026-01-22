@@ -1,5 +1,5 @@
 import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 import { OrganizationEntity } from './organization.entity';
 
 /**
@@ -12,14 +12,18 @@ import { OrganizationEntity } from './organization.entity';
   tableName: 'skill',
   underscored: true,
 })
-export class SkillEntity extends BaseNanoidEntity {
+export class SkillEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_SKILL_UUID', unique: true })
+  declare uuid: string;
+
   @ForeignKey(() => OrganizationEntity)
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
     field: 'organization_id',
   })
-  declare organization_id: string;
+  declare organization_id: number;
 
   @BelongsTo(() => OrganizationEntity)
   declare organization: OrganizationEntity;

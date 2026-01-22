@@ -20,10 +20,10 @@ module.exports = {
       const existingRoleNames = (existingRoles as { role: string }[]).map((r) => r.role);
 
       const roles = [
-        { id: generateNanoid(), role: 'super_admin' },
-        { id: generateNanoid(), role: 'admin' },
-        { id: generateNanoid(), role: 'manager' },
-        { id: generateNanoid(), role: 'designer' },
+        { uuid: generateNanoid(), role: 'super_admin' },
+        { uuid: generateNanoid(), role: 'admin' },
+        { uuid: generateNanoid(), role: 'manager' },
+        { uuid: generateNanoid(), role: 'designer' },
       ];
 
       const rolesToInsert = roles.filter((r) => !existingRoleNames.includes(r.role));
@@ -31,11 +31,11 @@ module.exports = {
       if (rolesToInsert.length > 0) {
         const now = new Date();
         const values = rolesToInsert
-          .map((r) => `('${r.id}', '${r.role}', '${now.toISOString()}', '${now.toISOString()}')`)
+          .map((r) => `('${r.uuid}', '${r.role}', '${now.toISOString()}', '${now.toISOString()}')`)
           .join(', ');
 
         await queryInterface.sequelize.query(
-          `INSERT INTO "role" (id, role, created_at, updated_at) VALUES ${values}`,
+          `INSERT INTO "role" (uuid, role, created_at, updated_at) VALUES ${values}`,
           { transaction },
         );
 
