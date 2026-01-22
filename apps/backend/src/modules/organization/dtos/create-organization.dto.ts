@@ -6,7 +6,7 @@ export class CreateOrganizationDto {
   @IsString()
   @IsNotEmpty({ message: 'Organization name is required and should be at least 4 characters long' })
   @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
-  name: string;
+  declare name: string;
 
   @ApiPropertyOptional({ example: 'acme-corporation', description: 'URL-friendly slug (auto-generated if not provided)' })
   @IsString()

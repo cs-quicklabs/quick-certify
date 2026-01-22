@@ -1,24 +1,27 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserEntity } from '@src/entities/user.entity';
-import { RoleEntity } from '@src/entities/role.entity';
-import { OrganizationEntity } from '@src/entities/organization.entity';
 import { AuthModule } from '@src/modules/auth';
 import { EmailService } from '@src/commons/services';
+import { RoleModule } from '../role';
+import { OrganizationModule } from '../organization';
 /**
  * User Module
  *
  * DIP: Imports AuthModule for PasswordService dependency
+ * Uses forwardRef to avoid circular dependency with AuthModule
  */
 @Module({
   imports: [
-    SequelizeModule.forFeature([UserEntity, RoleEntity, OrganizationEntity]),
-    AuthModule, // For PasswordService
+    SequelizeModule.forFeature([UserEntity]),
+    forwardRef(() => AuthModule), // For PasswordService - forwardRef to avoid circular dependency
+    RoleModule,
+    OrganizationModule,
   ],
   controllers: [UserController],
   providers: [UserService, EmailService],
   exports: [UserService],
 })
-export class UserModule {}
+export class UserModule { }

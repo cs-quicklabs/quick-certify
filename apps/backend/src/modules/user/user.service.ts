@@ -17,12 +17,14 @@ import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
 import { capitalizeFirst } from '@src/commons/utils';
+import { RoleService } from '../role/role.service';
+import { OrganizationService } from '../organization/organization.service';
 
 /**
  * User Service
  *
  * Extends BaseCrudService with string IDs (nanoid)
- * DIP: Uses PasswordService for password operations
+ * DIP: Uses PasswordService for password operations, RoleService for role operations, OrganizationService for organization operations
  * SRP: Manages user CRUD only
  * Note: Overrides soft delete methods to use status field instead of deleted_at
  */
@@ -37,10 +39,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   constructor(
     @InjectModel(UserEntity)
     private readonly userModel: typeof UserEntity,
-    @InjectModel(RoleEntity)
-    private readonly roleModel: typeof RoleEntity,
-    @InjectModel(OrganizationEntity)
-    private readonly organizationModel: typeof OrganizationEntity,
+    private readonly roleService: RoleService,
+    private readonly organizationService: OrganizationService,
     private readonly passwordService: PasswordService,
     private readonly mailService: EmailService,
     private readonly sessionService: SessionService,
@@ -121,10 +121,16 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     await this.validateEmailUniqueness(dto.email);
 
     // Validate organization
-    const organization = await this.validateOrganization(dto.organizationId);
+    const organization = await this.organizationService.findOne(dto.organizationId);
+    if (!organization || !organization.is_active) {
+      throw new NotFoundException('Organization not found or inactive');
+    }
 
     // Validate role
-    const role = await this.validateRole(dto.roleId);
+    const role = await this.roleService.findOne(dto.roleId);
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
     // Super admin users can only be created by super admin users
     if (currentUser?.role !== Role.SUPER_ADMIN && role.role === Role.SUPER_ADMIN) {
@@ -202,7 +208,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Validate role if changing
     if (dto.roleId) {
-      await this.validateRole(dto.roleId);
+      const role = await this.roleService.findOne(dto.roleId);
+      if (!role) {
+        throw new NotFoundException('Role not found');
+      }
     }
 
     const updateData = this.buildUpdateData(dto);
@@ -257,9 +266,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   }
 
   async resendInvitation(id: string, currentUser?: CurrentUser): Promise<UserEntity> {
-    const user = await this.userModel.findByPk(id, {
-      include: [OrganizationEntity],
-    });
+    const user = await this.userModel.findByPk(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -276,7 +283,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
     const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
-    const organization = await this.organizationModel.findByPk(user.organization_id);
+    const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService
         .sendInvitationEmail(user.email, {
@@ -319,14 +326,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       const roleFilter = (options as any).role.toLowerCase();
       // Admin filter should include both admin and super_admin
       if (roleFilter === 'admin') {
-        const roles = await this.roleModel.findAll({
-          where: { role: { [Op.in]: ['admin', 'super_admin'] } },
-        });
-        roleIds = roles.map((r) => r.id);
+        const superAdminRole = await this.roleService.findByRole(Role.SUPER_ADMIN);
+        const adminRole = await this.roleService.findByRole(Role.ADMIN);
+        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as string[];
       } else {
-        const role = await this.roleModel.findOne({
-          where: { role: roleFilter },
-        });
+        const role = await this.roleService.findByRole(roleFilter);
         if (role) {
           roleIds = [role.id];
         }
@@ -406,14 +410,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       const roleFilter = (options as any).role.toLowerCase();
       // Admin filter should include both admin and super_admin
       if (roleFilter === 'admin') {
-        const roles = await this.roleModel.findAll({
-          where: { role: { [Op.in]: ['admin', 'super_admin'] } },
-        });
-        roleIds = roles.map((r) => r.id);
+        const superAdminRole = await this.roleService.findByRole(Role.SUPER_ADMIN);
+        const adminRole = await this.roleService.findByRole(Role.ADMIN);
+        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as string[];
       } else {
-        const role = await this.roleModel.findOne({
-          where: { role: roleFilter },
-        });
+        const role = await this.roleService.findByRole(roleFilter);
         if (role) {
           roleIds = [role.id];
         }
@@ -500,26 +501,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    * Get role IDs by role names
    */
   private async getRoleIdsByNames(roleNames: string[]): Promise<string[]> {
-    const roles = await this.roleModel.findAll({
-      where: { role: { [Op.in]: roleNames } },
-    });
-    return roles.map((r) => r.id);
-  }
-
-  private async validateOrganization(organizationId: string): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findByPk(organizationId);
-    if (!organization || !organization.is_active) {
-      throw new NotFoundException('Organization not found or inactive');
-    }
-    return organization;
-  }
-
-  private async validateRole(roleId: string): Promise<RoleEntity> {
-    const role = await this.roleModel.findByPk(roleId);
-    if (!role) {
-      throw new NotFoundException('Role not found');
-    }
-    return role;
+    const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
+    return roles.filter(Boolean).map((r) => r!.id);
   }
 
   private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {

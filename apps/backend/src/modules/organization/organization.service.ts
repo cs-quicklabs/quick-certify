@@ -6,7 +6,6 @@ import { OrganizationEntity } from '@src/entities';
 import { StorageService } from '@src/commons/services';
 import { extractDomain } from '@src/commons/utils';
 import {
-  CreateOrganizationDto,
   UpdateOrganizationDto,
   UpdateGeneralInfoDto,
   UpdateSocialLinksDto,
@@ -72,27 +71,27 @@ export class OrganizationService implements IOrganizationService {
     });
   }
 
-  async create(dto: CreateOrganizationDto): Promise<OrganizationEntity> {
-    const slug = dto.slug || this.generateSlug(dto.name);
+  async create(organization: Partial<OrganizationEntity>): Promise<OrganizationEntity> {
+    const slug = organization.slug || this.generateSlug(organization?.name || '');
 
     const existingSlug = await this.organizationModel.findOne({ where: { slug } });
     if (existingSlug) {
       throw new ConflictException('Organization with this slug already exists');
     }
 
-    const existingName = await this.organizationModel.findOne({ where: { name: dto.name } });
+    const existingName = await this.organizationModel.findOne({ where: { name: organization?.name } });
     if (existingName) {
       throw new ConflictException('Organization with this name already exists');
     }
 
-    const organization = await this.organizationModel.create({
-      name: dto.name,
+    const createdOrganization = await this.organizationModel.create({
+      name: organization?.name,
       slug,
-      is_active: dto.is_active !== undefined ? dto.is_active : true,
-      issuer_verified: dto.issuer_verified !== undefined ? dto.issuer_verified : false,
+      is_active: organization?.is_active !== undefined ? organization?.is_active : true,
+      issuer_verified: organization?.issuer_verified !== undefined ? organization?.issuer_verified : false,
     });
 
-    return organization;
+    return createdOrganization;
   }
 
   async update(id: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {

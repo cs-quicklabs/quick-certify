@@ -1,17 +1,17 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { InjectModel } from '@nestjs/sequelize';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators';
 import { CurrentUser } from '../interfaces';
 import { TokenService, SessionService } from '../services';
-import { UserEntity, RoleEntity } from '@src/entities';
+import { UserEntity } from '@src/entities';
+import { UserService } from '../../user/user.service';
 
 /**
  * JWT Auth Guard
  *
  * SRP: Responsible only for authentication flow control
- * DIP: Depends on TokenService and SessionService abstractions
+ * DIP: Depends on TokenService, SessionService, and UserService abstractions
  *
  * Validates:
  * 1. Token presence and validity
@@ -24,8 +24,8 @@ export class JwtAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly tokenService: TokenService,
     private readonly sessionService: SessionService,
-    @InjectModel(UserEntity)
-    private readonly userModel: typeof UserEntity,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -79,10 +79,7 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private async findValidUser(userId: string): Promise<UserEntity> {
-    const user = await this.userModel.findOne({
-      where: { id: userId },
-      include: [{ model: RoleEntity }],
-    });
+    const user = await this.userService.findOne(userId);
 
     if (!user) {
       throw new UnauthorizedException('User not found');

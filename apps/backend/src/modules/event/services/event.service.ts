@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { EventEntity } from '@src/entities/event.entity';
@@ -6,12 +6,16 @@ import { EventTypeEntity } from '@src/entities/event-type.entity';
 import { EventLevelEntity } from '@src/entities/event-level.entity';
 import { EventFormatEntity } from '@src/entities/event-format.entity';
 import { CreateEventDto, UpdateEventDto } from '../dtos';
+import { EventTypeService } from './event-type.service';
+import { EventLevelService } from './event-level.service';
+import { EventFormatService } from './event-format.service';
 
 /**
  * Event Service
  *
  * Manages events with references to type, level, and format
  * Ensures referenced master records exist and are active before creating events
+ * SRP: Only manages EventEntity, delegates validation to respective services
  */
 @Injectable()
 export class EventService extends BaseCrudService<EventEntity, CreateEventDto, UpdateEventDto, string> {
@@ -24,12 +28,9 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
   constructor(
     @InjectModel(EventEntity)
     private readonly eventModel: typeof EventEntity,
-    @InjectModel(EventTypeEntity)
-    private readonly eventTypeModel: typeof EventTypeEntity,
-    @InjectModel(EventLevelEntity)
-    private readonly eventLevelModel: typeof EventLevelEntity,
-    @InjectModel(EventFormatEntity)
-    private readonly eventFormatModel: typeof EventFormatEntity,
+    private readonly eventTypeService: EventTypeService,
+    private readonly eventLevelService: EventLevelService,
+    private readonly eventFormatService: EventFormatService,
   ) {
     super();
   }
@@ -72,15 +73,9 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
   override async create(dto: CreateEventDto): Promise<EventEntity> {
     // Validate that referenced master records exist and are active
     const [eventType, eventLevel, eventFormat] = await Promise.all([
-      this.eventTypeModel.findOne({
-        where: { id: dto.eventTypeId, is_active: true },
-      }),
-      this.eventLevelModel.findOne({
-        where: { id: dto.eventLevelId, is_active: true },
-      }),
-      this.eventFormatModel.findOne({
-        where: { id: dto.eventFormatId, is_active: true },
-      }),
+      this.eventTypeService.findOne(dto.eventTypeId),
+      this.eventLevelService.findOne(dto.eventLevelId),
+      this.eventFormatService.findOne(dto.eventFormatId),
     ]);
 
     if (!eventType) {
@@ -115,9 +110,7 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
 
     // Validate referenced IDs if provided
     if (dto.eventTypeId !== undefined) {
-      const eventType = await this.eventTypeModel.findOne({
-        where: { id: dto.eventTypeId, is_active: true },
-      });
+      const eventType = await this.eventTypeService.findOne(dto.eventTypeId);
 
       if (!eventType) {
         throw new BadRequestException(`Event type with ID ${dto.eventTypeId} not found or inactive`);
@@ -127,9 +120,7 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
     }
 
     if (dto.eventLevelId !== undefined) {
-      const eventLevel = await this.eventLevelModel.findOne({
-        where: { id: dto.eventLevelId, is_active: true },
-      });
+      const eventLevel = await this.eventLevelService.findOne(dto.eventLevelId);
 
       if (!eventLevel) {
         throw new BadRequestException(`Event level with ID ${dto.eventLevelId} not found or inactive`);
@@ -139,9 +130,7 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
     }
 
     if (dto.eventFormatId !== undefined) {
-      const eventFormat = await this.eventFormatModel.findOne({
-        where: { id: dto.eventFormatId, is_active: true },
-      });
+      const eventFormat = await this.eventFormatService.findOne(dto.eventFormatId);
 
       if (!eventFormat) {
         throw new BadRequestException(`Event format with ID ${dto.eventFormatId} not found or inactive`);
