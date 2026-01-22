@@ -107,9 +107,7 @@ This project uses Tailwind CSS for styling. See [TAILWIND.md](./TAILWIND.md) for
 ```tsx
 export function Button() {
   return (
-    <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-      Click Me
-    </button>
+    <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Click Me</button>
   );
 }
 ```
@@ -352,18 +350,21 @@ function UserCard({ user }: { user: User }) {
 Tailwind CSS makes responsive design easy:
 
 ```tsx
-<div className="
+<div
+  className="
   grid 
   grid-cols-1 
   md:grid-cols-2 
   lg:grid-cols-3 
   gap-4
-">
+"
+>
   {/* Responsive grid */}
 </div>
 ```
 
 Breakpoints:
+
 - `sm`: 640px
 - `md`: 768px
 - `lg`: 1024px
@@ -397,6 +398,7 @@ NEXT_PUBLIC_API_URL=https://api.example.com/api
 ### Deploy to Other Platforms
 
 Next.js can be deployed to:
+
 - Vercel (recommended)
 - Netlify
 - AWS Amplify
@@ -429,11 +431,11 @@ npx nx typecheck frontend        # TypeScript check
 
 ## 📚 Documentation
 
-| Topic        | Location                                    |
-| ------------ | ------------------------------------------- |
-| Tailwind CSS | [TAILWIND.md](./TAILWIND.md)                |
+| Topic        | Location                                         |
+| ------------ | ------------------------------------------------ |
+| Tailwind CSS | [TAILWIND.md](./TAILWIND.md)                     |
 | Schemas      | [src/schemas/README.md](./src/schemas/README.md) |
-| Store        | [src/store/README.md](./src/store/README.md) |
+| Store        | [src/store/README.md](./src/store/README.md)     |
 
 ---
 
@@ -477,4 +479,3 @@ npx nx typecheck frontend        # TypeScript check
 ## 📄 License
 
 MIT
-

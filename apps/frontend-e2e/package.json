@@ -5,6 +5,10 @@
   "nx": {
     "implicitDependencies": [
       "frontend"
-    ]
+    ],
+    "targets": {
+      "format": {},
+      "format:check": {}
+    }
   }
 }
