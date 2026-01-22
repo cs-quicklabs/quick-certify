@@ -157,7 +157,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       const inviterName = currentUser
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
+      const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
       this.mailService
         .sendInvitationEmail(user.email, {
           name: user.first_name,
@@ -275,7 +275,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const inviterName = currentUser
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
-    const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
+    const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
     const organization = await this.organizationModel.findByPk(user.organization_id);
     if (organization) {
       this.mailService
