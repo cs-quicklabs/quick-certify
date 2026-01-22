@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards, } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { DesignService } from "./design.services";
 import { PaginationDto } from '@src/commons/base/dtos';
@@ -9,10 +9,11 @@ import type { CurrentUser as CurrentUserType } from '../auth/interfaces';
 
 import { Role } from '@src/modules/role/enums';
 import { CreateDesignDto } from './dtos/create-design.dto';
+import { UUID } from 'sequelize';
 
 @ApiTags('Designs')
 @ApiBearerAuth()
-@Controller({ path: 'organizations', version: '1' })
+@Controller({ path: 'designs', version: '1' })
 export class DesignController {
   constructor(private readonly designService: DesignService) { }
 
@@ -33,6 +34,16 @@ export class DesignController {
     return new SuccessResponse('Designs retrieved successfully', result)
   }
 
+  @Get(':uuid')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiResponse({ status: 200, description: 'Design found' })
+  @ApiResponse({ status: 404, description: 'Design not found' })
+  async findOne(@Param('uuid') uuid: string) {
+    const design = await this.designService.findOne(uuid);
+    if (!design) return new SuccessResponse('Design not found', null);
+    return new SuccessResponse('Design retrieved successfully', design)
+  }
 
   @Post()
   @UseGuards(RolesGuard)
@@ -40,9 +51,25 @@ export class DesignController {
   @ApiOperation({ summary: 'Create a new user/invitation (Admin/Super Admin only)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
-  async create(@CurrentUser() user: CurrentUserType, @Body() dto: CreateDesignDto) {
+  async create(@Body() dto: CreateDesignDto) {
     const newDesign = await this.designService.create(dto);
     return new SuccessResponse('Design created successfully', newDesign)
+  }
+
+  @Delete(':uuid')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Delete user (soft delete - archives user) (Admin/Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async delete(@Param('uuid') uuid: string) {
+    const existingDesign = await this.designService.findOne(uuid);
+    if (!existingDesign) {
+      return new SuccessResponse('Design not found', null)
+    }
+
+    await this.designService.delete(uuid);
+    return new SuccessResponse('Design deleted successfully', { deleted: true })
   }
 
 

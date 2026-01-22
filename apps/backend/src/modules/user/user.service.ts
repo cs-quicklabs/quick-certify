@@ -506,7 +506,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return roles.map((r) => r.id);
   }
 
-  private async validateOrganization(organizationId: string): Promise<OrganizationEntity> {
+  async validateOrganization(organizationId: string): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findByPk(organizationId);
     if (!organization || !organization.is_active) {
       throw new NotFoundException('Organization not found or inactive');

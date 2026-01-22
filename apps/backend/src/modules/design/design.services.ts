@@ -4,18 +4,20 @@ import { Op } from 'sequelize'
 import { DesignEntity } from "@src/entities";
 import { FindAllOptions, PaginatedResult } from "@src/commons/base";
 import { UpdateDesignDto } from "./dtos/update-design.dto";
-
+import { CreateDesignDto } from "./dtos/create-design.dto";
+import { capitalizeFirst } from "@src/commons/utils";
 @Injectable()
 export class DesignService {
 
   constructor(
     @InjectModel(DesignEntity)
-    private readonly designModel: typeof DesignEntity
+    private readonly designModel: typeof DesignEntity,
+
   ) { }
 
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<DesignEntity>> {
-    const { page = 1, limit = 10, sortBy = 'role', sortOrder = 'ASC', where = {} } = options;
+    const { page = 1, limit = 10, sortBy = 'type', sortOrder = 'ASC', where = {} } = options;
 
     const safeLimit = Math.min(Math.max(1, limit), 100);
     const safePage = Math.max(1, page);
@@ -71,12 +73,18 @@ export class DesignService {
     return design;
   }
 
-  async create(data: Partial<DesignEntity>): Promise<DesignEntity> {
-    return await this.designModel.create(data);
+  async create(dto: CreateDesignDto): Promise<DesignEntity> {
+    // check if we need origanization verification
+    const design = await this.designModel.create({
+      name: capitalizeFirst(dto.name),
+      type: dto.designType,
+      url: dto.designUrl
+    })
+    return design;
   }
 
-  async update(id: string, dto: UpdateDesignDto): Promise<DesignEntity> {
-    const design = await this.findOne(id);
+  async update(designId: string, dto: UpdateDesignDto): Promise<DesignEntity> {
+    const design = await this.findOne(designId);
 
     const updateData: Partial<DesignEntity> = {};
 

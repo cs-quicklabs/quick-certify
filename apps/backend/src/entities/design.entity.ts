@@ -19,13 +19,13 @@ export class DesignEntity extends BaseNanoidEntity {
   declare name: string;
 
   @Column({
-    type: DataType.STRING(10),
+    type: DataType.STRING(15),
     allowNull: false,
   })
-  declare type: 'Certificate' | 'Badge';
+  declare type: 'certificate' | 'badge';
 
   @Column({
-    type: DataType.STRING(100),
+    type: DataType.STRING(500),
     allowNull: false,
   })
   declare url: string;
