@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { OrganizationService } from './organization.service';
 import {
@@ -137,10 +128,7 @@ export class OrganizationController {
   @ApiResponse({ status: 200, description: 'General information updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   @ApiResponse({ status: 409, description: 'Organization name already exists' })
-  async updateGeneralInfo(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: UpdateGeneralInfoDto,
-  ) {
+  async updateGeneralInfo(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateGeneralInfoDto) {
     const organization = await this.organizationService.updateGeneralInfo(user.organizationId, dto);
     return new SuccessResponse('General information updated successfully', organization);
   }
@@ -151,10 +139,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Update organization social links (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Social links updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async updateSocialLinks(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: UpdateSocialLinksDto,
-  ) {
+  async updateSocialLinks(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateSocialLinksDto) {
     const organization = await this.organizationService.updateSocialLinks(user.organizationId, dto);
     return new SuccessResponse('Social links updated successfully', organization);
   }
@@ -165,10 +150,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Update organization branding (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Branding updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async updateBranding(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: UpdateBrandingDto,
-  ) {
+  async updateBranding(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateBrandingDto) {
     const organization = await this.organizationService.updateBranding(user.organizationId, dto);
     return new SuccessResponse('Branding updated successfully', organization);
   }
@@ -183,7 +165,10 @@ export class OrganizationController {
     @CurrentUser() user: CurrentUserType,
     @Body() dto: UpdatePortalSettingsDto,
   ) {
-    const organization = await this.organizationService.updatePortalSettings(user.organizationId, dto);
+    const organization = await this.organizationService.updatePortalSettings(
+      user.organizationId,
+      dto,
+    );
     return new SuccessResponse('Portal settings updated successfully', organization);
   }
 }

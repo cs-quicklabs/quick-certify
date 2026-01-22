@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Transaction } from 'sequelize';
 import { SessionEntity } from '@src/entities';
 import { ISessionService, CreateSessionInput } from '../interfaces';
 
@@ -45,6 +46,7 @@ export class SessionService implements ISessionService {
         hash,
         user_id: userId,
         is_active: true,
+        revoked_at: null,
       },
     });
 
@@ -72,10 +74,13 @@ export class SessionService implements ISessionService {
     }
   }
 
-  async revokeAllForUser(userId: string): Promise<void> {
+  async revokeAllForUser(userId: string, transaction?: Transaction): Promise<void> {
     await this.sessionModel.update(
       { is_active: false, revoked_at: new Date() },
-      { where: { user_id: userId, is_active: true } },
+      {
+        where: { user_id: userId, is_active: true },
+        ...(transaction && { transaction }),
+      },
     );
   }
 

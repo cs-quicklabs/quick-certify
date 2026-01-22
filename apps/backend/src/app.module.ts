@@ -38,9 +38,9 @@ import { ProfileModule } from './modules/profile/profile.module';
     // Configuration - loads from project root .env
     ConfigModule.forRoot({
       envFilePath: [
-        path.resolve(process.cwd(), '.env'),           // Root .env (when running from root)
-        path.resolve(__dirname, '../../../.env'),      // Root .env (when running from apps/backend)
-        path.resolve(__dirname, '../../.env'),         // Fallback
+        path.resolve(process.cwd(), '.env'), // Root .env (when running from root)
+        path.resolve(__dirname, '../../../.env'), // Root .env (when running from apps/backend)
+        path.resolve(__dirname, '../../.env'), // Fallback
       ],
       load: [appConfig, databaseConfig, authConfig, mailerConfig, smsConfig, storageConfig],
       isGlobal: true,
@@ -115,4 +115,4 @@ import { ProfileModule } from './modules/profile/profile.module';
   ],
   exports: [EmailService],
 })
-export class AppModule { }
+export class AppModule {}

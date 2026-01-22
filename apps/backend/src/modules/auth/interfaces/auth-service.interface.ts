@@ -22,7 +22,12 @@ export interface IAuthService {
     dto: RegisterDto,
     ipAddress?: string,
     userAgent?: string,
-  ): Promise<{ accessToken: string; refreshToken: string; accessTokenExpiresAt: Date; refreshTokenExpiresAt: Date }>;
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    accessTokenExpiresAt: Date;
+    refreshTokenExpiresAt: Date;
+  }>;
 
   /**
    * Login a user
@@ -31,7 +36,12 @@ export interface IAuthService {
     dto: LoginDto,
     ipAddress?: string,
     userAgent?: string,
-  ): Promise<{ accessToken: string; refreshToken: string; accessTokenExpiresAt: Date; refreshTokenExpiresAt: Date }>;
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    accessTokenExpiresAt: Date;
+    refreshTokenExpiresAt: Date;
+  }>;
 
   /**
    * Refresh access token using refresh token
@@ -61,7 +71,10 @@ export interface IAuthService {
   /**
    * Change password for authenticated user
    */
-  changePassword(userId: string, dto: ChangePasswordDto): Promise<{ success: boolean; message: string }>;
+  changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<{ success: boolean; message: string }>;
 
   /**
    * Get active sessions for a user
@@ -71,12 +84,18 @@ export interface IAuthService {
   /**
    * Revoke a specific session
    */
-  revokeSession(userId: string, sessionHash: string): Promise<{ success: boolean; message: string }>;
+  revokeSession(
+    userId: string,
+    sessionHash: string,
+  ): Promise<{ success: boolean; message: string }>;
 
   /**
    * Initiate Google OAuth flow (Authorization Code Flow)
    */
-  initiateGoogleAuth(action: 'login' | 'signup', redirectUrl?: string): { url: string; state: string };
+  initiateGoogleAuth(
+    action: 'login' | 'signup',
+    redirectUrl?: string,
+  ): { url: string; state: string };
 
   /**
    * Handle Google OAuth callback (Authorization Code Flow)
@@ -97,11 +116,7 @@ export interface IAuthService {
   /**
    * Login with Google OAuth (ID Token Flow)
    */
-  googleLogin(
-    dto: GoogleLoginDto,
-    ipAddress?: string,
-    userAgent?: string,
-  ): Promise<JwtTokens>;
+  googleLogin(dto: GoogleLoginDto, ipAddress?: string, userAgent?: string): Promise<JwtTokens>;
 
   /**
    * Complete Google signup with organization details

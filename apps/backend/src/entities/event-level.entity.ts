@@ -26,4 +26,3 @@ export class EventLevelEntity extends BaseNanoidEntity {
   })
   declare is_active: boolean;
 }
-

@@ -78,7 +78,6 @@ function AcceptInvitationContent() {
   if (isSuccess) {
     return (
       <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-
         <div className="p-6 sm:p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
             <svg
@@ -95,7 +94,9 @@ function AcceptInvitationContent() {
               />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invitation Accepted!</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Invitation Accepted!
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
             Your account has been activated. Redirecting to dashboard...
           </p>

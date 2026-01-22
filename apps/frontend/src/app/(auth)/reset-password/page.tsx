@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CircleX } from 'lucide-react';
 import { Input, Button, Alert } from '@/components';
 import { resetPasswordSchema, ResetPasswordFormData } from '@/schemas/auth.schema';
 import { authService, ApiError } from '@/services';
@@ -16,6 +16,7 @@ function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isValidToken, setIsValidToken] = useState(false);
 
   const token = searchParams.get('token');
 
@@ -33,9 +34,20 @@ function ResetPasswordContent() {
 
   // Redirect if no token
   useEffect(() => {
-    if (!token) {
-      router.push('/forgot-password');
-    }
+    const checkToken = async () => {
+      if (token) {
+        const response = await authService.checkToken(token);
+        console.log(response);
+        if (response.success) {
+          setIsValidToken(true);
+        } else {
+          setIsValidToken(false);
+        }
+      } else {
+        router.push('/forgot-password');
+      }
+    };
+    checkToken();
   }, [token, router]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
@@ -59,6 +71,25 @@ function ResetPasswordContent() {
     return null;
   }
 
+  if (!isValidToken) {
+    return (
+      <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+            <CircleX className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invalid token</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            Token has been expired or already used.
+          </p>
+          <Link href="/forgot-password" className="btn-primary inline-block">
+            Back to forgot password
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (isSuccess) {
     return (
       <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
@@ -66,7 +97,9 @@ function ResetPasswordContent() {
           <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Password reset successful</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Password reset successful
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
             Your password has been reset. You can now sign in with your new password.
           </p>
@@ -80,7 +113,7 @@ function ResetPasswordContent() {
 
   return (
     <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
-      <div >
+      <div>
         {/* Header */}
         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
           Reset your password

@@ -74,6 +74,20 @@
   "targetDefaults": {
     "test": {
       "dependsOn": ["^build"]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --write \"{projectRoot}/**/*.{ts,tsx,js,jsx,json,css,scss,html}\""
+      },
+      "inputs": ["default", "^default"]
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --check \"{projectRoot}/**/*.{ts,tsx,js,jsx,json,css,scss,html}\""
+      },
+      "inputs": ["default", "^default"]
     }
   },
   "generators": {

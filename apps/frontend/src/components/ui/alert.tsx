@@ -53,11 +53,7 @@ export function Alert({ type, title, message, onClose, className }: AlertProps) 
 
   return (
     <div
-      className={clsx(
-        'flex p-4 border-l-4 rounded-sm',
-        styles.container,
-        className,
-      )}
+      className={clsx('flex p-4 border-l-4 rounded-sm', styles.container, className)}
       role="alert"
     >
       {/* <Icon className={clsx('flex-shrink-0 w-5 h-5', styles.icon)} /> */}
@@ -68,7 +64,10 @@ export function Alert({ type, title, message, onClose, className }: AlertProps) 
       {onClose && (
         <button
           type="button"
-          className={clsx('ml-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700', styles.icon)}
+          className={clsx(
+            'ml-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700',
+            styles.icon,
+          )}
           onClick={onClose}
         >
           <X className="w-4 h-4" />
@@ -77,4 +76,3 @@ export function Alert({ type, title, message, onClose, className }: AlertProps) 
     </div>
   );
 }
-

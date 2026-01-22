@@ -14,7 +14,6 @@ import { Role, SYSTEM_ROLES } from './enums';
  */
 @Injectable()
 export class RoleService {
-
   constructor(
     @InjectModel(RoleEntity)
     private readonly roleModel: typeof RoleEntity,
@@ -137,4 +136,3 @@ export class RoleService {
     return SYSTEM_ROLES.includes(role as Role);
   }
 }
-

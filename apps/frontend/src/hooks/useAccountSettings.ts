@@ -12,7 +12,7 @@ export interface OrganizationSettings {
   support_email: string | null;
   slogan: string | null;
   linkedin_company_id: string | null;
-  website: string | null;
+  website: string;
   linkedin_url: string | null;
   facebook_url: string | null;
   twitter_url: string | null;
@@ -53,7 +53,9 @@ export interface PortalSettingsData {
  * API Functions
  */
 async function fetchOrganizationSettings(): Promise<OrganizationSettings> {
-  const response = await apiClient.get<ApiResponse<OrganizationSettings>>('/organizations/settings');
+  const response = await apiClient.get<ApiResponse<OrganizationSettings>>(
+    '/organizations/settings',
+  );
   return response.data.data;
 }
 
@@ -150,4 +152,3 @@ export function useUpdatePortalSettings() {
     },
   });
 }
-

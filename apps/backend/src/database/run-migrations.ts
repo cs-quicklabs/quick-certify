@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file if it exists (optional)
 // In production, environment variables are typically set directly in the environment
-const envPath = path.join(__dirname, '../../.env');
+const envPath = path.join(__dirname, '../../../../.env');
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
 } else {

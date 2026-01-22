@@ -20,6 +20,7 @@ import {
   ResetPasswordDto,
   ChangePasswordDto,
   AcceptInvitationDto,
+  CheckForgotPasswordTokenDto,
 } from './dtos';
 import { Public, CurrentUser } from './decorators';
 import * as AuthInterfaces from './interfaces';
@@ -28,9 +29,7 @@ import { SuccessResponse } from '@src/commons/dtos';
 @ApiTags('Authentication')
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-  ) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Post('register')
@@ -94,6 +93,17 @@ export class AuthController {
   async logoutAll(@CurrentUser() user: AuthInterfaces.CurrentUser) {
     const result = await this.authService.logoutAll(user.id);
     return new SuccessResponse('All sessions logged out successfully', result);
+  }
+
+  @Public()
+  @Post('check-forgot-password-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Check if forgot password token is valid' })
+  @ApiResponse({ status: 200, description: 'Token is valid' })
+  @ApiResponse({ status: 400, description: 'Token is invalid' })
+  async checkForgotPasswordToken(@Body() dto: CheckForgotPasswordTokenDto) {
+    await this.authService.checkForgotPasswordToken(dto.token);
+    return new SuccessResponse('Token is valid', { token: dto.token });
   }
 
   @Public()

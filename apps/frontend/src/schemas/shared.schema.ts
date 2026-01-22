@@ -11,25 +11,25 @@ import { z } from 'zod';
  * Password Configuration
  */
 export const PASSWORD_CONFIG = {
-    MIN_LENGTH: 8,
-    REQUIRE_UPPERCASE: true,
-    REQUIRE_LOWERCASE: true,
-    REQUIRE_NUMBER: true,
-    REQUIRE_SPECIAL_CHAR: false, // Set to true for stricter requirements
+  MIN_LENGTH: 8,
+  REQUIRE_UPPERCASE: true,
+  REQUIRE_LOWERCASE: true,
+  REQUIRE_NUMBER: true,
+  REQUIRE_SPECIAL_CHAR: false, // Set to true for stricter requirements
 } as const;
 
 /**
  * Password Validation Messages
  */
 export const PASSWORD_MESSAGES = {
-    REQUIRED: 'Password is required',
-    MIN_LENGTH: `Password must be at least ${PASSWORD_CONFIG.MIN_LENGTH} characters`,
-    UPPERCASE: 'Password must contain at least one uppercase letter',
-    LOWERCASE: 'Password must contain at least one lowercase letter',
-    NUMBER: 'Password must contain at least one number',
-    SPECIAL_CHAR: 'Password must contain at least one special character (@$!%*?&)',
-    MISMATCH: "Passwords don't match",
-    CONFIRM_REQUIRED: 'Please confirm your password',
+  REQUIRED: 'Password is required',
+  MIN_LENGTH: `Password must be at least ${PASSWORD_CONFIG.MIN_LENGTH} characters`,
+  UPPERCASE: 'Password must contain at least one uppercase letter',
+  LOWERCASE: 'Password must contain at least one lowercase letter',
+  NUMBER: 'Password must contain at least one number',
+  SPECIAL_CHAR: 'Password must contain at least one special character (@$!%*?&)',
+  MISMATCH: "Passwords don't match",
+  CONFIRM_REQUIRED: 'Please confirm your password',
 } as const;
 
 /**
@@ -51,12 +51,12 @@ export const PASSWORD_MESSAGES = {
  * ```
  */
 export const passwordSchema = z
-    .string()
-    .min(1, PASSWORD_MESSAGES.REQUIRED)
-    .min(PASSWORD_CONFIG.MIN_LENGTH, PASSWORD_MESSAGES.MIN_LENGTH)
-    .regex(/[A-Z]/, PASSWORD_MESSAGES.UPPERCASE)
-    .regex(/[a-z]/, PASSWORD_MESSAGES.LOWERCASE)
-    .regex(/[0-9]/, PASSWORD_MESSAGES.NUMBER);
+  .string()
+  .min(1, PASSWORD_MESSAGES.REQUIRED)
+  .min(PASSWORD_CONFIG.MIN_LENGTH, PASSWORD_MESSAGES.MIN_LENGTH)
+  .regex(/[A-Z]/, PASSWORD_MESSAGES.UPPERCASE)
+  .regex(/[a-z]/, PASSWORD_MESSAGES.LOWERCASE)
+  .regex(/[0-9]/, PASSWORD_MESSAGES.NUMBER);
 
 /**
  * Strict Password Schema (with special character)
@@ -74,8 +74,8 @@ export const passwordSchema = z
  * ```
  */
 export const strictPasswordSchema = passwordSchema.regex(
-    /[@$!%*?&]/,
-    PASSWORD_MESSAGES.SPECIAL_CHAR
+  /[@$!%*?&]/,
+  PASSWORD_MESSAGES.SPECIAL_CHAR,
 );
 
 /**
@@ -95,17 +95,17 @@ export const strictPasswordSchema = passwordSchema.regex(
  * ```
  */
 export function createPasswordWithConfirmSchema(useStrict = false) {
-    const basePassword = useStrict ? strictPasswordSchema : passwordSchema;
+  const basePassword = useStrict ? strictPasswordSchema : passwordSchema;
 
-    return z
-        .object({
-            password: basePassword,
-            confirmPassword: z.string().min(1, PASSWORD_MESSAGES.CONFIRM_REQUIRED),
-        })
-        .refine((data) => data.password === data.confirmPassword, {
-            message: PASSWORD_MESSAGES.MISMATCH,
-            path: ['confirmPassword'],
-        });
+  return z
+    .object({
+      password: basePassword,
+      confirmPassword: z.string().min(1, PASSWORD_MESSAGES.CONFIRM_REQUIRED),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: PASSWORD_MESSAGES.MISMATCH,
+      path: ['confirmPassword'],
+    });
 }
 
 /**
@@ -114,9 +114,9 @@ export function createPasswordWithConfirmSchema(useStrict = false) {
  * Standard email validation with helpful error messages.
  */
 export const emailSchema = z
-    .string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address');
+  .string()
+  .min(1, 'Email is required')
+  .email('Please enter a valid email address');
 
 /**
  * Name Schema (required)
@@ -124,10 +124,10 @@ export const emailSchema = z
  * For fields like firstName that must not be empty.
  */
 export const requiredNameSchema = z
-    .string()
-    .min(1, 'This field is required')
-    .min(2, 'Must be at least 2 characters')
-    .regex(/\S/, 'Must not be only spaces');
+  .string()
+  .min(1, 'This field is required')
+  .min(2, 'Must be at least 2 characters')
+  .regex(/\S/, 'Must not be only spaces');
 
 /**
  * Name Schema (optional)
@@ -141,15 +141,11 @@ export const optionalNameSchema = z.string().optional();
  *
  * Validates URLs with helpful error message.
  */
-export const urlSchema = z
-    .string()
-    .min(1, 'URL is required')
-    .url('Please enter a valid URL');
+export const urlSchema = z.string().min(1, 'URL is required').url('Please enter a valid URL');
 
 /**
  * Optional URL Schema
  */
-export const optionalUrlSchema = z.union([
-    z.string().url('Please enter a valid URL'),
-    z.literal(''),
-]).optional();
+export const optionalUrlSchema = z
+  .union([z.string().url('Please enter a valid URL'), z.literal('')])
+  .optional();

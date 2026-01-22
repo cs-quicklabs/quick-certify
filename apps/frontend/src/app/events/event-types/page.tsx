@@ -6,5 +6,5 @@ import { redirect } from 'next/navigation';
  * Redirects to settings route
  */
 export default function EventTypesPage() {
-    redirect('/settings/event/type');
+  redirect('/settings/event/type');
 }

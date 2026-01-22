@@ -23,25 +23,23 @@
  * // Returns: ""
  * ```
  */
-export function buildQueryParams<T extends Record<string, unknown>>(
-    filters?: T
-): string {
-    if (!filters) return '';
+export function buildQueryParams<T extends Record<string, unknown>>(filters?: T): string {
+  if (!filters) return '';
 
-    const params = new URLSearchParams();
+  const params = new URLSearchParams();
 
-    Object.entries(filters).forEach(([key, value]) => {
-        // Skip undefined, null, and empty string values
-        if (value === undefined || value === null || value === '') {
-            return;
-        }
+  Object.entries(filters).forEach(([key, value]) => {
+    // Skip undefined, null, and empty string values
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
 
-        // Convert value to string and append
-        params.append(key, String(value));
-    });
+    // Convert value to string and append
+    params.append(key, String(value));
+  });
 
-    const queryString = params.toString();
-    return queryString ? `?${queryString}` : '';
+  const queryString = params.toString();
+  return queryString ? `?${queryString}` : '';
 }
 
 /**
@@ -53,11 +51,8 @@ export function buildQueryParams<T extends Record<string, unknown>>(
  * // Returns: "/events?page=1&limit=10"
  * ```
  */
-export function buildUrl<T extends Record<string, unknown>>(
-    path: string,
-    filters?: T
-): string {
-    return `${path}${buildQueryParams(filters)}`;
+export function buildUrl<T extends Record<string, unknown>>(path: string, filters?: T): string {
+  return `${path}${buildQueryParams(filters)}`;
 }
 
 /**
@@ -70,14 +65,14 @@ export function buildUrl<T extends Record<string, unknown>>(
  * ```
  */
 export function parseQueryParams(queryString: string): Record<string, string> {
-    const params = new URLSearchParams(queryString);
-    const result: Record<string, string> = {};
+  const params = new URLSearchParams(queryString);
+  const result: Record<string, string> = {};
 
-    params.forEach((value, key) => {
-        result[key] = value;
-    });
+  params.forEach((value, key) => {
+    result[key] = value;
+  });
 
-    return result;
+  return result;
 }
 
 /**
@@ -90,12 +85,12 @@ export function parseQueryParams(queryString: string): Record<string, string> {
  * ```
  */
 export function mergeQueryParams<T extends Record<string, unknown>>(
-    existingQuery: string,
-    newParams: T
+  existingQuery: string,
+  newParams: T,
 ): string {
-    const existing = parseQueryParams(existingQuery);
-    const merged = { ...existing, ...newParams };
-    return buildQueryParams(merged);
+  const existing = parseQueryParams(existingQuery);
+  const merged = { ...existing, ...newParams };
+  return buildQueryParams(merged);
 }
 
 /**
@@ -103,10 +98,10 @@ export function mergeQueryParams<T extends Record<string, unknown>>(
  * Use this as a base for service filter types
  */
 export interface BasePaginationFilters {
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: 'ASC' | 'DESC';
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 /**
@@ -114,5 +109,5 @@ export interface BasePaginationFilters {
  * Extends pagination with search capability
  */
 export interface BaseSearchFilters extends BasePaginationFilters {
-    search?: string;
+  search?: string;
 }

@@ -120,7 +120,10 @@ export const authService = {
    * Complete Google signup with organization details
    */
   async completeGoogleSignup(data: GoogleSignupCompleteRequest): Promise<AuthTokens> {
-    const response = await apiClient.post<ApiResponse<AuthTokens>>('/auth/google/signup/complete', data);
+    const response = await apiClient.post<ApiResponse<AuthTokens>>(
+      '/auth/google/signup/complete',
+      data,
+    );
     if (response.data.success) {
       setTokens(response.data.data.accessToken, response.data.data.refreshToken);
     }
@@ -147,9 +150,22 @@ export const authService = {
   },
 
   /**
+   * Check if token is valid
+   */
+  async checkToken(token: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<ApiResponse<{ success: boolean; message: string }>>(
+      '/auth/check-forgot-password-token',
+      { token },
+    );
+    return response.data;
+  },
+
+  /**
    * Forgot password
    */
-  async forgotPassword(data: ForgotPasswordRequest): Promise<{ success: boolean; message: string }> {
+  async forgotPassword(
+    data: ForgotPasswordRequest,
+  ): Promise<{ success: boolean; message: string }> {
     const response = await apiClient.post<ApiResponse<{ success: boolean; message: string }>>(
       '/auth/forgot-password',
       data,
@@ -235,4 +251,3 @@ export const authService = {
     };
   },
 };
-
