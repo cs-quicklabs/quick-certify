@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 // Credential data - this would typically come from API/props
 const credentialData = {
   id: '019c617e-58c1-4de1-a975-73c20737580e',
@@ -69,7 +71,7 @@ export default function PublicCredentialPage() {
         <nav className="order-1 mx-auto w-full max-w-7xl bg-white px-4 py-4 dark:bg-gray-900">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start">
-              <a href="/" className="mr-6 flex">
+              <Link href="/" className="mr-6 flex">
                 <img
                   src="https://flowbite.s3.amazonaws.com/logo.svg"
                   className="mr-3 h-8"
@@ -78,36 +80,36 @@ export default function PublicCredentialPage() {
                 <span className="self-center whitespace-nowrap text-2xl font-semibold dark:text-white">
                   {credentialData.issuerName}
                 </span>
-              </a>
+              </Link>
             </div>
             <div className="flex items-center justify-between lg:order-2">
               <ul className="mr-4 mt-0 hidden w-full flex-col text-base font-medium text-gray-900 md:flex md:flex-row dark:text-white">
                 <li>
-                  <a
+                  <Link
                     href="/public/company"
                     className="px-4 py-3 hover:underline dark:hover:text-blue-500"
                     aria-current="page"
                   >
                     Issuer Profile
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/public/event"
                     className="px-4 py-3 hover:underline dark:hover:text-blue-500"
                     aria-current="page"
                   >
                     Events
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/public/recipients"
                     className="px-4 py-3 hover:underline dark:hover:text-blue-500"
                     aria-current="page"
                   >
                     Recipients
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -328,13 +330,13 @@ export default function PublicCredentialPage() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="md:flex md:justify-between">
             <div className="mb-8 md:mb-0">
-              <a href="/" className="flex items-center">
+              <Link href="/" className="flex items-center">
                 <img
                   src="https://flowbite.com/docs/images/logo.svg"
                   className="mr-3 h-8"
                   alt="Logo"
                 />
-              </a>
+              </Link>
               <span className="self-center whitespace-nowrap text-2xl font-semibold dark:text-white">
                 {credentialData.issuerName}
               </span>
@@ -347,14 +349,14 @@ export default function PublicCredentialPage() {
                 </h2>
                 <ul className="text-sm text-gray-600 dark:text-gray-400">
                   <li className="mb-4">
-                    <a href="/public/event" className="hover:underline">
+                    <Link href="/public/event" className="hover:underline">
                       Events
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/public/recipients" className="hover:underline">
+                    <Link href="/public/recipients" className="hover:underline">
                       Recipients
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -364,14 +366,14 @@ export default function PublicCredentialPage() {
                 </h2>
                 <ul className="text-sm text-gray-600 dark:text-gray-400">
                   <li className="mb-4">
-                    <a href="/public/verify" className="hover:underline">
+                    <Link href="/public/verify" className="hover:underline">
                       Credentials Verification
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/public/retrieve" className="hover:underline">
+                    <Link href="/public/retrieve" className="hover:underline">
                       Credentials Retrieval
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -381,9 +383,9 @@ export default function PublicCredentialPage() {
           <div className="sm:flex sm:items-center sm:justify-between">
             <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
               © 2025{' '}
-              <a href="/" className="hover:underline">
+              <Link href="/" className="hover:underline">
                 Quick Certify
-              </a>
+              </Link>
               . All Rights Reserved.
             </span>
             <div className="mt-4 flex space-x-6 sm:mt-0 sm:justify-center">
