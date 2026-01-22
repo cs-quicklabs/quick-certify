@@ -310,6 +310,35 @@ export class OrganizationService implements IOrganizationService {
   }
 
   /**
+   * Validate organization creation data (name, slug, website)
+   * Centralizes validation logic to avoid duplication
+   * @param name - The organization name to validate
+   * @param websiteUrl - Optional website URL to validate
+   * @throws ConflictException if name or slug already exists
+   * @throws BadRequestException if website domain is invalid or already in use
+   */
+  async validateOrganizationCreation(name: string, websiteUrl?: string | null): Promise<void> {
+    const slug = this.generateSlug(name);
+
+    // Check if slug already exists
+    const existingSlug = await this.findBySlug(slug);
+    if (existingSlug) {
+      throw new ConflictException('Organization with this name already exists');
+    }
+
+    // Check if name already exists
+    const existingOrgName = await this.findAll({ where: { name } });
+    if (existingOrgName.data.length > 0) {
+      throw new ConflictException('Organization with this name already exists');
+    }
+
+    // Check if website URL is already in use
+    if (websiteUrl) {
+      await this.validateWebsiteDomain(null, websiteUrl);
+    }
+  }
+
+  /**
    * Validate if a website domain is already in use
    * @param websiteUrl - The website URL to validate
    * @throws BadRequestException if the website URL is invalid

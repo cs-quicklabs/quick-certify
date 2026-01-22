@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
@@ -301,57 +302,15 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   // Multi-tenant methods
   override async findAllByOrganization(
     organizationId: string,
-    options: FindAllOptions = {},
+    options: FindAllOptions & { currentUserRole?: string; role?: string } = {},
   ): Promise<PaginatedResult<UserEntity>> {
     const whereClause: Record<string, unknown> = {
       ...options.where,
       organization_id: organizationId,
     };
 
-    // Apply role-based visibility filtering
-    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
-    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
-    let excludedRoleIds: string[] = [];
-    const currentUserRole = (options as any).currentUserRole as string | undefined;
-    if (currentUserRole) {
-      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
-      if (excludedRoles.length > 0) {
-        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
-      }
-    }
-
-    // Handle role filtering - need to find role IDs first
-    let roleIds: string[] | undefined;
-    if ((options as any).role) {
-      const roleFilter = (options as any).role.toLowerCase();
-      // Admin filter should include both admin and super_admin
-      if (roleFilter === 'admin') {
-        const superAdminRole = await this.roleService.findByRole(Role.SUPER_ADMIN);
-        const adminRole = await this.roleService.findByRole(Role.ADMIN);
-        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as string[];
-      } else {
-        const role = await this.roleService.findByRole(roleFilter);
-        if (role) {
-          roleIds = [role.id];
-        }
-      }
-      if (roleIds && roleIds.length > 0) {
-        // Filter out excluded roles from the role filter
-        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
-        if (roleIds.length > 0) {
-          whereClause.role_id = { [Op.in]: roleIds };
-        } else {
-          // Return empty result if all roles are excluded
-          whereClause.role_id = { [Op.eq]: null };
-        }
-      } else {
-        // Return empty result if role not found
-        whereClause.role_id = { [Op.eq]: null };
-      }
-    } else if (excludedRoleIds.length > 0) {
-      // Apply role-based visibility exclusion when no specific role filter
-      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
-    }
+    // Apply role-based filtering (extracted to avoid duplication)
+    await this.applyRoleFiltering(whereClause, options);
 
     return this.findAll({
       ...options,
@@ -376,7 +335,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   async searchUsers(
     organizationId: string,
     searchQuery: string,
-    options: FindAllOptions = {},
+    options: FindAllOptions & { currentUserRole?: string; role?: string } = {},
   ): Promise<PaginatedResult<UserEntity>> {
     const searchCondition = {
       [Op.or]: [
@@ -392,60 +351,56 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ...searchCondition,
     };
 
-    // Apply role-based visibility filtering
-    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
-    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
-    let excludedRoleIds: string[] = [];
-    const currentUserRole = (options as any).currentUserRole as string | undefined;
-    if (currentUserRole) {
-      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
-      if (excludedRoles.length > 0) {
-        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
-      }
-    }
-
-    // Handle role filtering - need to find role IDs first
-    let roleIds: string[] | undefined;
-    if ((options as any).role) {
-      const roleFilter = (options as any).role.toLowerCase();
-      // Admin filter should include both admin and super_admin
-      if (roleFilter === 'admin') {
-        const superAdminRole = await this.roleService.findByRole(Role.SUPER_ADMIN);
-        const adminRole = await this.roleService.findByRole(Role.ADMIN);
-        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as string[];
-      } else {
-        const role = await this.roleService.findByRole(roleFilter);
-        if (role) {
-          roleIds = [role.id];
-        }
-      }
-      if (roleIds && roleIds.length > 0) {
-        // Filter out excluded roles from the role filter
-        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
-        if (roleIds.length > 0) {
-          whereClause.role_id = { [Op.in]: roleIds };
-        } else {
-          // Return empty result if all roles are excluded
-          whereClause.role_id = { [Op.eq]: null };
-        }
-      } else {
-        // Return empty result if role not found
-        whereClause.role_id = { [Op.eq]: null };
-      }
-    } else if (excludedRoleIds.length > 0) {
-      // Apply role-based visibility exclusion when no specific role filter
-      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
-    }
+    // Apply role-based filtering (extracted to avoid duplication)
+    await this.applyRoleFiltering(whereClause, options);
 
     return this.findAll({
       ...options,
       where: whereClause,
       sortBy: options.sortBy || 'last_login_at',
-      sortOrder: (options.sortOrder || 'DESC') as any,
+      sortOrder: (options.sortOrder || 'DESC') as 'ASC' | 'DESC',
     });
   }
 
   // Private validation helpers (SRP - validation logic)
+
+  /**
+   * Validate user status for authentication operations
+   * Centralizes status validation logic to avoid duplication
+   * @throws UnauthorizedException if user is archived or inactive
+   */
+  validateUserStatusForAuth(user: UserEntity): void {
+    if (user.status === 'archived') {
+      throw new UnauthorizedException(
+        'Your account is deactivated. Please connect with your admin.',
+      );
+    }
+
+    if (user.status !== 'active') {
+      throw new UnauthorizedException(
+        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+      );
+    }
+  }
+
+  /**
+   * Validate user status for password reset operations
+   * Centralizes status validation logic to avoid duplication
+   * @throws UnauthorizedException if user is archived or inactive
+   */
+  validateUserStatusForPasswordReset(user: UserEntity): void {
+    if (user.status === 'archived') {
+      throw new UnauthorizedException(
+        'Your account is deactivated. For more queries reach out to admin.',
+      );
+    }
+
+    if (user.status !== 'active') {
+      throw new UnauthorizedException(
+        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+      );
+    }
+  }
 
   private async findOneOrThrow(id: string): Promise<UserEntity> {
     const user = await this.userModel.findOne({
@@ -503,6 +458,61 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   private async getRoleIdsByNames(roleNames: string[]): Promise<string[]> {
     const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
     return roles.filter(Boolean).map((r) => r!.id);
+  }
+
+  /**
+   * Apply role-based filtering to where clause
+   * Centralizes role filtering logic to avoid duplication
+   * @param whereClause - The where clause to modify
+   * @param options - FindAllOptions with optional role filtering
+   */
+  private async applyRoleFiltering(
+    whereClause: Record<string, unknown>,
+    options: FindAllOptions & { currentUserRole?: string; role?: string },
+  ): Promise<void> {
+    // Apply role-based visibility filtering
+    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
+    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
+    let excludedRoleIds: string[] = [];
+    if (options.currentUserRole) {
+      const excludedRoles = this.getExcludedRolesForVisibility(options.currentUserRole);
+      if (excludedRoles.length > 0) {
+        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
+      }
+    }
+
+    // Handle role filtering - need to find role IDs first
+    let roleIds: string[] | undefined;
+    if (options.role) {
+      const roleFilter = options.role.toLowerCase();
+      // Admin filter should include both admin and super_admin
+      if (roleFilter === 'admin') {
+        const superAdminRole = await this.roleService.findByRole(Role.SUPER_ADMIN);
+        const adminRole = await this.roleService.findByRole(Role.ADMIN);
+        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as string[];
+      } else {
+        const role = await this.roleService.findByRole(roleFilter);
+        if (role) {
+          roleIds = [role.id];
+        }
+      }
+      if (roleIds && roleIds.length > 0) {
+        // Filter out excluded roles from the role filter
+        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
+        if (roleIds.length > 0) {
+          whereClause.role_id = { [Op.in]: roleIds };
+        } else {
+          // Return empty result if all roles are excluded
+          whereClause.role_id = { [Op.eq]: null };
+        }
+      } else {
+        // Return empty result if role not found
+        whereClause.role_id = { [Op.eq]: null };
+      }
+    } else if (excludedRoleIds.length > 0) {
+      // Apply role-based visibility exclusion when no specific role filter
+      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
+    }
   }
 
   private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {

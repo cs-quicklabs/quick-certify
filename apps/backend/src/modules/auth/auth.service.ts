@@ -92,26 +92,11 @@ export class AuthService implements IAuthService {
       throw new ConflictException('Email already registered');
     }
 
+    // Validate organization creation data (name, slug, website)
+    await this.organizationService.validateOrganizationCreation(dto.companyName, dto.websiteUrl);
+
+    const superAdminRole = await this.getSuperAdminRole();
     const slug = this.organizationService.generateSlug(dto.companyName);
-    const existingSlug = await this.organizationService.findBySlug(slug);
-    if (existingSlug) {
-      throw new ConflictException('Organization with this name already exists');
-    }
-
-    const existingOrgName = await this.organizationService.findAll({ where: { name: dto.companyName } });
-    if (existingOrgName.data.length > 0) {
-      throw new ConflictException('Organization with this name already exists');
-    }
-
-    // Check if website URL is already in use
-    if (dto.websiteUrl) {
-      await this.organizationService.validateWebsiteDomain(null, dto.websiteUrl);
-    }
-
-    const superAdminRole = await this.roleService.findByRole('super_admin');
-    if (!superAdminRole) {
-      throw new NotFoundException('Super Admin role not found. Please ensure roles are seeded.');
-    }
 
     const organization = await this.organizationService.create({
       name: dto.companyName,
@@ -145,15 +130,8 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    if (user.status === 'archived' || user.status === 'inactive') {
-      throw new UnauthorizedException('Your account is deactivated. Please connect with your admin.');
-    }
-
-    if (user.status !== 'active') {
-      throw new UnauthorizedException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
+    // Validate user status (extracted to avoid duplication)
+    this.userService.validateUserStatusForAuth(user);
 
     // Handle mixed auth providers
     if (user.auth_provider === 'google' && !user.password_hash) {
@@ -229,17 +207,8 @@ export class AuthService implements IAuthService {
       return { success: true, message: 'If the email exists, a reset link has been sent' };
     }
 
-    if (user.status === 'archived') {
-      throw new UnauthorizedException(
-        'Your account is deactivated. For more queries reach out to admin.',
-      );
-    }
-
-    if (user.status !== 'active') {
-      throw new UnauthorizedException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
+    // Validate user status (extracted to avoid duplication)
+    this.userService.validateUserStatusForPasswordReset(user);
 
     await this.passwordResetService.invalidateAllForUser(user.id);
 
@@ -495,17 +464,8 @@ export class AuthService implements IAuthService {
 
     if (existingUser) {
       // User exists, try to login instead
-      if (existingUser.status === 'archived') {
-        throw new UnauthorizedException(
-          'Your account is deactivated. For more queries reach out to admin.',
-        );
-      }
-
-      if (existingUser.status !== 'active') {
-        throw new UnauthorizedException(
-          'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-        );
-      }
+      // Validate user status (extracted to avoid duplication)
+      this.userService.validateUserStatusForPasswordReset(existingUser);
 
       // Link Google account if not already linked
       if (!existingUser.google_id) {
@@ -518,28 +478,11 @@ export class AuthService implements IAuthService {
       return this.createSessionAndTokens(existingUser, ipAddress, userAgent);
     }
 
-    // Validate organization name uniqueness
+    // Validate organization creation data (name, slug, website)
+    await this.organizationService.validateOrganizationCreation(dto.companyName, dto.websiteUrl);
+
+    const superAdminRole = await this.getSuperAdminRole();
     const slug = this.organizationService.generateSlug(dto.companyName);
-    const existingSlug = await this.organizationService.findBySlug(slug);
-    if (existingSlug) {
-      throw new ConflictException('Organization with this name already exists');
-    }
-
-    const existingOrgName = await this.organizationService.findAll({ where: { name: dto.companyName } });
-    if (existingOrgName.data.length > 0) {
-      throw new ConflictException('Organization with this name already exists');
-    }
-
-    // Check if website URL is already in use
-    if (dto.websiteUrl) {
-      await this.organizationService.validateWebsiteDomain(null, dto.websiteUrl);
-    }
-
-    // Get Super Admin role
-    const superAdminRole = await this.roleService.findByRole('super_admin');
-    if (!superAdminRole) {
-      throw new NotFoundException('Super Admin role not found. Please ensure roles are seeded.');
-    }
 
     // Create organization
     const organization = await this.organizationService.create({
@@ -554,7 +497,7 @@ export class AuthService implements IAuthService {
     // Use provided names from form, fallback to Google profile names
     const user = await this.userService.create({
       firstName: dto.firstName || googleUser.given_name,
-      lastName: dto.lastName || googleUser.family_name || null,
+      lastName: dto.lastName || googleUser.family_name || '',
       email: googleUser.email,
       organizationId: organization.id,
       roleId: superAdminRole.id,
@@ -616,17 +559,8 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    if (user.status === 'archived') {
-      throw new UnauthorizedException(
-        'Your account is deactivated. For more queries reach out to admin.',
-      );
-    }
-
-    if (user.status !== 'active') {
-      throw new UnauthorizedException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
+    // Validate user status (extracted to avoid duplication)
+    this.userService.validateUserStatusForPasswordReset(user);
 
     // Handle account linking
     if (user.auth_provider === 'email' && !user.google_id) {
@@ -691,6 +625,18 @@ export class AuthService implements IAuthService {
         this.tempGoogleUserStore.delete(key);
       }
     }
+  }
+
+  /**
+   * Get Super Admin role - extracted to avoid duplication
+   * @throws NotFoundException if Super Admin role not found
+   */
+  private async getSuperAdminRole() {
+    const superAdminRole = await this.roleService.findByRole('super_admin');
+    if (!superAdminRole) {
+      throw new NotFoundException('Super Admin role not found. Please ensure roles are seeded.');
+    }
+    return superAdminRole;
   }
 
   private parseDeviceType(userAgent?: string): string | undefined {

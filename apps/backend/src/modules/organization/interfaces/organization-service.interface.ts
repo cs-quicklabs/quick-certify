@@ -39,6 +39,23 @@ export interface IOrganizationService {
     searchQuery: string,
     options?: FindAllOptions,
   ): Promise<PaginatedResult<OrganizationEntity>>;
+
+  /**
+   * Validate organization creation data (name, slug, website)
+   * @throws ConflictException if name or slug already exists
+   * @throws BadRequestException if website domain is invalid or already in use
+   */
+  validateOrganizationCreation(name: string, websiteUrl?: string | null): Promise<void>;
+
+  /**
+   * Generate a URL-friendly slug from an organization name
+   */
+  generateSlug(name: string): string;
+
+  /**
+   * Validate if a website domain is already in use
+   */
+  validateWebsiteDomain(originalOrganizationId: string | null, websiteUrl: string): Promise<void>;
 }
 
 export const ORGANIZATION_SERVICE = Symbol('IOrganizationService');
