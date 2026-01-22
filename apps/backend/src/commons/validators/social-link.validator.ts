@@ -134,4 +134,3 @@ export function IsWebsiteUrl(validationOptions?: ValidationOptions) {
     });
   };
 }
-

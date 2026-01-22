@@ -176,7 +176,9 @@ export abstract class BaseCrudService<
 
   async softDelete(id: TId): Promise<boolean> {
     if (!this.softDeleteField) {
-      throw new Error(`Soft delete is not configured for ${this.entityName}. Set softDeleteField property.`);
+      throw new Error(
+        `Soft delete is not configured for ${this.entityName}. Set softDeleteField property.`,
+      );
     }
     const entity = await this.findOneOrFail(id);
     await entity.update({ [this.softDeleteField]: new Date() } as Record<string, unknown>);
@@ -185,7 +187,9 @@ export abstract class BaseCrudService<
 
   async restore(id: TId): Promise<T> {
     if (!this.softDeleteField) {
-      throw new Error(`Soft delete is not configured for ${this.entityName}. Set softDeleteField property.`);
+      throw new Error(
+        `Soft delete is not configured for ${this.entityName}. Set softDeleteField property.`,
+      );
     }
     const whereClause: Record<string, unknown> = {
       id: id as any,

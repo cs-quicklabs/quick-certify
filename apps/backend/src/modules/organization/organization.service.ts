@@ -1,12 +1,16 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationEntity } from '@src/entities';
 import { StorageService } from '@src/commons/services';
 import { extractDomain } from '@src/commons/utils';
 import {
-  CreateOrganizationDto,
   UpdateOrganizationDto,
   UpdateGeneralInfoDto,
   UpdateSocialLinksDto,
@@ -26,7 +30,7 @@ export class OrganizationService implements IOrganizationService {
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -72,27 +76,42 @@ export class OrganizationService implements IOrganizationService {
     });
   }
 
-  async create(dto: CreateOrganizationDto): Promise<OrganizationEntity> {
-    const slug = dto.slug || this.generateSlug(dto.name);
+  async create(
+    organization: Partial<OrganizationEntity>,
+    options?: { transaction?: Transaction },
+  ): Promise<OrganizationEntity> {
+    const slug = organization.slug || this.generateSlug(organization?.name || '');
 
-    const existingSlug = await this.organizationModel.findOne({ where: { slug } });
+    const existingSlug = await this.organizationModel.findOne({
+      where: { slug },
+      ...(options?.transaction && { transaction: options.transaction }),
+    });
     if (existingSlug) {
       throw new ConflictException('Organization with this slug already exists');
     }
 
-    const existingName = await this.organizationModel.findOne({ where: { name: dto.name } });
+    const existingName = await this.organizationModel.findOne({
+      where: { name: organization?.name },
+      ...(options?.transaction && { transaction: options.transaction }),
+    });
     if (existingName) {
       throw new ConflictException('Organization with this name already exists');
     }
 
-    const organization = await this.organizationModel.create({
-      name: dto.name,
-      slug,
-      is_active: dto.is_active !== undefined ? dto.is_active : true,
-      issuer_verified: dto.issuer_verified !== undefined ? dto.issuer_verified : false,
-    });
+    const createdOrganization = (await this.organizationModel.create(
+      {
+        name: organization?.name,
+        slug,
+        is_active: organization?.is_active !== undefined ? organization?.is_active : true,
+        issuer_verified:
+          organization?.issuer_verified !== undefined ? organization?.issuer_verified : false,
+      },
+      {
+        ...(options?.transaction && { transaction: options.transaction }),
+      },
+    )) as OrganizationEntity;
 
-    return organization;
+    return createdOrganization;
   }
 
   async update(id: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
@@ -282,7 +301,10 @@ export class OrganizationService implements IOrganizationService {
    * Update issuer portal settings
    * Deletes old banner from storage when replaced
    */
-  async updatePortalSettings(id: string, dto: UpdatePortalSettingsDto): Promise<OrganizationEntity> {
+  async updatePortalSettings(
+    id: string,
+    dto: UpdatePortalSettingsDto,
+  ): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findOne({
       where: { id, is_active: true },
     });
@@ -311,12 +333,44 @@ export class OrganizationService implements IOrganizationService {
   }
 
   /**
+   * Validate organization creation data (name, slug, website)
+   * Centralizes validation logic to avoid duplication
+   * @param name - The organization name to validate
+   * @param websiteUrl - Optional website URL to validate
+   * @throws ConflictException if name or slug already exists
+   * @throws BadRequestException if website domain is invalid or already in use
+   */
+  async validateOrganizationCreation(name: string, websiteUrl?: string | null): Promise<void> {
+    const slug = this.generateSlug(name);
+
+    // Check if slug already exists
+    const existingSlug = await this.findBySlug(slug);
+    if (existingSlug) {
+      throw new ConflictException('Organization with this name already exists');
+    }
+
+    // Check if name already exists
+    const existingOrgName = await this.findAll({ where: { name } });
+    if (existingOrgName.data.length > 0) {
+      throw new ConflictException('Organization with this name already exists');
+    }
+
+    // Check if website URL is already in use
+    if (websiteUrl) {
+      await this.validateWebsiteDomain(null, websiteUrl);
+    }
+  }
+
+  /**
    * Validate if a website domain is already in use
    * @param websiteUrl - The website URL to validate
    * @throws BadRequestException if the website URL is invalid
    * @throws ConflictException if the website domain is already in use
    */
-  async validateWebsiteDomain(originalOrganizationId: string | null, websiteUrl: string): Promise<void> {
+  async validateWebsiteDomain(
+    originalOrganizationId: string | null,
+    websiteUrl: string,
+  ): Promise<void> {
     const domain = extractDomain(websiteUrl);
     if (!domain) {
       throw new BadRequestException('Invalid website URL');
@@ -324,11 +378,15 @@ export class OrganizationService implements IOrganizationService {
 
     // Find all organizations and check if any has the same domain
     const organizations = await this.organizationModel.findAll({
-      where: { is_active: true, ...(originalOrganizationId && { id: { [Op.ne]: originalOrganizationId } }), website: { [Op.like]: `%${domain}%` } },
+      where: {
+        is_active: true,
+        ...(originalOrganizationId && { id: { [Op.ne]: originalOrganizationId } }),
+        website: { [Op.like]: `%${domain}%` },
+      },
       attributes: ['id', 'website'],
     });
 
-    const existingOrg = organizations.find(org => extractDomain(org.website) === domain);
+    const existingOrg = organizations.find((org) => extractDomain(org.website) === domain);
     if (existingOrg) {
       throw new ConflictException('An organization with this domain already exists');
     }

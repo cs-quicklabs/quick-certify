@@ -10,7 +10,8 @@ import { IsBoolean, IsOptional, IsString, IsUrl, MaxLength, ValidateIf } from 'c
 export class UpdatePortalSettingsDto {
   @ApiPropertyOptional({
     example: 'https://cdn.example.com/banner.png',
-    description: 'Banner image URL (PNG, JPG, JPEG, 1920x300px). Use empty string to remove banner.',
+    description:
+      'Banner image URL (PNG, JPG, JPEG, 1920x300px). Use empty string to remove banner.',
   })
   @IsString()
   @IsOptional()
@@ -27,4 +28,3 @@ export class UpdatePortalSettingsDto {
   @IsOptional()
   portal_enabled?: boolean;
 }
-

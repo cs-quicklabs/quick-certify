@@ -149,25 +149,18 @@ export default function EventTypeSettingsPage() {
               <div>
                 <h1 className="form-title">Event Types</h1>
                 <p className="form-subtitle">
-                  Event types specify the category of the event. For example, a conference, workshop, or
-                  seminar. You can add new event types, edit existing ones, or delete them.
+                  Event types specify the category of the event. For example, a conference,
+                  workshop, or seminar. You can add new event types, edit existing ones, or delete
+                  them.
                 </p>
               </div>
 
               {/* Error Message */}
-              {error && (
-                <Alert
-                  type="error"
-                  message={error}
-                  onClose={() => setError(null)}
-                />
-              )}
+              {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
               {/* Add New Event Type */}
               <div className="">
-                <h2 className="form-input-label mb-4">
-                  Add New Event Type
-                </h2>
+                <h2 className="form-input-label mb-4">Add New Event Type</h2>
                 <div className="space-y-4">
                   <div>
                     <input
@@ -203,7 +196,9 @@ export default function EventTypeSettingsPage() {
               {/* Existing Event Types */}
               <div className="overflow-hidden">
                 {isLoading ? (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    Loading...
+                  </div>
                 ) : queryError && showQueryError ? null : eventTypes.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     No event types found. Create your first event type above.
@@ -226,12 +221,13 @@ export default function EventTypeSettingsPage() {
                           {eventTypes.map((eventType, index) => (
                             <tr
                               key={eventType.id}
-                              className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
-                                ? 'bg-white dark:bg-gray-800'
-                                : index % 2 === 1
+                              className={`border-b border-gray-200 dark:border-gray-700 ${
+                                index === 0
+                                  ? 'bg-white dark:bg-gray-800'
+                                  : index % 2 === 1
                                   ? 'bg-gray-50 dark:bg-gray-700'
                                   : 'bg-white dark:bg-gray-800'
-                                }`}
+                              }`}
                             >
                               <td className="px-6 py-4">
                                 {editingId === eventType.id ? (
@@ -251,7 +247,9 @@ export default function EventTypeSettingsPage() {
                                     autoFocus
                                   />
                                 ) : (
-                                  <span className="text-sm text-gray-900 dark:text-white">{eventType.name}</span>
+                                  <span className="text-sm text-gray-900 dark:text-white">
+                                    {eventType.name}
+                                  </span>
                                 )}
                               </td>
                               <td className="px-6 py-4 text-right whitespace-nowrap">

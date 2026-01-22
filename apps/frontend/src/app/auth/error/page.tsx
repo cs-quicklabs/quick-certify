@@ -27,9 +27,7 @@ function AuthErrorContent() {
           Authentication Failed
         </h1>
 
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          {error}
-        </p>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
 
         <div className="space-y-3">
           <Link

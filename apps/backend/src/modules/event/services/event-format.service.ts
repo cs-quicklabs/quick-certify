@@ -30,7 +30,9 @@ export class EventFormatService extends BaseCrudService<
     super();
   }
 
-  override async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<EventFormatEntity>> {
+  override async findAll(
+    options: FindAllOptions = {},
+  ): Promise<PaginatedResult<EventFormatEntity>> {
     const { where = {}, ...restOptions } = options;
 
     return super.findAll({
@@ -107,4 +109,3 @@ export class EventFormatService extends BaseCrudService<
     });
   }
 }
-

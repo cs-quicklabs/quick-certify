@@ -127,7 +127,9 @@
         "options": {
           "passWithNoTests": true
         }
-      }
+      },
+      "format": {},
+      "format:check": {}
     }
   },
   "dependencies": {

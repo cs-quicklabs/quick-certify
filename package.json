@@ -39,9 +39,9 @@
     "production-ready"
   ],
   "scripts": {
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html,yml,yaml}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html,yml,yaml}\"",
-    "format:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md,html,yml,yaml}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,html}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,scss,html}\"",
+    "format:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,html}\""
   },
   "private": false,
   "devDependencies": {

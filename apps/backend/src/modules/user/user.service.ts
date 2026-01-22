@@ -4,9 +4,10 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { FindOptions, Op, Transaction } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
@@ -17,12 +18,24 @@ import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
 import { capitalizeFirst } from '@src/commons/utils';
+import { RoleService } from '../role/role.service';
+import { OrganizationService } from '../organization/organization.service';
+
+/**
+ * Extended FindAllOptions for User Service
+ * Includes additional fields for user-specific filtering
+ */
+export interface ExtendedFindAllOptions extends FindAllOptions {
+  excludeUserId?: string;
+  currentUserRole?: string;
+  role?: string;
+}
 
 /**
  * User Service
  *
  * Extends BaseCrudService with string IDs (nanoid)
- * DIP: Uses PasswordService for password operations
+ * DIP: Uses PasswordService for password operations, RoleService for role operations, OrganizationService for organization operations
  * SRP: Manages user CRUD only
  * Note: Overrides soft delete methods to use status field instead of deleted_at
  */
@@ -37,10 +50,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   constructor(
     @InjectModel(UserEntity)
     private readonly userModel: typeof UserEntity,
-    @InjectModel(RoleEntity)
-    private readonly roleModel: typeof RoleEntity,
-    @InjectModel(OrganizationEntity)
-    private readonly organizationModel: typeof OrganizationEntity,
+    private readonly roleService: RoleService,
+    private readonly organizationService: OrganizationService,
     private readonly passwordService: PasswordService,
     private readonly mailService: EmailService,
     private readonly sessionService: SessionService,
@@ -48,7 +59,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     super();
   }
 
-  override async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<UserEntity>> {
+  override async findAll(
+    options: ExtendedFindAllOptions = {},
+  ): Promise<PaginatedResult<UserEntity>> {
     const {
       page = 1,
       limit = this.defaultLimit,
@@ -62,7 +75,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const offset = (safePage - 1) * safeLimit;
 
     // Exclude current logged-in user if specified
-    const excludeUserId = (options as any).excludeUserId;
+    const excludeUserId = options.excludeUserId;
     const whereClause: Record<string, unknown> = {
       ...where,
       status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
@@ -78,7 +91,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password_hash'] },
-      order: sortBy === 'last_login_at' ? [[sortBy, `${sortOrder} NULLS LAST`]] : [[sortBy, sortOrder]],
+      order:
+        sortBy === 'last_login_at' ? [[sortBy, `${sortOrder} NULLS LAST`]] : [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,
     });
@@ -98,14 +112,17 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     };
   }
 
-  override async findOne(id: string): Promise<UserEntity | null> {
+  override async findOne(
+    id: string,
+    options?: FindOptions<UserEntity>,
+  ): Promise<UserEntity | null> {
     return this.userModel.findOne({
       where: { id, status: { [Op.ne]: 'archived' } },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
-      attributes: { exclude: ['password_hash'] },
+      attributes: options?.attributes ? options.attributes : { exclude: ['password_hash'] },
     });
   }
 
@@ -116,15 +133,25 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  override async create(dto: CreateUserDto, currentUser?: CurrentUser): Promise<UserEntity> {
+  override async create(
+    dto: CreateUserDto,
+    currentUser?: CurrentUser,
+    options?: { transaction?: Transaction },
+  ): Promise<UserEntity> {
     // Validate email uniqueness globally (across all organizations)
     await this.validateEmailUniqueness(dto.email);
 
     // Validate organization
-    const organization = await this.validateOrganization(dto.organizationId);
+    const organization = await this.organizationService.findOne(dto.organizationId);
+    if (!organization || !organization.is_active) {
+      throw new NotFoundException('Organization not found or inactive');
+    }
 
     // Validate role
-    const role = await this.validateRole(dto.roleId);
+    const role = await this.roleService.findOne(dto.roleId);
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
     // Super admin users can only be created by super admin users
     if (currentUser?.role !== Role.SUPER_ADMIN && role.role === Role.SUPER_ADMIN) {
@@ -141,39 +168,58 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       hashedPassword = await this.passwordService.hash(dto.password);
     }
 
-    const user = await this.userModel.create({
-      first_name: capitalizeFirst(dto.firstName),
-      last_name: capitalizeFirst(dto.lastName),
-      email: dto.email.toLowerCase(),
-      password_hash: hashedPassword,
-      organization_id: dto.organizationId,
-      role_id: dto.roleId,
-      status,
-      is_email_notifications_enabled: true,
-    });
+    const createdUserResult = await this.userModel.create(
+      {
+        first_name: capitalizeFirst(dto.firstName),
+        last_name: capitalizeFirst(dto.lastName),
+        email: dto.email.toLowerCase(),
+        password_hash: hashedPassword,
+        organization_id: dto.organizationId,
+        role_id: dto.roleId,
+        status,
+        is_email_notifications_enabled: true,
+      },
+      {
+        ...(options?.transaction && { transaction: options.transaction }),
+      },
+    );
+
+    if (!createdUserResult) {
+      throw new Error('Failed to create user');
+    }
+
+    const createdUser = createdUserResult as UserEntity;
 
     // Send invitation email if invitation, otherwise welcome email
     if (isInvitation) {
       const inviterName = currentUser
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
-      const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
+      const inviteLink = `${
+        process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+      }/auth/invitation?token=${createdUser.id}`;
       this.mailService
-        .sendInvitationEmail(user.email, {
-          name: user.first_name,
+        .sendInvitationEmail(createdUser.email, {
+          name: createdUser.first_name,
           inviterName,
           organizationName: organization.name,
           inviteLink,
         })
         .catch(console.error);
     } else {
-      this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+      this.mailService
+        .sendWelcomeEmail(createdUser.email, { name: createdUser.first_name })
+        .catch(console.error);
     }
 
-    return this.findOne(user.id) as Promise<UserEntity>;
+    return this.findOne(createdUser.id) as Promise<UserEntity>;
   }
 
-  override async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
+  override async update(
+    id: string,
+    dto: UpdateUserDto,
+    options?: { transaction?: Transaction },
+  ): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
@@ -181,9 +227,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // If status is being changed to archived, handle it as soft delete
     if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
       // Update status to archived (soft delete)
-      await user.update({ status: 'archived' });
+      await user.update(
+        { status: 'archived' },
+        { ...(options?.transaction && { transaction: options.transaction }) },
+      );
       // Logout user from all devices when archived
-      await this.logoutUserFromAllDevices(user.id);
+      await this.logoutUserFromAllDevices(user.id, options?.transaction);
       // Return the archived user (need to find it without the archived filter)
       return this.userModel.findOne({
         where: { id },
@@ -192,6 +241,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
           { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
         ],
         attributes: { exclude: ['password_hash'] },
+        ...(options?.transaction && { transaction: options.transaction }),
       }) as Promise<UserEntity>;
     }
 
@@ -202,20 +252,65 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Validate role if changing
     if (dto.roleId) {
-      await this.validateRole(dto.roleId);
+      const role = await this.roleService.findOne(dto.roleId);
+      if (!role) {
+        throw new NotFoundException('Role not found');
+      }
     }
 
-    const updateData = this.buildUpdateData(dto);
-    await user.update(updateData);
-
-    // If role changed, logout user from all devices (force re-login)
-    if (dto.roleId && dto.roleId !== previousRoleId) {
-      await this.logoutUserFromAllDevices(user.id);
+    // Hash password if provided (password in DTO is plain text, needs hashing)
+    let hashedPassword: string | undefined;
+    if (dto.password) {
+      hashedPassword = await this.passwordService.hash(dto.password);
     }
 
-    // If status changed to inactive, logout user from all devices
-    if (dto.status && dto.status !== previousStatus && dto.status === 'inactive') {
-      await this.logoutUserFromAllDevices(user.id);
+    const updateData = this.buildUpdateData(dto, hashedPassword);
+
+    // Check if role or status is changing (requires atomic update + session revocation)
+    const roleChanged = dto.roleId && dto.roleId !== previousRoleId;
+    const statusChangedToInactive =
+      dto.status && dto.status !== previousStatus && dto.status === 'inactive';
+    const needsTransaction = (roleChanged || statusChangedToInactive) && !options?.transaction;
+
+    // Use transaction if role/status changes and no transaction provided
+    if (needsTransaction) {
+      if (!this.userModel.sequelize) {
+        throw new Error('Sequelize instance not available');
+      }
+      const transaction = await this.userModel.sequelize.transaction();
+      try {
+        await user.update(updateData, { transaction });
+
+        // If role changed, logout user from all devices (force re-login)
+        if (roleChanged) {
+          await this.logoutUserFromAllDevices(user.id, transaction);
+        }
+
+        // If status changed to inactive, logout user from all devices
+        if (statusChangedToInactive) {
+          await this.logoutUserFromAllDevices(user.id, transaction);
+        }
+
+        await transaction.commit();
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+    } else {
+      // No transaction needed or transaction already provided
+      await user.update(updateData, {
+        ...(options?.transaction && { transaction: options.transaction }),
+      });
+
+      // If role changed, logout user from all devices (force re-login)
+      if (roleChanged) {
+        await this.logoutUserFromAllDevices(user.id, options?.transaction);
+      }
+
+      // If status changed to inactive, logout user from all devices
+      if (statusChangedToInactive) {
+        await this.logoutUserFromAllDevices(user.id, options?.transaction);
+      }
     }
 
     return this.findOne(id) as Promise<UserEntity>;
@@ -257,9 +352,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   }
 
   async resendInvitation(id: string, currentUser?: CurrentUser): Promise<UserEntity> {
-    const user = await this.userModel.findByPk(id, {
-      include: [OrganizationEntity],
-    });
+    const user = await this.userModel.findByPk(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -275,8 +368,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const inviterName = currentUser
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
-    const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
-    const organization = await this.organizationModel.findByPk(user.organization_id);
+    const inviteLink = `${
+      process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+    }/auth/invitation?token=${user.id}`;
+    const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService
         .sendInvitationEmail(user.email, {
@@ -294,60 +389,15 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   // Multi-tenant methods
   override async findAllByOrganization(
     organizationId: string,
-    options: FindAllOptions = {},
+    options: ExtendedFindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
     const whereClause: Record<string, unknown> = {
       ...options.where,
       organization_id: organizationId,
     };
 
-    // Apply role-based visibility filtering
-    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
-    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
-    let excludedRoleIds: string[] = [];
-    const currentUserRole = (options as any).currentUserRole as string | undefined;
-    if (currentUserRole) {
-      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
-      if (excludedRoles.length > 0) {
-        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
-      }
-    }
-
-    // Handle role filtering - need to find role IDs first
-    let roleIds: string[] | undefined;
-    if ((options as any).role) {
-      const roleFilter = (options as any).role.toLowerCase();
-      // Admin filter should include both admin and super_admin
-      if (roleFilter === 'admin') {
-        const roles = await this.roleModel.findAll({
-          where: { role: { [Op.in]: ['admin', 'super_admin'] } },
-        });
-        roleIds = roles.map((r) => r.id);
-      } else {
-        const role = await this.roleModel.findOne({
-          where: { role: roleFilter },
-        });
-        if (role) {
-          roleIds = [role.id];
-        }
-      }
-      if (roleIds && roleIds.length > 0) {
-        // Filter out excluded roles from the role filter
-        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
-        if (roleIds.length > 0) {
-          whereClause.role_id = { [Op.in]: roleIds };
-        } else {
-          // Return empty result if all roles are excluded
-          whereClause.role_id = { [Op.eq]: null };
-        }
-      } else {
-        // Return empty result if role not found
-        whereClause.role_id = { [Op.eq]: null };
-      }
-    } else if (excludedRoleIds.length > 0) {
-      // Apply role-based visibility exclusion when no specific role filter
-      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
-    }
+    // Apply role-based filtering (extracted to avoid duplication)
+    await this.applyRoleFiltering(whereClause, options);
 
     return this.findAll({
       ...options,
@@ -372,7 +422,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   async searchUsers(
     organizationId: string,
     searchQuery: string,
-    options: FindAllOptions = {},
+    options: ExtendedFindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
     const searchCondition = {
       [Op.or]: [
@@ -388,63 +438,56 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ...searchCondition,
     };
 
-    // Apply role-based visibility filtering
-    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
-    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
-    let excludedRoleIds: string[] = [];
-    const currentUserRole = (options as any).currentUserRole as string | undefined;
-    if (currentUserRole) {
-      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
-      if (excludedRoles.length > 0) {
-        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
-      }
-    }
-
-    // Handle role filtering - need to find role IDs first
-    let roleIds: string[] | undefined;
-    if ((options as any).role) {
-      const roleFilter = (options as any).role.toLowerCase();
-      // Admin filter should include both admin and super_admin
-      if (roleFilter === 'admin') {
-        const roles = await this.roleModel.findAll({
-          where: { role: { [Op.in]: ['admin', 'super_admin'] } },
-        });
-        roleIds = roles.map((r) => r.id);
-      } else {
-        const role = await this.roleModel.findOne({
-          where: { role: roleFilter },
-        });
-        if (role) {
-          roleIds = [role.id];
-        }
-      }
-      if (roleIds && roleIds.length > 0) {
-        // Filter out excluded roles from the role filter
-        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
-        if (roleIds.length > 0) {
-          whereClause.role_id = { [Op.in]: roleIds };
-        } else {
-          // Return empty result if all roles are excluded
-          whereClause.role_id = { [Op.eq]: null };
-        }
-      } else {
-        // Return empty result if role not found
-        whereClause.role_id = { [Op.eq]: null };
-      }
-    } else if (excludedRoleIds.length > 0) {
-      // Apply role-based visibility exclusion when no specific role filter
-      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
-    }
+    // Apply role-based filtering (extracted to avoid duplication)
+    await this.applyRoleFiltering(whereClause, options);
 
     return this.findAll({
       ...options,
       where: whereClause,
       sortBy: options.sortBy || 'last_login_at',
-      sortOrder: (options.sortOrder || 'DESC') as any,
+      sortOrder: (options.sortOrder || 'DESC') as 'ASC' | 'DESC',
     });
   }
 
   // Private validation helpers (SRP - validation logic)
+
+  /**
+   * Validate user status for authentication operations
+   * Centralizes status validation logic to avoid duplication
+   * @throws UnauthorizedException if user is archived or inactive
+   */
+  validateUserStatusForAuth(user: UserEntity): void {
+    if (user.status === 'archived') {
+      throw new UnauthorizedException(
+        'Your account is deactivated. Please connect with your admin.',
+      );
+    }
+
+    if (user.status !== 'active') {
+      throw new UnauthorizedException(
+        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+      );
+    }
+  }
+
+  /**
+   * Validate user status for password reset operations
+   * Centralizes status validation logic to avoid duplication
+   * @throws UnauthorizedException if user is archived or inactive
+   */
+  validateUserStatusForPasswordReset(user: UserEntity): void {
+    if (user.status === 'archived') {
+      throw new UnauthorizedException(
+        'Your account is deactivated. For more queries reach out to admin.',
+      );
+    }
+
+    if (user.status !== 'active') {
+      throw new UnauthorizedException(
+        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
+      );
+    }
+  }
 
   private async findOneOrThrow(id: string): Promise<UserEntity> {
     const user = await this.userModel.findOne({
@@ -500,29 +543,73 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    * Get role IDs by role names
    */
   private async getRoleIdsByNames(roleNames: string[]): Promise<string[]> {
-    const roles = await this.roleModel.findAll({
-      where: { role: { [Op.in]: roleNames } },
-    });
-    return roles.map((r) => r.id);
+    const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
+    return roles
+      .filter((r) => r !== null && r !== undefined)
+      .map((r) => {
+        if (r === null || r === undefined) {
+          throw new Error('Role should not be null after filter');
+        }
+        return r.id;
+      });
   }
 
-  private async validateOrganization(organizationId: string): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findByPk(organizationId);
-    if (!organization || !organization.is_active) {
-      throw new NotFoundException('Organization not found or inactive');
+  /**
+   * Apply role-based filtering to where clause
+   * Centralizes role filtering logic to avoid duplication
+   * @param whereClause - The where clause to modify
+   * @param options - ExtendedFindAllOptions with optional role filtering
+   */
+  private async applyRoleFiltering(
+    whereClause: Record<string, unknown>,
+    options: ExtendedFindAllOptions,
+  ): Promise<void> {
+    // Apply role-based visibility filtering
+    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
+    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
+    let excludedRoleIds: string[] = [];
+    if (options.currentUserRole) {
+      const excludedRoles = this.getExcludedRolesForVisibility(options.currentUserRole);
+      if (excludedRoles.length > 0) {
+        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
+      }
     }
-    return organization;
-  }
 
-  private async validateRole(roleId: string): Promise<RoleEntity> {
-    const role = await this.roleModel.findByPk(roleId);
-    if (!role) {
-      throw new NotFoundException('Role not found');
+    // Handle role filtering - need to find role IDs first
+    let roleIds: string[] | undefined;
+    if (options.role) {
+      const roleFilter = options.role.toLowerCase();
+      // Admin filter should include both admin and super_admin
+      if (roleFilter === 'admin') {
+        const superAdminRole = await this.roleService.findByRole(Role.SUPER_ADMIN);
+        const adminRole = await this.roleService.findByRole(Role.ADMIN);
+        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as string[];
+      } else {
+        const role = await this.roleService.findByRole(roleFilter);
+        if (role) {
+          roleIds = [role.id];
+        }
+      }
+      if (roleIds && roleIds.length > 0) {
+        // Filter out excluded roles from the role filter
+        roleIds = roleIds.filter((id) => !excludedRoleIds.includes(id));
+        if (roleIds.length > 0) {
+          whereClause.role_id = { [Op.in]: roleIds };
+        } else {
+          // Return empty result if all roles are excluded
+          whereClause.role_id = { [Op.eq]: null };
+        }
+      } else {
+        // Return empty result if role not found
+        whereClause.role_id = { [Op.eq]: null };
+      }
+    } else if (excludedRoleIds.length > 0) {
+      // Apply role-based visibility exclusion when no specific role filter
+      whereClause.role_id = { [Op.notIn]: excludedRoleIds };
     }
-    return role;
   }
 
-  private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {
+  private buildUpdateData(dto: UpdateUserDto, hashedPassword?: string): Partial<UserEntity> {
     const updateData: Partial<UserEntity> = {};
 
     if (dto.first_name) updateData.first_name = capitalizeFirst(dto.first_name);
@@ -534,11 +621,18 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     if (dto.email !== undefined) updateData.email = dto.email.toLowerCase();
     if (dto.roleId !== undefined) updateData.role_id = dto.roleId;
     if (dto.status !== undefined) updateData.status = dto.status;
+    // Handle password (hashed password passed separately)
+    if (hashedPassword) updateData.password_hash = hashedPassword;
+    // Handle OAuth fields
+    if (dto.google_id !== undefined) updateData.google_id = dto.google_id;
+    if (dto.auth_provider !== undefined) updateData.auth_provider = dto.auth_provider;
+    // Handle last login timestamp
+    if (dto.last_login_at !== undefined) updateData.last_login_at = dto.last_login_at;
 
     return updateData;
   }
 
-  private async logoutUserFromAllDevices(userId: string): Promise<void> {
-    await this.sessionService.revokeAllForUser(userId);
+  private async logoutUserFromAllDevices(userId: string, transaction?: Transaction): Promise<void> {
+    await this.sessionService.revokeAllForUser(userId, transaction);
   }
 }

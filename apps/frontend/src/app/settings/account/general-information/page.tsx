@@ -24,7 +24,8 @@ export default function GeneralInformationPage() {
       return (
         <div
           className="flex items-center p-2.5 mb-4 text-sm text-green-800 border border-green-300 rounded-sm bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:border-green-800"
-          role="alert">
+          role="alert"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -36,7 +37,10 @@ export default function GeneralInformationPage() {
             stroke-linecap="round"
             stroke-linejoin="round"
             className="lucide lucide-circle-check shrink-0 inline w-4 h-4 me-2"
-          ><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
           <span className="sr-only">Info</span>
           <div>
             <span className="font-medium"></span> Your issuer status has been verified.
@@ -48,7 +52,8 @@ export default function GeneralInformationPage() {
     return (
       <div
         className="flex items-center p-2.5 mb-4 text-sm text-yellow-800 border border-yellow-300 rounded-sm bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 dark:border-yellow-800"
-        role="alert">
+        role="alert"
+      >
         <svg
           className="lucide lucide-triangle-alert shrink-0 inline w-4 h-4 me-2"
           viewBox="0 0 24 24"
@@ -57,13 +62,15 @@ export default function GeneralInformationPage() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-        ><path
-            d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path
-            d="M12 9v4" /><path d="M12 17h.01" /></svg>
+        >
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+        </svg>
         <span className="sr-only">Info</span>
         <div>
-          <span className="font-medium"></span> Your issuer status is currently unverified. It will be verified
-          within next few days but this will not affect any operations till then.
+          <span className="font-medium"></span> Your issuer status is currently unverified. It will
+          be verified within next few days but this will not affect any operations till then.
         </div>
       </div>
     );
@@ -89,12 +96,12 @@ export default function GeneralInformationPage() {
   // Prepare initial values from settings
   const initialValues = settings
     ? {
-      name: settings.name || '',
-      description: settings.description || '',
-      support_email: settings.support_email || '',
-      slogan: settings.slogan || '',
-      linkedin_company_id: settings.linkedin_company_id || '',
-    }
+        name: settings.name || '',
+        description: settings.description || '',
+        support_email: settings.support_email || '',
+        slogan: settings.slogan || '',
+        linkedin_company_id: settings.linkedin_company_id || '',
+      }
     : undefined;
 
   return (
@@ -104,4 +111,3 @@ export default function GeneralInformationPage() {
     </div>
   );
 }
-

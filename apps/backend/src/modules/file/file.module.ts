@@ -13,4 +13,3 @@ import { StorageService } from '@src/commons/services';
   exports: [StorageService],
 })
 export class FileModule {}
-

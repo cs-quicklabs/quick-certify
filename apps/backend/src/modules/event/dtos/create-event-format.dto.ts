@@ -15,4 +15,3 @@ export class CreateEventFormatDto {
   })
   name!: string;
 }
-

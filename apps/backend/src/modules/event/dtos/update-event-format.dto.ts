@@ -15,4 +15,3 @@ export class UpdateEventFormatDto {
   })
   name?: string;
 }
-

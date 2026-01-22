@@ -54,6 +54,13 @@ export const passwordFormFields: FormFieldConfig[] = [
     placeholder: '••••••••',
     required: true,
   },
+  {
+    name: 'revokeAllSessions',
+    label: 'Revoke all active sessions',
+    type: 'checkbox',
+    description:
+      'If enabled, you will be logged out from all devices after changing your password. This is recommended for security.',
+  },
 ];
 
 export const emailPreferencesFields: FormFieldConfig[] = [

@@ -2,23 +2,23 @@ export type DesignType = {
   id: string;
   title: string;
   createdOn: string;
-  type: string | "Certificate" | "Badge";
+  type: string | 'Certificate' | 'Badge';
   thumbnail: string;
 };
 
 export const designs = [
   {
-    id: "1",
-    title: "Course Completion Certificate",
-    createdOn: "12 Dec 2024",
-    type: "Certificate",
-    thumbnail: "/images/sample-certificate.png",
+    id: '1',
+    title: 'Course Completion Certificate',
+    createdOn: '12 Dec 2024',
+    type: 'Certificate',
+    thumbnail: '/images/sample-certificate.png',
   },
   {
-    id: "2",
-    title: "Top Performer Badge",
-    createdOn: "08 Dec 2024",
-    type: "Badge",
-    thumbnail: "/images/sample-badge.png",
+    id: '2',
+    title: 'Top Performer Badge',
+    createdOn: '08 Dec 2024',
+    type: 'Badge',
+    thumbnail: '/images/sample-badge.png',
   },
 ];
