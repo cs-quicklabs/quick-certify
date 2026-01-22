@@ -22,6 +22,16 @@ import { RoleService } from '../role/role.service';
 import { OrganizationService } from '../organization/organization.service';
 
 /**
+ * Extended FindAllOptions for User Service
+ * Includes additional fields for user-specific filtering
+ */
+export interface ExtendedFindAllOptions extends FindAllOptions {
+  excludeUserId?: string;
+  currentUserRole?: string;
+  role?: string;
+}
+
+/**
  * User Service
  *
  * Extends BaseCrudService with string IDs (nanoid)
@@ -49,7 +59,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     super();
   }
 
-  override async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<UserEntity>> {
+  override async findAll(options: ExtendedFindAllOptions = {}): Promise<PaginatedResult<UserEntity>> {
     const {
       page = 1,
       limit = this.defaultLimit,
@@ -63,7 +73,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const offset = (safePage - 1) * safeLimit;
 
     // Exclude current logged-in user if specified
-    const excludeUserId = (options as any).excludeUserId;
+    const excludeUserId = options.excludeUserId;
     const whereClause: Record<string, unknown> = {
       ...where,
       status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
@@ -215,7 +225,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       }
     }
 
-    const updateData = this.buildUpdateData(dto);
+    // Hash password if provided (password in DTO is plain text, needs hashing)
+    let hashedPassword: string | undefined;
+    if (dto.password) {
+      hashedPassword = await this.passwordService.hash(dto.password);
+    }
+
+    const updateData = this.buildUpdateData(dto, hashedPassword);
     await user.update(updateData);
 
     // If role changed, logout user from all devices (force re-login)
@@ -302,7 +318,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   // Multi-tenant methods
   override async findAllByOrganization(
     organizationId: string,
-    options: FindAllOptions & { currentUserRole?: string; role?: string } = {},
+    options: ExtendedFindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
     const whereClause: Record<string, unknown> = {
       ...options.where,
@@ -335,7 +351,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   async searchUsers(
     organizationId: string,
     searchQuery: string,
-    options: FindAllOptions & { currentUserRole?: string; role?: string } = {},
+    options: ExtendedFindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
     const searchCondition = {
       [Op.or]: [
@@ -457,18 +473,23 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    */
   private async getRoleIdsByNames(roleNames: string[]): Promise<string[]> {
     const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
-    return roles.filter(Boolean).map((r) => r!.id);
+    return roles.filter((r) => r !== null && r !== undefined).map((r) => {
+      if (r === null || r === undefined) {
+        throw new Error('Role should not be null after filter');
+      }
+      return r.id;
+    });
   }
 
   /**
    * Apply role-based filtering to where clause
    * Centralizes role filtering logic to avoid duplication
    * @param whereClause - The where clause to modify
-   * @param options - FindAllOptions with optional role filtering
+   * @param options - ExtendedFindAllOptions with optional role filtering
    */
   private async applyRoleFiltering(
     whereClause: Record<string, unknown>,
-    options: FindAllOptions & { currentUserRole?: string; role?: string },
+    options: ExtendedFindAllOptions,
   ): Promise<void> {
     // Apply role-based visibility filtering
     // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
@@ -515,7 +536,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  private buildUpdateData(dto: UpdateUserDto): Partial<UserEntity> {
+  private buildUpdateData(dto: UpdateUserDto, hashedPassword?: string): Partial<UserEntity> {
     const updateData: Partial<UserEntity> = {};
 
     if (dto.first_name) updateData.first_name = capitalizeFirst(dto.first_name);
@@ -527,6 +548,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     if (dto.email !== undefined) updateData.email = dto.email.toLowerCase();
     if (dto.roleId !== undefined) updateData.role_id = dto.roleId;
     if (dto.status !== undefined) updateData.status = dto.status;
+    // Handle password (hashed password passed separately)
+    if (hashedPassword) updateData.password_hash = hashedPassword;
+    // Handle OAuth fields
+    if (dto.google_id !== undefined) updateData.google_id = dto.google_id;
+    if (dto.auth_provider !== undefined) updateData.auth_provider = dto.auth_provider;
+    // Handle last login timestamp
+    if (dto.last_login_at !== undefined) updateData.last_login_at = dto.last_login_at;
 
     return updateData;
   }

@@ -263,10 +263,10 @@ export class AuthService implements IAuthService {
       );
     }
 
-    const hashedPassword = await this.passwordService.hash(dto.newPassword);
+    // Password will be hashed by userService.update()
     await this.userService.update(passwordReset.user_id, {
       password: dto.newPassword,
-    } as any);
+    });
 
     await this.passwordResetService.markAsUsed(passwordReset.id);
 
@@ -296,10 +296,10 @@ export class AuthService implements IAuthService {
       throw new BadRequestException("New password shouldn't be same as old password");
     }
 
-    const hashedPassword = await this.passwordService.hash(dto.newPassword);
+    // Password will be hashed by userService.update()
     await this.userService.update(userId, {
       password: dto.newPassword,
-    } as any);
+    });
 
     return { success: true, message: 'Password changed successfully' };
   }
@@ -325,12 +325,11 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('This invitation has expired. Please contact your administrator for a new invitation.');
     }
 
-    // Hash and set password
-    const hashedPassword = await this.passwordService.hash(dto.password);
+    // Password will be hashed by userService.update()
     await this.userService.update(user.id, {
       password: dto.password,
       status: 'active',
-    } as any);
+    });
 
     // Create session and return tokens using helper method
     const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
@@ -472,7 +471,7 @@ export class AuthService implements IAuthService {
         await this.userService.update(existingUser.id, {
           google_id: googleUser.id,
           auth_provider: existingUser.password_hash ? 'both' : 'google',
-        } as any);
+        });
       }
 
       return this.createSessionAndTokens(existingUser, ipAddress, userAgent);
@@ -526,9 +525,8 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    // Update last login time - using service would require a full update, so we use direct update for this simple field
-    // This is acceptable as it's a single field update that doesn't require validation
-    await this.userService.update(user.id, { last_login_at: new Date() } as any);
+    // Update last login time
+    await this.userService.update(user.id, { last_login_at: new Date() });
 
     // Revoke all existing sessions for this user (single active session policy)
     await this.sessionService.revokeAllForUser(user.id);
@@ -569,7 +567,7 @@ export class AuthService implements IAuthService {
       await this.userService.update(user.id, {
         google_id: googleUser.id,
         auth_provider: 'both', // Support both auth methods
-      } as any);
+      });
     } else if (user.auth_provider === 'google' && user.google_id !== googleUser.id) {
       throw new UnauthorizedException('Google account mismatch');
     } else if (!user.google_id) {
@@ -577,7 +575,7 @@ export class AuthService implements IAuthService {
       await this.userService.update(user.id, {
         google_id: googleUser.id,
         auth_provider: user.password_hash ? 'both' : 'google',
-      } as any);
+      });
     }
 
     return this.createSessionAndTokens(user, ipAddress, userAgent);
