@@ -1,8 +1,13 @@
 import { Column, CreatedAt, DataType, Model, UpdatedAt } from 'sequelize-typescript';
 import { Sequelize } from 'sequelize';
 
-// these columns will be presented in all the entity
-// this will be extended.
+/**
+ * Base Entity
+ *
+ * Base class for entities using integer auto-increment primary keys.
+ * Provides common fields: id, createdAt, updatedAt.
+ * All entities extending this will have these columns.
+ */
 export abstract class BaseEntity extends Model<Record<string, unknown>> {
   @Column({
     type: DataType.INTEGER,

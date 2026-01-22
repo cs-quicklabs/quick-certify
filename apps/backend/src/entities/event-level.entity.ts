@@ -7,7 +7,7 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
  * Represents the level of an event (e.g., Beginner, Intermediate, Advanced)
  */
 @Table({
-  tableName: 'event_levels',
+  tableName: 'event_level',
   underscored: true,
 })
 export class EventLevelEntity extends BaseNanoidEntity {

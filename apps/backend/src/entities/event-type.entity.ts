@@ -7,7 +7,7 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
  * Represents a type/category of event (e.g., Workshop, Conference, Training)
  */
 @Table({
-  tableName: 'event_types',
+  tableName: 'event_type',
   underscored: true,
 })
 export class EventTypeEntity extends BaseNanoidEntity {

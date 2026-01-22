@@ -10,6 +10,7 @@ import { OrganizationEntity } from './organization.entity';
  */
 @Table({
   tableName: 'skill',
+  underscored: true,
 })
 export class SkillEntity extends BaseNanoidEntity {
   @ForeignKey(() => OrganizationEntity)
@@ -18,7 +19,7 @@ export class SkillEntity extends BaseNanoidEntity {
     allowNull: false,
     field: 'organization_id',
   })
-  declare organizationId: string;
+  declare organization_id: string;
 
   @BelongsTo(() => OrganizationEntity)
   declare organization: OrganizationEntity;

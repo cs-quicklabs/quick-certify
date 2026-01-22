@@ -11,8 +11,15 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
 import { UserEntity } from './user.entity';
 import { generateNanoid } from '@src/commons/utils/nanoid.util';
 
+/**
+ * Password Reset Entity
+ *
+ * Represents a password reset token with expiration and usage tracking.
+ * Used for secure password reset flows.
+ */
 @Table({
   tableName: 'password_reset',
+  underscored: true,
 })
 export class PasswordResetEntity extends BaseNanoidEntity {
   @Index({ name: 'IDX_PASSWORD_RESET_UUID', unique: true })

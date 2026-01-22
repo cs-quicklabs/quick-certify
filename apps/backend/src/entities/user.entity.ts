@@ -4,8 +4,15 @@ import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
 import { Exclude } from 'class-transformer';
 
+/**
+ * User Entity
+ *
+ * Represents a user in the system with authentication, profile, and organization association.
+ * Supports multiple auth providers (email, Google OAuth).
+ */
 @Table({
   tableName: 'user',
+  underscored: true,
 })
 export class UserEntity extends BaseNanoidEntity {
   @ForeignKey(() => OrganizationEntity)

@@ -9,6 +9,7 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
  */
 @Table({
   tableName: 'organization',
+  underscored: true,
 })
 export class OrganizationEntity extends BaseNanoidEntity {
   // ============================================

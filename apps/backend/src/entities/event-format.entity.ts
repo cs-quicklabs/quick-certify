@@ -7,7 +7,7 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
  * Represents the format of an event (e.g., Online, In-Person, Hybrid)
  */
 @Table({
-  tableName: 'event_formats',
+  tableName: 'event_format',
   underscored: true,
 })
 export class EventFormatEntity extends BaseNanoidEntity {

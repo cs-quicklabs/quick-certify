@@ -11,8 +11,15 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
 import { UserEntity } from './user.entity';
 import { generateNanoid } from '@src/commons/utils/nanoid.util';
 
+/**
+ * Session Entity
+ *
+ * Represents a user session with authentication token, expiration, and activity tracking.
+ * Supports single active session policy per user.
+ */
 @Table({
   tableName: 'session',
+  underscored: true,
 })
 export class SessionEntity extends BaseNanoidEntity {
   @Index({ name: 'IDX_SESSION_HASH', unique: true })

@@ -10,7 +10,7 @@ import { EventFormatEntity } from './event-format.entity';
  * Represents an event with references to type, level, and format
  */
 @Table({
-  tableName: 'events',
+  tableName: 'event',
   underscored: true,
 })
 export class EventEntity extends BaseNanoidEntity {
