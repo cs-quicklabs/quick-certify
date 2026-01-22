@@ -43,4 +43,3 @@ export class UpdateEmailPreferencesDto {
   @IsOptional()
   emailNotifications?: boolean;
 }
-

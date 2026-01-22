@@ -97,4 +97,3 @@ export class RoleController {
     return new SuccessResponse('Role deleted successfully', { deleted: true });
   }
 }
-

@@ -13,7 +13,6 @@ import { authService, ApiError } from '@/services';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
 
-
 function AcceptInvitationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -128,9 +127,7 @@ function AcceptInvitationContent() {
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               Invalid Invitation Link
             </h1>
-            {serverError && (
-              <p className="text-red-600 dark:text-red-400 mb-4">{serverError}</p>
-            )}
+            {serverError && <p className="text-red-600 dark:text-red-400 mb-4">{serverError}</p>}
           </div>
           <div className="space-y-3">
             <Link
@@ -171,7 +168,9 @@ function AcceptInvitationContent() {
               />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invitation Accepted!</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Invitation Accepted!
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
             Your account has been activated. Redirecting to dashboard...
           </p>

@@ -43,7 +43,12 @@ function AuthCallbackContent() {
         return;
       } catch (err) {
         console.error('Failed to fetch user:', err);
-        setError(getApiErrorMessage(err, 'Authentication successful but failed to load user data. Please try logging in again.'));
+        setError(
+          getApiErrorMessage(
+            err,
+            'Authentication successful but failed to load user data. Please try logging in again.',
+          ),
+        );
         return;
       }
     }

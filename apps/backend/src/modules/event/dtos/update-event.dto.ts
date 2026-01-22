@@ -39,4 +39,3 @@ export class UpdateEventDto {
   @IsString({ message: 'Event format ID must be a string' })
   eventFormatId?: string;
 }
-

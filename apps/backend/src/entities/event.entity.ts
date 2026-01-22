@@ -64,4 +64,3 @@ export class EventEntity extends BaseNanoidEntity {
   })
   declare is_active: boolean;
 }
-

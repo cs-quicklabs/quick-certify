@@ -37,7 +37,9 @@ export const skillService = {
     if (filters?.search) params.append('search', filters.search);
     if (filters?.sortBy) params.append('sortBy', filters.sortBy);
     if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
-    const response = await apiClient.get<ApiResponse<PaginatedResponse<Skill>>>(`/skills?${params.toString()}`);
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<Skill>>>(
+      `/skills?${params.toString()}`,
+    );
     return response.data.data;
   },
 
@@ -61,4 +63,3 @@ export const skillService = {
     return response.data.data;
   },
 };
-

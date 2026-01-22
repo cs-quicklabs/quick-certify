@@ -78,4 +78,3 @@ export class EventLevelController {
     return new SuccessResponse('Event level deleted successfully', { deleted: true });
   }
 }
-

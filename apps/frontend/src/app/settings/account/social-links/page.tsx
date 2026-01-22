@@ -18,7 +18,8 @@ export default function SocialLinksPage() {
 
   const formConfig: FormConfig<typeof socialLinksSchema> = {
     title: 'Social Links',
-    subtitle: 'Add social links to your issuer profile. These are shown on various public pages to help users connect with you.',
+    subtitle:
+      'Add social links to your issuer profile. These are shown on various public pages to help users connect with you.',
     fields: socialLinksFormFields,
     schema: socialLinksSchema,
     submitLabel: 'Save',
@@ -44,4 +45,3 @@ export default function SocialLinksPage() {
 
   return <ConfigForm config={formConfig} initialValues={initialValues} isLoading={isLoading} />;
 }
-

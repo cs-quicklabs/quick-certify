@@ -51,7 +51,7 @@ const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner', 'd
 @ApiBearerAuth()
 @Controller({ path: 'files', version: '1' })
 export class FileController {
-  constructor(private readonly storageService: StorageService) { }
+  constructor(private readonly storageService: StorageService) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
@@ -122,10 +122,7 @@ export class FileController {
   @ApiResponse({ status: 200, description: 'File deleted successfully' })
   @ApiResponse({ status: 400, description: 'Invalid file URL' })
   @ApiResponse({ status: 403, description: 'Access denied for non-avatar files' })
-  async deleteFile(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: DeleteFileDto,
-  ) {
+  async deleteFile(@CurrentUser() user: CurrentUserType, @Body() dto: DeleteFileDto) {
     // Check if the file is an avatar (URL contains /avatar/)
     const isAvatarFile = dto.url.includes('/avatar/');
 
@@ -152,4 +149,3 @@ export class FileController {
     });
   }
 }
-

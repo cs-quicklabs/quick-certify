@@ -10,4 +10,3 @@ export class GoogleLoginDto {
   @IsNotEmpty({ message: 'Google ID token is required' })
   idToken = '';
 }
-

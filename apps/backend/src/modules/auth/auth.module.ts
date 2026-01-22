@@ -1,19 +1,21 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthController } from './auth.controller';
 import { SocialAuthController } from './social-auth.controller';
 import { AuthService } from './auth.service';
-import { PasswordService, TokenService, SessionService, GoogleOAuthService } from './services';
+import {
+  PasswordService,
+  TokenService,
+  SessionService,
+  GoogleOAuthService,
+  PasswordResetService,
+} from './services';
 import { JwtAuthGuard, RolesGuard } from './guards';
 import { EmailService } from '@src/commons/services';
-import {
-  UserEntity,
-  RoleEntity,
-  OrganizationEntity,
-  SessionEntity,
-  PasswordResetEntity,
-} from '@src/entities';
+import { SessionEntity, PasswordResetEntity } from '@src/entities';
 import { OrganizationModule } from '../organization';
+import { UserModule } from '../user';
+import { RoleModule } from '../role';
 
 /**
  * Auth Module
@@ -25,14 +27,10 @@ import { OrganizationModule } from '../organization';
  */
 @Module({
   imports: [
-    SequelizeModule.forFeature([
-      UserEntity,
-      RoleEntity,
-      OrganizationEntity,
-      SessionEntity,
-      PasswordResetEntity,
-    ]),
+    SequelizeModule.forFeature([SessionEntity, PasswordResetEntity]),
     OrganizationModule,
+    forwardRef(() => UserModule),
+    RoleModule,
   ],
   controllers: [AuthController, SocialAuthController],
   providers: [
@@ -41,6 +39,7 @@ import { OrganizationModule } from '../organization';
     TokenService,
     SessionService,
     GoogleOAuthService,
+    PasswordResetService,
 
     // Orchestrator service
     AuthService,
@@ -52,6 +51,14 @@ import { OrganizationModule } from '../organization';
     // External services
     EmailService,
   ],
-  exports: [AuthService, PasswordService, TokenService, SessionService, JwtAuthGuard, RolesGuard],
+  exports: [
+    AuthService,
+    PasswordService,
+    TokenService,
+    SessionService,
+    PasswordResetService,
+    JwtAuthGuard,
+    RolesGuard,
+  ],
 })
-export class AuthModule { }
+export class AuthModule {}

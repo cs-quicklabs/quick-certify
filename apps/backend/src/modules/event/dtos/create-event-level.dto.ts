@@ -15,4 +15,3 @@ export class CreateEventLevelDto {
   })
   name!: string;
 }
-

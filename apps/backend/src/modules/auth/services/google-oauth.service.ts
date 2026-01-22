@@ -52,7 +52,8 @@ export class GoogleOAuthService {
     this.googleCallbackUrl = this.configService.get('auth.googleCallbackUrl', { infer: true });
 
     // Use JWT secret for signing state tokens (survives restarts)
-    this.stateSecret = this.configService.get('auth.jwtSecret', { infer: true }) || 'default-secret';
+    this.stateSecret =
+      this.configService.get('auth.jwtSecret', { infer: true }) || 'default-secret';
 
     // Initialize OAuth2Client only if credentials are configured
     if (this.googleClientId) {
@@ -116,7 +117,10 @@ export class GoogleOAuthService {
    * @param redirectUrl - URL to redirect after successful auth
    * @returns Authorization URL and state parameter
    */
-  generateAuthUrl(action: 'login' | 'signup', redirectUrl?: string): { url: string; state: string } {
+  generateAuthUrl(
+    action: 'login' | 'signup',
+    redirectUrl?: string,
+  ): { url: string; state: string } {
     if (!this.oAuth2Client) {
       throw new UnauthorizedException('Google OAuth is not configured');
     }
@@ -132,11 +136,7 @@ export class GoogleOAuthService {
 
     const url = this.oAuth2Client.generateAuthUrl({
       access_type: 'offline', // Get refresh token
-      scope: [
-        'openid',
-        'email',
-        'profile',
-      ],
+      scope: ['openid', 'email', 'profile'],
       state,
       prompt: 'consent', // Force consent screen to get refresh token
     });
@@ -276,5 +276,4 @@ export class GoogleOAuthService {
       picture: payload.picture,
     };
   }
-
 }

@@ -12,4 +12,3 @@ export class RoleEntity extends BaseNanoidEntity {
   })
   declare role: string;
 }
-

@@ -8,7 +8,9 @@ import { z } from 'zod';
 
 // Contact form
 export const contactFormSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters')
+  name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
     .regex(/\S/, 'Name must not be only spaces')
     .regex(/^[a-zA-Z0-9\s]+$/, 'Name must only contain letters, numbers')
     .regex(/[a-zA-Z]/, 'Name must contain at least one letter'),

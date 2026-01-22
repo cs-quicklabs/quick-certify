@@ -1,4 +1,11 @@
-import { BeforeValidate, Column, CreatedAt, DataType, Model, UpdatedAt } from 'sequelize-typescript';
+import {
+  BeforeValidate,
+  Column,
+  CreatedAt,
+  DataType,
+  Model,
+  UpdatedAt,
+} from 'sequelize-typescript';
 import { Sequelize } from 'sequelize';
 import { generateNanoid } from '@src/commons/utils/nanoid.util';
 
@@ -45,4 +52,3 @@ export abstract class BaseNanoidEntity extends Model<Record<string, unknown>> {
     return this.get({ plain: true });
   }
 }
-

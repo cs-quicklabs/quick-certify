@@ -5,7 +5,10 @@ import { customAlphabet } from 'nanoid';
  * Generates IDs of length 21 by default (similar to UUID v4 length)
  * Uses: A-Za-z0-9_- characters (URL-safe)
  */
-const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-', 21);
+const nanoid = customAlphabet(
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-',
+  21,
+);
 
 /**
  * Generate a unique nanoid
@@ -14,4 +17,3 @@ const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklm
 export function generateNanoid(): string {
   return nanoid();
 }
-

@@ -78,4 +78,3 @@ export class EventFormatController {
     return new SuccessResponse('Event format deleted successfully', { deleted: true });
   }
 }
-

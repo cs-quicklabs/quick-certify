@@ -82,11 +82,7 @@ function CompleteSignupContent() {
 
         {/* Server Error Alert */}
         {serverError && (
-          <Alert
-            type="error"
-            message={serverError}
-            onClose={() => setServerError(null)}
-          />
+          <Alert type="error" message={serverError} onClose={() => setServerError(null)} />
         )}
 
         {/* Form */}
