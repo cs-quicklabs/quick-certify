@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { z } from 'zod';
 import { formatZodErrors } from '@/lib/validation';
 import { getApiErrorMessage, getApiFieldErrors } from '@/lib/api-error';
