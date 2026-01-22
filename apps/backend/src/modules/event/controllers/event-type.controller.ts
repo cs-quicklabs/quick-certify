@@ -78,4 +78,3 @@ export class EventTypeController {
     return new SuccessResponse('Event type deleted successfully', { deleted: true });
   }
 }
-

@@ -36,7 +36,9 @@ async function fetchProfile(): Promise<ProfileSettingsData> {
   };
 }
 
-async function updateProfile(data: Partial<ProfileSettingsData & { avatarUrl?: string | null }>): Promise<ProfileSettingsData> {
+async function updateProfile(
+  data: Partial<ProfileSettingsData & { avatarUrl?: string | null }>,
+): Promise<ProfileSettingsData> {
   const payload: Record<string, string | null | undefined> = {
     firstName: data.firstName,
   };
@@ -76,25 +78,33 @@ interface ChangePasswordResponse {
 }
 
 async function changePassword(data: ChangePasswordData): Promise<ChangePasswordResponse> {
-  const response = await apiClient.post<ApiResponse<ChangePasswordResponse>>('/auth/change-password', {
-    currentPassword: data.currentPassword,
-    newPassword: data.newPassword,
-    revokeAllSessions: data.revokeAllSessions ?? false,
-  });
+  const response = await apiClient.post<ApiResponse<ChangePasswordResponse>>(
+    '/auth/change-password',
+    {
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+      revokeAllSessions: data.revokeAllSessions ?? false,
+    },
+  );
   return response.data.data;
 }
 
 async function fetchEmailPreferences(): Promise<EmailPreferencesData> {
-  const response = await apiClient.get<ApiResponse<EmailPreferencesResponse>>('/profile/email-preferences');
+  const response = await apiClient.get<ApiResponse<EmailPreferencesResponse>>(
+    '/profile/email-preferences',
+  );
   return {
     enableAllAlerts: response.data.data.emailNotifications,
   };
 }
 
 async function updateEmailPreferences(data: EmailPreferencesData): Promise<EmailPreferencesData> {
-  const response = await apiClient.patch<ApiResponse<EmailPreferencesResponse>>('/profile/email-preferences', {
-    emailNotifications: data.enableAllAlerts,
-  });
+  const response = await apiClient.patch<ApiResponse<EmailPreferencesResponse>>(
+    '/profile/email-preferences',
+    {
+      emailNotifications: data.enableAllAlerts,
+    },
+  );
   return {
     enableAllAlerts: response.data.data.emailNotifications,
   };

@@ -78,7 +78,6 @@ export default function EmailPreferencesPage() {
         />
       )}
 
-
       <div className="flex mt-6">
         <div className="flex items-center h-5">
           <input
@@ -87,10 +86,13 @@ export default function EmailPreferencesPage() {
             checked={enableAllAlerts}
             onChange={(e) => handleCheckboxChange(e.target.checked)}
             disabled={updatePreferences.isPending || isLoading}
-            className="checkbox" />
+            className="checkbox"
+          />
         </div>
         <div className="ms-2 text-sm">
-          <label htmlFor="enableAllAlerts" className="form-input-label">Enable All Email Alerts</label>
+          <label htmlFor="enableAllAlerts" className="form-input-label">
+            Enable All Email Alerts
+          </label>
           <p className="form-input-description -mt-2">
             If disabled, no email alert will land in your inbox.
           </p>

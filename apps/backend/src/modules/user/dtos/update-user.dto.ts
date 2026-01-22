@@ -54,7 +54,8 @@ export class UpdateUserDto {
 
   @ApiPropertyOptional({
     example: 'StrongP@ssw0rd!',
-    description: 'Password (min 8 chars, must include uppercase, lowercase, number, and special char). Internal use only.',
+    description:
+      'Password (min 8 chars, must include uppercase, lowercase, number, and special char). Internal use only.',
   })
   @IsString()
   @IsOptional()

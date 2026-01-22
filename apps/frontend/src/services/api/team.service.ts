@@ -60,7 +60,7 @@ export interface TeamFilters {
 export const teamService = {
   async getTeamMembers(filters?: TeamFilters): Promise<PaginatedResponse<TeamMember>> {
     const response = await apiClient.get<ApiResponse<PaginatedResponse<TeamMember>>>(
-      buildUrl('/users', filters)
+      buildUrl('/users', filters),
     );
     return response.data.data;
   },
@@ -86,12 +86,18 @@ export const teamService = {
   },
 
   async cancelInvitation(uuid: string): Promise<TeamMember> {
-    const response = await apiClient.post<ApiResponse<TeamMember>>(`/users/${uuid}/cancel-invitation`, {});
+    const response = await apiClient.post<ApiResponse<TeamMember>>(
+      `/users/${uuid}/cancel-invitation`,
+      {},
+    );
     return response.data.data;
   },
 
   async resendInvitation(uuid: string): Promise<TeamMember> {
-    const response = await apiClient.post<ApiResponse<TeamMember>>(`/users/${uuid}/resend-invitation`, {});
+    const response = await apiClient.post<ApiResponse<TeamMember>>(
+      `/users/${uuid}/resend-invitation`,
+      {},
+    );
     return response.data.data;
   },
 

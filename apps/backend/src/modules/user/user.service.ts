@@ -59,7 +59,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     super();
   }
 
-  override async findAll(options: ExtendedFindAllOptions = {}): Promise<PaginatedResult<UserEntity>> {
+  override async findAll(
+    options: ExtendedFindAllOptions = {},
+  ): Promise<PaginatedResult<UserEntity>> {
     const {
       page = 1,
       limit = this.defaultLimit,
@@ -89,7 +91,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password_hash'] },
-      order: sortBy === 'last_login_at' ? [[sortBy, `${sortOrder} NULLS LAST`]] : [[sortBy, sortOrder]],
+      order:
+        sortBy === 'last_login_at' ? [[sortBy, `${sortOrder} NULLS LAST`]] : [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,
     });
@@ -109,7 +112,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     };
   }
 
-  override async findOne(id: string, options?: FindOptions<UserEntity>): Promise<UserEntity | null> {
+  override async findOne(
+    id: string,
+    options?: FindOptions<UserEntity>,
+  ): Promise<UserEntity | null> {
     return this.userModel.findOne({
       where: { id, status: { [Op.ne]: 'archived' } },
       include: [
@@ -189,7 +195,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       const inviterName = currentUser
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${createdUser.id}`;
+      const inviteLink = `${
+        process.env.FRONTEND_URL || 'http://localhost:3000'
+      }/auth/invitation?token=${createdUser.id}`;
       this.mailService
         .sendInvitationEmail(createdUser.email, {
           name: createdUser.first_name,
@@ -199,13 +207,19 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         })
         .catch(console.error);
     } else {
-      this.mailService.sendWelcomeEmail(createdUser.email, { name: createdUser.first_name }).catch(console.error);
+      this.mailService
+        .sendWelcomeEmail(createdUser.email, { name: createdUser.first_name })
+        .catch(console.error);
     }
 
     return this.findOne(createdUser.id) as Promise<UserEntity>;
   }
 
-  override async update(id: string, dto: UpdateUserDto, options?: { transaction?: Transaction }): Promise<UserEntity> {
+  override async update(
+    id: string,
+    dto: UpdateUserDto,
+    options?: { transaction?: Transaction },
+  ): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
@@ -213,7 +227,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // If status is being changed to archived, handle it as soft delete
     if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
       // Update status to archived (soft delete)
-      await user.update({ status: 'archived' }, { ...(options?.transaction && { transaction: options.transaction }) });
+      await user.update(
+        { status: 'archived' },
+        { ...(options?.transaction && { transaction: options.transaction }) },
+      );
       // Logout user from all devices when archived
       await this.logoutUserFromAllDevices(user.id, options?.transaction);
       // Return the archived user (need to find it without the archived filter)
@@ -251,7 +268,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Check if role or status is changing (requires atomic update + session revocation)
     const roleChanged = dto.roleId && dto.roleId !== previousRoleId;
-    const statusChangedToInactive = dto.status && dto.status !== previousStatus && dto.status === 'inactive';
+    const statusChangedToInactive =
+      dto.status && dto.status !== previousStatus && dto.status === 'inactive';
     const needsTransaction = (roleChanged || statusChangedToInactive) && !options?.transaction;
 
     // Use transaction if role/status changes and no transaction provided
@@ -280,7 +298,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       }
     } else {
       // No transaction needed or transaction already provided
-      await user.update(updateData, { ...(options?.transaction && { transaction: options.transaction }) });
+      await user.update(updateData, {
+        ...(options?.transaction && { transaction: options.transaction }),
+      });
 
       // If role changed, logout user from all devices (force re-login)
       if (roleChanged) {
@@ -348,7 +368,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const inviterName = currentUser
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
-    const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
+    const inviteLink = `${
+      process.env.FRONTEND_URL || 'http://localhost:3000'
+    }/auth/invitation?token=${user.id}`;
     const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService
@@ -522,12 +544,14 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    */
   private async getRoleIdsByNames(roleNames: string[]): Promise<string[]> {
     const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
-    return roles.filter((r) => r !== null && r !== undefined).map((r) => {
-      if (r === null || r === undefined) {
-        throw new Error('Role should not be null after filter');
-      }
-      return r.id;
-    });
+    return roles
+      .filter((r) => r !== null && r !== undefined)
+      .map((r) => {
+        if (r === null || r === undefined) {
+          throw new Error('Role should not be null after filter');
+        }
+        return r.id;
+      });
   }
 
   /**

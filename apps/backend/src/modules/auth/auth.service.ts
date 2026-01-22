@@ -22,7 +22,14 @@ import {
   AcceptInvitationDto,
 } from './dtos';
 import { JwtTokens, IAuthService } from './interfaces';
-import { PasswordService, TokenService, SessionService, GoogleOAuthService, GoogleUserInfo, PasswordResetService } from './services';
+import {
+  PasswordService,
+  TokenService,
+  SessionService,
+  GoogleOAuthService,
+  GoogleUserInfo,
+  PasswordResetService,
+} from './services';
 import { OrganizationService } from '../organization/organization.service';
 import { UserService } from '../user/user.service';
 import { RoleService } from '../role/role.service';
@@ -135,7 +142,9 @@ export class AuthService implements IAuthService {
 
       await transaction.commit();
 
-      this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+      this.emailService
+        .sendWelcomeEmail(user.email, { name: user.first_name })
+        .catch(console.error);
 
       const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
 
@@ -246,7 +255,10 @@ export class AuthService implements IAuthService {
     const expiresInHours = Math.round(this.passwordResetExpiresIn / 3600);
     const expiresInMinutes = Math.round(this.passwordResetExpiresIn / 60);
 
-    const expiresIn = this.passwordResetExpiresIn > 60 ? `${expiresInMinutes} minute${expiresInMinutes > 1 ? 's' : ''}` : `${expiresInHours} hour${expiresInHours > 1 ? 's' : ''}`;
+    const expiresIn =
+      this.passwordResetExpiresIn > 60
+        ? `${expiresInMinutes} minute${expiresInMinutes > 1 ? 's' : ''}`
+        : `${expiresInHours} hour${expiresInHours > 1 ? 's' : ''}`;
 
     this.emailService
       .sendPasswordResetEmail(user.email, {
@@ -316,7 +328,9 @@ export class AuthService implements IAuthService {
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
-    const user = await this.userService.findOne(userId, { attributes: { include: ['password_hash'] } });
+    const user = await this.userService.findOne(userId, {
+      attributes: { include: ['password_hash'] },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -325,13 +339,19 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Password authentication not available for this account');
     }
 
-    const isPasswordValid = await this.passwordService.compare(dto.currentPassword, user.password_hash);
+    const isPasswordValid = await this.passwordService.compare(
+      dto.currentPassword,
+      user.password_hash,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     // Check if new password is same as old password
-    const isSameAsOldPassword = await this.passwordService.compare(dto.newPassword, user.password_hash);
+    const isSameAsOldPassword = await this.passwordService.compare(
+      dto.newPassword,
+      user.password_hash,
+    );
     if (isSameAsOldPassword) {
       throw new BadRequestException("New password shouldn't be same as old password");
     }
@@ -357,8 +377,8 @@ export class AuthService implements IAuthService {
         await this.sessionService.revokeAllForUser(userId, transaction);
 
         await transaction.commit();
-        return { 
-          success: true, 
+        return {
+          success: true,
           message: 'Password changed successfully. All sessions have been revoked.',
           sessionsRevoked: true,
         };
@@ -373,8 +393,8 @@ export class AuthService implements IAuthService {
         password: dto.newPassword,
       });
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: 'Password changed successfully',
         sessionsRevoked: false,
       };
@@ -399,7 +419,9 @@ export class AuthService implements IAuthService {
     // Check if invitation has expired based on created_at timestamp
     const invitationAge = Math.floor((Date.now() - user.createdAt.getTime()) / 1000); // in seconds
     if (invitationAge > this.invitationExpiresIn) {
-      throw new BadRequestException('This invitation has expired. Please contact your administrator for a new invitation.');
+      throw new BadRequestException(
+        'This invitation has expired. Please contact your administrator for a new invitation.',
+      );
     }
 
     // Password will be hashed by userService.update()
@@ -439,7 +461,10 @@ export class AuthService implements IAuthService {
    * Initiate Google OAuth flow (Authorization Code Flow)
    * Returns URL to redirect user to Google
    */
-  initiateGoogleAuth(action: 'login' | 'signup', redirectUrl?: string): { url: string; state: string } {
+  initiateGoogleAuth(
+    action: 'login' | 'signup',
+    redirectUrl?: string,
+  ): { url: string; state: string } {
     return this.googleOAuthService.generateAuthUrl(action, redirectUrl);
   }
 
@@ -495,7 +520,11 @@ export class AuthService implements IAuthService {
    * Google OAuth Login (ID Token Flow)
    * Handles login for existing users who signed up with Google
    */
-  async googleLogin(dto: GoogleLoginDto, ipAddress?: string, userAgent?: string): Promise<JwtTokens> {
+  async googleLogin(
+    dto: GoogleLoginDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<JwtTokens> {
     const googleUser = await this.googleOAuthService.verifyIdToken(dto.idToken);
 
     const user = await this.userService.findByEmail(googleUser.email);
@@ -528,7 +557,9 @@ export class AuthService implements IAuthService {
       // Authorization Code flow - retrieve stored user data
       const tempData = this.getTempGoogleUser(dto.tempToken);
       if (!tempData) {
-        throw new UnauthorizedException('Invalid or expired temporary token. Please restart the signup process.');
+        throw new UnauthorizedException(
+          'Invalid or expired temporary token. Please restart the signup process.',
+        );
       }
       googleUser = tempData;
     } else {
@@ -595,7 +626,9 @@ export class AuthService implements IAuthService {
 
       await transaction.commit();
 
-      this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+      this.emailService
+        .sendWelcomeEmail(user.email, { name: user.first_name })
+        .catch(console.error);
 
       const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
 
@@ -678,7 +711,6 @@ export class AuthService implements IAuthService {
     return this.createSessionAndTokens(user, ipAddress, userAgent);
   }
 
-
   private createTempGoogleToken(googleUser: GoogleUserInfo): string {
     const tempToken = `temp_${generateNanoid()}`;
     this.tempGoogleUserStore.set(tempToken, {
@@ -709,9 +741,6 @@ export class AuthService implements IAuthService {
     this.tempGoogleUserStore.delete(tempToken);
     return data.googleUser;
   }
-
-
-
 
   private cleanExpiredTempTokens(): void {
     const now = Date.now();

@@ -148,12 +148,7 @@ export default registerAs<StorageConfig>('storage', () => {
   const useCdn = process.env.DO_SPACES_USE_CDN === 'true';
 
   // Clean and construct endpoint (CDN or regular)
-  const cdnEndpoint = cleanCdnEndpoint(
-    process.env.DO_SPACES_CDN_ENDPOINT,
-    bucket,
-    region,
-    useCdn,
-  );
+  const cdnEndpoint = cleanCdnEndpoint(process.env.DO_SPACES_CDN_ENDPOINT, bucket, region, useCdn);
 
   return {
     provider: (process.env.STORAGE_PROVIDER as StorageConfig['provider']) || 'digitalocean',
@@ -165,4 +160,3 @@ export default registerAs<StorageConfig>('storage', () => {
     cdnEndpoint,
   };
 });
-

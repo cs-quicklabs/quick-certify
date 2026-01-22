@@ -23,7 +23,7 @@ import { Role } from '@src/modules/role/enums';
 @ApiBearerAuth()
 @Controller({ path: 'users', version: '1' })
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get()
   @UseGuards(RolesGuard)
@@ -35,7 +35,11 @@ export class UserController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'role', required: false, description: 'Filter by role (admin, manager, designer)' })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    description: 'Filter by role (admin, manager, designer)',
+  })
   async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
     // Only Admin and Super Admin can access team listing
     // Exclude the current logged-in user from the listing
@@ -62,7 +66,10 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     // Admin can access their own org users, super admin can access all
-    const foundUser = await this.userService.findOneByUuidAndOrganization(uuid, user.organizationId);
+    const foundUser = await this.userService.findOneByUuidAndOrganization(
+      uuid,
+      user.organizationId,
+    );
     if (!foundUser) {
       return new SuccessResponse('User not found', null);
     }

@@ -15,4 +15,3 @@ export class UpdateEventLevelDto {
   })
   name?: string;
 }
-

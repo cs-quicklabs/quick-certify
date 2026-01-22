@@ -23,13 +23,13 @@ export default function ChangePasswordPage() {
     resetOnSuccess: true,
     onSubmit: async (data: ChangePasswordData) => {
       const response = await changePassword.mutateAsync(data);
-      
+
       // If sessions were revoked, logout user and redirect to login
       if (response.sessionsRevoked) {
         // Clear tokens and user state
         clearTokens();
         setUser(null);
-        
+
         // Redirect to login page
         router.push('/login');
       }

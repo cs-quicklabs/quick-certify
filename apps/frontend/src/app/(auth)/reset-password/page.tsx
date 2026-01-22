@@ -97,7 +97,9 @@ function ResetPasswordContent() {
           <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Password reset successful</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            Password reset successful
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
             Your password has been reset. You can now sign in with your new password.
           </p>
@@ -111,7 +113,7 @@ function ResetPasswordContent() {
 
   return (
     <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
-      <div >
+      <div>
         {/* Header */}
         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
           Reset your password

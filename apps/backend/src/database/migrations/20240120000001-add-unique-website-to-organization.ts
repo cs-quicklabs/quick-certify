@@ -13,13 +13,15 @@ module.exports = {
       // First, check for any NULL or empty website values
       const [nullValues] = await queryInterface.sequelize.query(
         `SELECT id, name FROM organization WHERE website IS NULL OR website = ''`,
-        { transaction }
+        { transaction },
       );
 
       if (Array.isArray(nullValues) && nullValues.length > 0) {
         console.warn('⚠️  Warning: Found organizations with NULL or empty website values:');
         console.warn(nullValues);
-        throw new Error('Cannot make website NOT NULL: some organizations have NULL or empty website values. Please update them first.');
+        throw new Error(
+          'Cannot make website NOT NULL: some organizations have NULL or empty website values. Please update them first.',
+        );
       }
 
       // Check for any duplicate website values
@@ -28,11 +30,13 @@ module.exports = {
          FROM organization
          GROUP BY website
          HAVING COUNT(*) > 1`,
-        { transaction }
+        { transaction },
       );
 
       if (Array.isArray(duplicates) && duplicates.length > 0) {
-        console.warn('⚠️  Warning: Found duplicate website values. Please resolve these before running migration:');
+        console.warn(
+          '⚠️  Warning: Found duplicate website values. Please resolve these before running migration:',
+        );
         console.warn(duplicates);
         throw new Error('Cannot add unique constraint: duplicate website values exist');
       }
@@ -45,7 +49,7 @@ module.exports = {
           type: DataTypes.STRING(500),
           allowNull: false,
         },
-        { transaction }
+        { transaction },
       );
 
       // Add unique index on website column
@@ -78,7 +82,7 @@ module.exports = {
           type: DataTypes.STRING(500),
           allowNull: true,
         },
-        { transaction }
+        { transaction },
       );
 
       await transaction.commit();

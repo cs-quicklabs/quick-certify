@@ -59,4 +59,3 @@ export interface IOrganizationService {
 }
 
 export const ORGANIZATION_SERVICE = Symbol('IOrganizationService');
-

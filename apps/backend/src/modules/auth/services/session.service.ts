@@ -18,7 +18,7 @@ export class SessionService implements ISessionService {
   constructor(
     @InjectModel(SessionEntity)
     private readonly sessionModel: typeof SessionEntity,
-  ) { }
+  ) {}
 
   async create(data: CreateSessionInput): Promise<SessionEntity> {
     return this.sessionModel.create({

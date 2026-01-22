@@ -18,7 +18,12 @@ import { EventFormatService } from './event-format.service';
  * SRP: Only manages EventEntity, delegates validation to respective services
  */
 @Injectable()
-export class EventService extends BaseCrudService<EventEntity, CreateEventDto, UpdateEventDto, string> {
+export class EventService extends BaseCrudService<
+  EventEntity,
+  CreateEventDto,
+  UpdateEventDto,
+  string
+> {
   protected override readonly model = EventEntity;
   protected override readonly entityName = 'Event';
   protected override readonly softDeleteField: string | null = null; // Use is_active boolean instead
@@ -83,11 +88,15 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
     }
 
     if (!eventLevel) {
-      throw new BadRequestException(`Event level with ID ${dto.eventLevelId} not found or inactive`);
+      throw new BadRequestException(
+        `Event level with ID ${dto.eventLevelId} not found or inactive`,
+      );
     }
 
     if (!eventFormat) {
-      throw new BadRequestException(`Event format with ID ${dto.eventFormatId} not found or inactive`);
+      throw new BadRequestException(
+        `Event format with ID ${dto.eventFormatId} not found or inactive`,
+      );
     }
 
     return this.eventModel.create({
@@ -113,7 +122,9 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
       const eventType = await this.eventTypeService.findOne(dto.eventTypeId);
 
       if (!eventType) {
-        throw new BadRequestException(`Event type with ID ${dto.eventTypeId} not found or inactive`);
+        throw new BadRequestException(
+          `Event type with ID ${dto.eventTypeId} not found or inactive`,
+        );
       }
 
       updateData.event_type_id = dto.eventTypeId;
@@ -123,7 +134,9 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
       const eventLevel = await this.eventLevelService.findOne(dto.eventLevelId);
 
       if (!eventLevel) {
-        throw new BadRequestException(`Event level with ID ${dto.eventLevelId} not found or inactive`);
+        throw new BadRequestException(
+          `Event level with ID ${dto.eventLevelId} not found or inactive`,
+        );
       }
 
       updateData.event_level_id = dto.eventLevelId;
@@ -133,7 +146,9 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
       const eventFormat = await this.eventFormatService.findOne(dto.eventFormatId);
 
       if (!eventFormat) {
-        throw new BadRequestException(`Event format with ID ${dto.eventFormatId} not found or inactive`);
+        throw new BadRequestException(
+          `Event format with ID ${dto.eventFormatId} not found or inactive`,
+        );
       }
 
       updateData.event_format_id = dto.eventFormatId;
@@ -179,4 +194,3 @@ export class EventService extends BaseCrudService<EventEntity, CreateEventDto, U
     });
   }
 }
-

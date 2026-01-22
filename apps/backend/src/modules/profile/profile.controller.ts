@@ -19,7 +19,7 @@ import { UpdateProfileDto, UpdateEmailPreferencesDto } from './dto';
 @ApiBearerAuth()
 @Controller({ path: 'profile', version: '1' })
 export class ProfileController {
-  constructor(private readonly profileService: ProfileService) { }
+  constructor(private readonly profileService: ProfileService) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
@@ -32,10 +32,7 @@ export class ProfileController {
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
-  async updateProfile(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: UpdateProfileDto,
-  ) {
+  async updateProfile(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateProfileDto) {
     const result = await this.profileService.updateProfile(user.id, dto);
     return new SuccessResponse(result.message, result.user);
   }

@@ -331,4 +331,3 @@ export class StorageService {
     return typeToExt[contentType] || '.bin';
   }
 }
-

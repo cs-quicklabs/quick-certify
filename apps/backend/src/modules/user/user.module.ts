@@ -24,4 +24,4 @@ import { OrganizationModule } from '../organization';
   providers: [UserService, EmailService],
   exports: [UserService],
 })
-export class UserModule { }
+export class UserModule {}

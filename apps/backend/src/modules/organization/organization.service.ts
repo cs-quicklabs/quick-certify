@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
@@ -25,7 +30,7 @@ export class OrganizationService implements IOrganizationService {
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -93,17 +98,18 @@ export class OrganizationService implements IOrganizationService {
       throw new ConflictException('Organization with this name already exists');
     }
 
-    const createdOrganization = await this.organizationModel.create(
+    const createdOrganization = (await this.organizationModel.create(
       {
         name: organization?.name,
         slug,
         is_active: organization?.is_active !== undefined ? organization?.is_active : true,
-        issuer_verified: organization?.issuer_verified !== undefined ? organization?.issuer_verified : false,
+        issuer_verified:
+          organization?.issuer_verified !== undefined ? organization?.issuer_verified : false,
       },
       {
         ...(options?.transaction && { transaction: options.transaction }),
       },
-    ) as OrganizationEntity;
+    )) as OrganizationEntity;
 
     return createdOrganization;
   }
@@ -295,7 +301,10 @@ export class OrganizationService implements IOrganizationService {
    * Update issuer portal settings
    * Deletes old banner from storage when replaced
    */
-  async updatePortalSettings(id: string, dto: UpdatePortalSettingsDto): Promise<OrganizationEntity> {
+  async updatePortalSettings(
+    id: string,
+    dto: UpdatePortalSettingsDto,
+  ): Promise<OrganizationEntity> {
     const organization = await this.organizationModel.findOne({
       where: { id, is_active: true },
     });
@@ -358,7 +367,10 @@ export class OrganizationService implements IOrganizationService {
    * @throws BadRequestException if the website URL is invalid
    * @throws ConflictException if the website domain is already in use
    */
-  async validateWebsiteDomain(originalOrganizationId: string | null, websiteUrl: string): Promise<void> {
+  async validateWebsiteDomain(
+    originalOrganizationId: string | null,
+    websiteUrl: string,
+  ): Promise<void> {
     const domain = extractDomain(websiteUrl);
     if (!domain) {
       throw new BadRequestException('Invalid website URL');
@@ -366,11 +378,15 @@ export class OrganizationService implements IOrganizationService {
 
     // Find all organizations and check if any has the same domain
     const organizations = await this.organizationModel.findAll({
-      where: { is_active: true, ...(originalOrganizationId && { id: { [Op.ne]: originalOrganizationId } }), website: { [Op.like]: `%${domain}%` } },
+      where: {
+        is_active: true,
+        ...(originalOrganizationId && { id: { [Op.ne]: originalOrganizationId } }),
+        website: { [Op.like]: `%${domain}%` },
+      },
       attributes: ['id', 'website'],
     });
 
-    const existingOrg = organizations.find(org => extractDomain(org.website) === domain);
+    const existingOrg = organizations.find((org) => extractDomain(org.website) === domain);
     if (existingOrg) {
       throw new ConflictException('An organization with this domain already exists');
     }

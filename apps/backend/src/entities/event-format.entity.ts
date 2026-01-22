@@ -26,4 +26,3 @@ export class EventFormatEntity extends BaseNanoidEntity {
   })
   declare is_active: boolean;
 }
-

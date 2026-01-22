@@ -1,4 +1,9 @@
-import { uploadFile, deleteFile, FileCategory, FileUploadResult } from '@/services/api/file.service';
+import {
+  uploadFile,
+  deleteFile,
+  FileCategory,
+  FileUploadResult,
+} from '@/services/api/file.service';
 import { getApiErrorMessage } from './api-error';
 
 /**
@@ -93,4 +98,3 @@ export async function replaceImage(
 
   return uploadResult;
 }
-

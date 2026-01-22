@@ -6,11 +6,7 @@
  */
 
 import { z } from 'zod';
-import {
-  passwordSchema,
-  optionalNameSchema,
-  PASSWORD_MESSAGES,
-} from './shared.schema';
+import { passwordSchema, optionalNameSchema, PASSWORD_MESSAGES } from './shared.schema';
 
 /**
  * Image Upload Configuration

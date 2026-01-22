@@ -58,7 +58,8 @@ export const passwordFormFields: FormFieldConfig[] = [
     name: 'revokeAllSessions',
     label: 'Revoke all active sessions',
     type: 'checkbox',
-    description: 'If enabled, you will be logged out from all devices after changing your password. This is recommended for security.',
+    description:
+      'If enabled, you will be logged out from all devices after changing your password. This is recommended for security.',
   },
 ];
 

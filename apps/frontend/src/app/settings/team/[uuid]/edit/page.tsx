@@ -37,9 +37,10 @@ export default function EditTeamMemberPage() {
 
   // Filter roles and create options for select
   const filteredRoles = useMemo(() => {
-    return roles?.filter((role) =>
-      ['admin', 'manager', 'designer'].includes(role.role.toLowerCase())
-    ) || [];
+    return (
+      roles?.filter((role) => ['admin', 'manager', 'designer'].includes(role.role.toLowerCase())) ||
+      []
+    );
   }, [roles]);
 
   // Create form fields with role options
@@ -51,7 +52,8 @@ export default function EditTeamMemberPage() {
           return {
             ...field,
             options: filteredRoles.map((role) => ({
-              label: role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
+              label:
+                role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
               value: role.id,
             })),
           };
@@ -88,13 +90,13 @@ export default function EditTeamMemberPage() {
   // Prepare initial values from member data
   const initialValues = member
     ? {
-      first_name: member.first_name || '',
-      last_name: member.last_name || '',
-      email: member.email || '',
-      roleId: member.role_id || '',
-      // Map status: active -> active, everything else -> archived (inactive/archived/invited)
-      status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
-    }
+        first_name: member.first_name || '',
+        last_name: member.last_name || '',
+        email: member.email || '',
+        roleId: member.role_id || '',
+        // Map status: active -> active, everything else -> archived (inactive/archived/invited)
+        status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
+      }
     : undefined;
 
   if (memberLoading) {

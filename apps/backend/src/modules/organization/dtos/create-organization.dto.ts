@@ -8,7 +8,10 @@ export class CreateOrganizationDto {
   @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
   declare name: string;
 
-  @ApiPropertyOptional({ example: 'acme-corporation', description: 'URL-friendly slug (auto-generated if not provided)' })
+  @ApiPropertyOptional({
+    example: 'acme-corporation',
+    description: 'URL-friendly slug (auto-generated if not provided)',
+  })
   @IsString()
   @IsOptional()
   @MaxLength(150, { message: 'Slug must not exceed 150 characters' })
@@ -19,7 +22,11 @@ export class CreateOrganizationDto {
   @IsOptional()
   is_active?: boolean;
 
-  @ApiPropertyOptional({ example: false, description: 'Issuer verification status', default: false })
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Issuer verification status',
+    default: false,
+  })
   @IsBoolean()
   @IsOptional()
   issuer_verified?: boolean;

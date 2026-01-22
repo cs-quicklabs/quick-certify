@@ -29,7 +29,10 @@ export class EventController {
   @Post()
   @ApiOperation({ summary: 'Create a new event' })
   @ApiResponse({ status: 201, description: 'Event created successfully' })
-  @ApiResponse({ status: 400, description: 'Validation error or referenced master record not found/inactive' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or referenced master record not found/inactive',
+  })
   async create(@Body() dto: CreateEventDto) {
     const event = await this.eventService.create(dto);
     return new SuccessResponse('Event created successfully', event);
@@ -87,7 +90,10 @@ export class EventController {
   @ApiOperation({ summary: 'Update event' })
   @ApiResponse({ status: 200, description: 'Event updated successfully' })
   @ApiResponse({ status: 404, description: 'Event not found' })
-  @ApiResponse({ status: 400, description: 'Validation error or referenced master record not found/inactive' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or referenced master record not found/inactive',
+  })
   async update(@Param('id') id: string, @Body() dto: UpdateEventDto) {
     const event = await this.eventService.update(id, dto);
     return new SuccessResponse('Event updated successfully', event);
@@ -102,4 +108,3 @@ export class EventController {
     return new SuccessResponse('Event deleted successfully', { deleted: true });
   }
 }
-

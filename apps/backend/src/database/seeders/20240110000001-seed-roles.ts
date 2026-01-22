@@ -1,7 +1,6 @@
 import { QueryInterface } from 'sequelize';
 import { generateNanoid } from '../../commons/utils/nanoid.util';
 
-
 /**
  * Seeder: Seed initial roles
  *
@@ -32,10 +31,7 @@ module.exports = {
       if (rolesToInsert.length > 0) {
         const now = new Date();
         const values = rolesToInsert
-          .map(
-            (r) =>
-              `('${r.id}', '${r.role}', '${now.toISOString()}', '${now.toISOString()}')`,
-          )
+          .map((r) => `('${r.id}', '${r.role}', '${now.toISOString()}', '${now.toISOString()}')`)
           .join(', ');
 
         await queryInterface.sequelize.query(
@@ -43,7 +39,11 @@ module.exports = {
           { transaction },
         );
 
-        console.log(`✅ Seeded ${rolesToInsert.length} role(s): ${rolesToInsert.map((r) => r.role).join(', ')}`);
+        console.log(
+          `✅ Seeded ${rolesToInsert.length} role(s): ${rolesToInsert
+            .map((r) => r.role)
+            .join(', ')}`,
+        );
       } else {
         console.log('ℹ️  All roles already exist, skipping seed');
       }
@@ -71,4 +71,3 @@ module.exports = {
     }
   },
 };
-
