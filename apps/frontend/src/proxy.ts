@@ -47,7 +47,7 @@ function matchesRoute(pathname: string, routes: string[]): boolean {
  * Alternatively, this middleware provides a foundation for when httpOnly cookies are implemented.
  */
 export function proxy(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
   // Get token from cookies
   // Note: For full security, tokens should be in httpOnly cookies set by the backend
