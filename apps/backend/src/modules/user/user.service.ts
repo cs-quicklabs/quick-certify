@@ -196,7 +196,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
       const inviteLink = `${
-        process.env.FRONTEND_URL || 'http://localhost:3000'
+        process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
       }/auth/invitation?token=${createdUser.id}`;
       this.mailService
         .sendInvitationEmail(createdUser.email, {
@@ -369,7 +369,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
     const inviteLink = `${
-      process.env.FRONTEND_URL || 'http://localhost:3000'
+      process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
     }/auth/invitation?token=${user.id}`;
     const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
