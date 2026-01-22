@@ -1,3 +1,6 @@
+/**
+ * Design Dimension Rules
+ */
 export const IMAGE_RULES = {
   certificate: {
     minHeight: 800,

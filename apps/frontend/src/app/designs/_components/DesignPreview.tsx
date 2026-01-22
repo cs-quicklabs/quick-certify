@@ -45,9 +45,8 @@ export default function DesignPreview({
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 z-40 flex items-center justify-center bg-transparent transition-opacity duration-200 ${
-          isOpen && !isClosing ? "opacity-100" : "opacity-0"
-        }`}
+        className={`fixed inset-0 z-40 flex items-center justify-center bg-transparent transition-opacity duration-200 ${isOpen && !isClosing ? "opacity-100" : "opacity-0"
+          }`}
         onClick={close}
         role="dialog"
         aria-modal="true"
@@ -56,11 +55,10 @@ export default function DesignPreview({
         {/* Modal */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`relative transition-all duration-200 ease-out transform ${
-            isOpen && !isClosing
+          className={`relative transition-all duration-200 ease-out transform ${isOpen && !isClosing
               ? "scale-100 opacity-100"
               : "scale-95 opacity-0"
-          }`}
+            }`}
         >
           <img
             src={imageUrl}

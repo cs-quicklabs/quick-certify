@@ -1,9 +1,15 @@
-import DesignFormPage from '@/app/designs/_components/DesignFormPage';
-import { getDesignById } from '@/services/api/design.service';
+'use client'
 
-export default async function EditDesignPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const design = await getDesignById(id);
+import { useParams } from 'next/navigation';
+import DesignFormPage from '@/app/designs/_components/DesignFormPage';
+import { useDesignById } from '@/hooks/useDesigns';
+
+export default function EditDesignPage() {
+  const { id } = useParams<{ id: string }>();
+  const { design, loading, error } = useDesignById(id);
+
+  if (loading) return <div>Loading...</div>;
+  if (error || !design) return <div>Failed to load design</div>;
 
   return (
     <DesignFormPage

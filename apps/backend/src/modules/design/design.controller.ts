@@ -3,13 +3,10 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { DesignService } from "./design.services";
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
-import type { CurrentUser as CurrentUserType } from '../auth/interfaces';
-
 import { Role } from '@src/modules/role/enums';
 import { CreateDesignDto } from './dtos/create-design.dto';
-import { UUID } from 'sequelize';
 
 @ApiTags('Designs')
 @ApiBearerAuth()
@@ -42,6 +39,7 @@ export class DesignController {
   async findOne(@Param('uuid') uuid: string) {
     const design = await this.designService.findOne(uuid);
     if (!design) return new SuccessResponse('Design not found', null);
+    console.log(design)
     return new SuccessResponse('Design retrieved successfully', design)
   }
 

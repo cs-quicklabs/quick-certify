@@ -1,19 +1,48 @@
-"use client";
+// "use client";
 
-import { useState } from "react";
-import { designs as designsList } from "../design.data";
+import { useMemo, useState } from "react";
+import { Design } from '@/services/api/design.service'
 import DesignCard from "./DesignCard";
+import { PaginatedResponse } from "@/types";
+// import { useRouter, useSearchParams } from "next/router";
 
-export default function DesignsList() {
-  const [filter, setFilter] = useState<"All" | "Certificate" | "Badge">("All");
-  const [search, setSearch] = useState("");
+type Props = {
+  designs: Design[],
+  meta: PaginatedResponse<Design>['meta'],
+  onDelete: (id: string) => void;
+  search: string;
+  setSearch: (v: string) => void;
+  page: number;
+}
 
-  const filtered = designsList.filter((d) => {
-    const matchFilter = filter === "All" || d.type === filter;
-    const matchSearch = d.title.toLowerCase().includes(search.toLowerCase());
-    return matchFilter && matchSearch;
-  });
+type Filter = "All" | "Certificate" | "Badge";
 
+export default function DesignsList({ designs, meta, onDelete, search, setSearch, page, }: Props) {
+  // const router = useRouter();
+  // const params = useSearchParams();
+  const [filter, setFilter] = useState<Filter>("All");
+  // const [search, setSearch] = useState("");
+
+  // const goToPage = (p: number) => {
+  //   const q = new URLSearchParams(params.toString());
+  //   q.set('page', String(p));
+  //   router.push(`/designs?${q.toString()}`);
+  // };
+
+  const filtered = useMemo(() => {
+    return designs.filter((d) => {
+      const matchFilter =
+        filter === "All" ||
+        (filter === "Certificate" && d.type === "certificate") ||
+        (filter === "Badge" && d.type === "badge");
+
+      const matchSearch = d.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      return matchFilter && matchSearch;
+    });
+  }, [designs, filter, search]);
   return (
     <>
       {/* Search and Filter Section */}
@@ -83,9 +112,9 @@ export default function DesignsList() {
         </span>
       </div>
 
-
+      {/* List */}
       {filtered.map((designs) => (
-        <DesignCard key={designs.id} design={designs} />
+        <DesignCard key={designs.id} design={designs} onDelete={() => onDelete(designs.id)} />
       ))}
     </>
   );

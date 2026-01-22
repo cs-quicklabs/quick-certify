@@ -1,5 +1,11 @@
 import { IMAGE_RULES, DesignType } from './image-rules';
 
+/**
+ * Validate's Designs' file dimensions
+ * @param file
+ * @param designType
+ * @returns
+ */
 export function validateImageDimensions(
   file: File,
   designType: DesignType

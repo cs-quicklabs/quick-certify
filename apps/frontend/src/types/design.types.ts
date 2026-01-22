@@ -3,3 +3,5 @@ export type Design = {
   name: string;
   imageUrl: string;
 };
+
+export type DesignType = 'certificate' | 'badge';
