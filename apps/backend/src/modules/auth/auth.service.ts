@@ -5,9 +5,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '@src/config/config.type';
-import { UserEntity } from '@src/entities';
+import { UserEntity, SessionEntity } from '@src/entities';
 import { EmailService } from '@src/commons/services';
 import { generateNanoid } from '@src/commons/utils';
 import {
@@ -69,6 +70,8 @@ export class AuthService implements IAuthService {
     private readonly roleService: RoleService,
     private readonly organizationService: OrganizationService,
     private readonly passwordResetService: PasswordResetService,
+    @InjectModel(SessionEntity)
+    private readonly sessionModel: typeof SessionEntity,
   ) {
     this.refreshTokenExpiresIn = this.configService.getOrThrow('auth.jwtRefreshTokenExpiresIn', {
       infer: true,
@@ -98,29 +101,49 @@ export class AuthService implements IAuthService {
     const superAdminRole = await this.getSuperAdminRole();
     const slug = this.organizationService.generateSlug(dto.companyName);
 
-    const organization = await this.organizationService.create({
-      name: dto.companyName,
-      slug,
-      website: dto.websiteUrl,
-      is_active: true,
-      issuer_verified: false,
-    });
+    // Use transaction to ensure atomicity of organization and user creation
+    if (!this.sessionModel.sequelize) {
+      throw new Error('Sequelize instance not available');
+    }
+    const sequelize = this.sessionModel.sequelize;
+    const transaction = await sequelize.transaction();
+    try {
+      const organization = await this.organizationService.create(
+        {
+          name: dto.companyName,
+          slug,
+          website: dto.websiteUrl,
+          is_active: true,
+          issuer_verified: false,
+        },
+        { transaction },
+      );
 
-    const hashedPassword = await this.passwordService.hash(dto.password);
-    const user = await this.userService.create({
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      email: dto.email,
-      password: hashedPassword,
-      organizationId: organization.id,
-      roleId: superAdminRole.id,
-    });
+      const hashedPassword = await this.passwordService.hash(dto.password);
+      const user = await this.userService.create(
+        {
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          email: dto.email,
+          password: hashedPassword,
+          organizationId: organization.id,
+          roleId: superAdminRole.id,
+        },
+        undefined, // currentUser
+        { transaction },
+      );
 
-    this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+      await transaction.commit();
 
-    const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+      this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
 
-    return tokens;
+      const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+
+      return tokens;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   async login(dto: LoginDto, ipAddress?: string, userAgent?: string) {
@@ -263,16 +286,33 @@ export class AuthService implements IAuthService {
       );
     }
 
-    // Password will be hashed by userService.update()
-    await this.userService.update(passwordReset.user_id, {
-      password: dto.newPassword,
-    });
+    // Use transaction to ensure atomicity of password update, token marking, and session revocation
+    if (!this.sessionModel.sequelize) {
+      throw new Error('Sequelize instance not available');
+    }
+    const sequelize = this.sessionModel.sequelize;
+    const transaction = await sequelize.transaction();
+    try {
+      // Password will be hashed by userService.update()
+      await this.userService.update(
+        passwordReset.user_id,
+        {
+          password: dto.newPassword,
+        },
+        { transaction },
+      );
 
-    await this.passwordResetService.markAsUsed(passwordReset.id);
+      await this.passwordResetService.markAsUsed(passwordReset.id, transaction);
 
-    await this.sessionService.revokeAllForUser(passwordReset.user_id);
+      await this.sessionService.revokeAllForUser(passwordReset.user_id, transaction);
 
-    return { success: true, message: 'Password reset successfully' };
+      await transaction.commit();
+
+      return { success: true, message: 'Password reset successfully' };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
@@ -483,30 +523,50 @@ export class AuthService implements IAuthService {
     const superAdminRole = await this.getSuperAdminRole();
     const slug = this.organizationService.generateSlug(dto.companyName);
 
-    // Create organization
-    const organization = await this.organizationService.create({
-      name: dto.companyName,
-      slug,
-      website: dto.websiteUrl,
-      is_active: true,
-      issuer_verified: false,
-    });
+    // Use transaction to ensure atomicity of organization and user creation
+    if (!this.sessionModel.sequelize) {
+      throw new Error('Sequelize instance not available');
+    }
+    const sequelize = this.sessionModel.sequelize;
+    const transaction = await sequelize.transaction();
+    try {
+      // Create organization
+      const organization = await this.organizationService.create(
+        {
+          name: dto.companyName,
+          slug,
+          website: dto.websiteUrl,
+          is_active: true,
+          issuer_verified: false,
+        },
+        { transaction },
+      );
 
-    // Create user with Google auth
-    // Use provided names from form, fallback to Google profile names
-    const user = await this.userService.create({
-      firstName: dto.firstName || googleUser.given_name,
-      lastName: dto.lastName || googleUser.family_name || '',
-      email: googleUser.email,
-      organizationId: organization.id,
-      roleId: superAdminRole.id,
-    });
+      // Create user with Google auth
+      // Use provided names from form, fallback to Google profile names
+      const user = await this.userService.create(
+        {
+          firstName: dto.firstName || googleUser.given_name,
+          lastName: dto.lastName || googleUser.family_name || '',
+          email: googleUser.email,
+          organizationId: organization.id,
+          roleId: superAdminRole.id,
+        },
+        undefined, // currentUser
+        { transaction },
+      );
 
-    this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+      await transaction.commit();
 
-    const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+      this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
 
-    return tokens;
+      const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+
+      return tokens;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**

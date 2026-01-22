@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
@@ -127,7 +127,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
-  override async create(dto: CreateUserDto, currentUser?: CurrentUser): Promise<UserEntity> {
+  override async create(
+    dto: CreateUserDto,
+    currentUser?: CurrentUser,
+    options?: { transaction?: Transaction },
+  ): Promise<UserEntity> {
     // Validate email uniqueness globally (across all organizations)
     await this.validateEmailUniqueness(dto.email);
 
@@ -158,39 +162,50 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       hashedPassword = await this.passwordService.hash(dto.password);
     }
 
-    const user = await this.userModel.create({
-      first_name: capitalizeFirst(dto.firstName),
-      last_name: capitalizeFirst(dto.lastName),
-      email: dto.email.toLowerCase(),
-      password_hash: hashedPassword,
-      organization_id: dto.organizationId,
-      role_id: dto.roleId,
-      status,
-      is_email_notifications_enabled: true,
-    });
+    const createdUserResult = await this.userModel.create(
+      {
+        first_name: capitalizeFirst(dto.firstName),
+        last_name: capitalizeFirst(dto.lastName),
+        email: dto.email.toLowerCase(),
+        password_hash: hashedPassword,
+        organization_id: dto.organizationId,
+        role_id: dto.roleId,
+        status,
+        is_email_notifications_enabled: true,
+      },
+      {
+        ...(options?.transaction && { transaction: options.transaction }),
+      },
+    );
+
+    if (!createdUserResult) {
+      throw new Error('Failed to create user');
+    }
+
+    const createdUser = createdUserResult as UserEntity;
 
     // Send invitation email if invitation, otherwise welcome email
     if (isInvitation) {
       const inviterName = currentUser
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${user.id}`;
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/invitation?token=${createdUser.id}`;
       this.mailService
-        .sendInvitationEmail(user.email, {
-          name: user.first_name,
+        .sendInvitationEmail(createdUser.email, {
+          name: createdUser.first_name,
           inviterName,
           organizationName: organization.name,
           inviteLink,
         })
         .catch(console.error);
     } else {
-      this.mailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
+      this.mailService.sendWelcomeEmail(createdUser.email, { name: createdUser.first_name }).catch(console.error);
     }
 
-    return this.findOne(user.id) as Promise<UserEntity>;
+    return this.findOne(createdUser.id) as Promise<UserEntity>;
   }
 
-  override async update(id: string, dto: UpdateUserDto): Promise<UserEntity> {
+  override async update(id: string, dto: UpdateUserDto, options?: { transaction?: Transaction }): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
@@ -198,9 +213,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // If status is being changed to archived, handle it as soft delete
     if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
       // Update status to archived (soft delete)
-      await user.update({ status: 'archived' });
+      await user.update({ status: 'archived' }, { ...(options?.transaction && { transaction: options.transaction }) });
       // Logout user from all devices when archived
-      await this.logoutUserFromAllDevices(user.id);
+      await this.logoutUserFromAllDevices(user.id, options?.transaction);
       // Return the archived user (need to find it without the archived filter)
       return this.userModel.findOne({
         where: { id },
@@ -209,6 +224,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
           { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
         ],
         attributes: { exclude: ['password_hash'] },
+        ...(options?.transaction && { transaction: options.transaction }),
       }) as Promise<UserEntity>;
     }
 
@@ -232,16 +248,49 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     const updateData = this.buildUpdateData(dto, hashedPassword);
-    await user.update(updateData);
+    
+    // Check if role or status is changing (requires atomic update + session revocation)
+    const roleChanged = dto.roleId && dto.roleId !== previousRoleId;
+    const statusChangedToInactive = dto.status && dto.status !== previousStatus && dto.status === 'inactive';
+    const needsTransaction = (roleChanged || statusChangedToInactive) && !options?.transaction;
 
-    // If role changed, logout user from all devices (force re-login)
-    if (dto.roleId && dto.roleId !== previousRoleId) {
-      await this.logoutUserFromAllDevices(user.id);
-    }
+    // Use transaction if role/status changes and no transaction provided
+    if (needsTransaction) {
+      if (!this.userModel.sequelize) {
+        throw new Error('Sequelize instance not available');
+      }
+      const transaction = await this.userModel.sequelize.transaction();
+      try {
+        await user.update(updateData, { transaction });
+        
+        // If role changed, logout user from all devices (force re-login)
+        if (roleChanged) {
+          await this.logoutUserFromAllDevices(user.id, transaction);
+        }
 
-    // If status changed to inactive, logout user from all devices
-    if (dto.status && dto.status !== previousStatus && dto.status === 'inactive') {
-      await this.logoutUserFromAllDevices(user.id);
+        // If status changed to inactive, logout user from all devices
+        if (statusChangedToInactive) {
+          await this.logoutUserFromAllDevices(user.id, transaction);
+        }
+
+        await transaction.commit();
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+    } else {
+      // No transaction needed or transaction already provided
+      await user.update(updateData, { ...(options?.transaction && { transaction: options.transaction }) });
+
+      // If role changed, logout user from all devices (force re-login)
+      if (roleChanged) {
+        await this.logoutUserFromAllDevices(user.id, options?.transaction);
+      }
+
+      // If status changed to inactive, logout user from all devices
+      if (statusChangedToInactive) {
+        await this.logoutUserFromAllDevices(user.id, options?.transaction);
+      }
     }
 
     return this.findOne(id) as Promise<UserEntity>;
@@ -559,7 +608,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return updateData;
   }
 
-  private async logoutUserFromAllDevices(userId: string): Promise<void> {
-    await this.sessionService.revokeAllForUser(userId);
+  private async logoutUserFromAllDevices(userId: string, transaction?: Transaction): Promise<void> {
+    await this.sessionService.revokeAllForUser(userId, transaction);
   }
 }

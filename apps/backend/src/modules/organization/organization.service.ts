@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationEntity } from '@src/entities';
 import { StorageService } from '@src/commons/services';
@@ -71,25 +71,39 @@ export class OrganizationService implements IOrganizationService {
     });
   }
 
-  async create(organization: Partial<OrganizationEntity>): Promise<OrganizationEntity> {
+  async create(
+    organization: Partial<OrganizationEntity>,
+    options?: { transaction?: Transaction },
+  ): Promise<OrganizationEntity> {
     const slug = organization.slug || this.generateSlug(organization?.name || '');
 
-    const existingSlug = await this.organizationModel.findOne({ where: { slug } });
+    const existingSlug = await this.organizationModel.findOne({
+      where: { slug },
+      ...(options?.transaction && { transaction: options.transaction }),
+    });
     if (existingSlug) {
       throw new ConflictException('Organization with this slug already exists');
     }
 
-    const existingName = await this.organizationModel.findOne({ where: { name: organization?.name } });
+    const existingName = await this.organizationModel.findOne({
+      where: { name: organization?.name },
+      ...(options?.transaction && { transaction: options.transaction }),
+    });
     if (existingName) {
       throw new ConflictException('Organization with this name already exists');
     }
 
-    const createdOrganization = await this.organizationModel.create({
-      name: organization?.name,
-      slug,
-      is_active: organization?.is_active !== undefined ? organization?.is_active : true,
-      issuer_verified: organization?.issuer_verified !== undefined ? organization?.issuer_verified : false,
-    });
+    const createdOrganization = await this.organizationModel.create(
+      {
+        name: organization?.name,
+        slug,
+        is_active: organization?.is_active !== undefined ? organization?.is_active : true,
+        issuer_verified: organization?.issuer_verified !== undefined ? organization?.issuer_verified : false,
+      },
+      {
+        ...(options?.transaction && { transaction: options.transaction }),
+      },
+    ) as OrganizationEntity;
 
     return createdOrganization;
   }

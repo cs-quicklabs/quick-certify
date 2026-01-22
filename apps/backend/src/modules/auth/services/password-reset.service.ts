@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Transaction } from 'sequelize';
 import { PasswordResetEntity } from '@src/entities/password-reset.entity';
 
 /**
@@ -56,12 +57,17 @@ export class PasswordResetService {
   /**
    * Mark a password reset token as used
    */
-  async markAsUsed(id: string): Promise<void> {
-    const passwordReset = await this.passwordResetModel.findByPk(id);
+  async markAsUsed(id: string, transaction?: Transaction): Promise<void> {
+    const passwordReset = await this.passwordResetModel.findByPk(id, {
+      ...(transaction && { transaction }),
+    });
     if (!passwordReset) {
       throw new NotFoundException('Password reset token not found');
     }
-    await passwordReset.update({ is_used: true, used_at: new Date() });
+    await passwordReset.update(
+      { is_used: true, used_at: new Date() },
+      { ...(transaction && { transaction }) },
+    );
   }
 
   /**
