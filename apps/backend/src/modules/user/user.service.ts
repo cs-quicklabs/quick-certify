@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { FindOptions, Op, Transaction } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
@@ -109,14 +109,14 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     };
   }
 
-  override async findOne(id: string): Promise<UserEntity | null> {
+  override async findOne(id: string, options?: FindOptions<UserEntity>): Promise<UserEntity | null> {
     return this.userModel.findOne({
       where: { id, status: { [Op.ne]: 'archived' } },
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
       ],
-      attributes: { exclude: ['password_hash'] },
+      attributes: options?.attributes ? options.attributes : { exclude: ['password_hash'] },
     });
   }
 
@@ -248,7 +248,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     const updateData = this.buildUpdateData(dto, hashedPassword);
-    
+
     // Check if role or status is changing (requires atomic update + session revocation)
     const roleChanged = dto.roleId && dto.roleId !== previousRoleId;
     const statusChangedToInactive = dto.status && dto.status !== previousStatus && dto.status === 'inactive';
@@ -262,7 +262,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       const transaction = await this.userModel.sequelize.transaction();
       try {
         await user.update(updateData, { transaction });
-        
+
         // If role changed, logout user from all devices (force re-login)
         if (roleChanged) {
           await this.logoutUserFromAllDevices(user.id, transaction);

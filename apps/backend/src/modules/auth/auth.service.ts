@@ -316,7 +316,7 @@ export class AuthService implements IAuthService {
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
-    const user = await this.userService.findOne(userId);
+    const user = await this.userService.findOne(userId, { attributes: { include: ['password_hash'] } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -336,12 +336,49 @@ export class AuthService implements IAuthService {
       throw new BadRequestException("New password shouldn't be same as old password");
     }
 
-    // Password will be hashed by userService.update()
-    await this.userService.update(userId, {
-      password: dto.newPassword,
-    });
+    // If revokeAllSessions is true, use transaction to ensure atomicity
+    if (dto.revokeAllSessions) {
+      if (!this.sessionModel.sequelize) {
+        throw new Error('Sequelize instance not available');
+      }
+      const sequelize = this.sessionModel.sequelize;
+      const transaction = await sequelize.transaction();
+      try {
+        // Password will be hashed by userService.update()
+        await this.userService.update(
+          userId,
+          {
+            password: dto.newPassword,
+          },
+          { transaction },
+        );
 
-    return { success: true, message: 'Password changed successfully' };
+        // Revoke all sessions for security (password changed)
+        await this.sessionService.revokeAllForUser(userId, transaction);
+
+        await transaction.commit();
+        return { 
+          success: true, 
+          message: 'Password changed successfully. All sessions have been revoked.',
+          sessionsRevoked: true,
+        };
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+    } else {
+      // No session revocation needed, just update password
+      // Password will be hashed by userService.update()
+      await this.userService.update(userId, {
+        password: dto.newPassword,
+      });
+
+      return { 
+        success: true, 
+        message: 'Password changed successfully',
+        sessionsRevoked: false,
+      };
+    }
   }
 
   async acceptInvitation(dto: AcceptInvitationDto, ipAddress?: string, userAgent?: string) {
@@ -589,7 +626,7 @@ export class AuthService implements IAuthService {
     await this.userService.update(user.id, { last_login_at: new Date() });
 
     // Revoke all existing sessions for this user (single active session policy)
-    await this.sessionService.revokeAllForUser(user.id);
+    // await this.sessionService.revokeAllForUser(user.id);
 
     const session = await this.sessionService.create({
       userId: user.id,

@@ -69,11 +69,19 @@ async function updateProfile(data: Partial<ProfileSettingsData & { avatarUrl?: s
   };
 }
 
-async function changePassword(data: ChangePasswordData): Promise<void> {
-  await apiClient.post<ApiResponse<void>>('/auth/change-password', {
+interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+  sessionsRevoked: boolean;
+}
+
+async function changePassword(data: ChangePasswordData): Promise<ChangePasswordResponse> {
+  const response = await apiClient.post<ApiResponse<ChangePasswordResponse>>('/auth/change-password', {
     currentPassword: data.currentPassword,
     newPassword: data.newPassword,
+    revokeAllSessions: data.revokeAllSessions ?? false,
   });
+  return response.data.data;
 }
 
 async function fetchEmailPreferences(): Promise<EmailPreferencesData> {

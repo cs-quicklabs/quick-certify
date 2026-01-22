@@ -46,6 +46,7 @@ export class SessionService implements ISessionService {
         hash,
         user_id: userId,
         is_active: true,
+        revoked_at: null,
       },
     });
 

@@ -68,6 +68,7 @@ export const changePasswordSchema = z
     currentPassword: z.string().min(1, 'Current password is required'),
     newPassword: passwordSchema,
     confirmPassword: z.string().min(1, PASSWORD_MESSAGES.CONFIRM_REQUIRED),
+    revokeAllSessions: z.boolean().optional().default(false),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: PASSWORD_MESSAGES.MISMATCH,
