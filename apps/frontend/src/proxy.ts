@@ -46,7 +46,7 @@ function matchesRoute(pathname: string, routes: string[]): boolean {
  * The client should sync tokens to cookies for middleware to work properly.
  * Alternatively, this middleware provides a foundation for when httpOnly cookies are implemented.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Get token from cookies
