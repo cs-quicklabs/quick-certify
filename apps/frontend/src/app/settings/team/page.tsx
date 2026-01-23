@@ -7,6 +7,7 @@ import { useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { Table } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
+import { capitalizeFirst } from '@/utils/helpers';
 
 /**
  * Team Listing Page
@@ -169,7 +170,7 @@ export default function TeamsPage() {
               render: (member) => {
                 return (
                   <span className="text-sm font-medium text-gray-900">
-                    {member.first_name} {member.last_name}
+                    {capitalizeFirst(member.first_name)} {capitalizeFirst(member.last_name)}
                   </span>
                 );
               },

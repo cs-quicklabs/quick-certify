@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useCrossTabLogout } from '@/hooks/useCrossTabLogout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // import { env } from '@/config';
 
 /**
@@ -51,6 +53,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthInitializer>{children}</AuthInitializer>
       <ReactQueryDevtools initialIsOpen={false} />
+      <ToastContainer />
     </QueryClientProvider>
   );
 

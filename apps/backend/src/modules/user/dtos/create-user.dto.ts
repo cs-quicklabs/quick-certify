@@ -15,7 +15,6 @@ export enum Gender {
   Female = 'female',
   Other = 'other',
 }
-
 export class CreateUserDto {
   @ApiProperty({ example: 'John', description: 'First name of the user' })
   @IsString()
@@ -61,7 +60,12 @@ export class CreateUserDto {
   profilePicture?: string = '';
 
   @ApiProperty({ example: 1, description: 'Role ID (integer)' })
-  @IsString()
+  @IsNumber()
   @IsNotEmpty({ message: 'Role ID is required' })
-  roleId?: string;
+  roleId = 0;
+
+  @ApiProperty({ example: 1, description: 'Organization ID (integer)' })
+  @IsNumber()
+  @IsNotEmpty({ message: 'Organization ID is required' })
+  organizationId!: number;
 }

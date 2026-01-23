@@ -17,7 +17,6 @@ import { CreateUserDto, UpdateUserDto } from './dtos';
 import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
-import { capitalizeFirst } from '@src/commons/utils';
 import { RoleService } from '../role/role.service';
 import { OrganizationService } from '../organization/organization.service';
 
@@ -30,6 +29,7 @@ export interface ExtendedFindAllOptions extends FindAllOptions {
   excludeUserUuid?: string; // User UUID (string) to exclude
   currentUserRole?: string;
   role?: string;
+  status?: string;
 }
 
 /**
@@ -78,7 +78,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Exclude current logged-in user if specified
     const whereClause: Record<string, unknown> = {
       ...where,
-      status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
+      //status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
     };
 
     if (options.excludeUserId) {
@@ -171,7 +171,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     // Validate role
-    const role = await this.roleService.findOne(dto.roleId as number);
+    const role = await this.roleService.findOne(dto.roleId);
     if (!role) {
       throw new NotFoundException('Role not found');
     }
@@ -193,8 +193,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     const createdUserResult = await this.userModel.create(
       {
-        first_name: capitalizeFirst(dto.firstName),
-        last_name: capitalizeFirst(dto.lastName),
+        first_name: dto.firstName,
+        last_name: dto.lastName,
         email: dto.email.toLowerCase(),
         password_hash: hashedPassword,
         organization_id: dto.organizationId,
@@ -303,7 +303,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Validate role if changing
     if (dto.roleId) {
-      const role = await this.roleService.findOne(+dto.roleId);
+      const role = await this.roleService.findOne(dto.roleId);
       if (!role) {
         throw new NotFoundException('Role not found');
       }
@@ -449,7 +449,6 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Apply role-based filtering (extracted to avoid duplication)
     await this.applyRoleFiltering(whereClause, options);
-
     return this.findAll({
       ...options,
       where: whereClause,
@@ -558,7 +557,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return user;
   }
 
-  private async validateEmailUniqueness(email: string, excludeId?: string): Promise<void> {
+  private async validateEmailUniqueness(email: string, excludeId?: number): Promise<void> {
     // Email must be unique globally across all organizations (including archived users)
     const whereClause: Record<string, unknown> = {
       email: email.toLowerCase(),
@@ -578,7 +577,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   /**
    * Get excluded roles based on current user's role for visibility filtering
    * Super Admin can see: Admin, Manager, Designer (exclude: super_admin)
-   * Admin can see: Manager, Designer (exclude: super_admin, admin)
+   * Admin can see: Admin, Manager, Designer (exclude: super_admin)
    * Lower level users: exclude super_admin and admin (defense in depth)
    */
   private getExcludedRolesForVisibility(currentUserRole: string): string[] {
@@ -588,8 +587,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       // Super Admin cannot see other Super Admins
       return [Role.SUPER_ADMIN];
     } else if (role === Role.ADMIN) {
-      // Admin cannot see Super Admin or other Admins
-      return [Role.SUPER_ADMIN, Role.ADMIN];
+      // Admin cannot see Super Admin, but can see other Admins
+      return [Role.SUPER_ADMIN];
     } else {
       // Lower level users (manager, designer) cannot see Super Admin or Admin
       return [Role.SUPER_ADMIN, Role.ADMIN];
@@ -599,7 +598,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   /**
    * Get role IDs by role names
    */
-  private async getRoleIdsByNames(roleNames: string[]): Promise<string[]> {
+  private async getRoleIdsByNames(roleNames: string[]): Promise<number[]> {
     const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
     return roles
       .filter((r) => r !== null && r !== undefined)
@@ -624,7 +623,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Apply role-based visibility filtering
     // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
     // Admin can see: Manager, Designer (not Super Admin, not other Admins)
-    let excludedRoleIds: string[] = [];
+    let excludedRoleIds: number[] = [];
     if (options.currentUserRole) {
       const excludedRoles = this.getExcludedRolesForVisibility(options.currentUserRole);
       if (excludedRoles.length > 0) {
@@ -632,15 +631,19 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       }
     }
 
+    if (options.status) {
+      whereClause.status = options.status;
+    }
+
     // Handle role filtering - need to find role IDs first
-    let roleIds: string[] | undefined;
+    let roleIds: number[] | undefined;
     if (options.role) {
       const roleFilter = options.role.toLowerCase();
       // Admin filter should include both admin and super_admin
       if (roleFilter === 'admin') {
         const superAdminRole = await this.roleService.findByRole(Role.SUPER_ADMIN);
         const adminRole = await this.roleService.findByRole(Role.ADMIN);
-        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as string[];
+        roleIds = [superAdminRole?.id, adminRole?.id].filter(Boolean) as number[];
       } else {
         const role = await this.roleService.findByRole(roleFilter);
         if (role) {
@@ -669,8 +672,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   private buildUpdateData(dto: UpdateUserDto, hashedPassword?: string): Partial<UserEntity> {
     const updateData: Partial<UserEntity> = {};
 
-    if (dto.first_name) updateData.first_name = capitalizeFirst(dto.first_name);
-    if (dto.last_name) updateData.last_name = capitalizeFirst(dto.last_name);
+    if (dto.first_name) updateData.first_name = dto.first_name;
+    if (dto.last_name) updateData.last_name = dto.last_name;
     if (dto.email) updateData.email = dto.email.toLowerCase();
     if (dto.profile_picture !== undefined) updateData.avatar_url = dto.profile_picture;
     if (dto.is_email_notifications_enabled !== undefined)

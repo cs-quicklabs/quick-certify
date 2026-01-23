@@ -22,7 +22,7 @@ export interface TeamMember {
   status: 'active' | 'inactive' | 'invited' | 'archived';
   last_login_at: string | null;
   createdAt: string;
-  updated_at: string;
+  updatedAt: string;
 }
 
 export interface Role {
@@ -43,7 +43,7 @@ export interface UpdateTeamMemberRequest {
   first_name?: string;
   last_name?: string;
   email?: string;
-  roleId?: string;
+  roleId?: number;
   status?: string;
 }
 
