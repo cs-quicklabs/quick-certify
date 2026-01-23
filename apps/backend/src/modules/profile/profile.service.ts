@@ -4,7 +4,6 @@ import { UserEntity, RoleEntity, OrganizationEntity } from '@src/entities';
 import { UpdateProfileDto, UpdateEmailPreferencesDto } from './dto';
 import { StorageService } from '@src/commons/services';
 
-
 /**
  * Profile Service
  *

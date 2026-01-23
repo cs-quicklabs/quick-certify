@@ -46,9 +46,7 @@ export class EventController {
   @ApiQuery({ name: 'type', required: false, description: 'Filter by event type ID' })
   @ApiQuery({ name: 'level', required: false, description: 'Filter by event level ID' })
   @ApiQuery({ name: 'format', required: false, description: 'Filter by event format ID' })
-  async findAll(
-    @Query() pagination: PaginationDto,
-  ) {
+  async findAll(@Query() pagination: PaginationDto) {
     const where: Record<string, unknown> = {};
 
     // Filtering by UUID - service will handle conversion to IDs
