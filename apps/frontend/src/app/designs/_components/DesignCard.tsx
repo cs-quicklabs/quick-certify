@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Design } from "@/services/api/design.service";
 
-export default function DesignCard({ design, onDelete }: { design: Design, onDelete: void }) {
+export default function DesignCard({ design, onDelete }: { design: Design, onDelete: () => void }) {
   return (
+
     <div className="flex items-center justify-between px-6 bg-white py-5 border-b border-gray-200 rounded shadow">
 
       {/* Certificate Display */}
@@ -48,7 +49,9 @@ export default function DesignCard({ design, onDelete }: { design: Design, onDel
           <span>Edit</span>
         </Link>
 
-        <button className="px-3 py-1 flex gap-2 items-center text-red-600 bg-red-50 rounded hover:bg-red-50">
+        <button
+          onClick={onDelete}
+          className="px-3 py-1 flex gap-2 items-center text-red-600 bg-red-50 rounded hover:bg-red-50">
           <span>Delete</span>
         </button>
       </div>

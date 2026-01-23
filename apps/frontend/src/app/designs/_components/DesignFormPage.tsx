@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import DesignForm from './DesignForm';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { useCreateDesign, useDesignById, useUpdateDesign } from '@/hooks/useDesigns';
 
 type DesignType = 'certificate' | 'badge';
 
-export default function DesignFormPage({
+export function DesignFormPage({
   mode,
   designType,
   id,
@@ -14,46 +17,89 @@ export default function DesignFormPage({
   id?: string;
 }) {
   const isEdit = mode === 'edit';
-  const isCertificate = designType === 'certificate';
 
-  // Mock data for edit mode (replace with API call)
-  const design = isEdit
-    ? {
-      name: 'Course Completion Certificate',
-      imageUrl:
-        'https://dev-quick-certify.sfo3.cdn.digitaloceanspaces.com/organizations/r/avatar/H7COHto2giyXNx7J8Ak5m.png',
-      type: designType,
+  const { design, loading } = useDesignById(id ?? '');
+  const [name, setName] = useState('');
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+
+  // Populate fields once design loads
+  useEffect(() => {
+    if (isEdit && design) {
+      setName(design.name);
+      setUploadedUrl(design.url); // existing image
     }
-    : null;
+  }, [isEdit, design]);
+
+
+  const {
+    upload,
+    isUploading,
+    error: uploadError,
+  } = useImageUpload({
+    category: 'design',
+    onSuccess: (url) => setUploadedUrl(url),
+  });
+
+  const createDesign = useCreateDesign();
+
+  const handleImageSelect = async (file: File) => {
+    await upload(file, uploadedUrl ?? undefined);
+  };
+
+  const updateDesign = useUpdateDesign();
+
+  const handleSubmit = async ({ name }: { name: string }) => {
+    if (!uploadedUrl) return;
+
+    if (isEdit && id) {
+      await updateDesign.mutateAsync({
+        id,
+        name,
+        designType,
+        designUrl: uploadedUrl,
+      });
+    } else {
+      await createDesign.mutateAsync({
+        name,
+        type: designType,
+        url: uploadedUrl,
+      });
+    }
+  };
+
+
+  if (isEdit && loading) {
+    return <div className="p-6 text-sm text-gray-500">Loading design…</div>;
+  }
 
   return (
-    <DesignForm
-      mode={mode}
-      designType={designType}
-      title={
-        isEdit
-          ? `Edit ${isCertificate ? 'Certificate' : 'Badge'} Design`
-          : `Add New ${isCertificate ? 'Certificate' : 'Badge'}`
-      }
-      subtitle={
-        isEdit
-          ? `Edit ${isCertificate ? 'certificate' : 'badge'} design by updating name and image`
-          : `Add new ${isCertificate ? 'certificate' : 'badge'} design by selecting name and image`
-      }
-      defaultName={design?.name}
-      imageUrl={design?.imageUrl}
-      onSubmit={(data) => {
-        console.log({
-          mode,
-          designType,
-          id,
-          payload: data,
-        });
+    <>
+      <DesignForm
+        mode={mode}
+        designType={designType}
+        title={
+          isEdit
+            ? `Edit ${designType === 'certificate' ? 'Certificate' : 'Badge'} Design`
+            : `Add New ${designType === 'certificate' ? 'Certificate' : 'Badge'}`
+        }
+        subtitle={
+          isEdit
+            ? 'Update design name or replace image'
+            : 'Upload image and provide a name'
+        }
+        defaultName={name}
+        imageUrl={uploadedUrl ?? undefined}
+        isUploading={isUploading}
+        uploadComplete={!!uploadedUrl}
+        onImageSelectAction={handleImageSelect}
+        onSubmitAction={handleSubmit}
+      />
 
-        // TODO:
-        // if (mode === 'add') createDesign(...)
-        // if (mode === 'edit') updateDesign(id, ...)
-      }}
-    />
+      {uploadError && (
+        <p className="mt-3 text-center text-sm text-red-600">
+          {uploadError}
+        </p>
+      )}
+    </>
   );
 }

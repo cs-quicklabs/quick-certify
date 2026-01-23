@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { validateImageDimensions } from '@/lib/design';
 
 type DesignType = 'certificate' | 'badge';
@@ -12,7 +12,10 @@ type Props = {
   designType: DesignType;
   defaultName?: string;
   imageUrl?: string;
-  onSubmit: (data: { name: string; image: File | null }) => void;
+  isUploading?: boolean;
+  uploadComplete?: boolean;
+  onImageSelectAction: (file: File) => void;
+  onSubmitAction: (data: { name: string; image: File | null }) => void;
 };
 
 export default function DesignForm({
@@ -22,25 +25,29 @@ export default function DesignForm({
   designType,
   defaultName = '',
   imageUrl,
-  onSubmit,
+  isUploading = false,
+  uploadComplete = false,
+  onImageSelectAction,
+  onSubmitAction,
 }: Props) {
   const [name, setName] = useState(defaultName);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
 
   const imageRef = useRef<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isEdit = mode === 'edit';
   const isCertificate = designType === 'certificate';
+
+  useEffect(() => {
+    if (imageUrl) setPreview(imageUrl);
+  }, [imageUrl]);
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit({
-          name,
-          image: imageRef.current,
-        });
+        onSubmitAction({ name, image: imageRef.current });
       }}
       className="max-w-xl mx-auto py-6 px-5"
     >
@@ -53,13 +60,12 @@ export default function DesignForm({
       {/* Name */}
       <div className="mb-4">
         <label className="block text-sm font-semibold mb-1">
-          {isEdit ? 'Edit Name' : 'Add Name'}
+          {mode === 'edit' ? 'Edit Name' : 'Add Name'}
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border text-sm border-gray-200 font-semibold rounded-md px-3 py-2"
-          placeholder="Name"
           required
         />
       </div>
@@ -76,22 +82,23 @@ export default function DesignForm({
             : 'Upload badge image (440 × 400)'}
         </p>
 
-        <label className="border-2 border-dashed rounded-lg cursor-pointer border-gray-300 bg-gray-50 hover:bg-gray-100 p-10 text-center block">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              className="mx-auto max-h-96 rounded"
-              alt="Preview"
-            />
+        <label className="relative border-2 border-dashed rounded-lg cursor-pointer border-gray-300 bg-gray-50 hover:bg-gray-100 p-10 text-center block">
+          {preview ? (
+            <img src={preview} className="mx-auto max-h-96 rounded" />
           ) : (
-            <>
-              <p className="text-gray-400">
-                Click to upload or drag and drop
-              </p>
-              <p className="text-xs text-gray-400">
-                {isCertificate ? 'A4 format' : 'Square format'}
-              </p>
-            </>
+            <p className="text-gray-400">Click to upload</p>
+          )}
+
+          {isUploading && (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+              <span className="text-sm font-semibold">Uploading…</span>
+            </div>
+          )}
+
+          {uploadComplete && !isUploading && (
+            <p className="mt-2 text-green-600 text-sm font-medium">
+              Upload complete ✓
+            </p>
           )}
 
           <input
@@ -106,17 +113,18 @@ export default function DesignForm({
               try {
                 await validateImageDimensions(file, designType);
                 imageRef.current = file;
+                setPreview(URL.createObjectURL(file));
+                onImageSelectAction(file);
                 setError(null);
-              } catch (err: any) {
+              } catch (err: unknown) {
                 imageRef.current = null;
-                setError(err.message);
-                e.target.value = ''; // reset input
+                setError(err instanceof Error ? err.message : 'An error occurred');
+                e.target.value = '';
               }
             }}
           />
         </label>
 
-        {/* Validation error */}
         {error && (
           <p className="mt-2 text-sm font-medium text-red-600">
             {error}
@@ -128,7 +136,8 @@ export default function DesignForm({
       <div className="flex gap-4 items-center justify-between">
         <button
           type="submit"
-          className="bg-blue-800 font-semibold text-sm text-white px-6 py-2 rounded-md"
+          disabled={isUploading}
+          className="bg-blue-800 disabled:opacity-50 font-semibold text-sm text-white px-6 py-2 rounded-md"
         >
           Save Design
         </button>

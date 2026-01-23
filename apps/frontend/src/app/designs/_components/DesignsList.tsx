@@ -1,6 +1,6 @@
 // "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Design } from '@/services/api/design.service'
 import DesignCard from "./DesignCard";
 import { PaginatedResponse } from "@/types";
@@ -18,17 +18,8 @@ type Props = {
 type Filter = "All" | "Certificate" | "Badge";
 
 export default function DesignsList({ designs, meta, onDelete, search, setSearch, page, }: Props) {
-  // const router = useRouter();
-  // const params = useSearchParams();
   const [filter, setFilter] = useState<Filter>("All");
-  // const [search, setSearch] = useState("");
-
-  // const goToPage = (p: number) => {
-  //   const q = new URLSearchParams(params.toString());
-  //   q.set('page', String(p));
-  //   router.push(`/designs?${q.toString()}`);
-  // };
-
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const filtered = useMemo(() => {
     return designs.filter((d) => {
       const matchFilter =
@@ -43,6 +34,32 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
       return matchFilter && matchSearch;
     });
   }, [designs, filter, search]);
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, [designs.length]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Cmd + K (Mac) or Ctrl + K (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+
+      // Optional: "/" to focus search (GitHub-style)
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+
+
   return (
     <>
       {/* Search and Filter Section */}
@@ -91,14 +108,19 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
         {/* Search Box */}
         <div className=" items-center text-sm text-gray-200 border-gray-400">
           <input
+            ref={searchInputRef}
             type="text"
-            placeholder="Search designs…"
+            placeholder="Search designs"
             className="border border-gray-300  text-gray-600 rounded px-2 py-1 mr-auto w-72 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 hover:ring-1 hover:ring-blue-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <p className="text-shadow-2xs text-xs text-gray-200 ml-1 p">
+            {/* Press <kbd>⌘</kbd> + <kbd>K</kbd> to search */}
+          </p>
         </div>
       </div>
+
 
       {/* Design Action */}
 
@@ -111,6 +133,13 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
           Actions
         </span>
       </div>
+
+      {/* Empty list */}
+      {filtered.length === 0 && (
+        <div className="py-16 text-center text-gray-500 text-medium font-medium">
+          no designs found
+        </div>
+      )}
 
       {/* List */}
       {filtered.map((designs) => (

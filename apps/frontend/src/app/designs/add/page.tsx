@@ -1,19 +1,15 @@
-import DesignFormPage from '../_components/DesignFormPage';
+'use client';
 
-type DesignType = 'certificate' | 'badge';
-
-export default function AddDesignPage({
-  searchParams,
-}: {
-  searchParams: { type?: string };
-}) {
-  const designType: DesignType =
-    searchParams.type === 'badge' ? 'badge' : 'certificate';
+import { useSearchParams } from 'next/navigation';
+import { DesignFormPage } from "../_components/DesignFormPage";
+export default function AddDesignPage() {
+  const params = useSearchParams();
+  const type = params.get('type') as 'certificate' | 'badge' | null;
 
   return (
     <DesignFormPage
       mode="add"
-      designType={designType}
+      designType={type ?? 'certificate'}
     />
   );
 }

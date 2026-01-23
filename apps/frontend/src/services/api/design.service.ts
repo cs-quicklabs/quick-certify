@@ -42,10 +42,25 @@ export const designService = {
 
   async createDesign(payload: {
     name: string;
-    type: Design;
-    imageUrl: string;
+    designType: DesignType;
+    designUrl: string;
   }): Promise<{ success: boolean, message: string }> {
     const response = await apiClient.post<ApiResponse<{ success: boolean, message: string }>>('/designs', payload);
+    return response.data;
+  },
+
+  /**
+  * Update an existing design
+  */
+  async updateDesign(
+    id: string,
+    payload: {
+      name: string;
+      designType: 'certificate' | 'badge';
+      designUrl: string;
+    }
+  ): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.patch<ApiResponse<{ success: boolean; message: string }>>(`/designs/${id}`, payload);
     return response.data;
   },
 
