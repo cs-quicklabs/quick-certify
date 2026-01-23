@@ -27,7 +27,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   @Get()
   @UseGuards(RolesGuard)
@@ -54,7 +54,7 @@ export class UserController {
       sortBy: pagination.sortBy || 'last_login_at',
       sortOrder: pagination.sortOrder || 'DESC',
       role: pagination.role,
-      excludeUserUuid: user.id, // Exclude current user from results (user.id is UUID)
+      excludeUserUuid: user.uuid, // Exclude current user from results (user.id is UUID)
       currentUserRole: user.role, // Pass current user's role for role-based filtering
     };
     const result = pagination.search
@@ -90,7 +90,7 @@ export class UserController {
     // Only Admin and Super Admin can create users/invitations
     dto.organizationId = user.organizationId;
     const newUser = await this.userService.create(dto, user);
-    
+
     // Send welcome email if user was created with password (not invitation)
     // Note: Invitation emails are sent by userService.create()
     if (dto.password && newUser.status === 'active') {
@@ -98,7 +98,7 @@ export class UserController {
         .sendWelcomeEmail(newUser.email, { name: newUser.first_name })
         .catch(console.error);
     }
-    
+
     return new SuccessResponse('User created successfully', newUser);
   }
 

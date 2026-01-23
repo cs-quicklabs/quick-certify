@@ -61,7 +61,7 @@ export class CreateUserDto {
   profilePicture?: string = '';
 
   @ApiProperty({ example: 1, description: 'Role ID (integer)' })
-  @IsNumber()
+  @IsString()
   @IsNotEmpty({ message: 'Role ID is required' })
-  roleId?: number;
+  roleId?: string;
 }

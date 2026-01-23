@@ -299,7 +299,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Validate role if changing
     if (dto.roleId) {
-      const role = await this.roleService.findOne(dto.roleId);
+      const role = await this.roleService.findOne(+dto.roleId);
       if (!role) {
         throw new NotFoundException('Role not found');
       }
