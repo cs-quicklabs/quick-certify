@@ -19,7 +19,7 @@ export class ProfileService {
     @InjectModel(UserEntity)
     private readonly userModel: typeof UserEntity,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   /**
    * Get full user profile with additional details

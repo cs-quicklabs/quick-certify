@@ -25,7 +25,7 @@ import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interface
 @UseGuards(RolesGuard)
 @Roles(Role.SUPER_ADMIN, Role.ADMIN)
 export class SkillController {
-  constructor(private readonly skillService: SkillService) { }
+  constructor(private readonly skillService: SkillService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all skills for current organization (Admin/Super Admin only)' })

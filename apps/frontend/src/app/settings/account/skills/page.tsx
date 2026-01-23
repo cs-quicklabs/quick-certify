@@ -222,12 +222,13 @@ export default function SkillsPage() {
                 {skills.map((skill, index) => (
                   <tr
                     key={skill.uuid}
-                    className={`border-b border-gray-200 dark:border-gray-700 ${index === 0
-                      ? 'bg-white dark:bg-gray-800'
-                      : index % 2 === 1
+                    className={`border-b border-gray-200 dark:border-gray-700 ${
+                      index === 0
+                        ? 'bg-white dark:bg-gray-800'
+                        : index % 2 === 1
                         ? 'bg-gray-50 dark:bg-gray-700'
                         : 'bg-white dark:bg-gray-800'
-                      }`}
+                    }`}
                   >
                     <td className="px-6 py-4">
                       {editingSkill?.uuid === skill.uuid ? (

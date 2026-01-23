@@ -145,7 +145,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   }
 
   override async create(
-    dto: CreateUserDto & { organizationId?: number; auth_provider?: string; google_id?: string; },
+    dto: CreateUserDto & { organizationId?: number; auth_provider?: string; google_id?: string },
     currentUser?: CurrentUser,
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
@@ -160,7 +160,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       organization = await this.organizationService.findByUuid(currentUser.organizationUuid);
     } else if (dto.organizationId) {
       // dto.organizationId is a number
-      organization = await this.organizationService.findOne(dto.organizationId, options?.transaction);
+      organization = await this.organizationService.findOne(
+        dto.organizationId,
+        options?.transaction,
+      );
     }
 
     if (!organization || !organization.is_active) {
@@ -217,14 +220,14 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     let userWithRelations: UserEntity;
     if (options?.transaction) {
       // If we're in a transaction, reload with relations within the transaction
-      userWithRelations = await this.userModel.findByPk(createdUser.id, {
+      userWithRelations = (await this.userModel.findByPk(createdUser.id, {
         include: [
           { model: RoleEntity, attributes: ['id', 'uuid', 'role'] },
           { model: OrganizationEntity, attributes: ['id', 'uuid', 'name', 'slug'] },
         ],
         attributes: { exclude: ['password_hash'] },
         transaction: options.transaction,
-      }) as UserEntity;
+      })) as UserEntity;
 
       if (!userWithRelations) {
         throw new Error('Failed to reload created user');
@@ -246,8 +249,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
 
-      const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-        }/auth/invitation?token=${userWithRelations.uuid}`;
+      const inviteLink = `${
+        process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+      }/auth/invitation?token=${userWithRelations.uuid}`;
 
       this.mailService
         .sendInvitationEmail(userWithRelations.email, {
@@ -415,8 +419,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const inviterName = currentUser
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
-    const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-      }/auth/invitation?token=${user.uuid}`;
+    const inviteLink = `${
+      process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+    }/auth/invitation?token=${user.uuid}`;
     const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService

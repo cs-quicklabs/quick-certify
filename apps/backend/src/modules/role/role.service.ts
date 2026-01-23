@@ -16,7 +16,7 @@ export class RoleService {
   constructor(
     @InjectModel(RoleEntity)
     private readonly roleModel: typeof RoleEntity,
-  ) { }
+  ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<RoleEntity>> {
     const { page = 1, limit = 10, sortBy = 'role', sortOrder = 'ASC', where = {} } = options;

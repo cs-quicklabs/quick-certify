@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import { PaginationDto } from '@src/commons/base/dtos';
@@ -13,7 +8,7 @@ import { SuccessResponse } from '@src/commons/dtos';
 @ApiBearerAuth()
 @Controller({ path: 'roles', version: '1' })
 export class RoleController {
-  constructor(private readonly roleService: RoleService) { }
+  constructor(private readonly roleService: RoleService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all roles' })

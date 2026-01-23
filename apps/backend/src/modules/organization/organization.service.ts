@@ -30,7 +30,7 @@ export class OrganizationService implements IOrganizationService {
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -138,8 +138,8 @@ export class OrganizationService implements IOrganizationService {
 
       // Checking Uniqueness of the name
       const existedOrgWithOrgName = await this.organizationModel.findOne({
-        where: { name: { [Op.iLike]: dto.name } }
-      })
+        where: { name: { [Op.iLike]: dto.name } },
+      });
 
       if (existedOrgWithOrgName && existedOrgWithOrgName.id !== id) {
         throw new ConflictException('Organization with this name already exists');
@@ -147,7 +147,7 @@ export class OrganizationService implements IOrganizationService {
 
       if (dto.name !== organization.name && !dto.slug) {
         updateData.slug = this.generateSlug(dto.name);
-        const existingSlug = await this.getOrganizationsBySlug(updateData.slug)
+        const existingSlug = await this.getOrganizationsBySlug(updateData.slug);
         if (existingSlug && existingSlug.id !== id) {
           throw new ConflictException('Slug already taken');
         }
@@ -155,7 +155,7 @@ export class OrganizationService implements IOrganizationService {
     }
 
     if (dto.slug !== undefined) {
-      const existingSlug = await this.getOrganizationsBySlug(dto.slug)
+      const existingSlug = await this.getOrganizationsBySlug(dto.slug);
       if (existingSlug && existingSlug.id !== id) {
         throw new ConflictException('Slug already taken');
       }

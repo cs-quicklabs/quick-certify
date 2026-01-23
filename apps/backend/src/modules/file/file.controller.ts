@@ -51,7 +51,7 @@ const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner'];
 @ApiBearerAuth()
 @Controller({ path: 'files', version: '1' })
 export class FileController {
-  constructor(private readonly storageService: StorageService) { }
+  constructor(private readonly storageService: StorageService) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))

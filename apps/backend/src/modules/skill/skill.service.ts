@@ -27,7 +27,10 @@ export class SkillService {
     // First find organization by UUID to get its ID
     const organization = await OrganizationEntity.findOne({ where: { uuid: organizationUuid } });
     if (!organization) {
-      return { data: [], meta: { total: 0, page: 1, limit, totalPages: 0, hasNextPage: false, hasPrevPage: false } };
+      return {
+        data: [],
+        meta: { total: 0, page: 1, limit, totalPages: 0, hasNextPage: false, hasPrevPage: false },
+      };
     }
 
     const safeLimit = Math.min(Math.max(1, limit), 100);
@@ -132,7 +135,11 @@ export class SkillService {
     return skill;
   }
 
-  async updateByUuid(uuid: string, organizationUuid: string, dto: UpdateSkillDto): Promise<SkillEntity> {
+  async updateByUuid(
+    uuid: string,
+    organizationUuid: string,
+    dto: UpdateSkillDto,
+  ): Promise<SkillEntity> {
     const skill = await this.findByUuidOrFail(uuid, organizationUuid);
     return this.update(skill.id, skill.organization_id, dto);
   }

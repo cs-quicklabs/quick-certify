@@ -33,7 +33,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly sessionService: SessionService,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Check if route is marked as public
@@ -42,7 +42,9 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     if (this.isDisabledRoute(context)) {
-      throw new ForbiddenException('This route is disabled. Please contact support if you need access.');
+      throw new ForbiddenException(
+        'This route is disabled. Please contact support if you need access.',
+      );
     }
 
     const request = context.switchToHttp().getRequest<Request>();
@@ -86,7 +88,10 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private checkForRoute(context: ExecutionContext, type: string) {
-    return this.reflector.getAllAndOverride<boolean>(type, [context.getHandler(), context.getClass()]);
+    return this.reflector.getAllAndOverride<boolean>(type, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

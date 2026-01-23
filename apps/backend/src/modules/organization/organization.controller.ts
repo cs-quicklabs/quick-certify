@@ -20,7 +20,7 @@ import { Role } from '../role/enums';
 @ApiBearerAuth()
 @Controller({ path: 'organizations', version: '1' })
 export class OrganizationController {
-  constructor(private readonly organizationService: OrganizationService) { }
+  constructor(private readonly organizationService: OrganizationService) {}
 
   @Get()
   @UseGuards(RolesGuard)
@@ -130,7 +130,10 @@ export class OrganizationController {
   @ApiResponse({ status: 404, description: 'Organization not found' })
   @ApiResponse({ status: 409, description: 'Organization name already exists' })
   async updateGeneralInfo(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateGeneralInfoDto) {
-    const organization = await this.organizationService.updateGeneralInfo(user.organizationUuid, dto);
+    const organization = await this.organizationService.updateGeneralInfo(
+      user.organizationUuid,
+      dto,
+    );
     return new SuccessResponse('General information updated successfully', organization);
   }
 
@@ -141,7 +144,10 @@ export class OrganizationController {
   @ApiResponse({ status: 200, description: 'Social links updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async updateSocialLinks(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateSocialLinksDto) {
-    const organization = await this.organizationService.updateSocialLinks(user.organizationUuid, dto);
+    const organization = await this.organizationService.updateSocialLinks(
+      user.organizationUuid,
+      dto,
+    );
     return new SuccessResponse('Social links updated successfully', organization);
   }
 

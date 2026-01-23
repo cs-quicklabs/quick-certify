@@ -84,7 +84,9 @@ export class EventService extends BaseCrudService<
     ]);
 
     if (!eventType) {
-      throw new BadRequestException(`Event type with UUID ${dto.eventTypeId} not found or inactive`);
+      throw new BadRequestException(
+        `Event type with UUID ${dto.eventTypeId} not found or inactive`,
+      );
     }
 
     if (!eventLevel) {
