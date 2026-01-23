@@ -1,36 +1,48 @@
 import { defineConfig, devices } from '@playwright/test';
-import { nxE2EPreset } from '@nx/playwright/preset';
-import { workspaceRoot } from '@nx/devkit';
+import * as dotenv from 'dotenv';
+import path from 'path';
 
-// For CI, you may want to set BASE_URL to the deployed application.
-const baseURL = process.env['BASE_URL'] || 'http://localhost:3000';
+dotenv.config();
 
 export default defineConfig({
-  ...nxE2EPreset(__filename, { testDir: './src' }),
+  testDir: './tests',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [['line'], ['allure-playwright']],
+  timeout: 50000,
+
+
+  // Global setup that logs in and saves auth.json if missing
+  globalSetup: './global-setup.ts',
+
   use: {
-    baseURL,
+    screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
-  webServer: {
-    command: 'npx nx run frontend:dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    cwd: workspaceRoot,
-  },
+
+  // Two projects:
+  // 1. Authenticated tests (all except Login.spec.ts)
+  // 2. Fresh session tests (only Login.spec.ts)
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'chromium-auth',
+      testIgnore: /.*Login\.spec\.ts/, // skip Login.spec.ts
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: path.resolve(__dirname, 'auth.json'), //  uses saved session
+        headless: true,
+      },
     },
-
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'chromium-login',
+      testMatch: /.*Login\.spec\.ts/, // only run login tests
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: undefined, // Fresh session
+        headless: true,
+      },
     },
   ],
 });
