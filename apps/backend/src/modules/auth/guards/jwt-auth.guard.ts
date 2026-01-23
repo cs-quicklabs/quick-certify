@@ -5,10 +5,11 @@ import {
   UnauthorizedException,
   Inject,
   forwardRef,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { IS_PUBLIC_KEY } from '../decorators';
+import { IS_PUBLIC_KEY, IS_DISABLED_KEY } from '../decorators';
 import { CurrentUser } from '../interfaces';
 import { TokenService, SessionService } from '../services';
 import { UserEntity, OrganizationEntity, RoleEntity } from '@src/entities';
@@ -38,6 +39,10 @@ export class JwtAuthGuard implements CanActivate {
     // Check if route is marked as public
     if (this.isPublicRoute(context)) {
       return true;
+    }
+
+    if (this.isDisabledRoute(context)) {
+      throw new ForbiddenException('This route is disabled. Please contact support if you need access.');
     }
 
     const request = context.switchToHttp().getRequest<Request>();
@@ -73,10 +78,15 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private isPublicRoute(context: ExecutionContext): boolean {
-    return this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    return this.checkForRoute(context, IS_PUBLIC_KEY);
+  }
+
+  private isDisabledRoute(context: ExecutionContext): boolean {
+    return this.checkForRoute(context, IS_DISABLED_KEY);
+  }
+
+  private checkForRoute(context: ExecutionContext, type: string) {
+    return this.reflector.getAllAndOverride<boolean>(type, [context.getHandler(), context.getClass()]);
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

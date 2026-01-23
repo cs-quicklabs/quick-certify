@@ -37,9 +37,4 @@ export class PaginationDto {
   @IsString()
   @IsOptional()
   search?: string;
-
-  @ApiPropertyOptional({ description: 'Filter by role' })
-  @IsString()
-  @IsOptional()
-  role?: string;
 }

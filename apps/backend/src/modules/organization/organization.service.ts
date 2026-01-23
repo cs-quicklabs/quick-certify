@@ -9,7 +9,7 @@ import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationEntity } from '@src/entities';
 import { StorageService } from '@src/commons/services';
-import { extractDomain } from '@src/commons/utils';
+import { extractDomain, generateNanoid } from '@src/commons/utils';
 import {
   UpdateOrganizationDto,
   UpdateGeneralInfoDto,
@@ -78,7 +78,7 @@ export class OrganizationService implements IOrganizationService {
   }
 
   async findBySlug(slug: string): Promise<OrganizationEntity | null> {
-    return this.organizationModel.findOne({
+    return await this.organizationModel.findOne({
       where: { slug, is_active: true },
     });
   }
@@ -135,31 +135,45 @@ export class OrganizationService implements IOrganizationService {
 
     if (dto.name !== undefined) {
       updateData.name = dto.name;
+
+      // Checking Uniqueness of the name
+      const existedOrgWithOrgName = await this.organizationModel.findOne({
+        where: { name: { [Op.iLike]: dto.name } }
+      })
+
+      if (existedOrgWithOrgName && existedOrgWithOrgName.id !== id) {
+        throw new ConflictException('Organization with this name already exists');
+      }
+
       if (dto.name !== organization.name && !dto.slug) {
         updateData.slug = this.generateSlug(dto.name);
-        const existingSlug = await this.organizationModel.findOne({
-          where: { slug: updateData.slug, id: { [Op.ne]: id } },
-        });
-        if (existingSlug) {
-          throw new ConflictException('Organization with this name already exists');
+        const existingSlug = await this.getOrganizationsBySlug(updateData.slug)
+        if (existingSlug && existingSlug.id !== id) {
+          throw new ConflictException('Slug already taken');
         }
       }
     }
+
     if (dto.slug !== undefined) {
-      const existingSlug = await this.organizationModel.findOne({
-        where: { slug: dto.slug, id: { [Op.ne]: id } },
-      });
-      if (existingSlug) {
+      const existingSlug = await this.getOrganizationsBySlug(dto.slug)
+      if (existingSlug && existingSlug.id !== id) {
         throw new ConflictException('Slug already taken');
       }
       updateData.slug = dto.slug;
     }
+
     if (dto.is_active !== undefined) updateData.is_active = dto.is_active;
     if (dto.issuer_verified !== undefined) updateData.issuer_verified = dto.issuer_verified;
 
     await organization.update(updateData);
 
     return organization;
+  }
+
+  async getOrganizationsBySlug(slug: string) {
+    return await this.organizationModel.findOne({
+      where: { slug },
+    });
   }
 
   async updateByUuid(uuid: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
@@ -430,11 +444,15 @@ export class OrganizationService implements IOrganizationService {
    * @returns A URL-friendly slug
    */
   generateSlug(name: string): string {
-    return name
+    if (!name) return '';
+
+    const cleanedName = name
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '');
+
+    return cleanedName.length < 125 ? cleanedName + '-' + generateNanoid() : generateNanoid();
   }
 }

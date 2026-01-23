@@ -11,7 +11,7 @@ import {
 } from './dtos';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Disabled, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
@@ -24,7 +24,7 @@ export class OrganizationController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get all organizations (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organizations list' })
   @ApiQuery({ name: 'page', required: false })
@@ -86,6 +86,7 @@ export class OrganizationController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.SUPER_ADMIN)
+  @Disabled()
   @ApiOperation({ summary: 'Create a new organization (Super Admin only)' })
   @ApiResponse({ status: 201, description: 'Organization created successfully' })
   async create(@Body() dto: CreateOrganizationDto) {
