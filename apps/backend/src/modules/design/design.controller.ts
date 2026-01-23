@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Patch, Query, UseGuards, } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { DesignService } from "./design.services";
 import { PaginationDto } from '@src/commons/base/dtos';
@@ -7,6 +7,7 @@ import { Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import { CreateDesignDto } from './dtos/create-design.dto';
+import { UpdateDesignDto } from './dtos/update-design.dto';
 
 @ApiTags('Designs')
 @ApiBearerAuth()
@@ -39,9 +40,19 @@ export class DesignController {
   async findOne(@Param('uuid') uuid: string) {
     const design = await this.designService.findOne(uuid);
     if (!design) return new SuccessResponse('Design not found', null);
-    console.log(design)
     return new SuccessResponse('Design retrieved successfully', design)
   }
+
+  @Patch(':uuid')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @ApiResponse({ status: 200, description: 'Design updated' })
+  @ApiResponse({ status: 404, description: 'Design not found' })
+  async update(@Param('uuid') uuid: string, dto: UpdateDesignDto) {
+    const design = await this.designService.update(uuid, dto);
+    return new SuccessResponse('Design updated successfully', design);
+  }
+
 
   @Post()
   @UseGuards(RolesGuard)
