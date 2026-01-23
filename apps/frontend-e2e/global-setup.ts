@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { chromium, FullConfig } from '@playwright/test';
-import { LoginPage } from './Playwright/pageobjects/LoginPage.ts'
+import { LoginPage } from './Playwright/pageobjects/LoginPage.ts';
 
 import * as dotenv from 'dotenv';
 
@@ -15,7 +15,9 @@ async function globalSetup(config: FullConfig) {
   if (!forceRefresh && fs.existsSync(authFile)) {
     const stats = fs.statSync(authFile);
     if (stats.size > 0) {
-      console.log(`Found existing auth.json at ${authFile} (size: ${stats.size} bytes). Skipping login.`);
+      console.log(
+        `Found existing auth.json at ${authFile} (size: ${stats.size} bytes). Skipping login.`,
+      );
       return;
     } else {
       console.log(`auth.json exists but is empty — will re-login and overwrite.`);
@@ -42,11 +44,12 @@ async function globalSetup(config: FullConfig) {
   const loginPage = new LoginPage(page);
   await loginPage.login(email, password);
 
-
   try {
     await page.waitForSelector('text=Logout', { timeout: 10_000 });
   } catch (err) {
-    console.warn('Login did not show expected logged-in indicator — continuing to save storage state anyway.');
+    console.warn(
+      'Login did not show expected logged-in indicator — continuing to save storage state anyway.',
+    );
   }
 
   // Save authenticated state

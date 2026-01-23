@@ -1,6 +1,5 @@
 import { test, registrationData, expect } from './Fixture';
 
-
 /**
  * Test Case: UR10
  * Description: Verifies the Super Admin Registration
@@ -17,7 +16,7 @@ import { test, registrationData, expect } from './Fixture';
 test.beforeEach(async ({ registrationPage, loginPage: fixtureLoginPage }) => {
   const loginPage = fixtureLoginPage;
   await loginPage.openUrl();
-  await registrationPage.clickOnSignupBtn()
+  await registrationPage.clickOnSignupBtn();
 });
 
 test.describe('To validate the User Registration Functionality', () => {
@@ -27,10 +26,8 @@ test.describe('To validate the User Registration Functionality', () => {
       registrationData.lastName,
       registrationData.issuerURL,
       registrationData.password,
-      registrationData.confirmPassword)
-    await registrationPage.clickOnCreateNewUserBtn()
-
-
-
-  })
+      registrationData.confirmPassword,
+    );
+    await registrationPage.clickOnCreateNewUserBtn();
+  });
 });

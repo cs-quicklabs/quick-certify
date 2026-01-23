@@ -15,8 +15,6 @@ import registrationData from '../testData/registrationData.json';
 type Fixtures = {
   loginPage: LoginPage;
   registrationPage: RegistrationPage;
-
-
 };
 
 export const test = base.extend<Fixtures>({
@@ -28,8 +26,7 @@ export const test = base.extend<Fixtures>({
   registrationPage: async ({ page }, use) => {
     const registrationPage = new RegistrationPage(page);
     await use(registrationPage);
-  }
-
+  },
 });
 
 export { baseExpect as expect, registrationData };

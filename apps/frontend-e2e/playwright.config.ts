@@ -13,7 +13,6 @@ export default defineConfig({
   reporter: [['line'], ['allure-playwright']],
   timeout: 50000,
 
-
   // Global setup that logs in and saves auth.json if missing
   globalSetup: './global-setup.ts',
 
