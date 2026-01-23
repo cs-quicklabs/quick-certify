@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -14,7 +15,6 @@ export enum Gender {
   Female = 'female',
   Other = 'other',
 }
-
 export class CreateUserDto {
   @ApiProperty({ example: 'John', description: 'First name of the user' })
   @IsString()
@@ -59,13 +59,13 @@ export class CreateUserDto {
   @IsOptional()
   profilePicture?: string = '';
 
-  @ApiProperty({ example: 'abc123', description: 'Organization ID (nanoid)' })
-  @IsString()
-  @IsNotEmpty({ message: 'Organization ID is required' })
-  organizationId = '';
-
-  @ApiProperty({ example: 'xyz789', description: 'Role ID (nanoid)' })
-  @IsString()
+  @ApiProperty({ example: 1, description: 'Role ID (integer)' })
+  @IsNumber()
   @IsNotEmpty({ message: 'Role ID is required' })
-  roleId = '';
+  roleId: number = 0;
+
+  @ApiProperty({ example: 1, description: 'Organization ID (integer)' })
+  @IsNumber()
+  @IsNotEmpty({ message: 'Organization ID is required' })
+  organizationId!: number;
 }

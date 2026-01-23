@@ -20,4 +20,3 @@ export function Divider({ text, className }: DividerProps) {
 
   return <hr className={clsx('border-t border-gray-300 dark:border-gray-600', className)} />;
 }
-

@@ -28,22 +28,15 @@ export const generalInfoSchema = z.object({
     .email('Please provide a valid email address')
     .optional()
     .or(z.literal('')),
-  slogan: z
-    .string()
-    .max(255, 'Slogan must not exceed 255 characters')
-    .optional()
-    .or(z.literal('')),
+  slogan: z.string().max(255, 'Slogan must not exceed 255 characters').optional().or(z.literal('')),
   linkedin_company_id: z
     .string()
     .transform((val) => val.trim())
-    .refine(
-      (val) => val === '' || /^\d{1,10}$/.test(val),
-      { message: 'LinkedIn Company ID must be up to 10 digits and numeric only' }
-    )
+    .refine((val) => val === '' || /^\d{1,10}$/.test(val), {
+      message: 'LinkedIn Company ID must be up to 10 digits and numeric only',
+    })
     .optional()
     .or(z.literal('')),
-
-
 });
 
 export type GeneralInfoFormData = z.infer<typeof generalInfoSchema>;
@@ -55,7 +48,8 @@ export const socialLinksSchema = z.object({
   linkedin_url: z
     .string()
     .refine((val) => !val || linkedinUrlRegex.test(val), {
-      message: 'Please provide a valid LinkedIn URL (e.g., https://linkedin.com/company/your-company)',
+      message:
+        'Please provide a valid LinkedIn URL (e.g., https://linkedin.com/company/your-company)',
     })
     .optional()
     .or(z.literal('')),
@@ -88,11 +82,7 @@ export type SocialLinksFormData = z.infer<typeof socialLinksSchema>;
  * Branding Schema
  */
 export const brandingSchema = z.object({
-  logo_url: z
-    .string()
-    .url('Please provide a valid URL for the logo')
-    .optional()
-    .or(z.literal('')),
+  logo_url: z.string().url('Please provide a valid URL for the logo').optional().or(z.literal('')),
   favicon_url: z
     .string()
     .url('Please provide a valid URL for the favicon')
@@ -115,4 +105,3 @@ export const portalSettingsSchema = z.object({
 });
 
 export type PortalSettingsFormData = z.infer<typeof portalSettingsSchema>;
-

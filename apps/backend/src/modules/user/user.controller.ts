@@ -18,12 +18,16 @@ import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard, OrganizationGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '@src/modules/role/enums';
+import { EmailService } from '@src/commons/services';
 
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller({ path: 'users', version: '1' })
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly emailService: EmailService,
+  ) {}
 
   @Get()
   @UseGuards(RolesGuard)
@@ -35,7 +39,11 @@ export class UserController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'role', required: false, description: 'Filter by role (admin, manager, designer)' })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    description: 'Filter by role (admin, manager, designer)',
+  })
   async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
     // Only Admin and Super Admin can access team listing
     // Exclude the current logged-in user from the listing
@@ -47,7 +55,7 @@ export class UserController {
       sortOrder: pagination.sortOrder || 'DESC',
       role: pagination.role,
       status: pagination.status,
-      excludeUserId: user.id, // Exclude current user from results
+      excludeUserUuid: user.uuid, // Exclude current user from results (user.id is UUID)
       currentUserRole: user.role, // Pass current user's role for role-based filtering
     };
     const result = pagination.search
@@ -63,7 +71,10 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     // Admin can access their own org users, super admin can access all
-    const foundUser = await this.userService.findOneByUuidAndOrganization(uuid, user.organizationId);
+    const foundUser = await this.userService.findOneByUuidAndOrganization(
+      uuid,
+      user.organizationUuid,
+    );
     if (!foundUser) {
       return new SuccessResponse('User not found', null);
     }
@@ -80,6 +91,15 @@ export class UserController {
     // Only Admin and Super Admin can create users/invitations
     dto.organizationId = user.organizationId;
     const newUser = await this.userService.create(dto, user);
+
+    // Send welcome email if user was created with password (not invitation)
+    // Note: Invitation emails are sent by userService.create()
+    if (dto.password && newUser.status === 'active') {
+      this.emailService
+        .sendWelcomeEmail(newUser.email, { name: newUser.first_name })
+        .catch(console.error);
+    }
+
     return new SuccessResponse('User created successfully', newUser);
   }
 
@@ -96,7 +116,7 @@ export class UserController {
   ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      user.organizationUuid,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
@@ -115,14 +135,14 @@ export class UserController {
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      user.organizationUuid,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
     }
 
-    // Prevent deleting yourself
-    if (user.id === existingUser.id) {
+    // Prevent deleting yourself (compare UUIDs)
+    if (user.uuid === existingUser.uuid) {
       return new SuccessResponse('Cannot delete your own account', null);
     }
 
@@ -139,7 +159,7 @@ export class UserController {
   async cancelInvitation(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      user.organizationUuid,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
@@ -158,7 +178,7 @@ export class UserController {
   async resendInvitation(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      user.organizationUuid,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
@@ -177,7 +197,7 @@ export class UserController {
   async restore(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
-      user.organizationId,
+      user.organizationUuid,
     );
     if (!existingUser) {
       return new SuccessResponse('User not found', null);

@@ -70,7 +70,8 @@ function createApiClient(): AxiosInstance {
         console.error('Network error - possible CORS issue or server unavailable:', error.message);
         const networkError: ApiError = {
           success: false,
-          message: 'Unable to connect to the server. Please check your network connection or try again later.',
+          message:
+            'Unable to connect to the server. Please check your network connection or try again later.',
           statusCode: 0,
         };
         return Promise.reject({ response: { data: networkError } });
@@ -117,11 +118,9 @@ function createApiClient(): AxiosInstance {
 
         try {
           // Call refresh token endpoint
-          const response = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
-            `${env.API_BASE_URL}/auth/refresh-token`,
-            { refreshToken },
-            { withCredentials: true },
-          );
+          const response = await axios.post<
+            ApiResponse<{ accessToken: string; refreshToken: string }>
+          >(`${env.API_BASE_URL}/auth/refresh-token`, { refreshToken }, { withCredentials: true });
 
           if (response.data.success && response.data.data) {
             // Store new tokens
@@ -207,4 +206,3 @@ export function isAuthenticated(): boolean {
  * Export singleton API client
  */
 export const apiClient = createApiClient();
-

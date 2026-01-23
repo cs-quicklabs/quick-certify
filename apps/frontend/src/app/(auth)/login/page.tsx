@@ -8,7 +8,10 @@ import { ROUTES } from '@/config/routes';
 
 export default function LoginPage() {
   const { formMethods, onSubmit, globalError, clearError, isLoading } = useLogin();
-  const { register, formState: { errors } } = formMethods;
+  const {
+    register,
+    formState: { errors },
+  } = formMethods;
 
   // Clear error on page mount/refresh
   useEffect(() => {
@@ -16,7 +19,7 @@ export default function LoginPage() {
   }, [clearError]);
 
   return (
-    <div className='w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700'>
+    <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
       <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
         {/* Header */}
         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
@@ -24,13 +27,7 @@ export default function LoginPage() {
         </h1>
 
         {/* Server Error Alert */}
-        {globalError && (
-          <Alert
-            type="error"
-            message={globalError}
-            onClose={clearError}
-          />
-        )}
+        {globalError && <Alert type="error" message={globalError} onClose={clearError} />}
 
         {/* Login Form */}
         <form onSubmit={onSubmit} className="space-y-4 md:space-y-4">
@@ -65,12 +62,7 @@ export default function LoginPage() {
           </div>
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            fullWidth
-            isLoading={isLoading}
-            disabled={isLoading}
-          >
+          <Button type="submit" fullWidth isLoading={isLoading} disabled={isLoading}>
             Sign in
           </Button>
 

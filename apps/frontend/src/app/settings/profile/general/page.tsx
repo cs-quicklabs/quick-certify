@@ -51,11 +51,5 @@ export default function ProfileSettingsPage() {
     },
   };
 
-  return (
-    <ConfigForm
-      config={formConfig}
-      initialValues={profile}
-      isLoading={isLoading}
-    />
-  );
+  return <ConfigForm config={formConfig} initialValues={profile} isLoading={isLoading} />;
 }

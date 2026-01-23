@@ -117,7 +117,6 @@ export default function IssuerPortalPage() {
         setIsUploading={setIsUploading}
       />
 
-
       <div className="flex mt-6">
         <div className="flex items-center h-5">
           <input
@@ -126,12 +125,16 @@ export default function IssuerPortalPage() {
             checked={isPortalEnabled}
             onChange={(e) => handlePortalToggle(e.target.checked)}
             disabled={isUploading}
-            className="checkbox" />
+            className="checkbox"
+          />
         </div>
         <div className="ms-2 text-sm">
-          <label htmlFor="portal_enabled" className="form-input-label">Enable Issuer Portal</label>
+          <label htmlFor="portal_enabled" className="form-input-label">
+            Enable Issuer Portal
+          </label>
           <p className="form-input-description -mt-2">
-            If disabled, there will be no public page to showcase public events limiting your reach. Issuer portal is enabled by default.
+            If disabled, there will be no public page to showcase public events limiting your reach.
+            Issuer portal is enabled by default.
           </p>
         </div>
       </div>

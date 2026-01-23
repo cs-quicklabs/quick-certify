@@ -6,5 +6,5 @@ import { redirect } from 'next/navigation';
  * Redirects to settings route
  */
 export default function EventLevelsPage() {
-    redirect('/settings/event/level');
+  redirect('/settings/event/level');
 }

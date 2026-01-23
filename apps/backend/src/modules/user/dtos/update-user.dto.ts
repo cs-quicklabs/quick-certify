@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Gender } from './create-user.dto';
 
 export class UpdateUserDto {
@@ -33,10 +33,10 @@ export class UpdateUserDto {
   @IsOptional()
   profile_picture?: string;
 
-  @ApiPropertyOptional({ example: 'xyz789', description: 'Role ID (nanoid)' })
-  @IsString()
+  @ApiPropertyOptional({ example: 1, description: 'Role ID (integer)' })
+  @IsNumber()
   @IsOptional()
-  roleId?: string;
+  roleId?: number;
 
   @ApiPropertyOptional({ default: true, description: 'Whether email notifications are enabled' })
   @IsBoolean()
@@ -51,4 +51,35 @@ export class UpdateUserDto {
   @IsEnum(['active', 'inactive', 'archived'])
   @IsOptional()
   status?: 'active' | 'inactive' | 'archived';
+
+  @ApiPropertyOptional({
+    example: 'StrongP@ssw0rd!',
+    description:
+      'Password (min 8 chars, must include uppercase, lowercase, number, and special char). Internal use only.',
+  })
+  @IsString()
+  @IsOptional()
+  password?: string;
+
+  @ApiPropertyOptional({
+    example: 'google_123456789',
+    description: 'Google ID for OAuth. Internal use only.',
+  })
+  @IsString()
+  @IsOptional()
+  google_id?: string;
+
+  @ApiPropertyOptional({
+    enum: ['email', 'google', 'both'],
+    description: 'Authentication provider. Internal use only.',
+  })
+  @IsEnum(['email', 'google', 'both'])
+  @IsOptional()
+  auth_provider?: 'email' | 'google' | 'both';
+
+  @ApiPropertyOptional({
+    description: 'Last login timestamp. Internal use only.',
+  })
+  @IsOptional()
+  last_login_at?: Date;
 }

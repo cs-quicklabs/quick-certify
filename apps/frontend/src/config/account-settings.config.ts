@@ -20,7 +20,8 @@ export const generalInfoFormFields: FormFieldConfig[] = [
     placeholder: 'Write a few words about your organization...',
     description: '',
     rows: 4,
-    tooltipText: 'Write a few words about your organization to let people know what you specialize in. This description will be displayed on each credential page under your organization’s name.',
+    tooltipText:
+      'Write a few words about your organization to let people know what you specialize in. This description will be displayed on each credential page under your organization’s name.',
   },
   {
     name: 'support_email',
@@ -28,7 +29,8 @@ export const generalInfoFormFields: FormFieldConfig[] = [
     type: 'email',
     placeholder: 'support@company.com',
     description: '',
-    tooltipText: 'Enter the preferred email address your recipients can use to contact you regarding changes or problems with their credential.',
+    tooltipText:
+      'Enter the preferred email address your recipients can use to contact you regarding changes or problems with their credential.',
   },
   {
     name: 'slogan',
@@ -43,7 +45,8 @@ export const generalInfoFormFields: FormFieldConfig[] = [
     placeholder: '12345678',
     description:
       'To find your LinkedIn Company ID, open your company\'s profile being logged in as an admin, and copy the numbers before "/admin" in the URL.',
-    tooltipText: 'Providing the Linkedin Company ID ensures that all certificates your recipients add to their LinkedIn profiles will have your organization automatically selected as an issuer. ',
+    tooltipText:
+      'Providing the Linkedin Company ID ensures that all certificates your recipients add to their LinkedIn profiles will have your organization automatically selected as an issuer. ',
     icon: 'linkedin',
   },
 ];
@@ -129,4 +132,3 @@ export const portalSettingsFormFields: FormFieldConfig[] = [
       'If disabled, there will be no public page to showcase public events limiting your reach. Issuer portal is enabled by default.',
   },
 ];
-

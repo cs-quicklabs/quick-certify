@@ -7,6 +7,7 @@ import { useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { Table } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
+import { capitalizeFirst } from '@/utils/helpers';
 
 /**
  * Team Listing Page
@@ -26,7 +27,6 @@ export default function TeamsPage() {
       router.push('/dashboard');
     }
   }, [user, router]);
-
 
   // Use backend filtering instead of client-side
   const { data, isLoading } = useTeamMembers({
@@ -71,7 +71,6 @@ export default function TeamsPage() {
     return roleMap[role] || role;
   };
 
-
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
     setCurrentPage(1); // Reset to first page on filter change
@@ -93,20 +92,18 @@ export default function TeamsPage() {
         <div>
           <h1 className="text-xl font-bold text-gray-900">Team</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Manage all your existing <span className="font-semibold text-gray-900">{totalCount}</span> team member{totalCount !== 1 ? 's' : ''} or add a new one.
+            Manage all your existing{' '}
+            <span className="font-semibold text-gray-900">{totalCount}</span> team member
+            {totalCount !== 1 ? 's' : ''} or add a new one.
           </p>
         </div>
         <div className="flex space-x-4">
           <div className="flex space-x-2 items-center w-full">
-            <Link
-              href="/settings/team/add"
-              className="btn-primary w-full"
-            >
+            <Link href="/settings/team/add" className="btn-primary w-full">
               Add new member
             </Link>
           </div>
         </div>
-
       </div>
 
       {/* Search and Filters */}
@@ -173,7 +170,7 @@ export default function TeamsPage() {
               render: (member) => {
                 return (
                   <span className="text-sm font-medium text-gray-900">
-                    {member.first_name} {member.last_name}
+                    {capitalizeFirst(member.first_name)} {capitalizeFirst(member.last_name)}
                   </span>
                 );
               },
@@ -212,12 +209,12 @@ export default function TeamsPage() {
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full ${member.status === 'active'
-                      ? 'bg-green-500'
-                      : member.status === 'inactive'
-                        ? 'bg-yellow-500'
-                        : member.status === 'invited'
-                          ? 'bg-blue-500'
-                          : 'bg-gray-400'
+                        ? 'bg-green-500'
+                        : member.status === 'inactive'
+                          ? 'bg-yellow-500'
+                          : member.status === 'invited'
+                            ? 'bg-blue-500'
+                            : 'bg-gray-400'
                       }`}
                   />
                   <span className="text-sm text-gray-900 capitalize">{member.status}</span>
@@ -278,7 +275,6 @@ export default function TeamsPage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

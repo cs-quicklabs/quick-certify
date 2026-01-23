@@ -9,7 +9,9 @@ import { z } from 'zod';
 // Basic user schema
 export const userSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(2, 'Name must be at least 2 characters')
+  name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
     .regex(/\S/, 'Name must not be only spaces')
     .regex(/^[a-zA-Z0-9\s]+$/, 'Name must only contain letters, numbers')
     .regex(/[a-zA-Z]/, 'Name must contain at least one letter'),
@@ -24,7 +26,9 @@ export type User = z.infer<typeof userSchema>;
 // Registration form schema
 export const registerSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters')
+    name: z
+      .string()
+      .min(2, 'Name must be at least 2 characters')
       .regex(/\S/, 'Name must not be only spaces')
       .regex(/^[a-zA-Z0-9\s]+$/, 'Name must only contain letters, numbers')
       .regex(/[a-zA-Z]/, 'Name must contain at least one letter'),

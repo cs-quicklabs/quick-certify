@@ -31,8 +31,7 @@ export function Header() {
   }, [menuOpened]);
 
   // Get avatar URL from profile (most up-to-date) or fallback to user or default
-  const avatarUrl =
-    profile?.avatarUrl || user?.avatarUrl || "";
+  const avatarUrl = profile?.avatarUrl || user?.avatarUrl || '';
 
   const handleSignOutClick = () => {
     setMenuOpened(false);
@@ -193,11 +192,13 @@ export function Header() {
                     aria-haspopup="true"
                   >
                     <span className="sr-only">Open user menu</span>
-                    {avatarUrl && (<img
-                      className="h-full w-full rounded-full object-cover"
-                      src={avatarUrl}
-                      alt={user?.firstName || 'User'}
-                    />)}
+                    {avatarUrl && (
+                      <img
+                        className="h-full w-full rounded-full object-cover"
+                        src={avatarUrl}
+                        alt={user?.firstName || 'User'}
+                      />
+                    )}
                     {!avatarUrl && (
                       <span className="text-lg font-medium">
                         {getInitials(user?.firstName, user?.lastName)}
@@ -214,7 +215,11 @@ export function Header() {
                     tabIndex={-1}
                   >
                     <div className="px-4 py-3" role="none">
-                      <p className="text-sm break-words max-w-xs" role="none" style={{ wordBreak: 'break-all' }}>
+                      <p
+                        className="text-sm break-words max-w-xs"
+                        role="none"
+                        style={{ wordBreak: 'break-all' }}
+                      >
                         {user?.email || 'User'}
                       </p>
                       <p className="text-xs text-gray-500" role="none">
@@ -345,11 +350,13 @@ export function Header() {
           <div className="border-t border-gray-700 pb-3 pt-4">
             <div className="flex items-center px-5">
               <div className="shrink-0 flex items-center justify-center h-10 w-10 bg-gray-400 rounded-full text-white">
-                {avatarUrl && (<img
-                  className="h-full w-full rounded-full object-cover"
-                  src={avatarUrl}
-                  alt={user?.firstName || 'User'}
-                />)}
+                {avatarUrl && (
+                  <img
+                    className="h-full w-full rounded-full object-cover"
+                    src={avatarUrl}
+                    alt={user?.firstName || 'User'}
+                  />
+                )}
                 {!avatarUrl && (
                   <span className="text-lg font-medium">
                     {getInitials(user?.firstName, user?.lastName)}

@@ -34,9 +34,10 @@ export default function AddTeamMemberPage() {
 
   // Filter roles and create options for select
   const filteredRoles = useMemo(() => {
-    return roles?.filter((role) =>
-      ['admin', 'manager', 'designer'].includes(role.role.toLowerCase())
-    ) || [];
+    return (
+      roles?.filter((role) => ['admin', 'manager', 'designer'].includes(role.role.toLowerCase())) ||
+      []
+    );
   }, [roles]);
 
   // Create form fields with role options
@@ -48,7 +49,8 @@ export default function AddTeamMemberPage() {
           return {
             ...field,
             options: filteredRoles.map((role) => ({
-              label: role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
+              label:
+                role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
               value: role.id,
             })),
           };
@@ -61,7 +63,8 @@ export default function AddTeamMemberPage() {
 
   const formConfig: FormConfig<typeof addTeamMemberSchema> = {
     title: 'Add New Team Member',
-    subtitle: 'Please fill in details of new team member to send them an invitation to join your team.',
+    subtitle:
+      'Please fill in details of new team member to send them an invitation to join your team.',
     fields: formFields,
     schema: addTeamMemberSchema,
     submitLabel: 'Send Invitation',

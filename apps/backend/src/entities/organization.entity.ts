@@ -1,5 +1,5 @@
 import { Column, DataType, Index, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 
 /**
  * Organization Entity
@@ -9,8 +9,13 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
  */
 @Table({
   tableName: 'organization',
+  underscored: true,
 })
-export class OrganizationEntity extends BaseNanoidEntity {
+export class OrganizationEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_ORGANIZATION_UUID', unique: true })
+  declare uuid: string;
+
   // ============================================
   // General Information
   // ============================================

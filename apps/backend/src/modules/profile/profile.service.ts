@@ -19,12 +19,12 @@ export class ProfileService {
     @InjectModel(UserEntity)
     private readonly userModel: typeof UserEntity,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   /**
    * Get full user profile with additional details
    */
-  async getFullProfile(userId: string) {
+  async getFullProfile(userId: number) {
     const user = await this.userModel.findByPk(userId, {
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
@@ -59,7 +59,7 @@ export class ProfileService {
    * Update user profile
    * Automatically deletes old avatar from storage when replaced
    */
-  async updateProfile(userId: string, dto: UpdateProfileDto) {
+  async updateProfile(userId: number, dto: UpdateProfileDto) {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -77,12 +77,12 @@ export class ProfileService {
     }
 
     const updateData: Partial<UserEntity> = {
-      first_name: capitalizeFirst(dto.firstName), // firstName is always required
+      first_name: dto.firstName, // firstName is always required
     };
 
     // Only update optional fields if provided
     if (dto.lastName !== undefined) {
-      updateData.last_name = dto.lastName ? capitalizeFirst(dto.lastName) : null;
+      updateData.last_name = dto.lastName ? dto.lastName : null;
     }
     if (dto.avatarUrl !== undefined) {
       updateData.avatar_url = dto.avatarUrl === '' ? null : dto.avatarUrl;
@@ -99,7 +99,7 @@ export class ProfileService {
   /**
    * Update email preferences
    */
-  async updateEmailPreferences(userId: string, dto: UpdateEmailPreferencesDto) {
+  async updateEmailPreferences(userId: number, dto: UpdateEmailPreferencesDto) {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -119,7 +119,7 @@ export class ProfileService {
   /**
    * Get email preferences
    */
-  async getEmailPreferences(userId: string) {
+  async getEmailPreferences(userId: number) {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {

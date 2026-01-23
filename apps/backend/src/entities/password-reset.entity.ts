@@ -7,34 +7,45 @@ import {
   Index,
   Table,
 } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
 import { generateNanoid } from '@src/commons/utils/nanoid.util';
 
+/**
+ * Password Reset Entity
+ *
+ * Represents a password reset token with expiration and usage tracking.
+ * Used for secure password reset flows.
+ */
 @Table({
   tableName: 'password_reset',
+  underscored: true,
 })
-export class PasswordResetEntity extends BaseNanoidEntity {
+export class PasswordResetEntity extends BaseEntity {
+  // Override UUID with table-specific index
   @Index({ name: 'IDX_PASSWORD_RESET_UUID', unique: true })
+  declare uuid: string;
+
+  @Index({ name: 'IDX_PASSWORD_RESET_TOKEN_UUID', unique: true })
   @Column({
     type: DataType.STRING(21),
     allowNull: false,
   })
-  declare uuid: string;
+  declare token_uuid: string;
 
   @BeforeValidate
-  static generateUuid<T extends PasswordResetEntity>(instance: T): void {
-    if (!instance.uuid) {
-      instance.uuid = generateNanoid();
+  static generateTokenUuid<T extends PasswordResetEntity>(instance: T): void {
+    if (!instance.token_uuid) {
+      instance.token_uuid = generateNanoid();
     }
   }
 
   @ForeignKey(() => UserEntity)
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
   })
-  declare user_id: string;
+  declare user_id: number;
 
   @BelongsTo(() => UserEntity)
   declare user: UserEntity;

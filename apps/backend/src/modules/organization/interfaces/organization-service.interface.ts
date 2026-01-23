@@ -15,7 +15,12 @@ export interface IOrganizationService {
   /**
    * Find organization by ID
    */
-  findOne(id: string): Promise<OrganizationEntity | null>;
+  findOne(id: number): Promise<OrganizationEntity | null>;
+
+  /**
+   * Find organization by UUID
+   */
+  findByUuid(uuid: string): Promise<OrganizationEntity | null>;
 
   /**
    * Find organization by slug
@@ -30,7 +35,12 @@ export interface IOrganizationService {
   /**
    * Update an organization
    */
-  update(id: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity>;
+  update(id: number, dto: UpdateOrganizationDto): Promise<OrganizationEntity>;
+
+  /**
+   * Update an organization by UUID
+   */
+  updateByUuid(uuid: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity>;
 
   /**
    * Search organizations by query
@@ -39,7 +49,23 @@ export interface IOrganizationService {
     searchQuery: string,
     options?: FindAllOptions,
   ): Promise<PaginatedResult<OrganizationEntity>>;
+
+  /**
+   * Validate organization creation data (name, slug, website)
+   * @throws ConflictException if name or slug already exists
+   * @throws BadRequestException if website domain is invalid or already in use
+   */
+  validateOrganizationCreation(name: string, websiteUrl?: string | null): Promise<void>;
+
+  /**
+   * Generate a URL-friendly slug from an organization name
+   */
+  generateSlug(name: string): string;
+
+  /**
+   * Validate if a website domain is already in use
+   */
+  validateWebsiteDomain(originalOrganizationId: number | null, websiteUrl: string): Promise<void>;
 }
 
 export const ORGANIZATION_SERVICE = Symbol('IOrganizationService');
-

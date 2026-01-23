@@ -1,17 +1,24 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+  Inject,
+  forwardRef,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { InjectModel } from '@nestjs/sequelize';
 import { Request } from 'express';
-import { IS_PUBLIC_KEY } from '../decorators';
+import { IS_PUBLIC_KEY, IS_DISABLED_KEY } from '../decorators';
 import { CurrentUser } from '../interfaces';
 import { TokenService, SessionService } from '../services';
-import { UserEntity, RoleEntity } from '@src/entities';
-
+import { UserEntity, OrganizationEntity, RoleEntity } from '@src/entities';
+import { UserService } from '../../user/user.service';
 /**
  * JWT Auth Guard
  *
  * SRP: Responsible only for authentication flow control
- * DIP: Depends on TokenService and SessionService abstractions
+ * DIP: Depends on TokenService, SessionService, and UserService abstractions
  *
  * Validates:
  * 1. Token presence and validity
@@ -24,14 +31,20 @@ export class JwtAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly tokenService: TokenService,
     private readonly sessionService: SessionService,
-    @InjectModel(UserEntity)
-    private readonly userModel: typeof UserEntity,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Check if route is marked as public
     if (this.isPublicRoute(context)) {
       return true;
+    }
+
+    if (this.isDisabledRoute(context)) {
+      throw new ForbiddenException(
+        'This route is disabled. Please contact support if you need access.',
+      );
     }
 
     const request = context.switchToHttp().getRequest<Request>();
@@ -67,7 +80,15 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private isPublicRoute(context: ExecutionContext): boolean {
-    return this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+    return this.checkForRoute(context, IS_PUBLIC_KEY);
+  }
+
+  private isDisabledRoute(context: ExecutionContext): boolean {
+    return this.checkForRoute(context, IS_DISABLED_KEY);
+  }
+
+  private checkForRoute(context: ExecutionContext, type: string) {
+    return this.reflector.getAllAndOverride<boolean>(type, [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -78,10 +99,12 @@ export class JwtAuthGuard implements CanActivate {
     return type === 'Bearer' ? token : undefined;
   }
 
-  private async findValidUser(userId: string): Promise<UserEntity> {
-    const user = await this.userModel.findOne({
-      where: { id: userId },
-      include: [{ model: RoleEntity }],
+  private async findValidUser(userUuid: string): Promise<UserEntity> {
+    const user = await this.userService.findByUuid(userUuid, {
+      include: [
+        { model: OrganizationEntity, as: 'organization' },
+        { model: RoleEntity, as: 'role' },
+      ],
     });
 
     if (!user) {
@@ -96,14 +119,21 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   private attachUserToRequest(request: Request, user: UserEntity, sessionHash: string): void {
+    // Load organization and role to get their UUIDs
+    const organization = user.organization || null;
+    const role = user.role || null;
+
     const currentUser: CurrentUser = {
-      id: user.id,
+      id: user.id, // Use UUID instead of ID
+      uuid: user.uuid, // Use UUID instead of ID
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
-      organizationId: user.organization_id,
-      roleId: user.role_id,
-      role: user.role?.role || '',
+      organizationId: user.organization_id, // Keep ID for internal operations
+      organizationUuid: organization?.uuid || '', // Add UUID for external operations
+      roleId: user.role_id, // Keep ID for internal operations
+      roleUuid: role?.uuid || '', // Add UUID for external operations
+      role: role?.role || '',
       sessionHash,
     };
 
