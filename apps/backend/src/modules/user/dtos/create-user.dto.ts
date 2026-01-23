@@ -62,7 +62,7 @@ export class CreateUserDto {
   @ApiProperty({ example: 1, description: 'Role ID (integer)' })
   @IsNumber()
   @IsNotEmpty({ message: 'Role ID is required' })
-  roleId: number = 0;
+  roleId = 0;
 
   @ApiProperty({ example: 1, description: 'Organization ID (integer)' })
   @IsNumber()

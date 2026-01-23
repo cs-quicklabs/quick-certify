@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { UserEntity, RoleEntity, OrganizationEntity } from '@src/entities';
 import { UpdateProfileDto, UpdateEmailPreferencesDto } from './dto';
 import { StorageService } from '@src/commons/services';
-import { capitalizeFirst } from '@src/commons/utils';
+
 
 /**
  * Profile Service

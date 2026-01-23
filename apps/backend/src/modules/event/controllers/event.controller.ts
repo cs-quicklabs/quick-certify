@@ -48,9 +48,6 @@ export class EventController {
   @ApiQuery({ name: 'format', required: false, description: 'Filter by event format ID' })
   async findAll(
     @Query() pagination: PaginationDto,
-    @Query('type') type?: string,
-    @Query('level') level?: string,
-    @Query('format') format?: string,
   ) {
     const where: Record<string, unknown> = {};
 

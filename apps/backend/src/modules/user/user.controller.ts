@@ -19,6 +19,7 @@ import { RolesGuard, OrganizationGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '@src/modules/role/enums';
 import { EmailService } from '@src/commons/services';
+import { UserPaginationRequestOptions } from './dtos/interface';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -27,7 +28,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   @Get()
   @UseGuards(RolesGuard)
@@ -48,7 +49,7 @@ export class UserController {
     // Only Admin and Super Admin can access team listing
     // Exclude the current logged-in user from the listing
     // Apply role-based visibility: Admin cannot see Super Admin, lower users cannot see Admin/Super Admin
-    const options: any = {
+    const options: UserPaginationRequestOptions = {
       page: pagination.page,
       limit: pagination.limit,
       sortBy: pagination.sortBy || 'last_login_at',

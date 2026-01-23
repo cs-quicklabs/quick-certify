@@ -17,7 +17,6 @@ import { CreateUserDto, UpdateUserDto } from './dtos';
 import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
-import { capitalizeFirst } from '@src/commons/utils';
 import { RoleService } from '../role/role.service';
 import { OrganizationService } from '../organization/organization.service';
 
@@ -30,6 +29,7 @@ export interface ExtendedFindAllOptions extends FindAllOptions {
   excludeUserUuid?: string; // User UUID (string) to exclude
   currentUserRole?: string;
   role?: string;
+  status?: string;
 }
 
 /**
@@ -631,8 +631,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       }
     }
 
-    if ((options as any).status) {
-      whereClause.status = (options as any).status;
+    if (options.status) {
+      whereClause.status = options.status;
     }
 
     // Handle role filtering - need to find role IDs first

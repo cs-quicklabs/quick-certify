@@ -3,7 +3,6 @@ import {
   Column,
   CreatedAt,
   DataType,
-  Index,
   Model,
   UpdatedAt,
 } from 'sequelize-typescript';
