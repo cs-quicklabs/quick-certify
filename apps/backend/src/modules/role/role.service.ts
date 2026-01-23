@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { RoleEntity } from '@src/entities/role.entity';
-import { CreateRoleDto, UpdateRoleDto } from './dtos';
 import { Role, SYSTEM_ROLES } from './enums';
 
 /**
@@ -48,8 +47,12 @@ export class RoleService {
     };
   }
 
-  async findOne(id: string): Promise<RoleEntity | null> {
+  async findOne(id: number): Promise<RoleEntity | null> {
     return this.roleModel.findByPk(id);
+  }
+
+  async findByUuid(uuid: string): Promise<RoleEntity | null> {
+    return this.roleModel.findOne({ where: { uuid } });
   }
 
   async findByRole(role: Role | string): Promise<RoleEntity | null> {
@@ -59,7 +62,7 @@ export class RoleService {
     });
   }
 
-  async create(dto: CreateRoleDto): Promise<RoleEntity> {
+  async create(dto: Partial<RoleEntity>): Promise<RoleEntity> {
     // Check for duplicate role
     const existingRole = await this.roleModel.findOne({
       where: { role: dto.role },
@@ -74,7 +77,7 @@ export class RoleService {
     });
   }
 
-  async update(id: string, dto: UpdateRoleDto): Promise<RoleEntity> {
+  async update(id: number, dto: Partial<RoleEntity>): Promise<RoleEntity> {
     const role = await this.requireById(id);
 
     if (dto.role !== undefined) {
@@ -93,7 +96,12 @@ export class RoleService {
     return role;
   }
 
-  async delete(id: string): Promise<boolean> {
+  async updateByUuid(uuid: string, dto: Partial<RoleEntity>): Promise<RoleEntity> {
+    const role = await this.findByUuidOrFail(uuid);
+    return this.update(role.id, dto);
+  }
+
+  async delete(id: number): Promise<boolean> {
     const role = await this.requireById(id);
 
     // Check if it's a system role
@@ -103,6 +111,11 @@ export class RoleService {
 
     await role.destroy();
     return true;
+  }
+
+  async deleteByUuid(uuid: string): Promise<boolean> {
+    const role = await this.findByUuidOrFail(uuid);
+    return this.delete(role.id);
   }
 
   async searchRoles(
@@ -124,8 +137,16 @@ export class RoleService {
 
   // Private helper methods
 
-  private async requireById(id: string): Promise<RoleEntity> {
+  private async requireById(id: number): Promise<RoleEntity> {
     const role = await this.roleModel.findByPk(id);
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
+    return role;
+  }
+
+  private async findByUuidOrFail(uuid: string): Promise<RoleEntity> {
+    const role = await this.findByUuid(uuid);
     if (!role) {
       throw new NotFoundException('Role not found');
     }

@@ -37,7 +37,6 @@ function ResetPasswordContent() {
     const checkToken = async () => {
       if (token) {
         const response = await authService.checkToken(token);
-        console.log(response);
         if (response.success) {
           setIsValidToken(true);
         } else {

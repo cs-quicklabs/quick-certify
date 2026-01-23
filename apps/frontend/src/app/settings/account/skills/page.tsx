@@ -96,7 +96,7 @@ export default function SkillsPage() {
     setError(null);
   };
 
-  const handleEditSave = async (skillId: string) => {
+  const handleEditSave = async (skillUuid: string) => {
     setError(null);
     setIsUpdating(true);
 
@@ -108,7 +108,7 @@ export default function SkillsPage() {
     }
 
     try {
-      await skillService.updateSkill(skillId, { name: trimmedName });
+      await skillService.updateSkill(skillUuid, { name: trimmedName });
       queryClient.invalidateQueries({ queryKey: SKILL_KEYS.lists() });
       setEditingSkill(null);
       setEditSkillName('');
@@ -128,9 +128,9 @@ export default function SkillsPage() {
     if (!confirmDialog.skill) return;
 
     setError(null);
-    setDeletingId(confirmDialog.skill.id);
+    setDeletingId(confirmDialog.skill.uuid);
     try {
-      await deleteSkillMutation.mutateAsync(confirmDialog.skill.id);
+      await deleteSkillMutation.mutateAsync(confirmDialog.skill.uuid);
       setConfirmDialog({ isOpen: false, skill: null });
       setError(null);
     } catch (error) {
@@ -221,7 +221,7 @@ export default function SkillsPage() {
               <tbody className="table-body">
                 {skills.map((skill, index) => (
                   <tr
-                    key={skill.id}
+                    key={skill.uuid}
                     className={`border-b border-gray-200 dark:border-gray-700 ${
                       index === 0
                         ? 'bg-white dark:bg-gray-800'
@@ -231,7 +231,7 @@ export default function SkillsPage() {
                     }`}
                   >
                     <td className="px-6 py-4">
-                      {editingSkill?.id === skill.id ? (
+                      {editingSkill?.uuid === skill.uuid ? (
                         <input
                           type="text"
                           value={editSkillName}
@@ -242,7 +242,7 @@ export default function SkillsPage() {
                           className="form-input-field w-full text-sm"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                              handleEditSave(skill.id);
+                              handleEditSave(skill.uuid);
                             } else if (e.key === 'Escape') {
                               handleEditCancel();
                             }
@@ -257,9 +257,9 @@ export default function SkillsPage() {
                     <td className="px-6 py-4 text-right whitespace-nowrap">
                       {!isAuthorized ? (
                         <span className="text-gray-400">—</span>
-                      ) : editingSkill?.id === skill.id ? (
+                      ) : editingSkill?.uuid === skill.uuid ? (
                         <button
-                          onClick={() => handleEditSave(skill.id)}
+                          onClick={() => handleEditSave(skill.uuid)}
                           className="btn-primary text-sm px-3 py-1.5"
                           disabled={isUpdating || !editSkillName.trim()}
                         >
@@ -279,7 +279,7 @@ export default function SkillsPage() {
                             className="btn-inline-red text-sm whitespace-nowrap"
                             disabled={deletingId !== null}
                           >
-                            {deletingId === skill.id ? 'Deleting...' : 'Delete'}
+                            {deletingId === skill.uuid ? 'Deleting...' : 'Delete'}
                           </button>
                         </div>
                       )}

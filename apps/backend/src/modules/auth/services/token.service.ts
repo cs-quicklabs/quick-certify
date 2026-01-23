@@ -30,12 +30,14 @@ export class TokenService implements ITokenService {
 
   generateTokens(input: TokenPayloadInput): JwtTokens {
     const basePayload = {
-      sub: input.userId,
+      sub: input.userUuid,
       email: input.email,
       organizationId: input.organizationId,
       roleId: input.roleId,
       role: input.role,
       sessionHash: input.sessionHash,
+      organizationUuid: input.organizationUuid,
+      roleUuid: input.roleUuid,
     };
 
     const accessTokenPayload: JwtPayload = {

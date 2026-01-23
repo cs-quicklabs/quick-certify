@@ -174,6 +174,12 @@ export abstract class BaseCrudService<
     return true;
   }
 
+  async deleteByUuid(uuid: string): Promise<boolean> {
+    const entity = await this.findByUuidOrFail(uuid);
+    await entity.destroy();
+    return true;
+  }
+
   async softDelete(id: TId): Promise<boolean> {
     if (!this.softDeleteField) {
       throw new Error(
@@ -181,6 +187,17 @@ export abstract class BaseCrudService<
       );
     }
     const entity = await this.findOneOrFail(id);
+    await entity.update({ [this.softDeleteField]: new Date() } as Record<string, unknown>);
+    return true;
+  }
+
+  async softDeleteByUuid(uuid: string): Promise<boolean> {
+    if (!this.softDeleteField) {
+      throw new Error(
+        `Soft delete is not configured for ${this.entityName}. Set softDeleteField property.`,
+      );
+    }
+    const entity = await this.findByUuidOrFail(uuid);
     await entity.update({ [this.softDeleteField]: new Date() } as Record<string, unknown>);
     return true;
   }

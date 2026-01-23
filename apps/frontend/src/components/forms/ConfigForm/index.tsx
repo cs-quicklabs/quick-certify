@@ -23,11 +23,31 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   initialValues = {},
   isLoading = false,
 }: ConfigFormProps<T>) {
-  // Sanitize initial values: convert null to undefined for schema compatibility
-  const sanitizedInitialValues = Object.entries(initialValues).reduce((acc, [key, value]) => {
-    acc[key] = value === null ? undefined : value;
-    return acc;
-  }, {} as Record<string, unknown>);
+  // Helper to normalize select field values to strings
+  const normalizeSelectValues = useCallback(
+    (values: Record<string, unknown>): Record<string, unknown> => {
+      const selectFieldNames = new Set(
+        config.fields.filter((field) => field.type === 'select').map((field) => field.name),
+      );
+
+      return Object.entries(values).reduce((acc, [key, value]) => {
+        // Convert null to undefined for schema compatibility
+        if (value === null) {
+          acc[key] = undefined;
+        } else if (selectFieldNames.has(key) && typeof value === 'number') {
+          // Convert number to string for select fields
+          acc[key] = String(value);
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, unknown>);
+    },
+    [config.fields],
+  );
+
+  // Sanitize initial values: convert null to undefined and normalize select values
+  const sanitizedInitialValues = normalizeSelectValues(initialValues);
 
   const initialFormDataRef = useRef<Record<string, unknown>>(sanitizedInitialValues);
   const [formData, setFormData] = useState<Record<string, unknown>>(sanitizedInitialValues);
@@ -39,14 +59,11 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   // Update form data when initialValues changes
   useEffect(() => {
     if (initialValues && Object.keys(initialValues).length > 0) {
-      const sanitizedValues = Object.entries(initialValues).reduce((acc, [key, value]) => {
-        acc[key] = value === null ? undefined : value;
-        return acc;
-      }, {} as Record<string, unknown>);
+      const sanitizedValues = normalizeSelectValues(initialValues);
       setFormData(sanitizedValues);
       initialFormDataRef.current = sanitizedValues;
     }
-  }, [initialValues]);
+  }, [initialValues, normalizeSelectValues]);
 
   // Auto-hide success message
   useEffect(() => {

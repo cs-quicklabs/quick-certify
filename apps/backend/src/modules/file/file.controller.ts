@@ -109,7 +109,7 @@ export class FileController {
     const result = await this.storageService.uploadFile(
       file.buffer,
       category,
-      user.organizationId,
+      user.organizationUuid,
       file.mimetype,
       file.originalname,
     );

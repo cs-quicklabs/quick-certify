@@ -33,7 +33,6 @@ export function FormExample() {
 
     // Form is valid, submit data
     setErrors({});
-    console.log('Valid form data:', result.data);
     alert('Form submitted successfully!');
   };
 

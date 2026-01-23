@@ -15,7 +15,7 @@ export class EventTypeService extends BaseCrudService<
   EventTypeEntity,
   CreateEventTypeDto,
   UpdateEventTypeDto,
-  string
+  number
 > {
   protected override readonly model = EventTypeEntity;
   protected override readonly entityName = 'EventType';
@@ -68,7 +68,7 @@ export class EventTypeService extends BaseCrudService<
     });
   }
 
-  override async update(id: string, dto: UpdateEventTypeDto): Promise<EventTypeEntity> {
+  override async update(id: number, dto: UpdateEventTypeDto): Promise<EventTypeEntity> {
     const entity = await this.findOneOrFail(id);
 
     if (dto.name !== undefined) {
@@ -92,13 +92,19 @@ export class EventTypeService extends BaseCrudService<
     return entity;
   }
 
-  override async softDelete(id: string): Promise<boolean> {
+  override async softDelete(id: number): Promise<boolean> {
     const entity = await this.findOneOrFail(id);
     await entity.update({ is_active: false });
     return true;
   }
 
-  override async findOne(id: string): Promise<EventTypeEntity | null> {
+  override async softDeleteByUuid(uuid: string): Promise<boolean> {
+    const entity = await this.findByUuidOrFail(uuid);
+    await entity.update({ is_active: false });
+    return true;
+  }
+
+  override async findOne(id: number): Promise<EventTypeEntity | null> {
     return this.eventTypeModel.findOne({
       where: {
         id,

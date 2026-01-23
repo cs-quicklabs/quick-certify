@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
-import { PasswordResetEntity } from '@src/entities/password-reset.entity';
+import { PasswordResetEntity, UserEntity } from '@src/entities';
 
 /**
  * Password Reset Service
@@ -18,9 +18,15 @@ export class PasswordResetService {
   /**
    * Create a new password reset token
    */
-  async create(userId: string, token: string, expiresAt: Date): Promise<PasswordResetEntity> {
+  async create(userUuid: string, token: string, expiresAt: Date): Promise<PasswordResetEntity> {
+    // Convert UUID to ID
+    const user = await UserEntity.findOne({ where: { uuid: userUuid }, attributes: ['id'] });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     return this.passwordResetModel.create({
-      user_id: userId,
+      user_id: user.id,
       token,
       expires_at: expiresAt,
       is_used: false,
@@ -57,7 +63,7 @@ export class PasswordResetService {
   /**
    * Mark a password reset token as used
    */
-  async markAsUsed(id: string, transaction?: Transaction): Promise<void> {
+  async markAsUsed(id: number, transaction?: Transaction): Promise<void> {
     const passwordReset = await this.passwordResetModel.findByPk(id, {
       ...(transaction && { transaction }),
     });
@@ -73,7 +79,7 @@ export class PasswordResetService {
   /**
    * Invalidate all unused password reset tokens for a user
    */
-  async invalidateAllForUser(userId: string): Promise<void> {
+  async invalidateAllForUser(userId: number): Promise<void> {
     await this.passwordResetModel.update(
       { is_used: true },
       { where: { user_id: userId, is_used: false } },

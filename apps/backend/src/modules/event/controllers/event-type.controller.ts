@@ -46,35 +46,35 @@ export class EventTypeController {
     return new SuccessResponse('Event types retrieved successfully', result);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get event type by ID' })
+  @Get(':uuid')
+  @ApiOperation({ summary: 'Get event type by UUID' })
   @ApiResponse({ status: 200, description: 'Event type found' })
   @ApiResponse({ status: 404, description: 'Event type not found' })
-  async findOne(@Param('id') id: string) {
-    const eventType = await this.eventTypeService.findOne(id);
+  async findOne(@Param('uuid') uuid: string) {
+    const eventType = await this.eventTypeService.findByUuid(uuid);
     if (!eventType) {
       return new SuccessResponse('Event type not found', null);
     }
     return new SuccessResponse('Event type retrieved successfully', eventType);
   }
 
-  @Patch(':id')
+  @Patch(':uuid')
   @ApiOperation({ summary: 'Update event type' })
   @ApiResponse({ status: 200, description: 'Event type updated successfully' })
   @ApiResponse({ status: 404, description: 'Event type not found' })
   @ApiResponse({ status: 409, description: 'Event type name already exists' })
   @ApiResponse({ status: 400, description: 'Validation error' })
-  async update(@Param('id') id: string, @Body() dto: UpdateEventTypeDto) {
-    const eventType = await this.eventTypeService.update(id, dto);
+  async update(@Param('uuid') uuid: string, @Body() dto: UpdateEventTypeDto) {
+    const eventType = await this.eventTypeService.updateByUuid(uuid, dto);
     return new SuccessResponse('Event type updated successfully', eventType);
   }
 
-  @Delete(':id')
+  @Delete(':uuid')
   @ApiOperation({ summary: 'Soft delete event type (sets is_active to false)' })
   @ApiResponse({ status: 200, description: 'Event type deleted successfully' })
   @ApiResponse({ status: 404, description: 'Event type not found' })
-  async remove(@Param('id') id: string) {
-    await this.eventTypeService.softDelete(id);
+  async remove(@Param('uuid') uuid: string) {
+    await this.eventTypeService.softDeleteByUuid(uuid);
     return new SuccessResponse('Event type deleted successfully', { deleted: true });
   }
 }

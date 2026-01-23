@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '@src/config/config.type';
-import { UserEntity, SessionEntity } from '@src/entities';
+import { UserEntity, SessionEntity, OrganizationEntity, RoleEntity } from '@src/entities';
 import { EmailService } from '@src/commons/services';
 import { generateNanoid } from '@src/commons/utils';
 import {
@@ -112,8 +112,11 @@ export class AuthService implements IAuthService {
     if (!this.sessionModel.sequelize) {
       throw new Error('Sequelize instance not available');
     }
+
     const sequelize = this.sessionModel.sequelize;
     const transaction = await sequelize.transaction();
+    let transactionCommitted = false;
+
     try {
       const organization = await this.organizationService.create(
         {
@@ -141,6 +144,7 @@ export class AuthService implements IAuthService {
       );
 
       await transaction.commit();
+      transactionCommitted = true;
 
       this.emailService
         .sendWelcomeEmail(user.email, { name: user.first_name })
@@ -150,7 +154,9 @@ export class AuthService implements IAuthService {
 
       return tokens;
     } catch (error) {
-      await transaction.rollback();
+      if (!transactionCommitted) {
+        await transaction.rollback();
+      }
       throw error;
     }
   }
@@ -198,17 +204,31 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid or expired session');
     }
 
-    const user = await this.userService.findOne(payload.sub);
+    const user = await this.userService.findByUuid(payload.sub, {
+      include: [
+        {
+          model: OrganizationEntity,
+          as: 'organization',
+        },
+        {
+          model: RoleEntity,
+          as: 'role',
+        },
+      ],
+    });
 
     if (!user || user.status !== 'active') {
       throw new UnauthorizedException('User not found or inactive');
     }
 
     const tokens = this.tokenService.generateTokens({
+      userUuid: user.uuid,
       userId: user.id,
       email: user.email,
       organizationId: user.organization_id,
+      organizationUuid: user.organization.uuid,
       roleId: user.role_id,
+      roleUuid: user.role.uuid,
       role: user.role?.role || '',
       sessionHash: session.hash,
     });
@@ -227,8 +247,8 @@ export class AuthService implements IAuthService {
     return { success: true };
   }
 
-  async logoutAll(userId: string) {
-    await this.sessionService.revokeAllForUser(userId);
+  async logoutAll(userUuid: string) {
+    await this.sessionService.revokeAllForUser(userUuid);
     return { success: true };
   }
 
@@ -242,11 +262,11 @@ export class AuthService implements IAuthService {
     // Validate user status (extracted to avoid duplication)
     this.userService.validateUserStatusForPasswordReset(user);
 
-    await this.passwordResetService.invalidateAllForUser(user.id);
+    await this.passwordResetService.invalidateAllForUser(user.id); // user.id is now number
 
     const resetToken = this.passwordService.generateResetToken();
     await this.passwordResetService.create(
-      user.id,
+      user.uuid, // Use UUID instead of ID
       resetToken,
       new Date(Date.now() + this.passwordResetExpiresIn * 1000),
     );
@@ -316,7 +336,11 @@ export class AuthService implements IAuthService {
 
       await this.passwordResetService.markAsUsed(passwordReset.id, transaction);
 
-      await this.sessionService.revokeAllForUser(passwordReset.user_id, transaction);
+      // Convert user ID to UUID for revokeAllForUser
+      const user = await this.userService.findOne(passwordReset.user_id);
+      if (user) {
+        await this.sessionService.revokeAllForUser(user.uuid, transaction);
+      }
 
       await transaction.commit();
 
@@ -327,8 +351,8 @@ export class AuthService implements IAuthService {
     }
   }
 
-  async changePassword(userId: string, dto: ChangePasswordDto) {
-    const user = await this.userService.findOne(userId, {
+  async changePassword(userUuid: string, dto: ChangePasswordDto) {
+    const user = await this.userService.findByUuid(userUuid, {
       attributes: { include: ['password_hash'] },
     });
     if (!user) {
@@ -366,7 +390,7 @@ export class AuthService implements IAuthService {
       try {
         // Password will be hashed by userService.update()
         await this.userService.update(
-          userId,
+          user.id, // Use number ID
           {
             password: dto.newPassword,
           },
@@ -374,7 +398,7 @@ export class AuthService implements IAuthService {
         );
 
         // Revoke all sessions for security (password changed)
-        await this.sessionService.revokeAllForUser(userId, transaction);
+        await this.sessionService.revokeAllForUser(user.uuid, transaction);
 
         await transaction.commit();
         return {
@@ -389,7 +413,7 @@ export class AuthService implements IAuthService {
     } else {
       // No session revocation needed, just update password
       // Password will be hashed by userService.update()
-      await this.userService.update(userId, {
+      await this.userService.update(user.id, {
         password: dto.newPassword,
       });
 
@@ -402,8 +426,8 @@ export class AuthService implements IAuthService {
   }
 
   async acceptInvitation(dto: AcceptInvitationDto, ipAddress?: string, userAgent?: string) {
-    // Find user by token (token is the user's ID)
-    const user = await this.userService.findOne(dto.token);
+    // Find user by token (token is the user's UUID)
+    const user = await this.userService.findByUuid(dto.token);
     if (!user) {
       throw new NotFoundException('Invalid invitation token');
     }
@@ -441,12 +465,20 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async getActiveSessions(userId: string) {
-    return this.sessionService.getActiveForUser(userId);
+  async getActiveSessions(userUuid: string) {
+    const user = await this.userService.findByUuid(userUuid);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.sessionService.getActiveForUser(user.id);
   }
 
-  async revokeSession(userId: string, sessionHash: string) {
-    const revoked = await this.sessionService.revokeByHashAndUser(sessionHash, userId);
+  async revokeSession(userUuid: string, sessionHash: string) {
+    const user = await this.userService.findByUuid(userUuid);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const revoked = await this.sessionService.revokeByHashAndUser(sessionHash, user.id);
     if (!revoked) {
       throw new NotFoundException('Session not found');
     }
@@ -619,6 +651,8 @@ export class AuthService implements IAuthService {
           email: googleUser.email,
           organizationId: organization.id,
           roleId: superAdminRole.id,
+          google_id: googleUser.id,
+          auth_provider: 'google',
         },
         undefined, // currentUser
         { transaction },
@@ -655,7 +689,7 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    // Update last login time
+    // Update last login time (user.id is now number)
     await this.userService.update(user.id, { last_login_at: new Date() });
 
     // Revoke all existing sessions for this user (single active session policy)
@@ -669,14 +703,28 @@ export class AuthService implements IAuthService {
       deviceType: this.parseDeviceType(userAgent),
     });
 
-    const role = await this.roleService.findOne(user.role_id);
+    // Load organization and role to get their UUIDs for JWT payload
+    const [organization, role] = await Promise.all([
+      this.organizationService.findOne(user.organization_id),
+      this.roleService.findOne(user.role_id),
+    ]);
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
     return this.tokenService.generateTokens({
+      userUuid: user.uuid,
       userId: user.id,
       email: user.email,
-      organizationId: user.organization_id,
-      roleId: user.role_id,
-      role: role?.role || '',
+      organizationId: organization.id,
+      organizationUuid: organization.uuid,
+      roleId: role.id,
+      roleUuid: role.uuid,
+      role: role.role || '',
       sessionHash: session.hash,
     });
   }
