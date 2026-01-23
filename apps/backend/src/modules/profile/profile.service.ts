@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { UserEntity, RoleEntity, OrganizationEntity } from '@src/entities';
 import { UpdateProfileDto, UpdateEmailPreferencesDto } from './dto';
 import { StorageService } from '@src/commons/services';
-import { capitalizeFirst } from '@src/commons/utils';
 
 /**
  * Profile Service
@@ -77,12 +76,12 @@ export class ProfileService {
     }
 
     const updateData: Partial<UserEntity> = {
-      first_name: capitalizeFirst(dto.firstName), // firstName is always required
+      first_name: dto.firstName, // firstName is always required
     };
 
     // Only update optional fields if provided
     if (dto.lastName !== undefined) {
-      updateData.last_name = dto.lastName ? capitalizeFirst(dto.lastName) : null;
+      updateData.last_name = dto.lastName ? dto.lastName : null;
     }
     if (dto.avatarUrl !== undefined) {
       updateData.avatar_url = dto.avatarUrl === '' ? null : dto.avatarUrl;

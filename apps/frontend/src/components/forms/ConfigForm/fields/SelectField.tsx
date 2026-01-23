@@ -9,7 +9,7 @@ export function SelectField({ field, value, error, onChange, isDisabled }: BaseF
         <select
           id={field.name}
           name={field.name}
-          value={String(value ?? '')}
+          value={(value as string) || ''}
           onChange={onChange}
           disabled={isDisabled}
           className="form-input-field pr-8 appearance-none"

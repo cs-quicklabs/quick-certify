@@ -263,7 +263,7 @@ export function Header() {
                           Team
                         </Link>
                       )}
-                      {/* {isAdminOrSuperAdmin && (
+                      {isAdminOrSuperAdmin && (
                         <Link
                           href="/settings/archived"
                           className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
@@ -272,7 +272,7 @@ export function Header() {
                         >
                           Archived
                         </Link>
-                      )} */}
+                      )}
                     </div>
                     <div className="py-1" role="none">
                       <button

@@ -19,6 +19,7 @@ import { RolesGuard, OrganizationGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '@src/modules/role/enums';
 import { EmailService } from '@src/commons/services';
+import { UserPaginationRequestOptions } from './dtos/interface';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -48,12 +49,13 @@ export class UserController {
     // Only Admin and Super Admin can access team listing
     // Exclude the current logged-in user from the listing
     // Apply role-based visibility: Admin cannot see Super Admin, lower users cannot see Admin/Super Admin
-    const options: any = {
+    const options: UserPaginationRequestOptions = {
       page: pagination.page,
       limit: pagination.limit,
       sortBy: pagination.sortBy || 'last_login_at',
       sortOrder: pagination.sortOrder || 'DESC',
       role: pagination.role,
+      status: pagination.status,
       excludeUserUuid: user.uuid, // Exclude current user from results (user.id is UUID)
       currentUserRole: user.role, // Pass current user's role for role-based filtering
     };
@@ -141,7 +143,7 @@ export class UserController {
     }
 
     // Prevent deleting yourself (compare UUIDs)
-    if (user.id === existingUser.uuid) {
+    if (user.uuid === existingUser.uuid) {
       return new SuccessResponse('Cannot delete your own account', null);
     }
 
