@@ -56,8 +56,8 @@ export default function DesignPreview({
         <div
           onClick={(e) => e.stopPropagation()}
           className={`relative transition-all duration-200 ease-out transform ${isOpen && !isClosing
-              ? "scale-100 opacity-100"
-              : "scale-95 opacity-0"
+            ? "scale-100 opacity-100"
+            : "scale-95 opacity-0"
             }`}
         >
           <img
@@ -73,7 +73,7 @@ export default function DesignPreview({
       {createPortal(
         <button
           onClick={close}
-          className="fixed top-6 right-6 z-50 group bg-white/95 hover:bg-red-600 text-gray-700 hover:text-white rounded-full p-2 shadow-lg transition-all duration-300 hover:rotate-[360deg]"
+          className="fixed top-6 right-6 z-50 group bg-white/95 hover:bg-red-600 text-gray-700 hover:text-white rounded-full p-2 shadow-lg transition-all duration-300 hover:rotate-360deg "
           aria-label="Close preview"
         >
           <X className="w-5 h-5" />

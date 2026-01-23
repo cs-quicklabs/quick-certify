@@ -40,8 +40,11 @@ export default function DesignForm({
   const isCertificate = designType === 'certificate';
 
   useEffect(() => {
-    if (imageUrl) setPreview(imageUrl);
-  }, [imageUrl]);
+    setName(defaultName ?? '');
+    setPreview(imageUrl ?? null);
+    imageRef.current = null;
+    setError(null);
+  }, [defaultName, imageUrl]);
 
   return (
     <form

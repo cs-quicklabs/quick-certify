@@ -40,9 +40,13 @@ export function useDesigns({ page, limit, search }: Params) {
       setDesigns(res.data);
       setMeta(res.meta);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (requestId !== requestIdRef.current) return;
-      setError(err?.message ?? 'Failed to fetch designs');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to fetch designs');
+      }
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);
