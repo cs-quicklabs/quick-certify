@@ -8,6 +8,7 @@ import { editTeamMemberSchema, EditTeamMemberFormData } from '@/schemas/team.sch
 import { useTeamMember, useUpdateTeamMember, useRoles } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { FormConfig } from '@/types/form.types';
+import { toast } from 'react-toastify';
 
 /**
  * Edit Team Member Page
@@ -81,6 +82,9 @@ export default function EditTeamMemberPage() {
         status: data.status || undefined,
       };
       await updateMutation.mutateAsync(updateData);
+      if (data.status === 'archived') {
+        toast.success('User archived successfully');
+      } else toast.success('User updated successfully');
       router.push('/settings/team');
     },
   };

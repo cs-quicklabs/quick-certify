@@ -46,6 +46,7 @@ export class UserController {
       sortBy: pagination.sortBy || 'last_login_at',
       sortOrder: pagination.sortOrder || 'DESC',
       role: pagination.role,
+      status: pagination.status,
       excludeUserId: user.id, // Exclude current user from results
       currentUserRole: user.role, // Pass current user's role for role-based filtering
     };

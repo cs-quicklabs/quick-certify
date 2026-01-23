@@ -65,7 +65,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const excludeUserId = (options as any).excludeUserId;
     const whereClause: Record<string, unknown> = {
       ...where,
-      status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
+      //status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
     };
     if (excludeUserId) {
       whereClause.id = { [Op.ne]: excludeUserId }; // Exclude current user from listing
@@ -348,7 +348,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       // Apply role-based visibility exclusion when no specific role filter
       whereClause.role_id = { [Op.notIn]: excludedRoleIds };
     }
-
+    if ((options as any).status) {
+      whereClause.status = (options as any).status;
+    }
+    console.log('whereClause:', whereClause);
     return this.findAll({
       ...options,
       where: whereClause,

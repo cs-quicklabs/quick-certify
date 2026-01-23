@@ -6,6 +6,8 @@ import { useTeamMembers, useRestoreUser, useDeleteTeamMember } from '@/hooks/use
 import { useAuthStore } from '@/store/auth.store';
 import { ConfirmationDialog } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
+import { toast } from 'react-toastify';
+import { X } from 'lucide-react';
 
 /**
  * Archived Members Page
@@ -53,9 +55,11 @@ export default function ArchivedMembersPage() {
 
     const handleConfirmRestore = () => {
         if (memberToRestore) {
-            restoreUser(memberToRestore.uuid, {
+            restoreUser(memberToRestore.id, {
                 onSuccess: () => {
                     setMemberToRestore(null);
+                    toast.success('User restored successfully');
+                    setSearchQuery('');
                 },
             });
         }
@@ -63,7 +67,7 @@ export default function ArchivedMembersPage() {
 
     const handleConfirmDelete = () => {
         if (memberToDelete) {
-            deleteUser(memberToDelete.uuid, {
+            deleteUser(memberToDelete.id, {
                 onSuccess: () => {
                     setMemberToDelete(null);
                 },
@@ -95,27 +99,36 @@ export default function ArchivedMembersPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-xl font-bold text-gray-900">Archived Users</h1>
+        <div className="px-4 pb-12 lg:col-span-8">
+            <div className='pb-4'>
+                <h1 className="text-lg font-medium text-gray-900">Archived Users</h1>
                 <p className="mt-1 text-sm text-gray-500">
                     Following users have been deactivated.
                 </p>
             </div>
 
             {/* Search */}
-            <div className="relative">
+            <div className="relative rounded-md shadow-sm">
                 <input
                     type="text"
-                    className="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-1.5 pl-2 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
                     placeholder="Search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                {searchQuery && (
+                    <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600"
+                        onClick={() => setSearchQuery('')}
+                    >
+                        <X className="h-4 w-4 font-bold text-blue-900" />
+                    </button>
+                )}
             </div>
 
             {/* List */}
-            <div className="space-y-4">
+            <div className="border-separate mt-6 w-full">
                 {isLoading ? (
                     <div className="py-10 text-center text-sm text-gray-500">Loading...</div>
                 ) : members.length === 0 ? (
@@ -124,37 +137,35 @@ export default function ArchivedMembersPage() {
                     members.map((member) => (
                         <div
                             key={member.id}
-                            className="bg-white p-4 rounded-sm border-b border-gray-100 last:border-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                            className="bg-white mb-4 border-gray-100  flex flex-col sm:flex-row sm:items-center justify-between"
                         >
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-sm font-bold text-gray-900">
+                                <div className="flex text-sm font-medium text-gray-600 truncate">
+                                    <span className="text-sm font-medium text-gray-700">
                                         {member.first_name} {member.last_name}
                                     </span>
-                                    <span className="text-sm text-gray-500">
+                                    <span className="ml-1 font-normal text-gray-500">
                                         {getRoleDisplay(member.role?.role)}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <svg
-                                        className="w-4 h-4 text-gray-400"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                        />
+                                <div className="flex items-center text-sm text-gray-500 mt-2">
+                                    <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor" aria-hidden="true">
+                                        <path fillRule="evenodd"
+                                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                            clipRule="evenodd">
+                                        </path>
                                     </svg>
+
                                     <span>
-                                        Deactivated on {formatDate(member.updated_at)}
+                                        Deactivated on {formatDate(member.updatedAt)}
                                         {/* "by User" is omitted as it's not available in API currently */}
                                     </span>
                                 </div>
                             </div>
+
                             <div className="flex items-center gap-4 shrink-0">
                                 <button
                                     onClick={() => handleRestoreClick(member)}
@@ -212,7 +223,7 @@ export default function ArchivedMembersPage() {
 
             {/* Delete Dialog */}
             <ConfirmationDialog
-                isOpen={!!memberToDelete}
+                isOpen={false}
                 title="Delete Member"
                 message={`Are you sure you want to permanently delete ${memberToDelete?.first_name} ${memberToDelete?.last_name}? This action cannot be undone.`}
                 confirmLabel={isDeleting ? 'Deleting...' : 'Delete'}
