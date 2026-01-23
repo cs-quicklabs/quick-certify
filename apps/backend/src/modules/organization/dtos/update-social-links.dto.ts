@@ -1,11 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, MaxLength } from 'class-validator';
-import {
-  IsLinkedInUrl,
-  IsFacebookUrl,
-  IsTwitterUrl,
-  IsWebsiteUrl,
-} from '@src/commons/validators';
+import { IsLinkedInUrl, IsFacebookUrl, IsTwitterUrl, IsWebsiteUrl } from '@src/commons/validators';
 
 /**
  * DTO for updating organization social links
@@ -53,4 +48,3 @@ export class UpdateSocialLinksDto {
   @IsWebsiteUrl()
   website?: string;
 }
-

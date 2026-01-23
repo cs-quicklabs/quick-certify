@@ -15,7 +15,9 @@
         "options": {
           "config": "apps/backend-e2e/playwright.config.ts"
         }
-      }
+      },
+      "format": {},
+      "format:check": {}
     }
   }
 }

@@ -66,7 +66,9 @@ export function GoogleSignInButton({
     // Redirect to backend Google OAuth endpoint
     // Backend will redirect to Google, then Google redirects back to backend callback,
     // and finally backend redirects to our frontend callback with tokens
-    const googleAuthUrl = `${env.API_BASE_URL}/auth/google/redirect?action=${action}&redirectUrl=${encodeURIComponent(callbackUrl)}`;
+    const googleAuthUrl = `${
+      env.API_BASE_URL
+    }/auth/google/redirect?action=${action}&redirectUrl=${encodeURIComponent(callbackUrl)}`;
 
     window.location.href = googleAuthUrl;
   }, [mode]);
@@ -88,11 +90,7 @@ export function GoogleSignInButton({
         className,
       )}
     >
-      {isLoading ? (
-        <Loader2 className="w-5 h-5 animate-spin" />
-      ) : (
-        <GoogleIcon />
-      )}
+      {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
       <span>{buttonText}</span>
     </button>
   );

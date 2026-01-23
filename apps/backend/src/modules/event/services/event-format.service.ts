@@ -15,7 +15,7 @@ export class EventFormatService extends BaseCrudService<
   EventFormatEntity,
   CreateEventFormatDto,
   UpdateEventFormatDto,
-  string
+  number
 > {
   protected override readonly model = EventFormatEntity;
   protected override readonly entityName = 'EventFormat';
@@ -30,7 +30,9 @@ export class EventFormatService extends BaseCrudService<
     super();
   }
 
-  override async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<EventFormatEntity>> {
+  override async findAll(
+    options: FindAllOptions = {},
+  ): Promise<PaginatedResult<EventFormatEntity>> {
     const { where = {}, ...restOptions } = options;
 
     return super.findAll({
@@ -68,7 +70,7 @@ export class EventFormatService extends BaseCrudService<
     });
   }
 
-  override async update(id: string, dto: UpdateEventFormatDto): Promise<EventFormatEntity> {
+  override async update(id: number, dto: UpdateEventFormatDto): Promise<EventFormatEntity> {
     const entity = await this.findOneOrFail(id);
 
     if (dto.name !== undefined) {
@@ -92,13 +94,19 @@ export class EventFormatService extends BaseCrudService<
     return entity;
   }
 
-  override async softDelete(id: string): Promise<boolean> {
+  override async softDelete(id: number): Promise<boolean> {
     const entity = await this.findOneOrFail(id);
     await entity.update({ is_active: false });
     return true;
   }
 
-  override async findOne(id: string): Promise<EventFormatEntity | null> {
+  override async softDeleteByUuid(uuid: string): Promise<boolean> {
+    const entity = await this.findByUuidOrFail(uuid);
+    await entity.update({ is_active: false });
+    return true;
+  }
+
+  override async findOne(id: number): Promise<EventFormatEntity | null> {
     return this.eventFormatModel.findOne({
       where: {
         id,
@@ -107,4 +115,3 @@ export class EventFormatService extends BaseCrudService<
     });
   }
 }
-

@@ -1,19 +1,29 @@
 /**
  * Auth Form Schemas
  *
- * Validation schemas for authentication forms using Zod
+ * Validation schemas for authentication forms using Zod.
+ * Uses shared schemas for consistent validation across the app.
  */
 
 import { z } from 'zod';
+import {
+  passwordSchema,
+  strictPasswordSchema,
+  emailSchema,
+  requiredNameSchema,
+  optionalNameSchema,
+  urlSchema,
+  PASSWORD_MESSAGES,
+} from './shared.schema';
 
 /**
  * Login Form Schema
+ *
+ * Note: Login uses a simpler password check (min 6 chars) since
+ * we're validating against existing passwords, not creating new ones.
  */
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
+  email: emailSchema,
   password: z
     .string()
     .min(1, 'Password is required')
@@ -28,35 +38,19 @@ export type LoginFormData = z.infer<typeof loginSchema>;
  */
 export const registerSchema = z
   .object({
-    firstName: z
-      .string()
-      .min(1, 'First name is required')
-      .min(2, 'First name must be at least 2 characters'),
-    lastName: z.string().optional(),
-    email: z
-      .string()
-      .min(1, 'Email is required')
-      .email('Please enter a valid email address'),
+    firstName: requiredNameSchema,
+    lastName: optionalNameSchema,
+    email: emailSchema,
     companyName: z
       .string()
       .min(1, 'Company name is required')
       .min(2, 'Company name must be at least 2 characters'),
-    websiteUrl: z
-      .string()
-      .min(1, 'Website URL is required')
-      .url('Please enter a valid URL'),
-    password: z
-      .string()
-      .min(1, 'Password is required')
-      .min(8, 'Password must be at least 8 characters')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-      ),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    websiteUrl: urlSchema,
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, PASSWORD_MESSAGES.CONFIRM_REQUIRED),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: PASSWORD_MESSAGES.MISMATCH,
     path: ['confirmPassword'],
   });
 
@@ -66,10 +60,7 @@ export type RegisterFormData = z.infer<typeof registerSchema>;
  * Forgot Password Form Schema
  */
 export const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
+  email: emailSchema,
 });
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -79,18 +70,11 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
  */
 export const resetPasswordSchema = z
   .object({
-    newPassword: z
-      .string()
-      .min(1, 'Password is required')
-      .min(8, 'Password must be at least 8 characters')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-      ),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, PASSWORD_MESSAGES.CONFIRM_REQUIRED),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: PASSWORD_MESSAGES.MISMATCH,
     path: ['confirmPassword'],
   });
 
@@ -98,21 +82,17 @@ export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 /**
  * Accept Invitation Form Schema
+ *
+ * Uses strict password schema (requires special character) for
+ * invited users to ensure strong initial passwords.
  */
 export const acceptInvitationSchema = z
   .object({
-    password: z
-      .string()
-      .min(1, 'Password is required')
-      .min(8, 'Password must be at least 8 characters')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-      ),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    password: strictPasswordSchema,
+    confirmPassword: z.string().min(1, PASSWORD_MESSAGES.CONFIRM_REQUIRED),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: PASSWORD_MESSAGES.MISMATCH,
     path: ['confirmPassword'],
   });
 
@@ -120,22 +100,16 @@ export type AcceptInvitationFormData = z.infer<typeof acceptInvitationSchema>;
 
 /**
  * Google Signup Complete Schema
- * Based on design: https://designs.quicklabs.in/quick-certify/signup/complete
+ * For completing registration after Google OAuth signup.
  */
 export const googleSignupCompleteSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, 'First name is required'),
-  lastName: z.string().optional(),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: optionalNameSchema,
   companyName: z
     .string()
     .min(1, 'Issuer name is required')
     .min(2, 'Issuer name must be at least 2 characters'),
-  websiteUrl: z
-    .string()
-    .min(1, 'Website URL is required')
-    .url('Please enter a valid URL'),
+  websiteUrl: urlSchema,
 });
 
 export type GoogleSignupCompleteFormData = z.infer<typeof googleSignupCompleteSchema>;
-

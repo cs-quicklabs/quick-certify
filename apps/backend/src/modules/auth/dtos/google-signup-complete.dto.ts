@@ -26,7 +26,10 @@ export class GoogleSignupCompleteDto {
   @IsOptional()
   tempToken?: string;
 
-  @ApiPropertyOptional({ example: 'John', description: 'First name (optional, will use Google name if not provided)' })
+  @ApiPropertyOptional({
+    example: 'John',
+    description: 'First name (optional, will use Google name if not provided)',
+  })
   @IsString()
   @IsOptional()
   firstName?: string;

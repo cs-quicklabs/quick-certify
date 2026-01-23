@@ -46,36 +46,35 @@ export class EventFormatController {
     return new SuccessResponse('Event formats retrieved successfully', result);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get event format by ID' })
+  @Get(':uuid')
+  @ApiOperation({ summary: 'Get event format by UUID' })
   @ApiResponse({ status: 200, description: 'Event format found' })
   @ApiResponse({ status: 404, description: 'Event format not found' })
-  async findOne(@Param('id') id: string) {
-    const eventFormat = await this.eventFormatService.findOne(id);
+  async findOne(@Param('uuid') uuid: string) {
+    const eventFormat = await this.eventFormatService.findByUuid(uuid);
     if (!eventFormat) {
       return new SuccessResponse('Event format not found', null);
     }
     return new SuccessResponse('Event format retrieved successfully', eventFormat);
   }
 
-  @Patch(':id')
+  @Patch(':uuid')
   @ApiOperation({ summary: 'Update event format' })
   @ApiResponse({ status: 200, description: 'Event format updated successfully' })
   @ApiResponse({ status: 404, description: 'Event format not found' })
   @ApiResponse({ status: 409, description: 'Event format name already exists' })
   @ApiResponse({ status: 400, description: 'Validation error' })
-  async update(@Param('id') id: string, @Body() dto: UpdateEventFormatDto) {
-    const eventFormat = await this.eventFormatService.update(id, dto);
+  async update(@Param('uuid') uuid: string, @Body() dto: UpdateEventFormatDto) {
+    const eventFormat = await this.eventFormatService.updateByUuid(uuid, dto);
     return new SuccessResponse('Event format updated successfully', eventFormat);
   }
 
-  @Delete(':id')
+  @Delete(':uuid')
   @ApiOperation({ summary: 'Soft delete event format (sets is_active to false)' })
   @ApiResponse({ status: 200, description: 'Event format deleted successfully' })
   @ApiResponse({ status: 404, description: 'Event format not found' })
-  async remove(@Param('id') id: string) {
-    await this.eventFormatService.softDelete(id);
+  async remove(@Param('uuid') uuid: string) {
+    await this.eventFormatService.softDeleteByUuid(uuid);
     return new SuccessResponse('Event format deleted successfully', { deleted: true });
   }
 }
-

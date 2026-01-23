@@ -1,5 +1,5 @@
 import { Column, DataType, Index, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 
 /**
  * Event Format Entity
@@ -7,10 +7,14 @@ import { BaseNanoidEntity } from './base-nanoid.entity';
  * Represents the format of an event (e.g., Online, In-Person, Hybrid)
  */
 @Table({
-  tableName: 'event_formats',
+  tableName: 'event_format',
   underscored: true,
 })
-export class EventFormatEntity extends BaseNanoidEntity {
+export class EventFormatEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_EVENT_FORMAT_UUID', unique: true })
+  declare uuid: string;
+
   @Index({ name: 'IDX_EVENT_FORMAT_NAME', unique: true })
   @Column({
     type: DataType.STRING(150),
@@ -26,4 +30,3 @@ export class EventFormatEntity extends BaseNanoidEntity {
   })
   declare is_active: boolean;
 }
-

@@ -9,7 +9,7 @@ export const SKILL_KEYS = {
   all: ['skills'] as const,
   lists: () => [...SKILL_KEYS.all, 'list'] as const,
   list: (filters?: SkillFilters) => [...SKILL_KEYS.lists(), { filters }] as const,
-  detail: (id: string) => [...SKILL_KEYS.all, 'detail', id] as const,
+  detail: (uuid: string) => [...SKILL_KEYS.all, 'detail', uuid] as const,
 };
 
 export function useSkills(filters?: SkillFilters) {
@@ -19,11 +19,11 @@ export function useSkills(filters?: SkillFilters) {
   });
 }
 
-export function useSkill(id: string, enabled = true) {
+export function useSkill(uuid: string, enabled = true) {
   return useQuery({
-    queryKey: SKILL_KEYS.detail(id),
-    queryFn: () => skillService.getSkill(id),
-    enabled: enabled && !!id,
+    queryKey: SKILL_KEYS.detail(uuid),
+    queryFn: () => skillService.getSkill(uuid),
+    enabled: enabled && !!uuid,
   });
 }
 
@@ -37,13 +37,13 @@ export function useCreateSkill() {
   });
 }
 
-export function useUpdateSkill(id: string) {
+export function useUpdateSkill(uuid: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateSkillRequest) => skillService.updateSkill(id, data),
+    mutationFn: (data: UpdateSkillRequest) => skillService.updateSkill(uuid, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SKILL_KEYS.lists() });
-      queryClient.invalidateQueries({ queryKey: SKILL_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: SKILL_KEYS.detail(uuid) });
     },
   });
 }
@@ -51,10 +51,9 @@ export function useUpdateSkill(id: string) {
 export function useDeleteSkill() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => skillService.deleteSkill(id),
+    mutationFn: (uuid: string) => skillService.deleteSkill(uuid),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SKILL_KEYS.lists() });
     },
   });
 }
-

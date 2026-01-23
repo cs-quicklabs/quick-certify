@@ -26,11 +26,7 @@ function StatsCard({
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
           <p className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{value}</p>
           {trendLabel && (
-            <p
-              className={`mt-1 text-sm ${
-                trend === 'up' ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
+            <p className={`mt-1 text-sm ${trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
               {trend === 'up' ? '↑' : '↓'} {trendLabel}
             </p>
           )}
@@ -166,4 +162,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

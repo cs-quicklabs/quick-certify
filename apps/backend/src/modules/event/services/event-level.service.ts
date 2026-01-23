@@ -15,7 +15,7 @@ export class EventLevelService extends BaseCrudService<
   EventLevelEntity,
   CreateEventLevelDto,
   UpdateEventLevelDto,
-  string
+  number
 > {
   protected override readonly model = EventLevelEntity;
   protected override readonly entityName = 'EventLevel';
@@ -68,7 +68,7 @@ export class EventLevelService extends BaseCrudService<
     });
   }
 
-  override async update(id: string, dto: UpdateEventLevelDto): Promise<EventLevelEntity> {
+  override async update(id: number, dto: UpdateEventLevelDto): Promise<EventLevelEntity> {
     const entity = await this.findOneOrFail(id);
 
     if (dto.name !== undefined) {
@@ -92,13 +92,19 @@ export class EventLevelService extends BaseCrudService<
     return entity;
   }
 
-  override async softDelete(id: string): Promise<boolean> {
+  override async softDelete(id: number): Promise<boolean> {
     const entity = await this.findOneOrFail(id);
     await entity.update({ is_active: false });
     return true;
   }
 
-  override async findOne(id: string): Promise<EventLevelEntity | null> {
+  override async softDeleteByUuid(uuid: string): Promise<boolean> {
+    const entity = await this.findByUuidOrFail(uuid);
+    await entity.update({ is_active: false });
+    return true;
+  }
+
+  override async findOne(id: number): Promise<EventLevelEntity | null> {
     return this.eventLevelModel.findOne({
       where: {
         id,
@@ -107,4 +113,3 @@ export class EventLevelService extends BaseCrudService<
     });
   }
 }
-

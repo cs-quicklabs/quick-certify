@@ -11,4 +11,4 @@ import { StorageService } from '@src/commons/services';
   providers: [ProfileService, StorageService],
   exports: [ProfileService],
 })
-export class ProfileModule { }
+export class ProfileModule {}

@@ -1,5 +1,5 @@
 import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 import { EventTypeEntity } from './event-type.entity';
 import { EventLevelEntity } from './event-level.entity';
 import { EventFormatEntity } from './event-format.entity';
@@ -10,10 +10,14 @@ import { EventFormatEntity } from './event-format.entity';
  * Represents an event with references to type, level, and format
  */
 @Table({
-  tableName: 'events',
+  tableName: 'event',
   underscored: true,
 })
-export class EventEntity extends BaseNanoidEntity {
+export class EventEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_EVENT_UUID', unique: true })
+  declare uuid: string;
+
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
@@ -23,11 +27,11 @@ export class EventEntity extends BaseNanoidEntity {
   @ForeignKey(() => EventTypeEntity)
   @Index({ name: 'IDX_EVENT_TYPE_ID' })
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
     field: 'event_type_id',
   })
-  declare event_type_id: string;
+  declare event_type_id: number;
 
   @BelongsTo(() => EventTypeEntity)
   declare event_type: EventTypeEntity;
@@ -35,11 +39,11 @@ export class EventEntity extends BaseNanoidEntity {
   @ForeignKey(() => EventLevelEntity)
   @Index({ name: 'IDX_EVENT_LEVEL_ID' })
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
     field: 'event_level_id',
   })
-  declare event_level_id: string;
+  declare event_level_id: number;
 
   @BelongsTo(() => EventLevelEntity)
   declare event_level: EventLevelEntity;
@@ -47,11 +51,11 @@ export class EventEntity extends BaseNanoidEntity {
   @ForeignKey(() => EventFormatEntity)
   @Index({ name: 'IDX_EVENT_FORMAT_ID' })
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.INTEGER,
     allowNull: false,
     field: 'event_format_id',
   })
-  declare event_format_id: string;
+  declare event_format_id: number;
 
   @BelongsTo(() => EventFormatEntity)
   declare event_format: EventFormatEntity;
@@ -64,4 +68,3 @@ export class EventEntity extends BaseNanoidEntity {
   })
   declare is_active: boolean;
 }
-

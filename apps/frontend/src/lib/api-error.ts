@@ -108,4 +108,3 @@ export function getApiFieldErrors(error: unknown): Record<string, string> | null
   }
   return null;
 }
-

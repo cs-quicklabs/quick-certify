@@ -8,6 +8,7 @@ import { editTeamMemberSchema, EditTeamMemberFormData } from '@/schemas/team.sch
 import { useTeamMember, useUpdateTeamMember, useRoles } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { FormConfig } from '@/types/form.types';
+import { toast } from 'react-toastify';
 
 /**
  * Edit Team Member Page
@@ -37,9 +38,10 @@ export default function EditTeamMemberPage() {
 
   // Filter roles and create options for select
   const filteredRoles = useMemo(() => {
-    return roles?.filter((role) =>
-      ['admin', 'manager', 'designer'].includes(role.role.toLowerCase())
-    ) || [];
+    return (
+      roles?.filter((role) => ['admin', 'manager', 'designer'].includes(role.role.toLowerCase())) ||
+      []
+    );
   }, [roles]);
 
   // Create form fields with role options
@@ -51,8 +53,9 @@ export default function EditTeamMemberPage() {
           return {
             ...field,
             options: filteredRoles.map((role) => ({
-              label: role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
-              value: role.id,
+              label:
+                role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
+              value: role.id, // Keep as string for form compatibility
             })),
           };
         }
@@ -77,10 +80,13 @@ export default function EditTeamMemberPage() {
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
-        roleId: data.roleId,
+        roleId: parseInt(data.roleId), // Convert string to number for API
         status: data.status || undefined,
       };
       await updateMutation.mutateAsync(updateData);
+      if (data.status === 'archived') {
+        toast.success('User archived successfully');
+      } else toast.success('User updated successfully');
       router.push('/settings/team');
     },
   };
@@ -88,13 +94,13 @@ export default function EditTeamMemberPage() {
   // Prepare initial values from member data
   const initialValues = member
     ? {
-      first_name: member.first_name || '',
-      last_name: member.last_name || '',
-      email: member.email || '',
-      roleId: member.role_id || '',
-      // Map status: active -> active, everything else -> archived (inactive/archived/invited)
-      status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
-    }
+        first_name: member.first_name || '',
+        last_name: member.last_name || '',
+        email: member.email || '',
+        roleId: member.role_id || '', // Keep as string for form compatibility
+        // Map status: active -> active, everything else -> archived (inactive/archived/invited)
+        status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
+      }
     : undefined;
 
   if (memberLoading) {
