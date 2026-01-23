@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { chromium, FullConfig } from '@playwright/test';
-import { LoginPage } from './Playwright/pageobjects/LoginPage
+import { LoginPage } from './Playwright/pageobjects/LoginPage.ts'
+
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
