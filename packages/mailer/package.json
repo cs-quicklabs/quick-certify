@@ -39,15 +39,15 @@
     "name": "mailer"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^7.0.12"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.17"
+    "@types/nodemailer": "^7.0.5"
   },
   "peerDependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2"
   },
   "engines": {
