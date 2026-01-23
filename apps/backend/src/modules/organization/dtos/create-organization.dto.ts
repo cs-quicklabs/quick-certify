@@ -4,7 +4,7 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-va
 export class CreateOrganizationDto {
   @ApiProperty({ example: 'Acme Corporation', description: 'Organization name' })
   @IsString()
-  @IsNotEmpty({ message: 'Organization name is required and should be at least 4 characters long' })
+  @IsNotEmpty({ message: 'Organization name should be at least 4 characters long' })
   @MaxLength(150, { message: 'Organization name must not exceed 150 characters' })
   declare name: string;
 
