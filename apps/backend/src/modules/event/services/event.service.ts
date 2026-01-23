@@ -22,7 +22,7 @@ export class EventService extends BaseCrudService<
   EventEntity,
   CreateEventDto,
   UpdateEventDto,
-  string
+  number
 > {
   protected override readonly model = EventEntity;
   protected override readonly entityName = 'Event';
@@ -76,39 +76,41 @@ export class EventService extends BaseCrudService<
   }
 
   override async create(dto: CreateEventDto): Promise<EventEntity> {
-    // Validate that referenced master records exist and are active
+    // Validate that referenced master records exist and are active (by UUID)
     const [eventType, eventLevel, eventFormat] = await Promise.all([
-      this.eventTypeService.findOne(dto.eventTypeId),
-      this.eventLevelService.findOne(dto.eventLevelId),
-      this.eventFormatService.findOne(dto.eventFormatId),
+      this.eventTypeService.findByUuid(dto.eventTypeId),
+      this.eventLevelService.findByUuid(dto.eventLevelId),
+      this.eventFormatService.findByUuid(dto.eventFormatId),
     ]);
 
     if (!eventType) {
-      throw new BadRequestException(`Event type with ID ${dto.eventTypeId} not found or inactive`);
+      throw new BadRequestException(
+        `Event type with UUID ${dto.eventTypeId} not found or inactive`,
+      );
     }
 
     if (!eventLevel) {
       throw new BadRequestException(
-        `Event level with ID ${dto.eventLevelId} not found or inactive`,
+        `Event level with UUID ${dto.eventLevelId} not found or inactive`,
       );
     }
 
     if (!eventFormat) {
       throw new BadRequestException(
-        `Event format with ID ${dto.eventFormatId} not found or inactive`,
+        `Event format with UUID ${dto.eventFormatId} not found or inactive`,
       );
     }
 
     return this.eventModel.create({
       name: dto.name.trim(),
-      event_type_id: dto.eventTypeId,
-      event_level_id: dto.eventLevelId,
-      event_format_id: dto.eventFormatId,
+      event_type_id: eventType.id,
+      event_level_id: eventLevel.id,
+      event_format_id: eventFormat.id,
       is_active: true,
     });
   }
 
-  override async update(id: string, dto: UpdateEventDto): Promise<EventEntity> {
+  override async update(id: number, dto: UpdateEventDto): Promise<EventEntity> {
     const entity = await this.findOneOrFail(id);
 
     const updateData: Partial<EventEntity> = {};
@@ -117,41 +119,41 @@ export class EventService extends BaseCrudService<
       updateData.name = dto.name.trim();
     }
 
-    // Validate referenced IDs if provided
+    // Validate referenced UUIDs if provided and convert to IDs
     if (dto.eventTypeId !== undefined) {
-      const eventType = await this.eventTypeService.findOne(dto.eventTypeId);
+      const eventType = await this.eventTypeService.findByUuid(dto.eventTypeId);
 
       if (!eventType) {
         throw new BadRequestException(
-          `Event type with ID ${dto.eventTypeId} not found or inactive`,
+          `Event type with UUID ${dto.eventTypeId} not found or inactive`,
         );
       }
 
-      updateData.event_type_id = dto.eventTypeId;
+      updateData.event_type_id = eventType.id;
     }
 
     if (dto.eventLevelId !== undefined) {
-      const eventLevel = await this.eventLevelService.findOne(dto.eventLevelId);
+      const eventLevel = await this.eventLevelService.findByUuid(dto.eventLevelId);
 
       if (!eventLevel) {
         throw new BadRequestException(
-          `Event level with ID ${dto.eventLevelId} not found or inactive`,
+          `Event level with UUID ${dto.eventLevelId} not found or inactive`,
         );
       }
 
-      updateData.event_level_id = dto.eventLevelId;
+      updateData.event_level_id = eventLevel.id;
     }
 
     if (dto.eventFormatId !== undefined) {
-      const eventFormat = await this.eventFormatService.findOne(dto.eventFormatId);
+      const eventFormat = await this.eventFormatService.findByUuid(dto.eventFormatId);
 
       if (!eventFormat) {
         throw new BadRequestException(
-          `Event format with ID ${dto.eventFormatId} not found or inactive`,
+          `Event format with UUID ${dto.eventFormatId} not found or inactive`,
         );
       }
 
-      updateData.event_format_id = dto.eventFormatId;
+      updateData.event_format_id = eventFormat.id;
     }
 
     await entity.update(updateData);
@@ -159,13 +161,19 @@ export class EventService extends BaseCrudService<
     return entity;
   }
 
-  override async softDelete(id: string): Promise<boolean> {
+  override async softDelete(id: number): Promise<boolean> {
     const entity = await this.findOneOrFail(id);
     await entity.update({ is_active: false });
     return true;
   }
 
-  override async findOne(id: string): Promise<EventEntity | null> {
+  override async softDeleteByUuid(uuid: string): Promise<boolean> {
+    const entity = await this.findByUuidOrFail(uuid);
+    await entity.update({ is_active: false });
+    return true;
+  }
+
+  override async findOne(id: number): Promise<EventEntity | null> {
     return this.eventModel.findOne({
       where: {
         id,

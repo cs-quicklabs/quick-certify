@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
-import { SessionEntity } from '@src/entities';
+import { SessionEntity, UserEntity } from '@src/entities';
 import { ISessionService, CreateSessionInput } from '../interfaces';
 
 /**
@@ -31,7 +31,7 @@ export class SessionService implements ISessionService {
     });
   }
 
-  async findByHash(hash: string, userId: string): Promise<SessionEntity | null> {
+  async findByHash(hash: string, userId: number): Promise<SessionEntity | null> {
     return this.sessionModel.findOne({
       where: {
         hash,
@@ -40,11 +40,17 @@ export class SessionService implements ISessionService {
     });
   }
 
-  async validate(hash: string, userId: string): Promise<SessionEntity | null> {
+  async validate(hash: string, userUuid: string): Promise<SessionEntity | null> {
+    // Convert UUID to ID
+    const user = await UserEntity.findOne({ where: { uuid: userUuid }, attributes: ['id'] });
+    if (!user) {
+      return null;
+    }
+
     const session = await this.sessionModel.findOne({
       where: {
         hash,
-        user_id: userId,
+        user_id: user.id,
         is_active: true,
         revoked_at: null,
       },
@@ -74,17 +80,23 @@ export class SessionService implements ISessionService {
     }
   }
 
-  async revokeAllForUser(userId: string, transaction?: Transaction): Promise<void> {
+  async revokeAllForUser(userUuid: string, transaction?: Transaction): Promise<void> {
+    // Convert UUID to ID
+    const user = await UserEntity.findOne({ where: { uuid: userUuid }, attributes: ['id'] });
+    if (!user) {
+      return; // User not found, nothing to revoke
+    }
+
     await this.sessionModel.update(
       { is_active: false, revoked_at: new Date() },
       {
-        where: { user_id: userId, is_active: true },
+        where: { user_id: user.id, is_active: true },
         ...(transaction && { transaction }),
       },
     );
   }
 
-  async getActiveForUser(userId: string): Promise<SessionEntity[]> {
+  async getActiveForUser(userId: number): Promise<SessionEntity[]> {
     return this.sessionModel.findAll({
       where: {
         user_id: userId,
@@ -104,7 +116,7 @@ export class SessionService implements ISessionService {
     });
   }
 
-  async revokeByHashAndUser(hash: string, userId: string): Promise<boolean> {
+  async revokeByHashAndUser(hash: string, userId: number): Promise<boolean> {
     const session = await this.sessionModel.findOne({
       where: { hash, user_id: userId },
     });

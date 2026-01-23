@@ -26,7 +26,8 @@ import { OrganizationService } from '../organization/organization.service';
  * Includes additional fields for user-specific filtering
  */
 export interface ExtendedFindAllOptions extends FindAllOptions {
-  excludeUserId?: string;
+  excludeUserId?: number; // User ID (number) to exclude
+  excludeUserUuid?: string; // User UUID (string) to exclude
   currentUserRole?: string;
   role?: string;
 }
@@ -40,7 +41,7 @@ export interface ExtendedFindAllOptions extends FindAllOptions {
  * Note: Overrides soft delete methods to use status field instead of deleted_at
  */
 @Injectable()
-export class UserService extends BaseCrudService<UserEntity, CreateUserDto, UpdateUserDto, string> {
+export class UserService extends BaseCrudService<UserEntity, CreateUserDto, UpdateUserDto, number> {
   protected override readonly model = UserEntity;
   protected override readonly entityName = 'User';
   protected override readonly softDeleteField: string | null = null; // Use status field instead
@@ -75,13 +76,22 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const offset = (safePage - 1) * safeLimit;
 
     // Exclude current logged-in user if specified
-    const excludeUserId = options.excludeUserId;
     const whereClause: Record<string, unknown> = {
       ...where,
       status: { [Op.ne]: 'archived' }, // Exclude archived users from listing
     };
-    if (excludeUserId) {
-      whereClause.id = { [Op.ne]: excludeUserId }; // Exclude current user from listing
+
+    if (options.excludeUserId) {
+      whereClause.id = { [Op.ne]: options.excludeUserId }; // Exclude by ID (number)
+    } else if (options.excludeUserUuid) {
+      // Convert UUID to ID for exclusion
+      const excludeUser = await this.userModel.findOne({
+        where: { uuid: options.excludeUserUuid },
+        attributes: ['id'],
+      });
+      if (excludeUser) {
+        whereClause.id = { [Op.ne]: excludeUser.id };
+      }
     }
 
     const { count, rows } = await this.userModel.findAndCountAll({
@@ -113,15 +123,16 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   }
 
   override async findOne(
-    id: string,
+    id: number,
     options?: FindOptions<UserEntity>,
   ): Promise<UserEntity | null> {
     return this.userModel.findOne({
       where: { id, status: { [Op.ne]: 'archived' } },
       include: [
-        { model: RoleEntity, attributes: ['id', 'role'] },
-        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
+        { model: RoleEntity, attributes: ['id', 'uuid', 'role'] },
+        { model: OrganizationEntity, attributes: ['id', 'uuid', 'name', 'slug'] },
       ],
+      ...options,
       attributes: options?.attributes ? options.attributes : { exclude: ['password_hash'] },
     });
   }
@@ -134,7 +145,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   }
 
   override async create(
-    dto: CreateUserDto,
+    dto: CreateUserDto & { organizationId?: number; auth_provider?: string; google_id?: string },
     currentUser?: CurrentUser,
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
@@ -142,25 +153,37 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     await this.validateEmailUniqueness(dto.email);
 
     // Validate organization
-    const organization = await this.organizationService.findOne(dto.organizationId);
+    // Handle both UUID (from currentUser) and ID (from dto)
+    let organization: OrganizationEntity | null = null;
+    if (currentUser?.organizationId) {
+      // currentUser.organizationId is a UUID string
+      organization = await this.organizationService.findByUuid(currentUser.organizationUuid);
+    } else if (dto.organizationId) {
+      // dto.organizationId is a number
+      organization = await this.organizationService.findOne(
+        dto.organizationId,
+        options?.transaction,
+      );
+    }
+
     if (!organization || !organization.is_active) {
       throw new NotFoundException('Organization not found or inactive');
     }
 
     // Validate role
-    const role = await this.roleService.findOne(dto.roleId);
+    const role = await this.roleService.findOne(dto.roleId as number);
     if (!role) {
       throw new NotFoundException('Role not found');
     }
 
     // Super admin users can only be created by super admin users
-    if (currentUser?.role !== Role.SUPER_ADMIN && role.role === Role.SUPER_ADMIN) {
+    if (currentUser && currentUser?.role !== Role.SUPER_ADMIN && role.role === Role.SUPER_ADMIN) {
       throw new ForbiddenException('You are not authorized to create a super admin user.');
     }
 
     // Determine if this is an invitation (no password provided)
     const isInvitation = !dto.password;
-    const status = isInvitation ? 'invited' : 'active';
+    const status = isInvitation && !dto.auth_provider ? 'invited' : 'active';
 
     // Hash password if provided
     let hashedPassword: string | null = null;
@@ -178,6 +201,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         role_id: dto.roleId,
         status,
         is_email_notifications_enabled: true,
+        auth_provider: dto.auth_provider || 'email',
+        google_id: dto.google_id || null,
       },
       {
         ...(options?.transaction && { transaction: options.transaction }),
@@ -190,32 +215,58 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     const createdUser = createdUserResult as UserEntity;
 
-    // Send invitation email if invitation, otherwise welcome email
-    if (isInvitation) {
+    // Reload user with relations if transaction is provided (to ensure we get the full entity)
+    // Otherwise, the created user is already available
+    let userWithRelations: UserEntity;
+    if (options?.transaction) {
+      // If we're in a transaction, reload with relations within the transaction
+      userWithRelations = (await this.userModel.findByPk(createdUser.id, {
+        include: [
+          { model: RoleEntity, attributes: ['id', 'uuid', 'role'] },
+          { model: OrganizationEntity, attributes: ['id', 'uuid', 'name', 'slug'] },
+        ],
+        attributes: { exclude: ['password_hash'] },
+        transaction: options.transaction,
+      })) as UserEntity;
+
+      if (!userWithRelations) {
+        throw new Error('Failed to reload created user');
+      }
+    } else {
+      // If no transaction, use findOne which will work normally
+      const foundUser = await this.findOne(createdUser.id);
+      if (!foundUser) {
+        throw new Error('Failed to find created user');
+      }
+      userWithRelations = foundUser;
+    }
+
+    // Send invitation email if invitation
+    // Note: Welcome emails for active users should be sent by the calling service
+    // (e.g., authService.register, authService.googleSignupComplete, userController.create)
+    if (isInvitation && !dto.auth_provider) {
       const inviterName = currentUser
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
+
       const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-        }/auth/invitation?token=${createdUser.id}`;
+        }/auth/invitation?token=${userWithRelations.uuid}`;
+
       this.mailService
-        .sendInvitationEmail(createdUser.email, {
-          name: createdUser.first_name,
+        .sendInvitationEmail(userWithRelations.email, {
+          name: userWithRelations.first_name,
           inviterName,
           organizationName: organization.name,
           inviteLink,
         })
         .catch(console.error);
-    } else {
-      this.mailService
-        .sendWelcomeEmail(createdUser.email, { name: createdUser.first_name })
-        .catch(console.error);
     }
 
-    return this.findOne(createdUser.id) as Promise<UserEntity>;
+    return userWithRelations;
   }
 
   override async update(
-    id: string,
+    id: number,
     dto: UpdateUserDto,
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
@@ -231,7 +282,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         { ...(options?.transaction && { transaction: options.transaction }) },
       );
       // Logout user from all devices when archived
-      await this.logoutUserFromAllDevices(user.id, options?.transaction);
+      await this.logoutUserFromAllDevices(user.uuid, options?.transaction);
       // Return the archived user (need to find it without the archived filter)
       return this.userModel.findOne({
         where: { id },
@@ -251,7 +302,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Validate role if changing
     if (dto.roleId) {
-      const role = await this.roleService.findOne(dto.roleId);
+      const role = await this.roleService.findOne(+dto.roleId);
       if (!role) {
         throw new NotFoundException('Role not found');
       }
@@ -282,12 +333,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
         // If role changed, logout user from all devices (force re-login)
         if (roleChanged) {
-          await this.logoutUserFromAllDevices(user.id, transaction);
+          await this.logoutUserFromAllDevices(user.uuid, transaction);
         }
 
         // If status changed to inactive, logout user from all devices
         if (statusChangedToInactive) {
-          await this.logoutUserFromAllDevices(user.id, transaction);
+          await this.logoutUserFromAllDevices(user.uuid, transaction);
         }
 
         await transaction.commit();
@@ -303,27 +354,27 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
       // If role changed, logout user from all devices (force re-login)
       if (roleChanged) {
-        await this.logoutUserFromAllDevices(user.id, options?.transaction);
+        await this.logoutUserFromAllDevices(user.uuid, options?.transaction);
       }
 
       // If status changed to inactive, logout user from all devices
       if (statusChangedToInactive) {
-        await this.logoutUserFromAllDevices(user.id, options?.transaction);
+        await this.logoutUserFromAllDevices(user.uuid, options?.transaction);
       }
     }
 
     return this.findOne(id) as Promise<UserEntity>;
   }
 
-  override async softDelete(id: string): Promise<boolean> {
+  override async softDelete(id: number): Promise<boolean> {
     const user = await this.findOneOrThrow(id);
     await user.update({ status: 'archived' });
     // Logout user from all devices when deactivated
-    await this.logoutUserFromAllDevices(user.id);
+    await this.logoutUserFromAllDevices(user.uuid);
     return true;
   }
 
-  override async restore(id: string): Promise<UserEntity> {
+  override async restore(id: number): Promise<UserEntity> {
     const user = await this.userModel.findOne({
       where: { id, status: 'archived' },
     });
@@ -336,7 +387,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return this.findOne(id) as Promise<UserEntity>;
   }
 
-  async cancelInvitation(id: string): Promise<UserEntity> {
+  async cancelInvitation(id: number): Promise<UserEntity> {
     const user = await this.userModel.findByPk(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -350,7 +401,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return this.findOne(id) as Promise<UserEntity>;
   }
 
-  async resendInvitation(id: string, currentUser?: CurrentUser): Promise<UserEntity> {
+  async resendInvitation(id: number, currentUser?: CurrentUser): Promise<UserEntity> {
     const user = await this.userModel.findByPk(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -368,7 +419,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
     const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-      }/auth/invitation?token=${user.id}`;
+      }/auth/invitation?token=${user.uuid}`;
     const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService
@@ -386,7 +437,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
   // Multi-tenant methods
   override async findAllByOrganization(
-    organizationId: string,
+    organizationId: number,
     options: ExtendedFindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
     const whereClause: Record<string, unknown> = {
@@ -405,20 +456,26 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
   async findOneByUuidAndOrganization(
     uuid: string,
-    organizationId: string,
+    organizationUuid: string,
   ): Promise<UserEntity | null> {
+    // First find organization by UUID to get its ID
+    const organization = await this.organizationService.findByUuid(organizationUuid);
+    if (!organization) {
+      return null;
+    }
+
     return this.userModel.findOne({
-      where: { id: uuid, organization_id: organizationId },
+      where: { uuid, organization_id: organization.id },
       include: [
-        { model: RoleEntity, attributes: ['id', 'role'] },
-        { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
+        { model: RoleEntity, attributes: ['id', 'uuid', 'role'] },
+        { model: OrganizationEntity, attributes: ['id', 'uuid', 'name', 'slug'] },
       ],
       attributes: { exclude: ['password_hash'] },
     });
   }
 
   async searchUsers(
-    organizationId: string,
+    organizationId: number,
     searchQuery: string,
     options: ExtendedFindAllOptions = {},
   ): Promise<PaginatedResult<UserEntity>> {
@@ -487,7 +544,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  private async findOneOrThrow(id: string): Promise<UserEntity> {
+  private async findOneOrThrow(id: number): Promise<UserEntity> {
     const user = await this.userModel.findOne({
       where: { id, status: { [Op.ne]: 'archived' } },
     });

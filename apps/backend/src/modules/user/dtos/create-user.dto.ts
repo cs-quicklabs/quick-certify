@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -59,13 +60,8 @@ export class CreateUserDto {
   @IsOptional()
   profilePicture?: string = '';
 
-  @ApiProperty({ example: 'abc123', description: 'Organization ID (nanoid)' })
-  @IsString()
-  @IsNotEmpty({ message: 'Organization ID is required' })
-  organizationId = '';
-
-  @ApiProperty({ example: 'xyz789', description: 'Role ID (nanoid)' })
+  @ApiProperty({ example: 1, description: 'Role ID (integer)' })
   @IsString()
   @IsNotEmpty({ message: 'Role ID is required' })
-  roleId = '';
+  roleId?: string;
 }

@@ -2,9 +2,12 @@ import { QueryInterface, DataTypes } from 'sequelize';
 import { DataType } from 'sequelize-typescript';
 
 /**
- * Migration: Create all tables
+ * Migration: Create all tables with id/uuid structure
  *
- * Creates all database tables in the correct order to respect foreign key dependencies
+ * Creates all database tables with:
+ * - id: INTEGER, auto-increment, primary key (for foreign keys and relations)
+ * - uuid: STRING(21), unique index (for external API operations)
+ * - All foreign keys use INTEGER (id) for relations
  */
 module.exports = {
   async up(queryInterface: QueryInterface) {
@@ -16,9 +19,15 @@ module.exports = {
         'role',
         {
           id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             primaryKey: true,
+            autoIncrement: true,
             allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
           },
           role: {
             type: DataTypes.STRING(100),
@@ -44,14 +53,26 @@ module.exports = {
         transaction,
       });
 
+      await queryInterface.addIndex('role', ['uuid'], {
+        name: 'IDX_ROLE_UUID',
+        unique: true,
+        transaction,
+      });
+
       // 2. Create organization table (no dependencies)
       await queryInterface.createTable(
         'organization',
         {
           id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             primaryKey: true,
+            autoIncrement: true,
             allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
           },
           name: {
             type: DataTypes.STRING(150),
@@ -79,7 +100,7 @@ module.exports = {
           },
           website: {
             type: DataTypes.STRING(500),
-            allowNull: true,
+            allowNull: false,
           },
           linkedin_url: {
             type: DataTypes.STRING(500),
@@ -146,60 +167,35 @@ module.exports = {
         transaction,
       });
 
-      // 3. Create skill table (depends on organization)
-      await queryInterface.createTable(
-        'skill',
-        {
-          id: {
-            type: DataTypes.STRING(21),
-            primaryKey: true,
-            allowNull: false,
-          },
-          organization_id: {
-            type: DataTypes.STRING(21),
-            allowNull: false,
-            references: {
-              model: 'organization',
-              key: 'id',
-            },
-            onUpdate: 'CASCADE',
-            onDelete: 'CASCADE',
-          },
-          name: {
-            type: DataTypes.STRING(150),
-            allowNull: false,
-          },
-          created_at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-          },
-          updated_at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-          },
-        },
-        { transaction },
-      );
-
-      await queryInterface.addIndex('skill', ['organization_id', 'name'], {
-        name: 'IDX_SKILL_ORG_NAME',
+      await queryInterface.addIndex('organization', ['website'], {
+        name: 'IDX_ORGANIZATION_WEBSITE',
         unique: true,
         transaction,
       });
 
-      // 4. Create user table (depends on organization and role)
+      await queryInterface.addIndex('organization', ['uuid'], {
+        name: 'IDX_ORGANIZATION_UUID',
+        unique: true,
+        transaction,
+      });
+
+      // 3. Create user table (depends on organization and role)
       await queryInterface.createTable(
         'user',
         {
           id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             primaryKey: true,
+            autoIncrement: true,
             allowNull: false,
           },
-          organization_id: {
+          uuid: {
             type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
+          },
+          organization_id: {
+            type: DataTypes.INTEGER,
             allowNull: false,
             references: {
               model: 'organization',
@@ -234,7 +230,7 @@ module.exports = {
             allowNull: true,
           },
           role_id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             allowNull: false,
             references: {
               model: 'role',
@@ -285,21 +281,39 @@ module.exports = {
         transaction,
       });
 
-      // 5. Create session table (depends on user)
+      await queryInterface.addIndex('user', ['uuid'], {
+        name: 'IDX_USER_UUID',
+        unique: true,
+        transaction,
+      });
+
+      await queryInterface.addIndex('user', ['organization_id'], {
+        name: 'IDX_USER_ORGANIZATION_ID',
+        transaction,
+      });
+
+      // 4. Create session table (depends on user)
       await queryInterface.createTable(
         'session',
         {
           id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             primaryKey: true,
+            autoIncrement: true,
             allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
           },
           hash: {
             type: DataTypes.STRING(21),
             allowNull: false,
+            unique: true,
           },
           user_id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             allowNull: false,
             references: {
               model: 'user',
@@ -362,21 +376,34 @@ module.exports = {
         transaction,
       });
 
-      // 6. Create password_reset table (depends on user)
+      await queryInterface.addIndex('session', ['uuid'], {
+        name: 'IDX_SESSION_UUID',
+        unique: true,
+        transaction,
+      });
+
+      // 5. Create password_reset table (depends on user)
       await queryInterface.createTable(
         'password_reset',
         {
           id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             primaryKey: true,
+            autoIncrement: true,
             allowNull: false,
           },
           uuid: {
             type: DataTypes.STRING(21),
             allowNull: false,
+            unique: true,
+          },
+          token_uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
           },
           user_id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             allowNull: false,
             references: {
               model: 'user',
@@ -416,8 +443,8 @@ module.exports = {
         { transaction },
       );
 
-      await queryInterface.addIndex('password_reset', ['uuid'], {
-        name: 'IDX_PASSWORD_RESET_UUID',
+      await queryInterface.addIndex('password_reset', ['token_uuid'], {
+        name: 'IDX_PASSWORD_RESET_TOKEN_UUID',
         unique: true,
         transaction,
       });
@@ -427,7 +454,286 @@ module.exports = {
         transaction,
       });
 
-      // Create design table
+      await queryInterface.addIndex('password_reset', ['uuid'], {
+        name: 'IDX_PASSWORD_RESET_UUID',
+        unique: true,
+        transaction,
+      });
+
+      // 6. Create skill table (depends on organization)
+      await queryInterface.createTable(
+        'skill',
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
+          },
+          organization_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+              model: 'organization',
+              key: 'id',
+            },
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE',
+          },
+          name: {
+            type: DataTypes.STRING(150),
+            allowNull: false,
+          },
+          created_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updated_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
+      await queryInterface.addIndex('skill', ['organization_id', 'name'], {
+        name: 'IDX_SKILL_ORG_NAME',
+        unique: true,
+        transaction,
+      });
+
+      await queryInterface.addIndex('skill', ['uuid'], {
+        name: 'IDX_SKILL_UUID',
+        unique: true,
+        transaction,
+      });
+
+      // 7. Create event_type table (no dependencies)
+      await queryInterface.createTable(
+        'event_type',
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
+          },
+          name: {
+            type: DataTypes.STRING(150),
+            allowNull: false,
+          },
+          is_active: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+          },
+          created_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updated_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
+      await queryInterface.addIndex('event_type', ['name'], {
+        name: 'IDX_EVENT_TYPE_NAME',
+        unique: true,
+        transaction,
+      });
+
+      await queryInterface.addIndex('event_type', ['uuid'], {
+        name: 'IDX_EVENT_TYPE_UUID',
+        unique: true,
+        transaction,
+      });
+
+      // 8. Create event_level table (no dependencies)
+      await queryInterface.createTable(
+        'event_level',
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
+          },
+          name: {
+            type: DataTypes.STRING(150),
+            allowNull: false,
+          },
+          is_active: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+          },
+          created_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updated_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
+      await queryInterface.addIndex('event_level', ['name'], {
+        name: 'IDX_EVENT_LEVEL_NAME',
+        unique: true,
+        transaction,
+      });
+
+      await queryInterface.addIndex('event_level', ['uuid'], {
+        name: 'IDX_EVENT_LEVEL_UUID',
+        unique: true,
+        transaction,
+      });
+
+      // 9. Create event_format table (no dependencies)
+      await queryInterface.createTable(
+        'event_format',
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
+          },
+          name: {
+            type: DataTypes.STRING(150),
+            allowNull: false,
+          },
+          is_active: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+          },
+          created_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updated_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
+      await queryInterface.addIndex('event_format', ['name'], {
+        name: 'IDX_EVENT_FORMAT_NAME',
+        unique: true,
+        transaction,
+      });
+
+      await queryInterface.addIndex('event_format', ['uuid'], {
+        name: 'IDX_EVENT_FORMAT_UUID',
+        unique: true,
+        transaction,
+      });
+
+      // 10. Create event table (depends on event_type, event_level, event_format)
+      await queryInterface.createTable(
+        'event',
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
+          },
+          name: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+          },
+          event_type_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+              model: 'event_type',
+              key: 'id',
+            },
+            onUpdate: 'CASCADE',
+            onDelete: 'RESTRICT',
+          },
+          event_level_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+              model: 'event_level',
+              key: 'id',
+            },
+            onUpdate: 'CASCADE',
+            onDelete: 'RESTRICT',
+          },
+          event_format_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+              model: 'event_format',
+              key: 'id',
+            },
+            onUpdate: 'CASCADE',
+            onDelete: 'RESTRICT',
+          },
+          is_active: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+          },
+          created_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updated_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
+      // 11. Create design table (no dependencies)
       await queryInterface.createTable(
         'designs',
         {
@@ -466,10 +772,32 @@ module.exports = {
         { transaction },
       );
 
+      await queryInterface.addIndex('event', ['event_type_id'], {
+        name: 'IDX_EVENT_TYPE_ID',
+        transaction,
+      });
+
+      await queryInterface.addIndex('event', ['event_level_id'], {
+        name: 'IDX_EVENT_LEVEL_ID',
+        transaction,
+      });
+
+      await queryInterface.addIndex('event', ['event_format_id'], {
+        name: 'IDX_EVENT_FORMAT_ID',
+        transaction,
+      });
+
+      await queryInterface.addIndex('event', ['uuid'], {
+        name: 'IDX_EVENT_UUID',
+        unique: true,
+        transaction,
+      });
+
       await transaction.commit();
       console.log('✅ All tables created successfully');
     } catch (error) {
       await transaction.rollback();
+      console.error('❌ Migration failed:', error);
       throw error;
     }
   },
@@ -478,18 +806,24 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      // Drop tables in reverse order (respecting foreign key dependencies)
+      // Drop tables in reverse order of dependencies
+      await queryInterface.dropTable('event', { transaction });
+      await queryInterface.dropTable('event_format', { transaction });
+      await queryInterface.dropTable('event_level', { transaction });
+      await queryInterface.dropTable('event_type', { transaction });
+      await queryInterface.dropTable('skill', { transaction });
       await queryInterface.dropTable('password_reset', { transaction });
       await queryInterface.dropTable('session', { transaction });
       await queryInterface.dropTable('user', { transaction });
-      await queryInterface.dropTable('skill', { transaction });
       await queryInterface.dropTable('organization', { transaction });
       await queryInterface.dropTable('role', { transaction });
       await queryInterface.dropTable('designs', { transaction });
 
       await transaction.commit();
+      console.log('✅ All tables dropped successfully');
     } catch (error) {
       await transaction.rollback();
+      console.error('❌ Rollback failed:', error);
       throw error;
     }
   },

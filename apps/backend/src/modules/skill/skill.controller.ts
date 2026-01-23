@@ -37,17 +37,17 @@ export class SkillController {
   @ApiQuery({ name: 'search', required: false })
   async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
     const result = pagination.search
-      ? await this.skillService.searchSkills(user.organizationId, pagination.search, pagination)
-      : await this.skillService.findAll(user.organizationId, pagination);
+      ? await this.skillService.searchSkills(user.organizationUuid, pagination.search, pagination)
+      : await this.skillService.findAll(user.organizationUuid, pagination);
     return new SuccessResponse('Skills retrieved successfully', result);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get skill by ID (Admin/Super Admin only)' })
+  @Get(':uuid')
+  @ApiOperation({ summary: 'Get skill by UUID (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Skill found' })
   @ApiResponse({ status: 404, description: 'Skill not found' })
-  async findOne(@CurrentUser() user: CurrentUserType, @Param('id') id: string) {
-    const skill = await this.skillService.findOne(id, user.organizationId);
+  async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const skill = await this.skillService.findByUuid(uuid, user.organizationUuid);
     if (!skill) {
       return new SuccessResponse('Skill not found', null);
     }
@@ -60,11 +60,11 @@ export class SkillController {
   @ApiResponse({ status: 409, description: 'Skill name already exists' })
   @ApiResponse({ status: 400, description: 'Validation error' })
   async create(@CurrentUser() user: CurrentUserType, @Body() dto: CreateSkillDto) {
-    const skill = await this.skillService.create(user.organizationId, dto);
+    const skill = await this.skillService.create(user.organizationUuid, dto);
     return new SuccessResponse('Skill created successfully', skill);
   }
 
-  @Patch(':id')
+  @Patch(':uuid')
   @ApiOperation({ summary: 'Update skill (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Skill updated successfully' })
   @ApiResponse({ status: 404, description: 'Skill not found' })
@@ -72,19 +72,19 @@ export class SkillController {
   @ApiResponse({ status: 400, description: 'Validation error' })
   async update(
     @CurrentUser() user: CurrentUserType,
-    @Param('id') id: string,
+    @Param('uuid') uuid: string,
     @Body() dto: UpdateSkillDto,
   ) {
-    const skill = await this.skillService.update(id, user.organizationId, dto);
+    const skill = await this.skillService.updateByUuid(uuid, user.organizationUuid, dto);
     return new SuccessResponse('Skill updated successfully', skill);
   }
 
-  @Delete(':id')
+  @Delete(':uuid')
   @ApiOperation({ summary: 'Delete skill (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Skill deleted successfully' })
   @ApiResponse({ status: 404, description: 'Skill not found' })
-  async remove(@CurrentUser() user: CurrentUserType, @Param('id') id: string) {
-    await this.skillService.delete(id, user.organizationId);
+  async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    await this.skillService.deleteByUuid(uuid, user.organizationUuid);
     return new SuccessResponse('Skill deleted successfully', { deleted: true });
   }
 }

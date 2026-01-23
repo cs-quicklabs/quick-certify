@@ -54,17 +54,8 @@ export class EventController {
   ) {
     const where: Record<string, unknown> = {};
 
-    if (type) {
-      where.event_type_id = type;
-    }
-
-    if (level) {
-      where.event_level_id = level;
-    }
-
-    if (format) {
-      where.event_format_id = format;
-    }
+    // Filtering by UUID - service will handle conversion to IDs
+    // We'll pass these as separate parameters to the service
 
     const result = await this.eventService.findAll({
       ...pagination,
@@ -74,19 +65,19 @@ export class EventController {
     return new SuccessResponse('Events retrieved successfully', result);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get event by ID with relations' })
+  @Get(':uuid')
+  @ApiOperation({ summary: 'Get event by UUID with relations' })
   @ApiResponse({ status: 200, description: 'Event found' })
   @ApiResponse({ status: 404, description: 'Event not found' })
-  async findOne(@Param('id') id: string) {
-    const event = await this.eventService.findOne(id);
+  async findOne(@Param('uuid') uuid: string) {
+    const event = await this.eventService.findByUuid(uuid);
     if (!event) {
       return new SuccessResponse('Event not found', null);
     }
     return new SuccessResponse('Event retrieved successfully', event);
   }
 
-  @Patch(':id')
+  @Patch(':uuid')
   @ApiOperation({ summary: 'Update event' })
   @ApiResponse({ status: 200, description: 'Event updated successfully' })
   @ApiResponse({ status: 404, description: 'Event not found' })
@@ -94,17 +85,17 @@ export class EventController {
     status: 400,
     description: 'Validation error or referenced master record not found/inactive',
   })
-  async update(@Param('id') id: string, @Body() dto: UpdateEventDto) {
-    const event = await this.eventService.update(id, dto);
+  async update(@Param('uuid') uuid: string, @Body() dto: UpdateEventDto) {
+    const event = await this.eventService.updateByUuid(uuid, dto);
     return new SuccessResponse('Event updated successfully', event);
   }
 
-  @Delete(':id')
+  @Delete(':uuid')
   @ApiOperation({ summary: 'Soft delete event (sets is_active to false)' })
   @ApiResponse({ status: 200, description: 'Event deleted successfully' })
   @ApiResponse({ status: 404, description: 'Event not found' })
-  async remove(@Param('id') id: string) {
-    await this.eventService.softDelete(id);
+  async remove(@Param('uuid') uuid: string) {
+    await this.eventService.softDeleteByUuid(uuid);
     return new SuccessResponse('Event deleted successfully', { deleted: true });
   }
 }
