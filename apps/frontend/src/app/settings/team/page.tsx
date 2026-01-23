@@ -208,14 +208,15 @@ export default function TeamsPage() {
               render: (member) => (
                 <div className="flex items-center gap-2">
                   <span
-                    className={`w-2 h-2 rounded-full ${member.status === 'active'
+                    className={`w-2 h-2 rounded-full ${
+                      member.status === 'active'
                         ? 'bg-green-500'
                         : member.status === 'inactive'
-                          ? 'bg-yellow-500'
-                          : member.status === 'invited'
-                            ? 'bg-blue-500'
-                            : 'bg-gray-400'
-                      }`}
+                        ? 'bg-yellow-500'
+                        : member.status === 'invited'
+                        ? 'bg-blue-500'
+                        : 'bg-gray-400'
+                    }`}
                   />
                   <span className="text-sm text-gray-900 capitalize">{member.status}</span>
                 </div>
@@ -240,13 +241,13 @@ export default function TeamsPage() {
           isLoading={isLoading}
           emptyMessage={searchQuery ? 'No matching team members found.' : 'No team members found.'}
           onRowClick={handleRowClick}
-        // rowClassName={(member: TeamMember) => {
-        //   // Disable cursor pointer for invited users and prevent hover effect
-        //   if (member.status === 'invited') {
-        //     return 'cursor-not-allowed opacity-75 hover:bg-white';
-        //   }
-        //   return '';
-        // }}
+          // rowClassName={(member: TeamMember) => {
+          //   // Disable cursor pointer for invited users and prevent hover effect
+          //   if (member.status === 'invited') {
+          //     return 'cursor-not-allowed opacity-75 hover:bg-white';
+          //   }
+          //   return '';
+          // }}
         />
       </div>
 

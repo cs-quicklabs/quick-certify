@@ -9,6 +9,6 @@ export function capitalizeFirst(str: string | null | undefined): string {
   return str
     .trim()
     .split(/\s+/) // handles multiple spaces
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
