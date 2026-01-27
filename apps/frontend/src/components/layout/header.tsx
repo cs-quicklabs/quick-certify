@@ -387,13 +387,15 @@ export function Header() {
                   Account Settings
                 </Link>
               )}
-              <Link
-                href="/settings/event/type"
-                className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Event Settings
-              </Link>
+              {isAdminOrSuperAdmin && (
+                <Link
+                  href="/settings/event/type"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Event Settings
+                </Link>
+              )}
               {isAdminOrSuperAdmin && (
                 <Link
                   href="/settings/team"
