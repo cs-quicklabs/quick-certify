@@ -17,6 +17,7 @@ export default defineConfig({
   globalSetup: './global-setup.ts',
 
   use: {
+    baseURL: process.env.BASE_URL,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },

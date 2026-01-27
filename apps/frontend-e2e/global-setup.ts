@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { chromium, FullConfig } from '@playwright/test';
-import { LoginPage } from './Playwright/pageobjects/LoginPage.ts';
+import { LoginPage } from './Playwright/pageobjects/LoginPage';
 
 import * as dotenv from 'dotenv';
 

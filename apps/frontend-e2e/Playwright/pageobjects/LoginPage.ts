@@ -2,79 +2,75 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 export class LoginPage {
   readonly page: Page;
-  readonly xpath_emailField: Locator;
-  readonly xpath_passwordField: Locator;
-  readonly xpath_signinBtn: Locator;
-  readonly xpath_eyeIcon: Locator;
-  readonly xpath_rememberMeCheckBox: Locator;
-  readonly xpath_alertToast: Locator;
-  readonly xpath_emailFieldError: Locator;
-  readonly xpath_passwordFieldError: Locator;
-  readonly xpath_forgotPassowrd: Locator;
+  readonly locator_emailField: Locator;
+  readonly locator_passwordField: Locator;
+  readonly locator_signinBtn: Locator;
+  readonly locator_eyeIcon: Locator;
+  readonly locator_rememberMeCheckBox: Locator;
+  readonly locator_alertToast: Locator;
+  readonly locator_emailFieldError: Locator;
+  readonly locator_passwordFieldError: Locator;
+  readonly locator_forgotPassword: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.xpath_emailField = page.locator(`#your-email`);
-    this.xpath_passwordField = page.locator(`#password`);
-    this.xpath_signinBtn = page.getByRole('button', { name: 'Sign in' });
-    this.xpath_eyeIcon = page.locator('..absolute');
-    this.xpath_rememberMeCheckBox = page.locator(`#remember-me`);
-    this.xpath_forgotPassowrd = page.getByRole('link', { name: 'Forgot password?' });
-    this.xpath_alertToast = page.getByRole('alert');
-    this.xpath_emailFieldError = page.locator(`#your-email-error`);
-    this.xpath_passwordFieldError = page.locator(`#password-error`);
+    this.locator_emailField = page.locator(`#your-email`);
+    this.locator_passwordField = page.locator(`#password`);
+    this.locator_signinBtn = page.getByRole('button', { name: 'Sign in' });
+    this.locator_eyeIcon = page.locator('.absolute');
+    this.locator_rememberMeCheckBox = page.locator(`#remember-me`);
+    this.locator_forgotPassword = page.getByRole('link', { name: 'Forgot password?' });
+    this.locator_alertToast = page.getByRole('alert');
+    this.locator_emailFieldError = page.locator(`#your-email-error`);
+    this.locator_passwordFieldError = page.locator(`#password-error`);
   }
 
   async openUrl() {
-    const url = process.env.BASE_URL;
-    if (!url) {
-      throw new Error('BASE_URL is not defined in the environment variables');
-    }
-    await this.page.goto(url);
+    await this.page.goto('/');
   }
 
   async enterUserEmail(email: string) {
-    await this.xpath_emailField.fill(email);
+    await this.locator_emailField.fill(email);
   }
 
   async enterPassword(password: string) {
-    await this.xpath_passwordField.fill(password);
+    await this.locator_passwordField.fill(password);
   }
 
   async clickOnEyeIcon() {
-    await this.xpath_eyeIcon.click();
+    await this.locator_eyeIcon.click();
   }
 
   async checkRememberMeCheckBox() {
-    await this.xpath_rememberMeCheckBox.click();
+    await this.locator_rememberMeCheckBox.click();
   }
 
   async clickOnSigninBtn() {
-    await this.xpath_signinBtn.click();
+    await this.locator_signinBtn.click();
   }
 
   async validateAlertMessage(message: string) {
-    await expect(this.xpath_alertToast).toBeVisible({ timeout: 5000 });
-    await expect(this.xpath_alertToast).toContainText(message);
+    await expect(this.locator_alertToast).toBeVisible({ timeout: 5000 });
+    await expect(this.locator_alertToast).toContainText(message);
   }
 
   async validateInvalidEmailError(message: string) {
-    await expect(this.xpath_emailFieldError.first()).toContainText(message);
+    await expect(this.locator_emailFieldError.first()).toContainText(message);
   }
 
   async validateInvalidPasswordError(message: string) {
-    await expect(this.xpath_passwordFieldError.first()).toContainText(message);
+    await expect(this.locator_passwordFieldError.first()).toContainText(message);
   }
 
   async validateEyeIconEnabling() {
     await this.page.waitForTimeout(500);
-    const inputType = this.xpath_passwordField;
+    const inputType = this.locator_passwordField;
     await expect(inputType).toHaveAttribute('type', 'text');
   }
 
   async validatePasswordEncryption() {
     await this.page.waitForTimeout(500);
-    const inputType = this.xpath_passwordField;
+    const inputType = this.locator_passwordField;
     await expect(inputType).toHaveAttribute('type', 'password');
   }
 
