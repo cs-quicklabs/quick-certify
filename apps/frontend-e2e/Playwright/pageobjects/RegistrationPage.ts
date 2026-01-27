@@ -3,7 +3,7 @@ import { RandomDataGenerator } from '../utils/RandomDataGenerator';
 
 export class RegistrationPage {
   readonly page: Page;
-  readonly testData: RandomDataGenerator
+  readonly testData: RandomDataGenerator;
   readonly locator_signupBtn: Locator;
   readonly locator_firstNameField: Locator;
   readonly locator_lastNameField: Locator;
@@ -16,7 +16,7 @@ export class RegistrationPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.testData = new RandomDataGenerator()
+    this.testData = new RandomDataGenerator();
     this.locator_signupBtn = page.getByRole('link', { name: 'Sign up' });
     this.locator_firstNameField = page.locator(`#first-name`);
     this.locator_lastNameField = page.locator(`#last-name`);

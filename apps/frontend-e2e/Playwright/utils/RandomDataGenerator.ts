@@ -7,8 +7,6 @@
 */
 
 export class RandomDataGenerator {
-
-
   generateRandomEmail(): string {
     const random4Digit = Math.floor(1000 + Math.random() * 9000);
     return `test_${random4Digit}@test.com`;
@@ -22,5 +20,4 @@ export class RandomDataGenerator {
     }
     return `test_${randomSuffix}issuer`;
   }
-
 }
