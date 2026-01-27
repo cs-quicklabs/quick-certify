@@ -6,7 +6,8 @@ import { PaginatedResponse } from '@/types';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface Skill {
-  id: string;
+  id: number;
+  uuid: string;
   name: string;
   organizationId: string;
   createdAt: string;
@@ -37,12 +38,14 @@ export const skillService = {
     if (filters?.search) params.append('search', filters.search);
     if (filters?.sortBy) params.append('sortBy', filters.sortBy);
     if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
-    const response = await apiClient.get<ApiResponse<PaginatedResponse<Skill>>>(`/skills?${params.toString()}`);
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<Skill>>>(
+      `/skills?${params.toString()}`,
+    );
     return response.data.data;
   },
 
-  async getSkill(id: string): Promise<Skill> {
-    const response = await apiClient.get<ApiResponse<Skill>>(`/skills/${id}`);
+  async getSkill(uuid: string): Promise<Skill> {
+    const response = await apiClient.get<ApiResponse<Skill>>(`/skills/${uuid}`);
     return response.data.data;
   },
 
@@ -51,14 +54,13 @@ export const skillService = {
     return response.data.data;
   },
 
-  async updateSkill(id: string, data: UpdateSkillRequest): Promise<Skill> {
-    const response = await apiClient.patch<ApiResponse<Skill>>(`/skills/${id}`, data);
+  async updateSkill(uuid: string, data: UpdateSkillRequest): Promise<Skill> {
+    const response = await apiClient.patch<ApiResponse<Skill>>(`/skills/${uuid}`, data);
     return response.data.data;
   },
 
-  async deleteSkill(id: string): Promise<{ deleted: boolean }> {
-    const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(`/skills/${id}`);
+  async deleteSkill(uuid: string): Promise<{ deleted: boolean }> {
+    const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(`/skills/${uuid}`);
     return response.data.data;
   },
 };
-

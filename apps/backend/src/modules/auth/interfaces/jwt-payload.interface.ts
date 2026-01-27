@@ -1,8 +1,10 @@
 export interface JwtPayload {
-  sub: string; // user id (nanoid)
+  sub: string; // user uuid (nanoid)
   email: string;
-  organizationId: string; // nanoid
-  roleId: string; // nanoid
+  organizationId: number;
+  organizationUuid: string; // organization uuid (nanoid)
+  roleId: number;
+  roleUuid: string; // role uuid (nanoid)
   role: string; // role name
   sessionHash: string; // session hash for validation
   type: 'access' | 'refresh';
@@ -18,12 +20,15 @@ export interface JwtTokens {
 }
 
 export interface CurrentUser {
-  id: string; // nanoid
+  id: number; // user id
+  uuid: string; // user uuid
   email: string;
   firstName: string;
   lastName: string | null;
-  organizationId: string; // nanoid
-  roleId: string; // nanoid
+  organizationUuid: string; // nanoid
+  organizationId: number;
+  roleUuid: string; // nanoid
+  roleId: number;
   role: string; // role name
   sessionHash: string;
 }

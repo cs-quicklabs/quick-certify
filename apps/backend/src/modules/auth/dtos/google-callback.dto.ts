@@ -30,4 +30,3 @@ export class GoogleCallbackDto {
   @IsOptional()
   scope?: string;
 }
-

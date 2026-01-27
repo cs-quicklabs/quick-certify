@@ -10,7 +10,6 @@ import { EventFormatEntity } from './event-format.entity';
 import { EventEntity } from './event.entity';
 
 export * from './base.entity';
-export * from './base-nanoid.entity';
 export * from './organization.entity';
 export * from './role.entity';
 export * from './user.entity';

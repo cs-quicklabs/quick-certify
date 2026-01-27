@@ -46,36 +46,35 @@ export class EventLevelController {
     return new SuccessResponse('Event levels retrieved successfully', result);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get event level by ID' })
+  @Get(':uuid')
+  @ApiOperation({ summary: 'Get event level by UUID' })
   @ApiResponse({ status: 200, description: 'Event level found' })
   @ApiResponse({ status: 404, description: 'Event level not found' })
-  async findOne(@Param('id') id: string) {
-    const eventLevel = await this.eventLevelService.findOne(id);
+  async findOne(@Param('uuid') uuid: string) {
+    const eventLevel = await this.eventLevelService.findByUuid(uuid);
     if (!eventLevel) {
       return new SuccessResponse('Event level not found', null);
     }
     return new SuccessResponse('Event level retrieved successfully', eventLevel);
   }
 
-  @Patch(':id')
+  @Patch(':uuid')
   @ApiOperation({ summary: 'Update event level' })
   @ApiResponse({ status: 200, description: 'Event level updated successfully' })
   @ApiResponse({ status: 404, description: 'Event level not found' })
   @ApiResponse({ status: 409, description: 'Event level name already exists' })
   @ApiResponse({ status: 400, description: 'Validation error' })
-  async update(@Param('id') id: string, @Body() dto: UpdateEventLevelDto) {
-    const eventLevel = await this.eventLevelService.update(id, dto);
+  async update(@Param('uuid') uuid: string, @Body() dto: UpdateEventLevelDto) {
+    const eventLevel = await this.eventLevelService.updateByUuid(uuid, dto);
     return new SuccessResponse('Event level updated successfully', eventLevel);
   }
 
-  @Delete(':id')
+  @Delete(':uuid')
   @ApiOperation({ summary: 'Soft delete event level (sets is_active to false)' })
   @ApiResponse({ status: 200, description: 'Event level deleted successfully' })
   @ApiResponse({ status: 404, description: 'Event level not found' })
-  async remove(@Param('id') id: string) {
-    await this.eventLevelService.softDelete(id);
+  async remove(@Param('uuid') uuid: string) {
+    await this.eventLevelService.softDeleteByUuid(uuid);
     return new SuccessResponse('Event level deleted successfully', { deleted: true });
   }
 }
-

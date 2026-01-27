@@ -3,7 +3,12 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { teamService, CreateTeamMemberRequest, UpdateTeamMemberRequest, TeamFilters } from '@/services';
+import {
+  teamService,
+  CreateTeamMemberRequest,
+  UpdateTeamMemberRequest,
+  TeamFilters,
+} from '@/services';
 
 export const TEAM_KEYS = {
   all: ['team'] as const,

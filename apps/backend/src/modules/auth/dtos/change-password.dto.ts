@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from 'class-validator';
 
 export class ChangePasswordDto {
   @ApiProperty({ description: 'Current password' })
   @IsString()
   @IsNotEmpty({ message: 'Current password is required' })
-  currentPassword: string;
+  declare currentPassword: string;
 
   @ApiProperty({
     example: 'NewStrongP@ssw0rd!',
@@ -17,5 +17,14 @@ export class ChangePasswordDto {
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
     message: 'Password must include uppercase, lowercase, number, and special character',
   })
-  newPassword: string;
+  declare newPassword: string;
+
+  @ApiProperty({
+    description: 'Whether to revoke all active sessions after password change',
+    required: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'revokeAllSessions must be a boolean' })
+  revokeAllSessions?: boolean;
 }

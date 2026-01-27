@@ -10,7 +10,8 @@ import { IsOptional, IsString, IsUrl, MaxLength, ValidateIf } from 'class-valida
 export class UpdateBrandingDto {
   @ApiPropertyOptional({
     example: 'https://cdn.example.com/logo.png',
-    description: 'Company logo URL (PNG, JPG, JPEG, max 1MB, min 400x400px). Use empty string to remove logo.',
+    description:
+      'Company logo URL (PNG, JPG, JPEG, max 1MB, min 400x400px). Use empty string to remove logo.',
   })
   @IsString()
   @IsOptional()
@@ -30,4 +31,3 @@ export class UpdateBrandingDto {
   @IsUrl({}, { message: 'Please provide a valid URL for the favicon' })
   favicon_url?: string;
 }
-

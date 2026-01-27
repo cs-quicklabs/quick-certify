@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { OrganizationService } from './organization.service';
 import {
@@ -20,7 +11,7 @@ import {
 } from './dtos';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Disabled, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
@@ -33,7 +24,7 @@ export class OrganizationController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('SUPER_ADMIN')
+  @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get all organizations (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organizations list' })
   @ApiQuery({ name: 'page', required: false })
@@ -52,7 +43,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Get current user organization' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   async getCurrentOrganization(@CurrentUser() user: CurrentUserType) {
-    const organization = await this.organizationService.findOne(user.organizationId);
+    const organization = await this.organizationService.findByUuid(user.organizationUuid);
     return new SuccessResponse('Organization retrieved successfully', organization);
   }
 
@@ -62,7 +53,7 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Get all organization settings (Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization settings retrieved' })
   async getSettings(@CurrentUser() user: CurrentUserType) {
-    const organization = await this.organizationService.findOne(user.organizationId);
+    const organization = await this.organizationService.findByUuid(user.organizationUuid);
     return new SuccessResponse('Organization settings retrieved successfully', organization);
   }
 
@@ -78,14 +69,14 @@ export class OrganizationController {
     return new SuccessResponse('Organization retrieved successfully', organization);
   }
 
-  @Get(':id')
+  @Get(':uuid')
   @UseGuards(RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get organization by ID (Super Admin only)' })
+  @ApiOperation({ summary: 'Get organization by UUID (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async findOne(@Param('id') id: string) {
-    const organization = await this.organizationService.findOne(id);
+  async findOne(@Param('uuid') uuid: string) {
+    const organization = await this.organizationService.findByUuid(uuid);
     if (!organization) {
       return new SuccessResponse('Organization not found', null);
     }
@@ -95,6 +86,7 @@ export class OrganizationController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.SUPER_ADMIN)
+  @Disabled()
   @ApiOperation({ summary: 'Create a new organization (Super Admin only)' })
   @ApiResponse({ status: 201, description: 'Organization created successfully' })
   async create(@Body() dto: CreateOrganizationDto) {
@@ -111,18 +103,18 @@ export class OrganizationController {
     @CurrentUser() user: CurrentUserType,
     @Body() dto: UpdateOrganizationDto,
   ) {
-    const organization = await this.organizationService.update(user.organizationId, dto);
+    const organization = await this.organizationService.updateByUuid(user.organizationUuid, dto);
     return new SuccessResponse('Organization updated successfully', organization);
   }
 
-  @Patch(':id')
+  @Patch(':uuid')
   @UseGuards(RolesGuard)
   @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update organization (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
-    const organization = await this.organizationService.update(id, dto);
+  async update(@Param('uuid') uuid: string, @Body() dto: UpdateOrganizationDto) {
+    const organization = await this.organizationService.updateByUuid(uuid, dto);
     return new SuccessResponse('Organization updated successfully', organization);
   }
 
@@ -137,11 +129,11 @@ export class OrganizationController {
   @ApiResponse({ status: 200, description: 'General information updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   @ApiResponse({ status: 409, description: 'Organization name already exists' })
-  async updateGeneralInfo(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: UpdateGeneralInfoDto,
-  ) {
-    const organization = await this.organizationService.updateGeneralInfo(user.organizationId, dto);
+  async updateGeneralInfo(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateGeneralInfoDto) {
+    const organization = await this.organizationService.updateGeneralInfo(
+      user.organizationUuid,
+      dto,
+    );
     return new SuccessResponse('General information updated successfully', organization);
   }
 
@@ -151,11 +143,11 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Update organization social links (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Social links updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async updateSocialLinks(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: UpdateSocialLinksDto,
-  ) {
-    const organization = await this.organizationService.updateSocialLinks(user.organizationId, dto);
+  async updateSocialLinks(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateSocialLinksDto) {
+    const organization = await this.organizationService.updateSocialLinks(
+      user.organizationUuid,
+      dto,
+    );
     return new SuccessResponse('Social links updated successfully', organization);
   }
 
@@ -165,11 +157,8 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Update organization branding (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Branding updated successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async updateBranding(
-    @CurrentUser() user: CurrentUserType,
-    @Body() dto: UpdateBrandingDto,
-  ) {
-    const organization = await this.organizationService.updateBranding(user.organizationId, dto);
+  async updateBranding(@CurrentUser() user: CurrentUserType, @Body() dto: UpdateBrandingDto) {
+    const organization = await this.organizationService.updateBranding(user.organizationUuid, dto);
     return new SuccessResponse('Branding updated successfully', organization);
   }
 
@@ -183,7 +172,10 @@ export class OrganizationController {
     @CurrentUser() user: CurrentUserType,
     @Body() dto: UpdatePortalSettingsDto,
   ) {
-    const organization = await this.organizationService.updatePortalSettings(user.organizationId, dto);
+    const organization = await this.organizationService.updatePortalSettings(
+      user.organizationUuid,
+      dto,
+    );
     return new SuccessResponse('Portal settings updated successfully', organization);
   }
 }

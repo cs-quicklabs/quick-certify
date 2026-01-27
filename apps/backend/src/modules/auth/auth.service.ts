@@ -5,10 +5,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
+import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '@src/config/config.type';
-import { UserEntity, RoleEntity, OrganizationEntity, PasswordResetEntity } from '@src/entities';
+import { UserEntity, SessionEntity, OrganizationEntity, RoleEntity } from '@src/entities';
 import { EmailService } from '@src/commons/services';
 import { generateNanoid } from '@src/commons/utils';
 import {
@@ -22,8 +22,17 @@ import {
   AcceptInvitationDto,
 } from './dtos';
 import { JwtTokens, IAuthService } from './interfaces';
-import { PasswordService, TokenService, SessionService, GoogleOAuthService, GoogleUserInfo } from './services';
+import {
+  PasswordService,
+  TokenService,
+  SessionService,
+  GoogleOAuthService,
+  GoogleUserInfo,
+  PasswordResetService,
+} from './services';
 import { OrganizationService } from '../organization/organization.service';
+import { UserService } from '../user/user.service';
+import { RoleService } from '../role/role.service';
 /**
  * Temporary Google user data stored during signup flow
  */
@@ -64,15 +73,12 @@ export class AuthService implements IAuthService {
     private readonly sessionService: SessionService,
     private readonly emailService: EmailService,
     private readonly googleOAuthService: GoogleOAuthService,
-    @InjectModel(UserEntity)
-    private readonly userModel: typeof UserEntity,
-    @InjectModel(RoleEntity)
-    private readonly roleModel: typeof RoleEntity,
-    @InjectModel(OrganizationEntity)
-    private readonly organizationModel: typeof OrganizationEntity,
-    @InjectModel(PasswordResetEntity)
-    private readonly passwordResetModel: typeof PasswordResetEntity,
+    private readonly userService: UserService,
+    private readonly roleService: RoleService,
     private readonly organizationService: OrganizationService,
+    private readonly passwordResetService: PasswordResetService,
+    @InjectModel(SessionEntity)
+    private readonly sessionModel: typeof SessionEntity,
   ) {
     this.refreshTokenExpiresIn = this.configService.getOrThrow('auth.jwtRefreshTokenExpiresIn', {
       infer: true,
@@ -91,85 +97,79 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Password and confirm password do not match');
     }
 
-    const existingUser = await this.userModel.findOne({
-      where: { email: dto.email.toLowerCase() },
-    });
-
+    const existingUser = await this.userService.findByEmail(dto.email);
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
 
+    // Validate organization creation data (name, slug, website)
+    await this.organizationService.validateOrganizationCreation(dto.companyName, dto.websiteUrl);
+
+    const superAdminRole = await this.getSuperAdminRole();
     const slug = this.organizationService.generateSlug(dto.companyName);
-    const existingSlug = await this.organizationModel.findOne({ where: { slug } });
-    if (existingSlug) {
-      throw new ConflictException('Organization with this name already exists');
+
+    // Use transaction to ensure atomicity of organization and user creation
+    if (!this.sessionModel.sequelize) {
+      throw new Error('Sequelize instance not available');
     }
 
-    const existingOrgName = await this.organizationModel.findOne({ where: { name: dto.companyName } });
-    if (existingOrgName) {
-      throw new ConflictException('Organization with this name already exists');
+    const sequelize = this.sessionModel.sequelize;
+    const transaction = await sequelize.transaction();
+    let transactionCommitted = false;
+
+    try {
+      const organization = await this.organizationService.create(
+        {
+          name: dto.companyName,
+          slug,
+          website: dto.websiteUrl,
+          is_active: true,
+          issuer_verified: false,
+        },
+        { transaction },
+      );
+
+      const hashedPassword = await this.passwordService.hash(dto.password);
+      const user = await this.userService.create(
+        {
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          email: dto.email,
+          password: hashedPassword,
+          organizationId: organization.id,
+          roleId: superAdminRole.id,
+        },
+        undefined, // currentUser
+        { transaction },
+      );
+
+      await transaction.commit();
+      transactionCommitted = true;
+
+      this.emailService
+        .sendWelcomeEmail(user.email, { name: user.first_name })
+        .catch(console.error);
+
+      const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+
+      return tokens;
+    } catch (error) {
+      if (!transactionCommitted) {
+        await transaction.rollback();
+      }
+      throw error;
     }
-
-    // Check if website URL is already in use
-    if (dto.websiteUrl) {
-      await this.organizationService.validateWebsiteDomain(null, dto.websiteUrl);
-    }
-
-    const superAdminRole = await this.roleModel.findOne({
-      where: { role: 'super_admin' },
-    });
-
-    if (!superAdminRole) {
-      throw new NotFoundException('Super Admin role not found. Please ensure roles are seeded.');
-    }
-
-    const organization = await this.organizationModel.create({
-      name: dto.companyName,
-      slug,
-      website: dto.websiteUrl,
-      is_active: true,
-      issuer_verified: false,
-    });
-
-    const hashedPassword = await this.passwordService.hash(dto.password);
-    const user = await this.userModel.create({
-      first_name: dto.firstName,
-      last_name: dto.lastName,
-      email: dto.email.toLowerCase(),
-      password_hash: hashedPassword,
-      auth_provider: 'email',
-      organization_id: organization.id,
-      role_id: superAdminRole.id,
-      status: 'active',
-      is_email_notifications_enabled: true,
-    });
-
-    this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
-
-    const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
-
-    return tokens;
   }
 
   async login(dto: LoginDto, ipAddress?: string, userAgent?: string) {
-    const user = await this.userModel.findOne({
-      where: { email: dto.email.toLowerCase() },
-      include: [RoleEntity, OrganizationEntity],
-    });
+    const user = await this.userService.findByEmail(dto.email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    if (user.status === 'archived' || user.status === 'inactive') {
-      throw new UnauthorizedException('Your account is deactivated. Please connect with your admin.');
-    }
-
-    if (user.status !== 'active') {
-      throw new UnauthorizedException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
+    // Validate user status (extracted to avoid duplication)
+    this.userService.validateUserStatusForAuth(user);
 
     // Handle mixed auth providers
     if (user.auth_provider === 'google' && !user.password_hash) {
@@ -204,8 +204,17 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid or expired session');
     }
 
-    const user = await this.userModel.findByPk(payload.sub, {
-      include: [RoleEntity, OrganizationEntity],
+    const user = await this.userService.findByUuid(payload.sub, {
+      include: [
+        {
+          model: OrganizationEntity,
+          as: 'organization',
+        },
+        {
+          model: RoleEntity,
+          as: 'role',
+        },
+      ],
     });
 
     if (!user || user.status !== 'active') {
@@ -213,10 +222,13 @@ export class AuthService implements IAuthService {
     }
 
     const tokens = this.tokenService.generateTokens({
+      userUuid: user.uuid,
       userId: user.id,
       email: user.email,
       organizationId: user.organization_id,
+      organizationUuid: user.organization.uuid,
       roleId: user.role_id,
+      roleUuid: user.role.uuid,
       role: user.role?.role || '',
       sessionHash: session.hash,
     });
@@ -235,49 +247,38 @@ export class AuthService implements IAuthService {
     return { success: true };
   }
 
-  async logoutAll(userId: string) {
-    await this.sessionService.revokeAllForUser(userId);
+  async logoutAll(userUuid: string) {
+    await this.sessionService.revokeAllForUser(userUuid);
     return { success: true };
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.userModel.findOne({
-      where: { email: dto.email.toLowerCase() },
-    });
+    const user = await this.userService.findByEmail(dto.email);
 
     if (!user) {
       return { success: true, message: 'If the email exists, a reset link has been sent' };
     }
 
-    if (user.status === 'archived') {
-      throw new UnauthorizedException(
-        'Your account is deactivated. For more queries reach out to admin.',
-      );
-    }
+    // Validate user status (extracted to avoid duplication)
+    this.userService.validateUserStatusForPasswordReset(user);
 
-    if (user.status !== 'active') {
-      throw new UnauthorizedException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
-
-    await this.passwordResetModel.update(
-      { is_used: true },
-      { where: { user_id: user.id, is_used: false } },
-    );
+    await this.passwordResetService.invalidateAllForUser(user.id); // user.id is now number
 
     const resetToken = this.passwordService.generateResetToken();
-    await this.passwordResetModel.create({
-      user_id: user.id,
-      token: resetToken,
-      expires_at: new Date(Date.now() + this.passwordResetExpiresIn * 1000),
-    });
+    await this.passwordResetService.create(
+      user.uuid, // Use UUID instead of ID
+      resetToken,
+      new Date(Date.now() + this.passwordResetExpiresIn * 1000),
+    );
 
     const resetLink = `${this.frontendDomain}/reset-password?token=${resetToken}`;
     const expiresInHours = Math.round(this.passwordResetExpiresIn / 3600);
     const expiresInMinutes = Math.round(this.passwordResetExpiresIn / 60);
 
-    const expiresIn = this.passwordResetExpiresIn > 60 ? `${expiresInMinutes} minute${expiresInMinutes > 1 ? 's' : ''}` : `${expiresInHours} hour${expiresInHours > 1 ? 's' : ''}`;
+    const expiresIn =
+      this.passwordResetExpiresIn > 60
+        ? `${expiresInMinutes} minute${expiresInMinutes > 1 ? 's' : ''}`
+        : `${expiresInHours} hour${expiresInHours > 1 ? 's' : ''}`;
 
     this.emailService
       .sendPasswordResetEmail(user.email, {
@@ -291,58 +292,69 @@ export class AuthService implements IAuthService {
   }
 
   async checkForgotPasswordToken(token: string) {
-    const passwordReset = await this.passwordResetModel.findOne({
-      where: { token, is_used: false },
-    });
-    if (!passwordReset) {
-      throw new BadRequestException('Invalid or expired reset token');
-    }
-
-    if (passwordReset.isExpired) {
-      await passwordReset.update({ is_used: true });
-      throw new BadRequestException('Reset token has expired');
-    }
-
-    return passwordReset;
+    return this.passwordResetService.validateToken(token);
   }
 
   async resetPassword(dto: ResetPasswordDto) {
     const passwordReset = await this.checkForgotPasswordToken(dto.token);
 
-    const user = await this.userModel.findByPk(passwordReset.user_id);
+    const user = await this.userService.findOne(passwordReset.user_id);
     if (!user) {
+      await this.passwordResetService.markAsUsed(passwordReset.id);
       throw new NotFoundException('User not found');
     }
 
     if (user.status === 'archived') {
-      await passwordReset.update({ is_used: true });
+      await this.passwordResetService.markAsUsed(passwordReset.id);
       throw new UnauthorizedException(
         'Your account is deactivated. For more queries reach out to admin.',
       );
     }
 
     if (user.status !== 'active') {
-      await passwordReset.update({ is_used: true });
+      await this.passwordResetService.markAsUsed(passwordReset.id);
       throw new UnauthorizedException(
         'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
       );
     }
 
-    const hashedPassword = await this.passwordService.hash(dto.newPassword);
-    await this.userModel.update(
-      { password_hash: hashedPassword },
-      { where: { id: passwordReset.user_id } },
-    );
+    // Use transaction to ensure atomicity of password update, token marking, and session revocation
+    if (!this.sessionModel.sequelize) {
+      throw new Error('Sequelize instance not available');
+    }
+    const sequelize = this.sessionModel.sequelize;
+    const transaction = await sequelize.transaction();
+    try {
+      // Password will be hashed by userService.update()
+      await this.userService.update(
+        passwordReset.user_id,
+        {
+          password: dto.newPassword,
+        },
+        { transaction },
+      );
 
-    await passwordReset.update({ is_used: true, used_at: new Date() });
+      await this.passwordResetService.markAsUsed(passwordReset.id, transaction);
 
-    await this.sessionService.revokeAllForUser(passwordReset.user_id);
+      // Convert user ID to UUID for revokeAllForUser
+      const user = await this.userService.findOne(passwordReset.user_id);
+      if (user) {
+        await this.sessionService.revokeAllForUser(user.uuid, transaction);
+      }
 
-    return { success: true, message: 'Password reset successfully' };
+      await transaction.commit();
+
+      return { success: true, message: 'Password reset successfully' };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
-  async changePassword(userId: string, dto: ChangePasswordDto) {
-    const user = await this.userModel.findByPk(userId);
+  async changePassword(userUuid: string, dto: ChangePasswordDto) {
+    const user = await this.userService.findByUuid(userUuid, {
+      attributes: { include: ['password_hash'] },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -351,28 +363,71 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Password authentication not available for this account');
     }
 
-    const isPasswordValid = await this.passwordService.compare(dto.currentPassword, user.password_hash);
+    const isPasswordValid = await this.passwordService.compare(
+      dto.currentPassword,
+      user.password_hash,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     // Check if new password is same as old password
-    const isSameAsOldPassword = await this.passwordService.compare(dto.newPassword, user.password_hash);
+    const isSameAsOldPassword = await this.passwordService.compare(
+      dto.newPassword,
+      user.password_hash,
+    );
     if (isSameAsOldPassword) {
       throw new BadRequestException("New password shouldn't be same as old password");
     }
 
-    const hashedPassword = await this.passwordService.hash(dto.newPassword);
-    await user.update({ password_hash: hashedPassword });
+    // If revokeAllSessions is true, use transaction to ensure atomicity
+    if (dto.revokeAllSessions) {
+      if (!this.sessionModel.sequelize) {
+        throw new Error('Sequelize instance not available');
+      }
+      const sequelize = this.sessionModel.sequelize;
+      const transaction = await sequelize.transaction();
+      try {
+        // Password will be hashed by userService.update()
+        await this.userService.update(
+          user.id, // Use number ID
+          {
+            password: dto.newPassword,
+          },
+          { transaction },
+        );
 
-    return { success: true, message: 'Password changed successfully' };
+        // Revoke all sessions for security (password changed)
+        await this.sessionService.revokeAllForUser(user.uuid, transaction);
+
+        await transaction.commit();
+        return {
+          success: true,
+          message: 'Password changed successfully. All sessions have been revoked.',
+          sessionsRevoked: true,
+        };
+      } catch (error) {
+        await transaction.rollback();
+        throw error;
+      }
+    } else {
+      // No session revocation needed, just update password
+      // Password will be hashed by userService.update()
+      await this.userService.update(user.id, {
+        password: dto.newPassword,
+      });
+
+      return {
+        success: true,
+        message: 'Password changed successfully',
+        sessionsRevoked: false,
+      };
+    }
   }
 
   async acceptInvitation(dto: AcceptInvitationDto, ipAddress?: string, userAgent?: string) {
-    // Find user by token (token is the user's ID)
-    const user = await this.userModel.findByPk(dto.token, {
-      include: [RoleEntity],
-    });
+    // Find user by token (token is the user's UUID)
+    const user = await this.userService.findByUuid(dto.token);
     if (!user) {
       throw new NotFoundException('Invalid invitation token');
     }
@@ -388,13 +443,14 @@ export class AuthService implements IAuthService {
     // Check if invitation has expired based on created_at timestamp
     const invitationAge = Math.floor((Date.now() - user.createdAt.getTime()) / 1000); // in seconds
     if (invitationAge > this.invitationExpiresIn) {
-      throw new BadRequestException('This invitation has expired. Please contact your administrator for a new invitation.');
+      throw new BadRequestException(
+        'This invitation has expired. Please contact your administrator for a new invitation.',
+      );
     }
 
-    // Hash and set password
-    const hashedPassword = await this.passwordService.hash(dto.password);
-    await user.update({
-      password_hash: hashedPassword,
+    // Password will be hashed by userService.update()
+    await this.userService.update(user.id, {
+      password: dto.password,
       status: 'active',
     });
 
@@ -409,12 +465,20 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async getActiveSessions(userId: string) {
-    return this.sessionService.getActiveForUser(userId);
+  async getActiveSessions(userUuid: string) {
+    const user = await this.userService.findByUuid(userUuid);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.sessionService.getActiveForUser(user.id);
   }
 
-  async revokeSession(userId: string, sessionHash: string) {
-    const revoked = await this.sessionService.revokeByHashAndUser(sessionHash, userId);
+  async revokeSession(userUuid: string, sessionHash: string) {
+    const user = await this.userService.findByUuid(userUuid);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const revoked = await this.sessionService.revokeByHashAndUser(sessionHash, user.id);
     if (!revoked) {
       throw new NotFoundException('Session not found');
     }
@@ -429,7 +493,10 @@ export class AuthService implements IAuthService {
    * Initiate Google OAuth flow (Authorization Code Flow)
    * Returns URL to redirect user to Google
    */
-  initiateGoogleAuth(action: 'login' | 'signup', redirectUrl?: string): { url: string; state: string } {
+  initiateGoogleAuth(
+    action: 'login' | 'signup',
+    redirectUrl?: string,
+  ): { url: string; state: string } {
     return this.googleOAuthService.generateAuthUrl(action, redirectUrl);
   }
 
@@ -459,10 +526,7 @@ export class AuthService implements IAuthService {
     const googleUser = await this.googleOAuthService.exchangeCodeForTokens(code);
 
     // Check if user exists
-    const existingUser = await this.userModel.findOne({
-      where: { email: googleUser.email.toLowerCase() },
-      include: [RoleEntity, OrganizationEntity],
-    });
+    const existingUser = await this.userService.findByEmail(googleUser.email);
 
     // If user exists, log them in (regardless of login or signup action)
     if (existingUser) {
@@ -488,13 +552,14 @@ export class AuthService implements IAuthService {
    * Google OAuth Login (ID Token Flow)
    * Handles login for existing users who signed up with Google
    */
-  async googleLogin(dto: GoogleLoginDto, ipAddress?: string, userAgent?: string): Promise<JwtTokens> {
+  async googleLogin(
+    dto: GoogleLoginDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<JwtTokens> {
     const googleUser = await this.googleOAuthService.verifyIdToken(dto.idToken);
 
-    const user = await this.userModel.findOne({
-      where: { email: googleUser.email.toLowerCase() },
-      include: [RoleEntity, OrganizationEntity],
-    });
+    const user = await this.userService.findByEmail(googleUser.email);
 
     if (!user) {
       throw new UnauthorizedException(
@@ -524,7 +589,9 @@ export class AuthService implements IAuthService {
       // Authorization Code flow - retrieve stored user data
       const tempData = this.getTempGoogleUser(dto.tempToken);
       if (!tempData) {
-        throw new UnauthorizedException('Invalid or expired temporary token. Please restart the signup process.');
+        throw new UnauthorizedException(
+          'Invalid or expired temporary token. Please restart the signup process.',
+        );
       }
       googleUser = tempData;
     } else {
@@ -532,27 +599,16 @@ export class AuthService implements IAuthService {
     }
 
     // Check if user already exists
-    const existingUser = await this.userModel.findOne({
-      where: { email: googleUser.email.toLowerCase() },
-    });
+    const existingUser = await this.userService.findByEmail(googleUser.email);
 
     if (existingUser) {
       // User exists, try to login instead
-      if (existingUser.status === 'archived') {
-        throw new UnauthorizedException(
-          'Your account is deactivated. For more queries reach out to admin.',
-        );
-      }
-
-      if (existingUser.status !== 'active') {
-        throw new UnauthorizedException(
-          'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-        );
-      }
+      // Validate user status (extracted to avoid duplication)
+      this.userService.validateUserStatusForPasswordReset(existingUser);
 
       // Link Google account if not already linked
       if (!existingUser.google_id) {
-        await existingUser.update({
+        await this.userService.update(existingUser.id, {
           google_id: googleUser.id,
           auth_provider: existingUser.password_hash ? 'both' : 'google',
         });
@@ -561,61 +617,60 @@ export class AuthService implements IAuthService {
       return this.createSessionAndTokens(existingUser, ipAddress, userAgent);
     }
 
-    // Validate organization name uniqueness
+    // Validate organization creation data (name, slug, website)
+    await this.organizationService.validateOrganizationCreation(dto.companyName, dto.websiteUrl);
+
+    const superAdminRole = await this.getSuperAdminRole();
     const slug = this.organizationService.generateSlug(dto.companyName);
-    const existingSlug = await this.organizationModel.findOne({ where: { slug } });
-    if (existingSlug) {
-      throw new ConflictException('Organization with this name already exists');
+
+    // Use transaction to ensure atomicity of organization and user creation
+    if (!this.sessionModel.sequelize) {
+      throw new Error('Sequelize instance not available');
     }
+    const sequelize = this.sessionModel.sequelize;
+    const transaction = await sequelize.transaction();
+    try {
+      // Create organization
+      const organization = await this.organizationService.create(
+        {
+          name: dto.companyName,
+          slug,
+          website: dto.websiteUrl,
+          is_active: true,
+          issuer_verified: false,
+        },
+        { transaction },
+      );
 
-    const existingOrgName = await this.organizationModel.findOne({ where: { name: dto.companyName } });
-    if (existingOrgName) {
-      throw new ConflictException('Organization with this name already exists');
+      // Create user with Google auth
+      // Use provided names from form, fallback to Google profile names
+      const user = await this.userService.create(
+        {
+          firstName: dto.firstName || googleUser.given_name,
+          lastName: dto.lastName || googleUser.family_name || '',
+          email: googleUser.email,
+          organizationId: organization.id,
+          roleId: superAdminRole.id,
+          google_id: googleUser.id,
+          auth_provider: 'google',
+        },
+        undefined, // currentUser
+        { transaction },
+      );
+
+      await transaction.commit();
+
+      this.emailService
+        .sendWelcomeEmail(user.email, { name: user.first_name })
+        .catch(console.error);
+
+      const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
+
+      return tokens;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    // Check if website URL is already in use
-    if (dto.websiteUrl) {
-      await this.organizationService.validateWebsiteDomain(null, dto.websiteUrl);
-    }
-
-    // Get Super Admin role
-    const superAdminRole = await this.roleModel.findOne({
-      where: { role: 'super_admin' },
-    });
-
-    if (!superAdminRole) {
-      throw new NotFoundException('Super Admin role not found. Please ensure roles are seeded.');
-    }
-
-    // Create organization
-    const organization = await this.organizationModel.create({
-      name: dto.companyName,
-      slug,
-      website: dto.websiteUrl,
-      is_active: true,
-      issuer_verified: false,
-    });
-
-    // Create user with Google auth
-    // Use provided names from form, fallback to Google profile names
-    const user = await this.userModel.create({
-      first_name: dto.firstName || googleUser.given_name,
-      last_name: dto.lastName || googleUser.family_name || null,
-      email: googleUser.email.toLowerCase(),
-      password_hash: null, // No password for Google auth
-      auth_provider: 'google',
-      google_id: googleUser.id,
-      organization_id: organization.id,
-      role_id: superAdminRole.id,
-      status: 'active',
-      is_email_notifications_enabled: true,
-    });
-
-    this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error);
-
-    const tokens = await this.createSessionAndTokens(user, ipAddress, userAgent);
-
-    return tokens;
   }
 
   /**
@@ -634,11 +689,11 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    // Update last login time
-    await user.update({ last_login_at: new Date() });
+    // Update last login time (user.id is now number)
+    await this.userService.update(user.id, { last_login_at: new Date() });
 
     // Revoke all existing sessions for this user (single active session policy)
-    await this.sessionService.revokeAllForUser(user.id);
+    // await this.sessionService.revokeAllForUser(user.id);
 
     const session = await this.sessionService.create({
       userId: user.id,
@@ -648,14 +703,28 @@ export class AuthService implements IAuthService {
       deviceType: this.parseDeviceType(userAgent),
     });
 
-    const role = await this.roleModel.findByPk(user.role_id);
+    // Load organization and role to get their UUIDs for JWT payload
+    const [organization, role] = await Promise.all([
+      this.organizationService.findOne(user.organization_id),
+      this.roleService.findOne(user.role_id),
+    ]);
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
     return this.tokenService.generateTokens({
+      userUuid: user.uuid,
       userId: user.id,
       email: user.email,
-      organizationId: user.organization_id,
-      roleId: user.role_id,
-      role: role?.role || '',
+      organizationId: organization.id,
+      organizationUuid: organization.uuid,
+      roleId: role.id,
+      roleUuid: role.uuid,
+      role: role.role || '',
       sessionHash: session.hash,
     });
   }
@@ -666,23 +735,14 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    if (user.status === 'archived') {
-      throw new UnauthorizedException(
-        'Your account is deactivated. For more queries reach out to admin.',
-      );
-    }
-
-    if (user.status !== 'active') {
-      throw new UnauthorizedException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
+    // Validate user status (extracted to avoid duplication)
+    this.userService.validateUserStatusForPasswordReset(user);
 
     // Handle account linking
     if (user.auth_provider === 'email' && !user.google_id) {
       // User signed up with email, now trying Google login
       // Link Google account to existing email account
-      await user.update({
+      await this.userService.update(user.id, {
         google_id: googleUser.id,
         auth_provider: 'both', // Support both auth methods
       });
@@ -690,7 +750,7 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Google account mismatch');
     } else if (!user.google_id) {
       // First time Google login, update google_id
-      await user.update({
+      await this.userService.update(user.id, {
         google_id: googleUser.id,
         auth_provider: user.password_hash ? 'both' : 'google',
       });
@@ -698,7 +758,6 @@ export class AuthService implements IAuthService {
 
     return this.createSessionAndTokens(user, ipAddress, userAgent);
   }
-
 
   private createTempGoogleToken(googleUser: GoogleUserInfo): string {
     const tempToken = `temp_${generateNanoid()}`;
@@ -731,9 +790,6 @@ export class AuthService implements IAuthService {
     return data.googleUser;
   }
 
-
-
-
   private cleanExpiredTempTokens(): void {
     const now = Date.now();
     for (const [key, value] of this.tempGoogleUserStore.entries()) {
@@ -741,6 +797,18 @@ export class AuthService implements IAuthService {
         this.tempGoogleUserStore.delete(key);
       }
     }
+  }
+
+  /**
+   * Get Super Admin role - extracted to avoid duplication
+   * @throws NotFoundException if Super Admin role not found
+   */
+  private async getSuperAdminRole() {
+    const superAdminRole = await this.roleService.findByRole('super_admin');
+    if (!superAdminRole) {
+      throw new NotFoundException('Super Admin role not found. Please ensure roles are seeded.');
+    }
+    return superAdminRole;
   }
 
   private parseDeviceType(userAgent?: string): string | undefined {

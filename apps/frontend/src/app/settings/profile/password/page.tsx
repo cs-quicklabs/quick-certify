@@ -1,13 +1,18 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { ConfigForm } from '../../../../components/ConfigForm';
 import { passwordFormFields } from '../../../../config/settings.config';
 import { changePasswordSchema, ChangePasswordData } from '../../../../schemas/settings.schema';
 import { useChangePassword } from '../../../../hooks/useSettings';
 import { FormConfig } from '../../../../types/form.types';
+import { useAuthStore } from '../../../../store/auth.store';
+import { clearTokens } from '@/services';
 
 export default function ChangePasswordPage() {
+  const router = useRouter();
   const changePassword = useChangePassword();
+  const setUser = useAuthStore((state) => state.setUser);
 
   const formConfig: FormConfig<typeof changePasswordSchema> = {
     title: 'Change Password',
@@ -17,7 +22,17 @@ export default function ChangePasswordPage() {
     submitLabel: 'Save',
     resetOnSuccess: true,
     onSubmit: async (data: ChangePasswordData) => {
-      await changePassword.mutateAsync(data);
+      const response = await changePassword.mutateAsync(data);
+
+      // If sessions were revoked, logout user and redirect to login
+      if (response.sessionsRevoked) {
+        // Clear tokens and user state
+        clearTokens();
+        setUser(null);
+
+        // Redirect to login page
+        router.push('/login');
+      }
     },
   };
 

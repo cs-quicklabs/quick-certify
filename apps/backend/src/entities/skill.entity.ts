@@ -1,5 +1,5 @@
 import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { BaseEntity } from './base.entity';
 import { OrganizationEntity } from './organization.entity';
 
 /**
@@ -9,25 +9,29 @@ import { OrganizationEntity } from './organization.entity';
  * Skills are organization-specific.
  */
 @Table({
-    tableName: 'skill',
+  tableName: 'skill',
+  underscored: true,
 })
-export class SkillEntity extends BaseNanoidEntity {
-    @ForeignKey(() => OrganizationEntity)
-    @Column({
-        type: DataType.STRING(21),
-        allowNull: false,
-        field: 'organization_id',
-    })
-    declare organizationId: string;
+export class SkillEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_SKILL_UUID', unique: true })
+  declare uuid: string;
 
-    @BelongsTo(() => OrganizationEntity)
-    declare organization: OrganizationEntity;
+  @ForeignKey(() => OrganizationEntity)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    field: 'organization_id',
+  })
+  declare organization_id: number;
 
-    @Index({ name: 'IDX_SKILL_ORG_NAME', unique: true, fields: ['organization_id', 'name'] })
-    @Column({
-        type: DataType.STRING(150),
-        allowNull: false,
-    })
-    declare name: string;
+  @BelongsTo(() => OrganizationEntity)
+  declare organization: OrganizationEntity;
+
+  @Index({ name: 'IDX_SKILL_ORG_NAME', unique: true, fields: ['organization_id', 'name'] })
+  @Column({
+    type: DataType.STRING(150),
+    allowNull: false,
+  })
+  declare name: string;
 }
-

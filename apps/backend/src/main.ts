@@ -1,7 +1,3 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
