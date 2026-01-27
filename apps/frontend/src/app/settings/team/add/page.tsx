@@ -76,7 +76,10 @@ export default function AddTeamMemberPage() {
         throw new Error('Organization ID is missing');
       }
       await createMutation.mutateAsync({
-        ...data,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        roleId: parseInt(data.roleId), // Convert string to number for API
         organizationId: user.organizationId,
       });
       router.push('/settings/team');
