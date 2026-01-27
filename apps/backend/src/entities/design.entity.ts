@@ -1,5 +1,6 @@
 import { Column, DataType, Table } from "sequelize-typescript";
 import { BaseNanoidEntity } from "./base-nanoid.entity";
+import { DesignLayout } from "@src/modules/design/interfaces/design.layout.interface";
 
 /**
  * Design Entity
@@ -29,4 +30,10 @@ export class DesignEntity extends BaseNanoidEntity {
     allowNull: false,
   })
   declare url: string;
+
+  @Column({
+    type: DataType.JSONB, // JSON for MySQL → use JSON
+    allowNull: true,
+  })
+  declare layout: DesignLayout | null;
 }

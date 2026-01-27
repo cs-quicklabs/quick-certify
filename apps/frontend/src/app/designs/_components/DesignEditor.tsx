@@ -56,20 +56,31 @@ export function DesignEditor({ backgroundUrl }: Props) {
     });
 
     // Editable name
-    const text = new IText('Recipient Name', {
+    const text = new IText('[recipient.name]', {
       left: CANVAS_WIDTH / 2,
       top: CANVAS_HEIGHT / 2,
       originX: 'center',
       originY: 'center',
-      fontSize: 48,
+      fontSize: 42,
+      fontFamily: 'Times New Roman',
       fill: '#000',
-      fontWeight: 'bold',
+      fontWeight: 'normal',
+      editable: true,
+      selectable: true,
+      hasControls: true,
+      lockScalingFlip: true,
+    });
+    text.on('selected', () => {
+      text.set({
+        fill: '#111',
+      });
+      canvas.renderAll();
     });
 
     canvas.add(text);
     canvas.setActiveObject(text);
 
-    // 🔑 Resize observer → adapt to parent
+    // Resize observer → adapt to parent
     const resize = () => {
       if (!containerRef.current) return;
 

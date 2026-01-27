@@ -448,6 +448,10 @@ module.exports = {
             type: DataType.STRING(100),
             allowNull: false,
           },
+          layout: {
+            type: DataType.JSONB,
+            allowNull: true,
+          },
           created_at: {
             type: DataTypes.DATE,
             allowNull: false,
