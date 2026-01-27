@@ -35,7 +35,7 @@ export interface CreateTeamMemberRequest {
   lastName: string;
   email: string;
   password?: string; // Optional for invitations
-  roleId: string;
+  roleId: number;
   organizationId: string;
 }
 
