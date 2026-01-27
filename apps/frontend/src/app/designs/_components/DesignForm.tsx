@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { validateImageDimensions } from '@/lib/design';
+import { DesignEditor } from './DesignEditor';
 
 type DesignType = 'certificate' | 'badge';
 
@@ -34,10 +35,9 @@ export default function DesignForm({
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
   const [hasNewImage, setHasNewImage] = useState(false);
-  const canSubmit = name.trim() && (imageUrl || (hasNewImage && uploadComplete));
-
-
   const imageRef = useRef<File | null>(null);
+  const canSubmit = name.trim() && (preview || imageRef.current);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isCertificate = designType === 'certificate';
@@ -85,26 +85,35 @@ export default function DesignForm({
 
         <p className="text-xs text-gray-400 mb-2 font-semibold">
           {isCertificate
-            ? 'Upload A4 size certificate (11008 × 800)'
+            ? 'Upload A4 size certificate (1100 × 800)'
             : 'Upload badge image (440 × 400)'}
         </p>
 
-        <label className="relative border-2 border-dashed rounded-lg cursor-pointer border-gray-300 bg-gray-50 hover:bg-gray-100 p-10 text-center block">
+        <label className={`relative border-2 border-dashed rounded-lg p-10 text-center block ${preview ? 'cursor-not-allowed bg-gray-100' : 'cursor-pointer hover:bg-gray-100'}`}
+          onClick={(e) => {
+            if (preview) e.preventDefault();
+          }}>
+
+
           {preview ? (
-            <img src={preview} className="mx-auto max-h-96 rounded" />
+            <div className="relative w-full aspect-[11/8] mx-auto border rounded overflow-hidden bg-white">
+              <DesignEditor backgroundUrl={preview} />
+            </div>
           ) : (
             <p className="text-gray-400">Click to upload</p>
           )}
 
+
           {isUploading && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-              <span className="text-sm font-semibold">Uploading…</span>
+              <span className="text-sm font-semibold">Saving design…</span>
             </div>
           )}
 
+
           {hasNewImage && uploadComplete && !isUploading && (
             <p className="mt-2 text-green-600 text-sm font-medium">
-              Upload complete ✓
+              Upload complete
             </p>
           )}
 

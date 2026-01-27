@@ -40,34 +40,46 @@ export function DesignFormPage({
 
   const createDesign = useCreateDesign();
 
-  const handleImageSelect = async (file: File) => {
-    await upload(file, uploadedUrl ?? undefined);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleImageSelect = (file: File) => {
+    setSelectedFile(file);        // store locally
   };
+
 
   const updateDesign = useUpdateDesign();
 
   const handleSubmit = async ({ name }: { name: string }) => {
-    if (!uploadedUrl) return;
+    let finalUrl = uploadedUrl;
+
+    // ⬆️ Upload ONLY on save
+    if (selectedFile) {
+      finalUrl = await upload(selectedFile);
+    }
+
+    if (!finalUrl) return;
 
     if (isEdit && id) {
       await updateDesign.mutateAsync({
         id,
         name,
         designType,
-        designUrl: uploadedUrl,
+        designUrl: finalUrl,
       });
     } else {
       await createDesign.mutateAsync({
         name,
         type: designType,
-        url: uploadedUrl,
+        url: finalUrl,
       });
     }
-    setSuccess(true);
-    setUploadedUrl(null)
-    setFormKey((k) => k + 1); // reset  form
 
+    setSuccess(true);
+    setSelectedFile(null);
+    setUploadedUrl(null);
+    setFormKey((k) => k + 1);
   };
+
   useEffect(() => {
     if (!success) return;
     const t = setTimeout(() => setSuccess(false), 3000);
@@ -83,21 +95,23 @@ export function DesignFormPage({
     <>
       {success && (
         <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
-          Design added successfully
+          Design saved successfully
         </div>
       )}
+
+      {/* Design Form */}
       <DesignForm
         key={formKey}
         mode={mode}
         designType={designType}
         title={
-          isEdit
+          mode === 'edit'
             ? `Edit ${designType === 'certificate' ? 'Certificate' : 'Badge'} Design`
             : `Add New ${designType === 'certificate' ? 'Certificate' : 'Badge'}`
         }
         subtitle={
-          isEdit
-            ? 'Update design name or replace image'
+          mode === 'edit'
+            ? 'Drag and edit name directly on the certificate'
             : 'Upload image and provide a name'
         }
         defaultName={name}
@@ -115,4 +129,5 @@ export function DesignFormPage({
       )}
     </>
   );
+
 }
