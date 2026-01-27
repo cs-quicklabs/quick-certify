@@ -43,15 +43,16 @@ export default function DesignPreview({
 
   return (
     <>
+
       {/* Overlay */}
       <div
-        className={`fixed inset-0 z-40 flex items-center justify-center bg-transparent transition-opacity duration-200 ${isOpen && !isClosing ? "opacity-100" : "opacity-0"
-          }`}
+        className={`fixed inset-0 z-40 flex items-center justify-center bg-black/20 backdrop-blur-sm transition-opacity duration-200 ${isOpen && !isClosing ? 'opacity-100' : 'opacity-0'}`}
         onClick={close}
         role="dialog"
         aria-modal="true"
         aria-label={`Preview of ${name}`}
       >
+
         {/* Modal */}
         <div
           onClick={(e) => e.stopPropagation()}
@@ -73,7 +74,7 @@ export default function DesignPreview({
       {createPortal(
         <button
           onClick={close}
-          className="fixed top-6 right-6 z-50 group bg-white/95 hover:bg-red-600 text-gray-700 hover:text-white rounded-full p-2 shadow-lg transition-all duration-300 hover:rotate-360deg "
+          className="fixed top-18 right-6 z-50 group bg-white/95 hover:bg-red-600 text-gray-700 hover:text-white rounded-full p-2 shadow-lg transition-all duration-300 hover:rotate-360deg "
           aria-label="Close preview"
         >
           <X className="w-5 h-5" />

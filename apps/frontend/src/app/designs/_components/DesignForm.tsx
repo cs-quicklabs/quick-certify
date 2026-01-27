@@ -33,6 +33,9 @@ export default function DesignForm({
   const [name, setName] = useState(defaultName);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
+  const [hasNewImage, setHasNewImage] = useState(false);
+  const canSubmit = name.trim() && (imageUrl || (hasNewImage && uploadComplete));
+
 
   const imageRef = useRef<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +47,7 @@ export default function DesignForm({
     setPreview(imageUrl ?? null);
     imageRef.current = null;
     setError(null);
+    setHasNewImage(false);
   }, [defaultName, imageUrl]);
 
   return (
@@ -98,7 +102,7 @@ export default function DesignForm({
             </div>
           )}
 
-          {uploadComplete && !isUploading && (
+          {hasNewImage && uploadComplete && !isUploading && (
             <p className="mt-2 text-green-600 text-sm font-medium">
               Upload complete ✓
             </p>
@@ -117,6 +121,7 @@ export default function DesignForm({
                 await validateImageDimensions(file, designType);
                 imageRef.current = file;
                 setPreview(URL.createObjectURL(file));
+                setHasNewImage(true);
                 onImageSelectAction(file);
                 setError(null);
               } catch (err: unknown) {
@@ -139,7 +144,7 @@ export default function DesignForm({
       <div className="flex gap-4 items-center justify-between">
         <button
           type="submit"
-          disabled={isUploading}
+          disabled={isUploading || !canSubmit}
           className="bg-blue-800 disabled:opacity-50 font-semibold text-sm text-white px-6 py-2 rounded-md"
         >
           Save Design
