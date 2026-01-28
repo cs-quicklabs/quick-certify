@@ -158,18 +158,14 @@ function SignupContent() {
               <GoogleSignInButton mode="signup" disabled={isSubmitting} />
             </>
           )}
+          {/* Login Link */}
+          <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex justify-center items-center">
+            Already have an account?{' '}
+            <Link href="/login" className="link ml-2">
+              Login
+            </Link>
+          </p>
         </form>
-
-        {/* Login Link */}
-        <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-          Already have an account?{' '}
-          <Link
-            href="/login"
-            className="font-medium text-primary-600 hover:underline dark:text-primary-500"
-          >
-            Login
-          </Link>
-        </p>
       </div>
     </div>
   );

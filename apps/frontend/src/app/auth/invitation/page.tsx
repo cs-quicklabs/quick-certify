@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Input, Button, Alert } from '@/components';
 import { acceptInvitationSchema, AcceptInvitationFormData } from '@/schemas/auth.schema';
 import { authService, ApiError } from '@/services';
@@ -224,17 +224,12 @@ function AcceptInvitationContent() {
           <Button type="submit" fullWidth isLoading={isSubmitting}>
             Accept Invitation
           </Button>
+          <div className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
+            <Link href="/login" className="link">
+              Return Back to Login
+            </Link>
+          </div>
         </form>
-
-        <div className="mt-6 text-center">
-          <Link
-            href="/login"
-            className="inline-flex items-center text-sm font-medium text-blue-600 hover:underline dark:text-blue-500"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to login
-          </Link>
-        </div>
       </div>
     </div>
   );
