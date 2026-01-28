@@ -86,7 +86,7 @@ export function FileDropzone({
   // Large: 1920px wide by 300px tall (banner aspect ratio)
   const imageSizeClasses = {
     small: 'w-64 h-40',
-    large: 'w-full h-[200px]',
+    large: 'w-full h-[160px]',
   };
 
   // Placeholder size classes based on variant
@@ -94,14 +94,14 @@ export function FileDropzone({
   // Large: 1920px wide by 300px tall (banner aspect ratio)
   const placeholderSizeClasses = {
     small: 'w-64 h-40',
-    large: 'w-full h-[200px]',
+    large: 'w-full h-[160px]',
   };
 
   // Dropzone height classes
   // Large: 300px height to match banner dimensions
   const dropzoneHeightClasses = {
     small: 'w-64 h-40',
-    large: 'h-[200px]',
+    large: 'h-[160px]',
   };
 
   // Dropzone width classes
@@ -252,11 +252,11 @@ export function FileDropzone({
   const isDisabled = uploading || isUploading;
 
   return (
-    <div className={`mb-8 ${className}`}>
-      <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-1">
+    <div className={`mb-6 ${className}`}>
+      <label className="form-input-label mb-2">
         {label}
       </label>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{description}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{description}</p>
 
       {/* Show current image if exists */}
       {currentImage ? (
@@ -265,7 +265,7 @@ export function FileDropzone({
             {/* Image placeholder/skeleton while loading */}
             {imageLoading && (
               <div
-                className={`${placeholderSizeClasses[imageSize]} flex items-center justify-center bg-gray-200 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg animate-pulse`}
+                className={`${placeholderSizeClasses[imageSize]} flex items-center justify-center bg-gray-200 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md animate-pulse`}
               >
                 <svg
                   className={`${imageSize === 'small' ? 'w-8 h-8' : 'w-12 h-12'} text-gray-400`}
@@ -289,25 +289,21 @@ export function FileDropzone({
               alt={label}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              className={`${
-                imageSizeClasses[imageSize]
-              } object-cover border border-gray-200 dark:border-gray-600 rounded-lg transition-opacity duration-300 ${
-                imageLoading ? 'hidden' : imageError ? 'opacity-50' : 'opacity-100'
-              }`}
+              className={`${imageSizeClasses[imageSize]
+                } object-cover border border-gray-200 dark:border-gray-600 rounded-md transition-opacity duration-300 ${imageLoading ? 'hidden' : imageError ? 'opacity-50' : 'opacity-100'
+                }`}
             />
 
             {/* Error state */}
             {imageError && !imageLoading && (
               <div
-                className={`absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 ${
-                  imageSize === 'large' ? 'min-w-[200px] min-h-[120px]' : ''
-                }`}
+                className={`absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 ${imageSize === 'large' ? 'min-w-[200px] min-h-[120px]' : ''
+                  }`}
               >
                 <div className="text-center p-2">
                   <svg
-                    className={`${
-                      imageSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'
-                    } text-gray-400 mx-auto mb-1`}
+                    className={`${imageSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'
+                      } text-gray-400 mx-auto mb-1`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -330,7 +326,7 @@ export function FileDropzone({
                 type="button"
                 onClick={handleRemoveClick}
                 disabled={isDisabled}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-md p-1 hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 title="Remove image"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,17 +357,14 @@ export function FileDropzone({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`flex flex-col items-center justify-center ${
-              dropzoneWidthClasses[dropzoneWidth]
-            } ${
-              dropzoneHeightClasses[dropzoneHeight]
-            } border-2 border-dashed rounded-lg transition-colors
+            className={`flex flex-col items-center justify-center ${dropzoneWidthClasses[dropzoneWidth]
+              } ${dropzoneHeightClasses[dropzoneHeight]
+              } border-2 border-dashed rounded-md transition-colors
                             ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
-                            ${
-                              isDragging
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                : 'border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
-                            }`}
+                            ${isDragging
+                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                : 'border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
+              }`}
           >
             {uploading ? (
               <>
@@ -400,7 +393,7 @@ export function FileDropzone({
               <>
                 {/* Upload Icon */}
                 <svg
-                  className="w-10 h-10 mb-3 text-gray-400"
+                  className="w-10 h-10 mb-2 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

@@ -78,7 +78,7 @@ export default function BrandingPage() {
   return (
     <div>
       <h1 className="form-title">Branding</h1>
-      <p className="form-subtitle mb-6">Add issuer logo and other brand related information</p>
+      <p className="form-subtitle mb-4">Add issuer logo and other brand related information</p>
 
       {submitSuccess && (
         <Alert

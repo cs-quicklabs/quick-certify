@@ -86,20 +86,25 @@ function CompleteSignupContent() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
-          <Input
-            label="First Name"
-            placeholder="John"
-            error={errors.firstName?.message}
-            {...register('firstName')}
-          />
-
-          <Input
-            label="Last Name"
-            placeholder="Doe"
-            error={errors.lastName?.message}
-            {...register('lastName')}
-          />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-4">
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <Input
+                label="First Name"
+                placeholder="John"
+                error={errors.firstName?.message}
+                {...register('firstName')}
+              />
+            </div>
+            <div className="flex-1">
+              <Input
+                label="Last Name"
+                placeholder="Doe"
+                error={errors.lastName?.message}
+                {...register('lastName')}
+              />
+            </div>
+          </div>
 
           <Input
             label="Issuer name"
@@ -115,17 +120,15 @@ function CompleteSignupContent() {
             error={errors.websiteUrl?.message}
             {...register('websiteUrl')}
           />
-
-          <Button type="submit" fullWidth isLoading={isSubmitting}>
+          <Button type="submit" fullWidth isLoading={isSubmitting} disabled={isSubmitting}>
             Complete profile and go to Dashboard
           </Button>
 
-          {/* Login link */}
-          <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+          <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex justify-center items-center">
             Already have an account?{' '}
             <Link
               href="/login"
-              className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+              className="link ml-2"
             >
               Login
             </Link>
