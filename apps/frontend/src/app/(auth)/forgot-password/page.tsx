@@ -90,16 +90,13 @@ export default function ForgotPasswordPage() {
         />
 
         <Button type="submit" fullWidth isLoading={isSubmitting}>
-          Send Reset Password Instruction
+          Send Reset Password Instructions
         </Button>
       </form>
 
       {/* Back to login */}
-      <div className="mt-2 text-center">
-        <Link
-          href="/login"
-          className="inline-flex items-center text-sm font-bold text-primary-600 hover:underline dark:text-primary-500"
-        >
+      <div className="text-sm font-light text-gray-500 dark:text-gray-400 text-center mt-2">
+        <Link href="/login" className="link">
           Return Back to Login
         </Link>
       </div>
