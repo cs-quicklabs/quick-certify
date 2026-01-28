@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
-import { ArrowLeft, CheckCircle2, CircleX } from 'lucide-react';
+import { CheckCircle2, CircleX } from 'lucide-react';
 import { Input, Button, Alert } from '@/components';
 import { resetPasswordSchema, ResetPasswordFormData } from '@/schemas/auth.schema';
 import { authService, ApiError } from '@/services';
@@ -115,11 +115,8 @@ function ResetPasswordContent() {
       <div>
         {/* Header */}
         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
-          Reset your password
+          Set a new password
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-          Enter your new password below.
-        </p>
 
         {/* Server Error Alert */}
         {serverError && (
@@ -132,9 +129,9 @@ function ResetPasswordContent() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4 lg:mt-5 md:space-y-4">
           <Input
-            label="New password"
+            label="New Password"
             type="password"
             placeholder="••••••••"
             showPasswordToggle
@@ -143,7 +140,7 @@ function ResetPasswordContent() {
           />
 
           <Input
-            label="Confirm password"
+            label="Confirm Password"
             type="password"
             placeholder="••••••••"
             showPasswordToggle
@@ -152,20 +149,14 @@ function ResetPasswordContent() {
           />
 
           <Button type="submit" fullWidth isLoading={isSubmitting}>
-            Reset password
+            Change Password
           </Button>
+          <div className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
+            <Link href="/login" className="link">
+              Return Back to Login
+            </Link>
+          </div>
         </form>
-
-        {/* Back to login */}
-        <div className="mt-6 text-center">
-          <Link
-            href="/login"
-            className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to login
-          </Link>
-        </div>
       </div>
     </div>
   );

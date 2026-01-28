@@ -11,8 +11,8 @@ export default function TeamLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Header />
-      <main className="max-w-8xl mx-auto pb-10 lg:py-2 lg:px-8">
-        <div className="px-16">{children}</div>
+      <main className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5 min-h-screen">
+        <div className="px-4 mx-auto max-w-screen-2xl lg:px-8">{children}</div>
       </main>
     </>
   );
