@@ -174,7 +174,7 @@ export function Header() {
                     <button
                       onClick={() => setMenuOpened(!menuOpened)}
                       type="button"
-                      className="flex h-8 w-8 rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                      className="flex h-8 w-8 rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 align-center justify-center"
                       id="user-menu-button"
                       aria-expanded="false"
                       aria-haspopup="true"

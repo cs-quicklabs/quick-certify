@@ -245,7 +245,7 @@ export const eventSidebarItems: SidebarItem[] = [
 export const archivedSidebarItems: SidebarItem[] = [
   {
     name: 'archived-members',
-    label: 'Archived Members',
+    label: 'Archived Users',
     href: '/settings/archived',
     icon: (
       <svg
