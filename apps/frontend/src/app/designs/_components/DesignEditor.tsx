@@ -2,15 +2,17 @@
 
 import { useEffect, useRef } from 'react';
 import { Canvas, FabricImage, IText } from 'fabric';
+import { DesignLayout } from '@/types';
 
 const CANVAS_WIDTH = 1100;
 const CANVAS_HEIGHT = 800;
 
 type Props = {
   backgroundUrl: string;
+  onLayoutChange?: (layout: DesignLayout) => void;
 };
 
-export function DesignEditor({ backgroundUrl }: Props) {
+export function DesignEditor({ backgroundUrl, onLayoutChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
 
@@ -79,6 +81,14 @@ export function DesignEditor({ backgroundUrl }: Props) {
 
     canvas.add(text);
     canvas.setActiveObject(text);
+    canvas.on('object:modified', () => {
+      onLayoutChange?.(extractLayout(canvas));
+    });
+
+    canvas.on('text:changed', () => {
+      onLayoutChange?.(extractLayout(canvas));
+    });
+
 
     // Resize observer → adapt to parent
     const resize = () => {
@@ -112,3 +122,28 @@ export function DesignEditor({ backgroundUrl }: Props) {
     />
   );
 }
+
+export function extractLayout(canvas: Canvas): DesignLayout {
+  const placeholders = canvas
+    .getObjects()
+    .filter(obj => obj.type === 'i-text')
+    .map(obj => {
+      const text = obj as IText;
+
+      return {
+        id: 'recipient_name',
+        key: 'recipient.name' as const,
+        type: 'text' as const,
+        text: text.text ?? '',
+        x: text.left ?? 0,
+        y: text.top ?? 0,
+        fontSize: text.fontSize ?? 40,
+        fontFamily: text.fontFamily ?? 'Times New Roman',
+        color: String(text.fill),
+        align: 'center' as const,
+      };
+    });
+
+  return { placeholders };
+}
+

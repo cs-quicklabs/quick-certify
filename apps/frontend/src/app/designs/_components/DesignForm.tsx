@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { validateImageDimensions } from '@/lib/design';
 import { DesignEditor } from './DesignEditor';
+import { DesignLayout } from '@/types';
 
 type DesignType = 'certificate' | 'badge';
 
@@ -33,6 +34,7 @@ export default function DesignForm({
 }: Props) {
   const [name, setName] = useState(defaultName);
   const [error, setError] = useState<string | null>(null);
+  const [layout, setLayout] = useState<DesignLayout | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
   const [hasNewImage, setHasNewImage] = useState(false);
   const imageRef = useRef<File | null>(null);
@@ -97,7 +99,8 @@ export default function DesignForm({
 
           {preview ? (
             <div className="relative w-full aspect-[11/8] mx-auto border rounded overflow-hidden bg-white">
-              <DesignEditor backgroundUrl={preview} />
+              <DesignEditor backgroundUrl={preview}
+                onLayoutChange={setLayout} />
             </div>
           ) : (
             <p className="text-gray-400">Click to upload</p>

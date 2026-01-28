@@ -46,13 +46,12 @@ export function DesignFormPage({
     setSelectedFile(file);        // store locally
   };
 
-
   const updateDesign = useUpdateDesign();
 
   const handleSubmit = async ({ name }: { name: string }) => {
     let finalUrl = uploadedUrl;
 
-    // ⬆️ Upload ONLY on save
+    //Upload ONLY on save
     if (selectedFile) {
       finalUrl = await upload(selectedFile);
     }

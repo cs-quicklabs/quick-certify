@@ -58,7 +58,7 @@ export function useDesigns({ page, limit, search }: Params) {
     fetchDesigns();
   }, [fetchDesigns]);
 
-  /* -------- Optimistic delete (SAFE) -------- */
+  //  delete
   const deleteDesign = async (id: string) => {
     let snapshot: Design[] = [];
 
