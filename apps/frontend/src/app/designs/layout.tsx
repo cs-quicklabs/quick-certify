@@ -15,12 +15,18 @@ export default function DesignsLayout({
 }) {
   const router = useRouter();
   const { user, isInitialized, isLoading } = useAuthStore();
+  const isAdminOrSuperAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   useEffect(() => {
     if (isInitialized && !isLoading && !user) {
       router.push('/login');
     }
+    if (!isAdminOrSuperAdmin) {
+      router.push('/dashboard');
+    }
   }, [user, isInitialized, isLoading, router]);
+
+
 
   if (!isInitialized || isLoading) {
     return (
