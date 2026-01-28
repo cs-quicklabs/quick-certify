@@ -253,9 +253,7 @@ export function FileDropzone({
 
   return (
     <div className={`mb-6 ${className}`}>
-      <label className="form-input-label mb-2">
-        {label}
-      </label>
+      <label className="form-input-label mb-2">{label}</label>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{description}</p>
 
       {/* Show current image if exists */}
@@ -289,21 +287,25 @@ export function FileDropzone({
               alt={label}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              className={`${imageSizeClasses[imageSize]
-                } object-cover border border-gray-200 dark:border-gray-600 rounded-md transition-opacity duration-300 ${imageLoading ? 'hidden' : imageError ? 'opacity-50' : 'opacity-100'
-                }`}
+              className={`${
+                imageSizeClasses[imageSize]
+              } object-cover border border-gray-200 dark:border-gray-600 rounded-md transition-opacity duration-300 ${
+                imageLoading ? 'hidden' : imageError ? 'opacity-50' : 'opacity-100'
+              }`}
             />
 
             {/* Error state */}
             {imageError && !imageLoading && (
               <div
-                className={`absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 ${imageSize === 'large' ? 'min-w-[200px] min-h-[120px]' : ''
-                  }`}
+                className={`absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 ${
+                  imageSize === 'large' ? 'min-w-[200px] min-h-[120px]' : ''
+                }`}
               >
                 <div className="text-center p-2">
                   <svg
-                    className={`${imageSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'
-                      } text-gray-400 mx-auto mb-1`}
+                    className={`${
+                      imageSize === 'small' ? 'w-6 h-6' : 'w-8 h-8'
+                    } text-gray-400 mx-auto mb-1`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -357,14 +359,17 @@ export function FileDropzone({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`flex flex-col items-center justify-center ${dropzoneWidthClasses[dropzoneWidth]
-              } ${dropzoneHeightClasses[dropzoneHeight]
-              } border-2 border-dashed rounded-md transition-colors
+            className={`flex flex-col items-center justify-center ${
+              dropzoneWidthClasses[dropzoneWidth]
+            } ${
+              dropzoneHeightClasses[dropzoneHeight]
+            } border-2 border-dashed rounded-md transition-colors
                             ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
-                            ${isDragging
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                : 'border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
-              }`}
+                            ${
+                              isDragging
+                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
+                            }`}
           >
             {uploading ? (
               <>

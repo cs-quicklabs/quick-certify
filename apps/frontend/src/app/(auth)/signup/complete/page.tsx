@@ -126,10 +126,7 @@ function CompleteSignupContent() {
 
           <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex justify-center items-center">
             Already have an account?{' '}
-            <Link
-              href="/login"
-              className="link ml-2"
-            >
+            <Link href="/login" className="link ml-2">
               Login
             </Link>
           </p>
