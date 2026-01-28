@@ -64,8 +64,8 @@ export function Header() {
                 <span className="text-white font-medium px-3 block lg:hidden"></span>
               </div>
             </Link>
-            <div className="hidden lg:ml-6 lg:block">
-              <div className="flex space-x-2">
+            <div className="hidden lg:ml-4 lg:block">
+              <div className="flex space-x-1">
                 <Link href="/dashboard" className="selected-nav">
                   Dashboard
                 </Link>
@@ -96,24 +96,11 @@ export function Header() {
                 Search
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"></div>
                 <input
                   id="search"
                   name="search"
-                  className="block w-full rounded-sm border border-transparent bg-white py-1.5 pl-10 pr-3 leading-5 text-gray-300 placeholder-gray-400 focus:border-white focus:bg-white focus:text-gray-900 focus:outline-none focus:ring-white sm:text-sm"
+                  className="block w-full form-input-field"
                   placeholder="Search Events or Participants"
                   type="search"
                 />
@@ -162,7 +149,7 @@ export function Header() {
             <div className="flex items-center">
               <button
                 type="button"
-                className="shrink-0 rounded-full  p-1 text-gray-400 hover:text-blue  focus:ring-2  focus:ring-offset-blue-800"
+                className="shrink-0 rounded-full  p-1 text-gray-400 hover:text-blue  focus:ring-2  focus:ring-offset-blue-800 cursor-pointer"
               >
                 <span className="sr-only">View notifications</span>
                 <svg
@@ -181,30 +168,32 @@ export function Header() {
                 </svg>
               </button>
               {/* Profile dropdown */}
-              <div className="relative ml-4 shrink-0" ref={dropdownRef}>
-                <div>
-                  <button
-                    onClick={() => setMenuOpened(!menuOpened)}
-                    type="button"
-                    className="flex items-center justify-center h-10 w-10 rounded-full bg-gray-400 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 focus:ring-offset-blue-800"
-                    id="user-menu-button"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                  >
-                    <span className="sr-only">Open user menu</span>
-                    {avatarUrl && (
-                      <img
-                        className="h-full w-full rounded-full object-cover"
-                        src={avatarUrl}
-                        alt={user?.firstName || 'User'}
-                      />
-                    )}
-                    {!avatarUrl && (
-                      <span className="text-lg font-medium">
-                        {getInitials(user?.firstName, user?.lastName)}
-                      </span>
-                    )}
-                  </button>
+              <div className="relative ml-2 shrink-0" ref={dropdownRef}>
+                <div className="relative ml-2 flex-shrink-0">
+                  <div>
+                    <button
+                      onClick={() => setMenuOpened(!menuOpened)}
+                      type="button"
+                      className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 cursor-pointer"
+                      id="user-menu-button"
+                      aria-expanded="false"
+                      aria-haspopup="true"
+                    >
+                      <span className="sr-only">Open user menu</span>
+                      {avatarUrl && (
+                        <img
+                          className="h-full w-full rounded-full object-cover"
+                          src={avatarUrl}
+                          alt={user?.firstName || 'User'}
+                        />
+                      )}
+                      {!avatarUrl && (
+                        <span className="text-lg font-medium">
+                          {getInitials(user?.firstName, user?.lastName)}
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
                 {menuOpened && (
                   <div
@@ -245,14 +234,16 @@ export function Header() {
                           Account Settings
                         </Link>
                       )}
-                      <Link
-                        href="/settings/event/type"
-                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                        role="menuitem"
-                        tabIndex={-1}
-                      >
-                        Event Settings
-                      </Link>
+                      {isAdminOrSuperAdmin && (
+                        <Link
+                          href="/settings/event/type"
+                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                          role="menuitem"
+                          tabIndex={-1}
+                        >
+                          Event Settings
+                        </Link>
+                      )}
                       {isAdminOrSuperAdmin && (
                         <Link
                           href="/settings/team"
@@ -387,13 +378,15 @@ export function Header() {
                   Account Settings
                 </Link>
               )}
-              <Link
-                href="/settings/event/type"
-                className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Event Settings
-              </Link>
+              {isAdminOrSuperAdmin && (
+                <Link
+                  href="/settings/event/type"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Event Settings
+                </Link>
+              )}
               {isAdminOrSuperAdmin && (
                 <Link
                   href="/settings/team"

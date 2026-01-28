@@ -13,7 +13,9 @@ export interface TableHeaderProps {
  */
 export function TableHeader({ children, className = '' }: TableHeaderProps) {
   return (
-    <th scope="col" className={`px-4 py-2 text-xs text-gray-700 uppercase ${className}`}>
+    <th
+      className={`text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400`}
+    >
       {children}
     </th>
   );

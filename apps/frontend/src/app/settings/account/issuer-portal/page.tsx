@@ -79,8 +79,8 @@ export default function IssuerPortalPage() {
   return (
     <div>
       <h1 className="form-title">Issuer Portal</h1>
-      <p className="form-subtitle mb-6">
-        Issuer Portal is a public page where all the public events are visible to the internet.
+      <p className="form-subtitle mb-4">
+        Issuer Portal is public page where all the public events are visible to internet.
       </p>
 
       {submitSuccess && (
@@ -104,7 +104,7 @@ export default function IssuerPortalPage() {
       {/* Banner Image */}
       <FileDropzone
         label="Banner Image"
-        description="Banner image is shown on issuer portal if it is enabled. Recommended size: At least 1920px wide by 300px tall. File type: JPG, JPEG, or PNG. Size: 1920x300"
+        description="Banner image is shown on issuer portal if it is enabled. Recommended size: At least 1920px wide by 300px tall. File type: JPG, JPEG, or PNG."
         accept="image/png,image/jpg,image/jpeg"
         currentImage={settings?.banner_url || null}
         onImageChange={handleBannerChange}

@@ -7,7 +7,7 @@ interface FieldLabelProps {
 
 export function FieldLabel({ field }: FieldLabelProps) {
   return (
-    <div className="flex items-center gap-2 mb-1">
+    <div className="flex items-center gap-2">
       <label htmlFor={field.name} className="form-input-label">
         {field.label}
         {/* {field.required && <span className="text-red-500 ml-1">*</span>} */}
