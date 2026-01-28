@@ -220,8 +220,8 @@ export default function SkillsPage() {
                     key={skill.uuid}
                     className="odd:bg-white even:bg-gray-50 border-b border-gray-200"
                   >
-                    <td className="px-6 py-4">
-                      {editingSkill?.uuid === skill.uuid ? (
+                    {editingSkill?.uuid === skill.uuid ? (
+                      <td className="p-2">
                         <input
                           type="text"
                           value={editSkillName}
@@ -229,7 +229,7 @@ export default function SkillsPage() {
                             setEditSkillName(e.target.value);
                             setError(null);
                           }}
-                          className="form-input-field font-bold"
+                          className="form-input-field font-bold w-full"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               handleEditSave(skill.uuid);
@@ -240,22 +240,28 @@ export default function SkillsPage() {
                           disabled={isUpdating}
                           autoFocus
                         />
-                      ) : (
+                      </td>
+                    ) : (
+                      <td className="px-6 py-4">
                         <span className="form-text-normal">{skill.name}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                      {!isAuthorized ? (
+                      </td>
+                    )}
+                    {!isAuthorized ? (
+                      <td className="px-6 py-4">
                         <span className="text-gray-400">—</span>
-                      ) : editingSkill?.uuid === skill.uuid ? (
+                      </td>
+                    ) : editingSkill?.uuid === skill.uuid ? (
+                      <td>
                         <button
                           onClick={() => handleEditSave(skill.uuid)}
-                          className="btn-primary text-sm px-3 py-1.5"
+                          className="btn-primary text-sm px-3 py-1.5 ml-2"
                           disabled={isUpdating || !editSkillName.trim()}
                         >
                           {isUpdating ? 'Saving...' : 'Save'}
                         </button>
-                      ) : (
+                      </td>
+                    ) : (
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-4">
                           <button
                             onClick={() => handleEditStart(skill)}
@@ -272,8 +278,8 @@ export default function SkillsPage() {
                             {deletingId === skill.uuid ? 'Deleting...' : 'Delete'}
                           </button>
                         </div>
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
