@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
-import { Table } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
 import { capitalizeFirst } from '@/utils/helpers';
 
@@ -86,169 +85,198 @@ export default function TeamsPage() {
   };
 
   return (
-    <div className="bg-white rounded-sm shadow-sm border border-gray-200">
+    <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
       {/* Header */}
-      <div className="px-6 py-5 flex items-start justify-between border-b border-gray-200">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Team</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage all your existing{' '}
-            <span className="font-semibold text-gray-900">{totalCount}</span> team member
-            {totalCount !== 1 ? 's' : ''} or add a new one.
-          </p>
-        </div>
-        <div className="flex space-x-4">
-          <div className="flex space-x-2 items-center w-full">
-            <Link href="/settings/team/add" className="btn-primary w-full">
-              Add new member
-            </Link>
+
+      <div className="divide-y dark:divide-gray-700">
+        <div className="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
+          <div>
+            <h1 className="mr-3 form-title">Team</h1>
+            <p className="form-subtitle">
+              Manage all your existing <span className="font-bold">{totalCount}</span> team member
+              {totalCount !== 1 ? 's' : ''} or add a new one.
+            </p>
+          </div>
+          <div className="flex space-x-4">
+            <div className="flex space-x-2 items-center w-full">
+              <a type="button" href="/settings/team/add" className="btn-primary w-full">
+                Add new member
+              </a>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="px-4 py-5 space-y-4 border-b border-gray-200">
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="text-sm font-semibold text-gray-700">Show records only for:</span>
-          {/* Admin Radio */}
-          <label className="ml-4 inline-flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="roleFilter"
-              checked={roleFilter === 'admin'}
-              onChange={() => handleRoleFilterChange('admin')}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
-            />
-            <span className="ml-2 text-sm font-semibold text-gray-700">Admin</span>
-          </label>
-
-          {/* Managers Radio */}
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="roleFilter"
-              checked={roleFilter === 'manager'}
-              onChange={() => handleRoleFilterChange('manager')}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
-            />
-            <span className="ml-2 text-sm font-semibold text-gray-700">Managers</span>
-          </label>
-
-          {/* Designers Radio */}
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="roleFilter"
-              checked={roleFilter === 'designer'}
-              onChange={() => handleRoleFilterChange('designer')}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
-            />
-            <span className="ml-2 text-sm font-semibold text-gray-700">Designers</span>
-          </label>
-
-          {/* Show All Link */}
-          <button
+      <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
+        <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex dark:text-white">
+          Show records only for:
+        </div>
+        <div className="flex flex-wrap">
+          <Link href="">
+            <div className="flex items-center mt-3 mr-4">
+              <input
+                id="all-products"
+                type="radio"
+                value=""
+                name="show-only"
+                checked={roleFilter === 'admin'}
+                onChange={() => handleRoleFilterChange('admin')}
+                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+              />
+              <label
+                htmlFor="all-products"
+                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                Admin
+              </label>
+            </div>
+          </Link>
+          <Link href="">
+            <div className="flex items-center mt-3 mr-4">
+              <input
+                id="all-products"
+                type="radio"
+                value=""
+                name="show-only"
+                checked={roleFilter === 'manager'}
+                onChange={() => handleRoleFilterChange('manager')}
+                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+              />
+              <label
+                htmlFor="all-products"
+                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                Managers
+              </label>
+            </div>
+          </Link>
+          <Link href="">
+            <div className="flex items-center mt-3 mr-4">
+              <input
+                id="all-products"
+                type="radio"
+                value=""
+                name="show-only"
+                checked={roleFilter === 'designer'}
+                onChange={() => handleRoleFilterChange('designer')}
+                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-606 dark:ring-offset-gray.-8 focus:ring-secondary dark:bg-secondary-dark border-secondary-dark cursor-pointer"
+              />
+              <label
+                htmlFor="all-products"
+                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                Designers
+              </label>
+            </div>
+          </Link>
+          <Link
+            href=""
             onClick={() => {
               setRoleFilter('');
               setCurrentPage(1);
             }}
-            className="text-sm font-semibold text-blue-600 hover:text-blue-700 underline"
+            className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
           >
             Show All
-          </button>
+          </Link>
         </div>
       </div>
 
-      {/* Table */}
-      <div>
-        <Table<TeamMember>
-          columns={[
-            {
-              key: 'user',
-              header: 'User',
-              render: (member) => {
-                return (
-                  <span className="text-sm font-medium text-gray-900">
-                    {capitalizeFirst(member.first_name)} {capitalizeFirst(member.last_name)}
-                  </span>
-                );
-              },
-            },
-            {
-              key: 'role',
-              header: 'Role',
-              render: (member) => (
-                <span className="inline-flex font-semibold items-center bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300 gap-1">
-                  <svg
-                    className="h-3.5 w-3.5 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                    />
-                  </svg>
-                  <span>{getRoleDisplay(member.role?.role)}</span>
-                </span>
-              ),
-            },
-            {
-              key: 'email',
-              header: 'Email',
-              render: (member) => <span className="text-sm text-gray-500">{member.email}</span>,
-            },
-            {
-              key: 'status',
-              header: 'Status',
-              render: (member) => (
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      member.status === 'active'
-                        ? 'bg-green-500'
-                        : member.status === 'inactive'
-                        ? 'bg-yellow-500'
-                        : member.status === 'invited'
-                        ? 'bg-blue-500'
-                        : 'bg-gray-400'
-                    }`}
-                  />
-                  <span className="text-sm text-gray-900 capitalize">{member.status}</span>
-                </div>
-              ),
-            },
-            {
-              key: 'last_login_at',
-              header: 'Last Login',
-              render: (member) => (
-                <span className="text-sm text-gray-500">{formatDate(member.last_login_at)}</span>
-              ),
-            },
-            {
-              key: 'createdAt',
-              header: 'Added On',
-              render: (member) => (
-                <span className="text-sm text-gray-500">{formatDate(member.createdAt)}</span>
-              ),
-            },
-          ]}
-          data={members}
-          isLoading={isLoading}
-          emptyMessage={searchQuery ? 'No matching team members found.' : 'No team members found.'}
-          onRowClick={handleRowClick}
-          // rowClassName={(member: TeamMember) => {
-          //   // Disable cursor pointer for invited users and prevent hover effect
-          //   if (member.status === 'invited') {
-          //     return 'cursor-not-allowed opacity-75 hover:bg-white';
-          //   }
-          //   return '';
-          // }}
-        />
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-4 py-3">
+                User
+              </th>
+              <th scope="col" className="px-4 py-3">
+                Role
+              </th>
+              <th scope="col" className="px-4 py-3">
+                Email
+              </th>
+              <th scope="col" className="px-4 py-3">
+                Status
+              </th>
+              <th scope="col" className="px-4 py-3 whitespace-nowrap">
+                Last Login
+              </th>
+              <th scope="col" className="px-4 py-3 whitespace-nowrap">
+                Added On
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center">
+                  Loading...
+                </td>
+              </tr>
+            ) : members.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center">
+                  No team members found.
+                </td>
+              </tr>
+            ) : (
+              members.map((member) => (
+                <tr
+                  key={member.id || member.uuid}
+                  className="border-b border-gray-200 dark:border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={() => handleRowClick(member)}
+                >
+                  <th scope="row" className="px-4 py-2 form-text-normal">
+                    <div className="flex items-center">
+                      <span className="ml-2 hover:underline">
+                        {capitalizeFirst(member.first_name)} {capitalizeFirst(member.last_name)}
+                      </span>
+                    </div>
+                  </th>
+                  <td className="px-4 py-2">
+                    <div className="inline-flex items-center bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3.5 w-3.5 mr-1"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                        ></path>
+                      </svg>{' '}
+                      {getRoleDisplay(member.role?.role)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-2">{member.email}</td>
+                  <td className="px-4 py-2 form-text-normal">
+                    <div className="flex items-center">
+                      <div
+                        className={`w-3 h-3 mr-2 border rounded-full ${
+                          member.status === 'active'
+                            ? 'bg-green-500'
+                            : member.status === 'inactive'
+                            ? 'bg-yellow-500'
+                            : member.status === 'invited'
+                            ? 'bg-blue-500'
+                            : 'bg-gray-400'
+                        }`}
+                      ></div>{' '}
+                      <span className="capitalize">{member.status}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2">{formatDate(member.last_login_at)}</td>
+                  <td className="px-4 py-2">{formatDate(member.createdAt)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
