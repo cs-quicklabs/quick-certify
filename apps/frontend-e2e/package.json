@@ -8,8 +8,14 @@
     ]
   },
   "devDependencies": {
-    "@playwright/test": "^1.36.0",
-    "@types/node": "^20.19.9"
+    "@playwright/test": "^1.58.0",
+    "@types/node": "^20.19.9",
+    "allure-playwright": "^3.4.5"
   },
-  "scripts": {}
+  "scripts": {
+    "test:e2e": "playwright test",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:debug": "playwright test --debug"
+  }
 }

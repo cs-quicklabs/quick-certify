@@ -16,7 +16,7 @@ export class LoginPage {
     this.page = page;
     this.locator_emailField = page.locator(`#your-email`);
     this.locator_passwordField = page.locator(`#password`);
-    this.locator_signinBtn = page.getByRole('button', { name: 'Sign in' });
+    this.locator_signinBtn = page.getByRole('button', { name: 'Sign in', exact: true, });
     this.locator_eyeIcon = page.locator('.absolute');
     this.locator_rememberMeCheckBox = page.locator(`#remember-me`);
     this.locator_forgotPassword = page.getByRole('link', { name: 'Forgot password?' });
@@ -26,8 +26,9 @@ export class LoginPage {
   }
 
   async openUrl() {
-    await this.page.goto('/');
+    await this.page.goto('/login');
   }
+
 
   async enterUserEmail(email: string) {
     await this.locator_emailField.fill(email);
