@@ -5,10 +5,11 @@
   "nx": {
     "implicitDependencies": [
       "frontend"
-    ],
-    "targets": {
-      "format": {},
-      "format:check": {}
-    }
-  }
+    ]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.36.0",
+    "@types/node": "^20.19.9"
+  },
+  "scripts": {}
 }
