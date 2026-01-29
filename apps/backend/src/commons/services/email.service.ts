@@ -20,6 +20,7 @@ export class EmailService {
 
   private getTemplate(templateName: string): Handlebars.TemplateDelegate {
     if (this.templates.has(templateName)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.templates.get(templateName)!;
     }
 
