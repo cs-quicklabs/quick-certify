@@ -40,8 +40,6 @@ test.describe('To validate the User Registration Functionality', () => {
       registrationData.confirmPassword,
     );
     await registrationPage.clickOnCreateNewUserBtn();
-    await expect(
-      registrationPage.page.getByText('Email already registered')
-    ).toBeVisible();
+    await expect(registrationPage.page.getByText('Email already registered')).toBeVisible();
   });
 });

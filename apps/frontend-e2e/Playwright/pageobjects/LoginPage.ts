@@ -16,7 +16,7 @@ export class LoginPage {
     this.page = page;
     this.locator_emailField = page.locator(`#your-email`);
     this.locator_passwordField = page.locator(`#password`);
-    this.locator_signinBtn = page.getByRole('button', { name: 'Sign in', exact: true, });
+    this.locator_signinBtn = page.getByRole('button', { name: 'Sign in', exact: true });
     this.locator_eyeIcon = page.locator('.absolute');
     this.locator_rememberMeCheckBox = page.locator(`#remember-me`);
     this.locator_forgotPassword = page.getByRole('link', { name: 'Forgot password?' });
@@ -32,14 +32,10 @@ export class LoginPage {
   async validateUserLogin() {
     await Promise.all([
       this.clickOnSigninBtn(),
-      this.page.waitForResponse(resp =>
-        resp.url().includes('login') && resp.status() === 200
-      )
-    ])
-    await expect(this.page).toHaveURL(/dashboard/)
+      this.page.waitForResponse((resp) => resp.url().includes('login') && resp.status() === 200),
+    ]);
+    await expect(this.page).toHaveURL(/dashboard/);
   }
-
-
 
   async enterUserEmail(email: string) {
     await this.locator_emailField.fill(email);

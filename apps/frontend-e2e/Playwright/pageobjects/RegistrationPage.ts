@@ -37,7 +37,6 @@ export class RegistrationPage {
     await this.locator_emailField.fill(email);
   }
   async enterexistingUserEmail(email: string) {
-
     await this.locator_emailField.fill(email);
   }
   async enterPassword(password: string) {

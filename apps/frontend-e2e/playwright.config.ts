@@ -7,7 +7,6 @@ dotenv.config({
 });
 
 export default defineConfig({
-
   testDir: path.resolve(__dirname, 'Playwright/tests'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
