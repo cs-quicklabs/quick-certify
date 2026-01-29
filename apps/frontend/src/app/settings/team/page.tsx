@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import type { TeamMember } from '@/services/api/team.service';
-import { capitalizeFirst } from '@/utils/helpers';
+import { capitalizeFirst, filterAndSortRoles } from '@/utils/helpers';
 
 /**
  * Team Listing Page
@@ -20,7 +20,7 @@ export default function TeamsPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
 
-  const { data: roles, isLoading: rolesLoading } = useRoles();
+  const { data: roles } = useRoles();
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
@@ -71,25 +71,6 @@ export default function TeamsPage() {
     };
     return roleMap[role] || role;
   };
-  //Role Options
-
-  const [filterRoles, setFilterRoles] = React.useState<{ label: string; value: string }[]>([]);
-  useEffect(() => {
-    if (rolesLoading || !roles) return;
-    // If current role filter is not in the fetched roles, reset it
-    const validRoles = roles
-      .filter((value: any) => value.role !== 'super_admin')
-      .sort((a, b) => {
-        return a.role.localeCompare(b.role, undefined, { sensitivity: 'base' });
-      })
-      .map((role) => {
-        return { label: capitalizeFirst(role.role), value: role.role };
-      });
-    // if (roleFilter && !validRoles.includes(roleFilter.toLowerCase())) {
-    //   setRoleFilter('');
-    // }
-    setFilterRoles(validRoles);
-  }, [roles, rolesLoading]);
 
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
@@ -133,7 +114,7 @@ export default function TeamsPage() {
         </div>
 
         <div className="flex flex-wrap">
-          {filterRoles.map(({ label, value }) => {
+          {filterAndSortRoles(roles).map(({ label, value }) => {
             const inputId = `role-${value}`;
 
             return (
