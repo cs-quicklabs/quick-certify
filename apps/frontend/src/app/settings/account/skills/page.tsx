@@ -146,7 +146,7 @@ export default function SkillsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="mb-4">
         <h1 className="form-title">Skills</h1>
         <p className="form-subtitle">
           Skills help categorize participants based on expertise. You can add, edit, or delete
@@ -159,8 +159,8 @@ export default function SkillsPage() {
 
       {/* Add New Skill Form */}
       {isAuthorized && (
-        <form onSubmit={handleAddSkill} className="w-full mt-6">
-          <div className="mb-4 mt-6">
+        <form onSubmit={handleAddSkill} className="w-full mb-4">
+          <div className="mb-4 mt-4">
             <label htmlFor="skill" className="form-input-label">
               Add New Skill
             </label>
@@ -198,7 +198,7 @@ export default function SkillsPage() {
       )}
 
       {/* Skills Table */}
-      <div className="overflow-hidden">
+      <div className="relative overflow-x-auto mt-4">
         {isLoading ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
         ) : queryError && showQueryError ? null : skills.length === 0 ? (
@@ -207,31 +207,21 @@ export default function SkillsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="table">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+            <table className="table w-full text-sm text-left text-gray-500">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 font-bold text-sm text-left text-gray-700 dark:text-gray-300">
-                    SKILL
-                  </th>
-                  <th className="px-10 py-4 font-bold text-sm text-right text-gray-700 dark:text-gray-300">
-                    ACTION
-                  </th>
+                  <th className="px-6 py-4 w-full">SKILL</th>
+                  <th className="px-6 py-4">ACTION</th>
                 </tr>
               </thead>
               <tbody className="table-body">
                 {skills.map((skill, index) => (
                   <tr
                     key={skill.uuid}
-                    className={`border-b border-gray-200 dark:border-gray-700 ${
-                      index === 0
-                        ? 'bg-white dark:bg-gray-800'
-                        : index % 2 === 1
-                        ? 'bg-gray-50 dark:bg-gray-700'
-                        : 'bg-white dark:bg-gray-800'
-                    }`}
+                    className="odd:bg-white even:bg-gray-50 border-b border-gray-200"
                   >
-                    <td className="px-6 py-4">
-                      {editingSkill?.uuid === skill.uuid ? (
+                    {editingSkill?.uuid === skill.uuid ? (
+                      <td className="p-2">
                         <input
                           type="text"
                           value={editSkillName}
@@ -239,7 +229,7 @@ export default function SkillsPage() {
                             setEditSkillName(e.target.value);
                             setError(null);
                           }}
-                          className="form-input-field w-full text-sm"
+                          className="form-input-field font-bold w-full"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               handleEditSave(skill.uuid);
@@ -250,22 +240,28 @@ export default function SkillsPage() {
                           disabled={isUpdating}
                           autoFocus
                         />
-                      ) : (
-                        <span className="text-sm text-gray-900 dark:text-white">{skill.name}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                      {!isAuthorized ? (
+                      </td>
+                    ) : (
+                      <td className="px-6 py-4">
+                        <span className="form-text-normal">{skill.name}</span>
+                      </td>
+                    )}
+                    {!isAuthorized ? (
+                      <td className="px-6 py-4">
                         <span className="text-gray-400">—</span>
-                      ) : editingSkill?.uuid === skill.uuid ? (
+                      </td>
+                    ) : editingSkill?.uuid === skill.uuid ? (
+                      <td>
                         <button
                           onClick={() => handleEditSave(skill.uuid)}
-                          className="btn-primary text-sm px-3 py-1.5"
+                          className="btn-primary text-sm px-3 py-1.5 ml-2"
                           disabled={isUpdating || !editSkillName.trim()}
                         >
                           {isUpdating ? 'Saving...' : 'Save'}
                         </button>
-                      ) : (
+                      </td>
+                    ) : (
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-4">
                           <button
                             onClick={() => handleEditStart(skill)}
@@ -282,8 +278,8 @@ export default function SkillsPage() {
                             {deletingId === skill.uuid ? 'Deleting...' : 'Delete'}
                           </button>
                         </div>
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

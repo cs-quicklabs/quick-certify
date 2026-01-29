@@ -30,7 +30,7 @@ test.describe('To validate the User Registration Functionality', () => {
     );
     await registrationPage.clickOnCreateNewUserBtn();
   });
-  test.only('Verify user should not register with invalid email', async ({ registrationPage }) => {
+  test('Verify user should not register with invalid email', async ({ registrationPage }) => {
     await registrationPage.validateRegisterationwithexistingEmail(
       registrationData.firstName,
       registrationData.lastName,

@@ -73,7 +73,6 @@ export class RegistrationPage {
     await expect(this.page).toHaveURL(/\/dashboard/);
   }
 
-
   async enterRegistrationFormData(
     firstName: string,
     lastName: string,

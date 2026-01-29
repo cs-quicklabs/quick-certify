@@ -83,6 +83,7 @@ export default function EditTeamMemberPage() {
         roleId: parseInt(data.roleId), // Convert string to number for API
         status: data.status || undefined,
       };
+      console.log('updateData', updateData);
       await updateMutation.mutateAsync(updateData);
       if (data.status === 'archived') {
         toast.success('User archived successfully');
