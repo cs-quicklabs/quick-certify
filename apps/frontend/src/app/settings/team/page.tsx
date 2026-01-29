@@ -72,7 +72,7 @@ export default function TeamsPage() {
 
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
-    setCurrentPage(1); // Reset to first page on filter change
+    //setCurrentPage(1); // Reset to first page on filter change
   };
 
   const handleRowClick = (member: TeamMember) => {
@@ -121,7 +121,7 @@ export default function TeamsPage() {
                 name="show-only"
                 checked={roleFilter === 'admin'}
                 onChange={() => handleRoleFilterChange('admin')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
               />
               <label
                 htmlFor="all-products"
@@ -140,7 +140,7 @@ export default function TeamsPage() {
                 name="show-only"
                 checked={roleFilter === 'manager'}
                 onChange={() => handleRoleFilterChange('manager')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
               />
               <label
                 htmlFor="all-products"
@@ -169,7 +169,7 @@ export default function TeamsPage() {
               </label>
             </div>
           </Link>
-          <Link
+          {roleFilter !== "" && <Link
             href=""
             onClick={() => {
               setRoleFilter('');
@@ -179,6 +179,7 @@ export default function TeamsPage() {
           >
             Show All
           </Link>
+          }
         </div>
       </div>
 
@@ -257,15 +258,14 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${
-                          member.status === 'active'
-                            ? 'bg-green-500'
-                            : member.status === 'inactive'
+                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active'
+                          ? 'bg-green-500'
+                          : member.status === 'inactive'
                             ? 'bg-yellow-500'
                             : member.status === 'invited'
-                            ? 'bg-blue-500'
-                            : 'bg-gray-400'
-                        }`}
+                              ? 'bg-blue-500'
+                              : 'bg-gray-400'
+                          }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>
