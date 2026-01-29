@@ -413,8 +413,8 @@ export function Header() {
         isOpen={showLogoutConfirm}
         title="Logout"
         message="Are you sure you want to logout?"
-        confirmLabel="Yes"
-        cancelLabel="No"
+        confirmLabel="Yes I 'm sure"
+        cancelLabel="cancel"
         confirmVariant="danger"
         onConfirm={handleSignOutConfirm}
         onCancel={() => setShowLogoutConfirm(false)}

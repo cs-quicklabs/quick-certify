@@ -66,32 +66,115 @@ export function ConfirmationDialog({
     secondary: 'btn-secondary',
   };
 
+  //   return (
+  //     <div
+  //       className="fixed inset-0 backdrop-blur-sm bg-white/10 dark:bg-black/10 flex items-center justify-center z-50"
+  //       onClick={onCancel}
+  //     >
+  //       <div
+  //         className={`bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4 shadow-xl ${
+  //           className || ''
+  //         }`}
+  //         onClick={(e) => e.stopPropagation()}
+  //       >
+  //         <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
+  //         <div className="text-gray-600 dark:text-gray-400 text-sm mb-4">{message}</div>
+  //         <div className="flex gap-3 justify-end">
+  //           <button type="button" onClick={onCancel} className="btn-secondary text-sm">
+  //             {cancelLabel}
+  //           </button>
+  //           <button
+  //             type="button"
+  //             onClick={onConfirm}
+  //             className={`${confirmButtonClasses[confirmVariant]} text-sm`}
+  //           >
+  //             {confirmLabel}
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+
+  //   );
+  // }
   return (
     <div
-      className="fixed inset-0 backdrop-blur-sm bg-white/10 dark:bg-black/10 flex items-center justify-center z-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm "
       onClick={onCancel}
     >
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4 shadow-xl ${
-          className || ''
-        }`}
+        className="relative p-3 w-full max-w-sm rounded-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
-        <div className="text-gray-600 dark:text-gray-400 text-sm mb-4">{message}</div>
-        <div className="flex gap-3 justify-end">
-          <button type="button" onClick={onCancel} className="btn-secondary text-sm">
-            {cancelLabel}
-          </button>
+        <div
+          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${className || ''
+            }`}
+        >
+          {/* Close button */}
           <button
             type="button"
-            onClick={onConfirm}
-            className={`${confirmButtonClasses[confirmVariant]} text-sm`}
+            onClick={onCancel}
+            className="absolute top-2 right-2 text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-full text-sm w-8 h-8 inline-flex justify-center items-center cursor-pointer"
           >
-            {confirmLabel}
+            <svg
+              className="w-4 h-4"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18 18 6M18 18 6 6"
+              />
+            </svg>
+            <span className="sr-only">Close modal</span>
           </button>
+
+          {/* Content */}
+          <div className="p-2 md:p-3 text-center ">
+            <svg
+              className="mx-auto mb-3 text-fg-disabled w-10 h-10"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+
+            <h3 className="mb-4 text-body font-medium">
+              {message || title}
+            </h3>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 justify-center">
+              <button
+                type="button"
+                onClick={onConfirm}
+                className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium rounded-full text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer"
+              >
+                {confirmLabel}
+              </button>
+
+              <button
+                type="button"
+                onClick={onCancel}
+                className="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium rounded-sm text-sm px-4 py-2 focus:outline-none cursor-pointer"
+              >
+                {cancelLabel}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+
+};
