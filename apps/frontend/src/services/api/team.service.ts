@@ -28,6 +28,7 @@ export interface TeamMember {
 export interface Role {
   id: string;
   role: string;
+
 }
 
 export interface CreateTeamMemberRequest {
