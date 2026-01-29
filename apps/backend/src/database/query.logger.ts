@@ -63,7 +63,7 @@ export class SimpleQueryLogger {
   }
 
   private createLogMessage(message: string, formattedSql: string): string {
-    return `---------------------------\n${message} - ${formattedSql}\n---------------------------`;
+    return `\n${message} - ${formattedSql}`;
   }
 
   /**
@@ -184,13 +184,17 @@ export class SimpleQueryLogger {
       const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
 
       if (['AND', 'OR'].includes(keyword)) {
-        formatted = formatted.replace(regex, `\n  ${keyword.toUpperCase()}`);
+        formatted = formatted.replace(regex, `${keyword.toUpperCase()}`);
       } else if (keyword === 'ON') {
-        formatted = formatted.replace(regex, `\n  ${keyword.toUpperCase()}`);
+        formatted = formatted.replace(regex, `${keyword.toUpperCase()}`);
       } else {
-        formatted = formatted.replace(regex, `\n${keyword.toUpperCase()}`);
+        formatted = formatted.replace(regex, `${keyword.toUpperCase()}`);
       }
     }
+
+    // Replace createdAt and updatedAt with created_at and updated_at
+    formatted = formatted.replace(/\bcreatedAt\b/gi, 'created_at');
+    formatted = formatted.replace(/\bupdatedAt\b/gi, 'updated_at');
 
     return formatted.trim();
   }
