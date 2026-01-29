@@ -77,14 +77,19 @@ export default function TeamsPage() {
   useEffect(() => {
     if (rolesLoading || !roles) return;
     // If current role filter is not in the fetched roles, reset it
-    const validRoles = roles.filter((value: any) => value.role !== "super_admin").sort((a, b) => { return a.role.localeCompare(b.role, undefined, { sensitivity: 'base' }) }).map((role) => { return { label: capitalizeFirst(role.role), value: role.role } });
+    const validRoles = roles
+      .filter((value: any) => value.role !== 'super_admin')
+      .sort((a, b) => {
+        return a.role.localeCompare(b.role, undefined, { sensitivity: 'base' });
+      })
+      .map((role) => {
+        return { label: capitalizeFirst(role.role), value: role.role };
+      });
     // if (roleFilter && !validRoles.includes(roleFilter.toLowerCase())) {
     //   setRoleFilter('');
     // }
     setFilterRoles(validRoles);
   }, [roles, rolesLoading]);
-
-
 
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
@@ -243,8 +248,9 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                          }`}
+                        className={`w-3 h-3 mr-2 border rounded-full ${
+                          member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                        }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>
