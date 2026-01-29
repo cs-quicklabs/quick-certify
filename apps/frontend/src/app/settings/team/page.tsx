@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTeamMembers } from '@/hooks/useTeam';
+import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import type { TeamMember } from '@/services/api/team.service';
 import { capitalizeFirst } from '@/utils/helpers';
@@ -19,6 +19,8 @@ export default function TeamsPage() {
   const [searchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
+
+  const { data: roles, isLoading: rolesLoading } = useRoles();
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
@@ -70,11 +72,19 @@ export default function TeamsPage() {
     return roleMap[role] || role;
   };
   //Role Options
-  const ROLE_OPTIONS = [
-    { label: 'Admin', value: 'admin' },
-    { label: 'Managers', value: 'manager' },
-    { label: 'Designers', value: 'designer' },
-  ];
+
+  const [filterRoles, setFilterRoles] = React.useState<{ label: string; value: string }[]>([]);
+  useEffect(() => {
+    if (rolesLoading || !roles) return;
+    // If current role filter is not in the fetched roles, reset it
+    const validRoles = roles.filter((value: any) => value.role !== "super_admin").sort((a, b) => { return a.role.localeCompare(b.role, undefined, { sensitivity: 'base' }) }).map((role) => { return { label: capitalizeFirst(role.role), value: role.role } });
+    // if (roleFilter && !validRoles.includes(roleFilter.toLowerCase())) {
+    //   setRoleFilter('');
+    // }
+    setFilterRoles(validRoles);
+  }, [roles, rolesLoading]);
+
+
 
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
@@ -112,90 +122,13 @@ export default function TeamsPage() {
           </div>
         </div>
       </div>
-
-      {/* <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
-        <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex dark:text-white">
-          Show records only for:
-        </div>
-        <div className="flex flex-wrap">
-          <Link href="">
-            <div className="flex items-center mt-3 mr-4">
-              <input
-                id="all-products"
-                type="radio"
-                value=""
-                name="show-only"
-                checked={roleFilter === 'admin'}
-                onChange={() => handleRoleFilterChange('admin')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
-              />
-              <label
-                htmlFor="all-products"
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Admin
-              </label>
-            </div>
-          </Link>
-          <Link href="">
-            <div className="flex items-center mt-3 mr-4">
-              <input
-                id="all-products"
-                type="radio"
-                value=""
-                name="show-only"
-                checked={roleFilter === 'manager'}
-                onChange={() => handleRoleFilterChange('manager')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
-              />
-              <label
-                htmlFor="all-products"
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Managers
-              </label>
-            </div>
-          </Link>
-          <Link href="">
-            <div className="flex items-center mt-3 mr-4">
-              <input
-                id="all-products"
-                type="radio"
-                value=""
-                name="show-only"
-                checked={roleFilter === 'designer'}
-                onChange={() => handleRoleFilterChange('designer')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-606 dark:ring-offset-gray.-8 focus:ring-secondary dark:bg-secondary-dark border-secondary-dark cursor-pointer"
-              />
-              <label
-                htmlFor="all-products"
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Designers
-              </label>
-            </div>
-          </Link>
-          {roleFilter !== '' && (
-            <Link
-              href=""
-              onClick={() => {
-                setRoleFilter('');
-                setCurrentPage(1);
-              }}
-              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
-            >
-              Show All
-            </Link>
-          )}
-        </div>
-      </div> */}
       <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:space-y-0 sm:space-x-4">
         <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex dark:text-white">
           Show records only for:
         </div>
 
         <div className="flex flex-wrap">
-          {ROLE_OPTIONS.map(({ label, value }) => {
+          {filterRoles.map(({ label, value }) => {
             const inputId = `role-${value}`;
 
             return (
@@ -310,9 +243,8 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${
-                          member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                        }`}
+                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                          }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>
