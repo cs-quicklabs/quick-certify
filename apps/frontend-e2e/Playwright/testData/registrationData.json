@@ -3,5 +3,6 @@
   "lastName": "Naman",
   "password": "Password@123",
   "issuerURL": "https://issuerurl.com",
-  "confirmPassword": "Password@123"
+  "confirmPassword": "Password@123",
+  "existingEmail": "divanshu@crownstack.com"
 }

@@ -36,7 +36,10 @@ export class RegistrationPage {
     const email = this.testData.generateRandomEmail();
     await this.locator_emailField.fill(email);
   }
+  async enterexistingUserEmail(email: string) {
 
+    await this.locator_emailField.fill(email);
+  }
   async enterPassword(password: string) {
     await this.locator_passwordField.fill(password);
   }
@@ -70,6 +73,7 @@ export class RegistrationPage {
     await expect(this.page).toHaveURL(/\/dashboard/);
   }
 
+
   async enterRegistrationFormData(
     firstName: string,
     lastName: string,
@@ -80,6 +84,22 @@ export class RegistrationPage {
     await this.enterFirstName(firstName);
     await this.enterLastName(lastName);
     await this.enterUserEmail();
+    await this.enterIssuerName();
+    await this.enterIssuerWebsiteURL(issuerURL);
+    await this.enterPassword(password);
+    await this.enterConfirmPassword(confirmPassword);
+  }
+  async validateRegisterationwithexistingEmail(
+    firstName: string,
+    lastName: string,
+    email: string,
+    issuerURL: string,
+    password: string,
+    confirmPassword: string,
+  ) {
+    await this.enterFirstName(firstName);
+    await this.enterLastName(lastName);
+    await this.enterexistingUserEmail(email);
     await this.enterIssuerName();
     await this.enterIssuerWebsiteURL(issuerURL);
     await this.enterPassword(password);
