@@ -149,7 +149,7 @@ export function Header() {
             <div className="flex items-center">
               <button
                 type="button"
-                className="shrink-0 rounded-full  p-1 text-gray-400 hover:text-blue  focus:ring-2  focus:ring-offset-blue-800"
+                className="shrink-0 rounded-full  p-1 text-gray-400 hover:text-blue  focus:ring-2  focus:ring-offset-blue-800 cursor-pointer"
               >
                 <span className="sr-only">View notifications</span>
                 <svg
@@ -174,7 +174,7 @@ export function Header() {
                     <button
                       onClick={() => setMenuOpened(!menuOpened)}
                       type="button"
-                      className="flex h-8 w-8 rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                      className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 cursor-pointer"
                       id="user-menu-button"
                       aria-expanded="false"
                       aria-haspopup="true"
