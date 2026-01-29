@@ -101,13 +101,11 @@ export function ConfirmationDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm "
       onClick={onCancel}
     >
-      <div
-        className="relative p-3 w-full max-w-sm rounded-sm"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative p-3 w-full max-w-sm rounded-sm" onClick={(e) => e.stopPropagation()}>
         <div
-          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${className || ''
-            }`}
+          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${
+            className || ''
+          }`}
         >
           {/* Close button */}
           <button
@@ -149,9 +147,7 @@ export function ConfirmationDialog({
               />
             </svg>
 
-            <h3 className="mb-4 text-body font-medium">
-              {message || title}
-            </h3>
+            <h3 className="mb-4 text-body font-medium">{message || title}</h3>
 
             {/* Actions */}
             <div className="flex items-center gap-3 justify-center">
@@ -176,5 +172,4 @@ export function ConfirmationDialog({
       </div>
     </div>
   );
-
-};
+}
