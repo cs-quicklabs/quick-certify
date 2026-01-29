@@ -56,11 +56,14 @@ export class StorageService {
   private readonly isConfigured: boolean;
 
   constructor(private readonly configService: ConfigService<AllConfigType>) {
-    const accessKey = this.configService.get('storage.accessKey', { infer: true });
-    const secretKey = this.configService.get('storage.secretKey', { infer: true });
-    const endpoint = this.configService.get('storage.endpoint', { infer: true });
-    const bucketConfig = this.configService.get('storage.bucket', { infer: true }) || '';
-    const cdnEndpointConfig = this.configService.get('storage.cdnEndpoint', { infer: true }) || '';
+    const accessKey = this.configService.getOrThrow<string>('storage.accessKey', { infer: true });
+    const secretKey = this.configService.getOrThrow<string>('storage.secretKey', { infer: true });
+    const endpoint = this.configService.getOrThrow<string>('storage.endpoint', { infer: true });
+    const bucketConfig = this.configService.getOrThrow<string>('storage.bucket', { infer: true });
+    const cdnEndpointConfig = this.configService.getOrThrow<string>('storage.cdnEndpoint', {
+      infer: true,
+    });
+    const region = this.configService.getOrThrow<string>('storage.region', { infer: true });
 
     // Extract bucket name from URL if full URL is provided
     this.bucket = this.extractBucketName(bucketConfig);
@@ -73,10 +76,10 @@ export class StorageService {
     if (this.isConfigured) {
       this.s3Client = new S3Client({
         endpoint,
-        region: this.configService.get('storage.region', { infer: true }),
+        region,
         credentials: {
-          accessKeyId: accessKey!,
-          secretAccessKey: secretKey!,
+          accessKeyId: accessKey,
+          secretAccessKey: secretKey,
         },
         forcePathStyle: false, // Required for DigitalOcean Spaces
       });

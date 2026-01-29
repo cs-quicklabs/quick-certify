@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTeamMembers } from '@/hooks/useTeam';
+import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import type { TeamMember } from '@/services/api/team.service';
-import { capitalizeFirst } from '@/utils/helpers';
+import { capitalizeFirst, filterAndSortRoles } from '@/utils/helpers';
 
 /**
  * Team Listing Page
@@ -19,6 +19,8 @@ export default function TeamsPage() {
   const [searchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
+
+  const { data: roles } = useRoles();
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
@@ -72,7 +74,7 @@ export default function TeamsPage() {
 
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
-    setCurrentPage(1); // Reset to first page on filter change
+    //setCurrentPage(1); // Reset to first page on filter change
   };
 
   const handleRowClick = (member: TeamMember) => {
@@ -106,79 +108,49 @@ export default function TeamsPage() {
           </div>
         </div>
       </div>
-
-      <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
+      <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:space-y-0 sm:space-x-4">
         <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex dark:text-white">
           Show records only for:
         </div>
+
         <div className="flex flex-wrap">
-          <Link href="">
-            <div className="flex items-center mt-3 mr-4">
-              <input
-                id="all-products"
-                type="radio"
-                value=""
-                name="show-only"
-                checked={roleFilter === 'admin'}
-                onChange={() => handleRoleFilterChange('admin')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
-              />
-              <label
-                htmlFor="all-products"
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Admin
-              </label>
-            </div>
-          </Link>
-          <Link href="">
-            <div className="flex items-center mt-3 mr-4">
-              <input
-                id="all-products"
-                type="radio"
-                value=""
-                name="show-only"
-                checked={roleFilter === 'manager'}
-                onChange={() => handleRoleFilterChange('manager')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
-              />
-              <label
-                htmlFor="all-products"
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Managers
-              </label>
-            </div>
-          </Link>
-          <Link href="">
-            <div className="flex items-center mt-3 mr-4">
-              <input
-                id="all-products"
-                type="radio"
-                value=""
-                name="show-only"
-                checked={roleFilter === 'designer'}
-                onChange={() => handleRoleFilterChange('designer')}
-                className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-606 dark:ring-offset-gray.-8 focus:ring-secondary dark:bg-secondary-dark border-secondary-dark cursor-pointer"
-              />
-              <label
-                htmlFor="all-products"
-                className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Designers
-              </label>
-            </div>
-          </Link>
-          <Link
-            href=""
-            onClick={() => {
-              setRoleFilter('');
-              setCurrentPage(1);
-            }}
-            className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
-          >
-            Show All
-          </Link>
+          {filterAndSortRoles(roles).map(({ label, value }) => {
+            const inputId = `role-${value}`;
+
+            return (
+              <Link href="" key={value}>
+                <div className="flex items-center mt-3 mr-4">
+                  <input
+                    id={inputId}
+                    type="radio"
+                    name="show-only"
+                    checked={roleFilter === value}
+                    onChange={() => handleRoleFilterChange(value)}
+                    className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                  />
+                  <label
+                    htmlFor={inputId}
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  >
+                    {label}
+                  </label>
+                </div>
+              </Link>
+            );
+          })}
+
+          {roleFilter && (
+            <button
+              type="button"
+              onClick={() => {
+                setRoleFilter('');
+                setCurrentPage(1);
+              }}
+              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
+            >
+              Show All
+            </button>
+          )}
         </div>
       </div>
 
@@ -229,7 +201,7 @@ export default function TeamsPage() {
                 >
                   <th scope="row" className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
-                      <span className="ml-2 hover:underline">
+                      <span className="ml-2 hover:underline cursor-pointer">
                         {capitalizeFirst(member.first_name)} {capitalizeFirst(member.last_name)}
                       </span>
                     </div>
@@ -258,13 +230,7 @@ export default function TeamsPage() {
                     <div className="flex items-center">
                       <div
                         className={`w-3 h-3 mr-2 border rounded-full ${
-                          member.status === 'active'
-                            ? 'bg-green-500'
-                            : member.status === 'inactive'
-                            ? 'bg-yellow-500'
-                            : member.status === 'invited'
-                            ? 'bg-blue-500'
-                            : 'bg-gray-400'
+                          member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
                         }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>

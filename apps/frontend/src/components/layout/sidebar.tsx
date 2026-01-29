@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SidebarItem } from '../../types/sidebar.types';
 import { profileSidebarItems } from '../../config/sidebar.config';
@@ -16,14 +17,14 @@ export function Sidebar({ items = profileSidebarItems }: SidebarProps) {
   return (
     <nav className="space-y-1">
       {items.map((item) => (
-        <a
+        <Link
           key={item.name}
           href={item.href}
           className={isActive(item.href) ? 'selected-sidebar-nav' : 'sidebar-nav'}
         >
           {item.icon}
           <span className="truncate ml-2">{item.label}</span>
-        </a>
+        </Link>
       ))}
     </nav>
   );
