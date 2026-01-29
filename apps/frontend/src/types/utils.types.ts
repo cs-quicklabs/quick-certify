@@ -9,3 +9,8 @@ export interface PaginatedResponse<T> {
     hasPrevPage: boolean;
   };
 }
+
+export type Roles = {
+  label: string;
+  value: string;
+};
