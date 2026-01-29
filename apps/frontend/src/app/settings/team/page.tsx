@@ -69,6 +69,12 @@ export default function TeamsPage() {
     };
     return roleMap[role] || role;
   };
+  //Role Options
+  const ROLE_OPTIONS = [
+    { label: 'Admin', value: 'admin' },
+    { label: 'Managers', value: 'manager' },
+    { label: 'Designers', value: 'designer' }
+  ];
 
   const handleRoleFilterChange = (role: string) => {
     setRoleFilter(roleFilter === role ? '' : role);
@@ -107,7 +113,7 @@ export default function TeamsPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
+      {/* <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
         <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex dark:text-white">
           Show records only for:
         </div>
@@ -182,7 +188,53 @@ export default function TeamsPage() {
             </Link>
           )}
         </div>
+      </div> */}
+      <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:space-y-0 sm:space-x-4">
+        <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex dark:text-white">
+          Show records only for:
+        </div>
+
+        <div className="flex flex-wrap">
+          {ROLE_OPTIONS.map(({ label, value }) => {
+            const inputId = `role-${value}`;
+
+            return (
+              <Link href="" key={value}>
+                <div className="flex items-center mt-3 mr-4">
+                  <input
+                    id={inputId}
+                    type="radio"
+                    name="show-only"
+                    checked={roleFilter === value}
+                    onChange={() => handleRoleFilterChange(value)}
+                    className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                  />
+                  <label
+                    htmlFor={inputId}
+                    className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  >
+                    {label}
+                  </label>
+                </div>
+              </Link>
+            );
+          })}
+
+          {roleFilter && (
+            <button
+              type="button"
+              onClick={() => {
+                setRoleFilter('');
+                setCurrentPage(1);
+              }}
+              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
+            >
+              Show All
+            </button>
+          )}
+        </div>
       </div>
+
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -231,7 +283,7 @@ export default function TeamsPage() {
                 >
                   <th scope="row" className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
-                      <span className="ml-2 hover:underline">
+                      <span className="ml-2 hover:underline cursor-pointer">
                         {capitalizeFirst(member.first_name)} {capitalizeFirst(member.last_name)}
                       </span>
                     </div>
@@ -259,15 +311,10 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${
-                          member.status === 'active'
-                            ? 'bg-green-500'
-                            : member.status === 'inactive'
-                            ? 'bg-yellow-500'
-                            : member.status === 'invited'
-                            ? 'bg-blue-500'
-                            : 'bg-gray-400'
-                        }`}
+                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active'
+                          ? 'bg-green-500'
+                          : 'bg-gray-400'
+                          }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>
