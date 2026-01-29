@@ -65,37 +65,6 @@ export function ConfirmationDialog({
     primary: 'btn-primary',
     secondary: 'btn-secondary',
   };
-
-  //   return (
-  //     <div
-  //       className="fixed inset-0 backdrop-blur-sm bg-white/10 dark:bg-black/10 flex items-center justify-center z-50"
-  //       onClick={onCancel}
-  //     >
-  //       <div
-  //         className={`bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4 shadow-xl ${
-  //           className || ''
-  //         }`}
-  //         onClick={(e) => e.stopPropagation()}
-  //       >
-  //         <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
-  //         <div className="text-gray-600 dark:text-gray-400 text-sm mb-4">{message}</div>
-  //         <div className="flex gap-3 justify-end">
-  //           <button type="button" onClick={onCancel} className="btn-secondary text-sm">
-  //             {cancelLabel}
-  //           </button>
-  //           <button
-  //             type="button"
-  //             onClick={onConfirm}
-  //             className={`${confirmButtonClasses[confirmVariant]} text-sm`}
-  //           >
-  //             {confirmLabel}
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </div>
-
-  //   );
-  // }
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm "
@@ -103,9 +72,8 @@ export function ConfirmationDialog({
     >
       <div className="relative p-3 w-full max-w-sm rounded-sm" onClick={(e) => e.stopPropagation()}>
         <div
-          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${
-            className || ''
-          }`}
+          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${className || ''
+            }`}
         >
           {/* Close button */}
           <button
