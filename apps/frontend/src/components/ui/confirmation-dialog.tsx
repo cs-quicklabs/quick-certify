@@ -59,7 +59,6 @@ export function ConfirmationDialog({
 }: ConfirmationDialogProps) {
   if (!isOpen) return null;
 
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm "
@@ -67,8 +66,9 @@ export function ConfirmationDialog({
     >
       <div className="relative p-3 w-full max-w-sm rounded-sm" onClick={(e) => e.stopPropagation()}>
         <div
-          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${className || ''
-            }`}
+          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${
+            className || ''
+          }`}
         >
           {/* Close button */}
           <button

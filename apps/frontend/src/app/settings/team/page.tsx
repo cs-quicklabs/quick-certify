@@ -73,7 +73,7 @@ export default function TeamsPage() {
   const ROLE_OPTIONS = [
     { label: 'Admin', value: 'admin' },
     { label: 'Managers', value: 'manager' },
-    { label: 'Designers', value: 'designer' }
+    { label: 'Designers', value: 'designer' },
   ];
 
   const handleRoleFilterChange = (role: string) => {
@@ -235,7 +235,6 @@ export default function TeamsPage() {
         </div>
       </div>
 
-
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -311,10 +310,9 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active'
-                          ? 'bg-green-500'
-                          : 'bg-gray-400'
-                          }`}
+                        className={`w-3 h-3 mr-2 border rounded-full ${
+                          member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                        }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>
