@@ -10,7 +10,7 @@ async function globalSetup(config: FullConfig) {
   const authFile = path.resolve(__dirname, 'auth.json');
 
   const email = process.env.USER_EMAIL ?? '';
-  const password = process.env.USER_PASSWORD ?? '';
+  const password = process.env.USER_PASS ?? '';
   const baseURL = process.env.BASE_URL;
 
   if (!email || !password) {

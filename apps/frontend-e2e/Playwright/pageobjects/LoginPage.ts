@@ -29,6 +29,17 @@ export class LoginPage {
     await this.page.goto('/login');
   }
 
+  async validateUserLogin() {
+    await Promise.all([
+      this.clickOnSigninBtn(),
+      this.page.waitForResponse(resp =>
+        resp.url().includes('login') && resp.status() === 200
+      )
+    ])
+    await expect(this.page).toHaveURL(/dashboard/)
+  }
+
+
 
   async enterUserEmail(email: string) {
     await this.locator_emailField.fill(email);
@@ -51,15 +62,14 @@ export class LoginPage {
   }
 
   async validateAlertMessage(message: string) {
-    await expect(this.locator_alertToast).toBeVisible({ timeout: 5000 });
-    await expect(this.locator_alertToast).toContainText(message);
+    await expect(this.locator_alertToast.first()).toContainText(message);
   }
 
-  async validateInvalidEmailError(message: string) {
+  async validateEmailFieldError(message: string) {
     await expect(this.locator_emailFieldError.first()).toContainText(message);
   }
 
-  async validateInvalidPasswordError(message: string) {
+  async validatePasswordFieldError(message: string) {
     await expect(this.locator_passwordFieldError.first()).toContainText(message);
   }
 
