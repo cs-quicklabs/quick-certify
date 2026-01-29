@@ -169,17 +169,18 @@ export default function TeamsPage() {
               </label>
             </div>
           </Link>
-          {roleFilter !== "" && <Link
-            href=""
-            onClick={() => {
-              setRoleFilter('');
-              setCurrentPage(1);
-            }}
-            className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
-          >
-            Show All
-          </Link>
-          }
+          {roleFilter !== '' && (
+            <Link
+              href=""
+              onClick={() => {
+                setRoleFilter('');
+                setCurrentPage(1);
+              }}
+              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
+            >
+              Show All
+            </Link>
+          )}
         </div>
       </div>
 
@@ -258,14 +259,15 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active'
-                          ? 'bg-green-500'
-                          : member.status === 'inactive'
+                        className={`w-3 h-3 mr-2 border rounded-full ${
+                          member.status === 'active'
+                            ? 'bg-green-500'
+                            : member.status === 'inactive'
                             ? 'bg-yellow-500'
                             : member.status === 'invited'
-                              ? 'bg-blue-500'
-                              : 'bg-gray-400'
-                          }`}
+                            ? 'bg-blue-500'
+                            : 'bg-gray-400'
+                        }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>
