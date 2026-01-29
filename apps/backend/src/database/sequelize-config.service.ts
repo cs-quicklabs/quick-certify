@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { SequelizeModuleOptions, SequelizeOptionsFactory } from '@nestjs/sequelize';
 import { AllConfigType } from '@src/config/config.type';
 import { entities } from '@src/entities';
+import { createSequelizeLogger } from './query.logger';
 
 @Injectable()
 export class SequelizeConfigService implements SequelizeOptionsFactory {
@@ -20,7 +21,9 @@ export class SequelizeConfigService implements SequelizeOptionsFactory {
       username: databaseConfig.username,
       password: databaseConfig.password,
       database: databaseConfig.database,
-      logging: databaseConfig.logging ?? false,
+      logging: databaseConfig.logging ? createSequelizeLogger() : false,
+      benchmark: databaseConfig.logging ?? false,
+      logQueryParameters: databaseConfig.logging ?? false,
       synchronize: databaseConfig.synchronize ?? false,
       autoLoadModels: true,
       models: [...entities],
