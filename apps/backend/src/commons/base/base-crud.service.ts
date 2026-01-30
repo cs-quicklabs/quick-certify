@@ -8,7 +8,8 @@ export abstract class BaseCrudService<
   CreateDto extends object,
   UpdateDto extends object,
   TId extends number | string = number,
-> implements BaseCrudServiceInterface<T, CreateDto, UpdateDto> {
+> implements BaseCrudServiceInterface<T, CreateDto, UpdateDto>
+{
   protected abstract readonly model: ModelStatic<T>;
   protected readonly entityName: string = 'Entity';
 
