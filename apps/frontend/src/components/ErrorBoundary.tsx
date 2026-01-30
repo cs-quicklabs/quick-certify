@@ -48,7 +48,7 @@ function ErrorFallback({ error, resetError }: { error?: Error; resetError: () =>
               {error.name}: {error.message}
             </p>
             {error.stack && (
-              <pre className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">
+              <pre className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap wrap-break-word">
                 {error.stack.split('\n').slice(0, 5).join('\n')}
               </pre>
             )}

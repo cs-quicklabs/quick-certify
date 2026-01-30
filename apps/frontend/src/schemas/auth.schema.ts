@@ -10,7 +10,6 @@ import {
   passwordSchema,
   strictPasswordSchema,
   emailSchema,
-  optionalNameSchema,
   urlSchema,
   PASSWORD_MESSAGES,
   requiredFirstNameSchema,
@@ -103,9 +102,10 @@ export type AcceptInvitationFormData = z.infer<typeof acceptInvitationSchema>;
  * Google Signup Complete Schema
  * For completing registration after Google OAuth signup.
  */
+
 export const googleSignupCompleteSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: optionalNameSchema,
+  firstName: requiredFirstNameSchema,
+  lastName: requiredLastNameSchema,
   companyName: z
     .string()
     .min(1, 'Issuer name is required')

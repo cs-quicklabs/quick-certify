@@ -154,7 +154,7 @@ export default function ArchivedMembersPage() {
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mt-2">
                   <svg
-                    className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
+                    className="shrink-0 mr-1.5 h-5 w-5 text-gray-400"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
