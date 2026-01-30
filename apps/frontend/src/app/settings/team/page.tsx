@@ -95,7 +95,8 @@ export default function TeamsPage() {
           <div>
             <h1 className="mr-3 form-title">Team</h1>
             <p className="form-subtitle">
-              Manage all your existing <span className="font-bold">{totalCount}</span> team member
+              Manage all your existing <span className="font-bold">{members.length}</span> team
+              member
               {totalCount !== 1 ? 's' : ''} or add a new one.
             </p>
           </div>
@@ -146,7 +147,7 @@ export default function TeamsPage() {
                 setRoleFilter('');
                 setCurrentPage(1);
               }}
-              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
+              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm cursor-pointer"
             >
               Show All
             </button>
