@@ -98,9 +98,9 @@ export default function DesignForm({
 
 
           {preview ? (
-            <div className="relative w-full aspect-[11/8] mx-auto border rounded overflow-hidden bg-white">
+            <div className="relative w-full aspect-11/8 mx-auto border rounded overflow-hidden bg-white">
               <DesignEditor backgroundUrl={preview}
-                onLayoutChange={setLayout} />
+                onLayoutChangeAction={setLayout} />
             </div>
           ) : (
             <p className="text-gray-400">Click to upload</p>

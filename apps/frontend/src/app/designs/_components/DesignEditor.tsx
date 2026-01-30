@@ -9,10 +9,10 @@ const CANVAS_HEIGHT = 800;
 
 type Props = {
   backgroundUrl: string;
-  onLayoutChange?: (layout: DesignLayout) => void;
+  onLayoutChangeAction?: (layout: DesignLayout) => void;
 };
 
-export function DesignEditor({ backgroundUrl, onLayoutChange }: Props) {
+export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
 
@@ -82,11 +82,11 @@ export function DesignEditor({ backgroundUrl, onLayoutChange }: Props) {
     canvas.add(text);
     canvas.setActiveObject(text);
     canvas.on('object:modified', () => {
-      onLayoutChange?.(extractLayout(canvas));
+      onLayoutChangeAction?.(extractLayout(canvas));
     });
 
     canvas.on('text:changed', () => {
-      onLayoutChange?.(extractLayout(canvas));
+      onLayoutChangeAction?.(extractLayout(canvas));
     });
 
 
@@ -118,7 +118,7 @@ export function DesignEditor({ backgroundUrl, onLayoutChange }: Props) {
   return (
     <div
       ref={containerRef}
-      className="w-full aspect-[11/8] bg-white overflow-hidden"
+      className="w-full aspect-11/8 bg-white overflow-hidden"
     />
   );
 }

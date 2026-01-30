@@ -25,7 +25,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Sidebar */}
-      <aside className="w-full lg:w-64 flex-shrink-0">
+      <aside className="w-full lg:w-64 shrink-0">
         <nav className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {settingsNavItems.map((item) => {
             const Icon = item.icon;
