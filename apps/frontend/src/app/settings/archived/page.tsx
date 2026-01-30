@@ -181,10 +181,11 @@ export default function ArchivedMembersPage() {
                 </button>
                 <button
                   onClick={() => handleDeleteClick(member)}
-                  className={`text-sm font-semibold ${user?.role === 'super_admin'
-                    ? 'text-red-600 hover:text-red-800 cursor-pointer'
-                    : 'text-gray-400 cursor-not-allowed'
-                    }`}
+                  className={`text-sm font-semibold ${
+                    user?.role === 'super_admin'
+                      ? 'text-red-600 hover:text-red-800 cursor-pointer'
+                      : 'text-gray-400 cursor-not-allowed'
+                  }`}
                   disabled={user?.role !== 'super_admin' || isDeleting}
                   title={user?.role !== 'super_admin' ? 'Only Super Admins can delete' : ''}
                 >
