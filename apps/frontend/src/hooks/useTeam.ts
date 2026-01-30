@@ -76,6 +76,16 @@ export function useDeleteTeamMember() {
   });
 }
 
+export function usePermanentlyDeleteTeamMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (uuid: string) => teamService.permanentlyDeleteTeamMember(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TEAM_KEYS.lists() });
+    },
+  });
+}
+
 export function useCancelInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
