@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import DesignsList from './_components/DesignsList';
+import DesignsList from '@/app/designs/_components/DesignsList'
 import { useDesignList } from '@/hooks/useDesigns';
 
 const SEARCH_DEBOUNCE_MS = 1000;

@@ -4,7 +4,6 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { Design } from '@/services/api/design.service'
 import DesignCard from "./DesignCard";
 import { PaginatedResponse } from "@/types";
-// import { useRouter, useSearchParams } from "next/router";
 
 type Props = {
   designs: Design[],
