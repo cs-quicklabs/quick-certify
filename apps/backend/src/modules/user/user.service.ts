@@ -651,7 +651,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       }
     }
 
-    if (options.status) {
+    if (options.status === 'active') {
+      whereClause.status = { [Op.ne]: 'archived' };
+    } else {
       whereClause.status = options.status;
     }
 

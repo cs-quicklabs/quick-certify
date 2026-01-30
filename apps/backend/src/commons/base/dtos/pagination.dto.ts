@@ -7,6 +7,11 @@ export enum SortOrder {
   DESC = 'DESC',
 }
 
+export enum statusEnum {
+  Active = 'active',
+  Archived = 'archived',
+}
+
 export class PaginationDto {
   @ApiPropertyOptional({ default: 1, minimum: 1, description: 'Page number' })
   @Type(() => Number)
@@ -43,8 +48,8 @@ export class PaginationDto {
   @IsOptional()
   role?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by status' })
-  @IsString()
+  @ApiPropertyOptional({ description: 'Filter by status', example: 'archived' })
+  @IsEnum(statusEnum)
   @IsOptional()
-  status?: string;
+  status?: string = statusEnum.Active;
 }
