@@ -151,6 +151,39 @@ export class UserController {
     return new SuccessResponse('User deleted successfully', { deleted: true });
   }
 
+  @Delete(':uuid/permanent')
+  @UseGuards(RolesGuard, OrganizationGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Permanently delete archived user (Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'User permanently deleted' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'User not found or not archived' })
+  async permanentlyDelete(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const existingUser = await this.userService.findOneByUuidAndOrganization(
+      uuid,
+      user.organizationUuid,
+    );
+    if (!existingUser) {
+      return new SuccessResponse('User not found', null);
+    }
+
+    // Only allow permanent deletion of archived users
+    if (existingUser.status !== 'archived') {
+      return new SuccessResponse(
+        'Only archived users can be permanently deleted',
+        null,
+      );
+    }
+
+    // Prevent deleting yourself
+    if (user.uuid === existingUser.uuid) {
+      return new SuccessResponse('Cannot delete your own account', null);
+    }
+
+    await this.userService.hardDelete(existingUser.id);
+    return new SuccessResponse('User permanently deleted', { deleted: true });
+  }
+
   @Post(':uuid/cancel-invitation')
   @UseGuards(RolesGuard, OrganizationGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)

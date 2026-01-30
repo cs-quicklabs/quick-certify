@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTeamMembers, useRestoreUser, useDeleteTeamMember } from '@/hooks/useTeam';
+import { useTeamMembers, useRestoreUser, usePermanentlyDeleteTeamMember } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { ConfirmationDialog } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
@@ -12,19 +12,19 @@ import { X } from 'lucide-react';
 /**
  * Archived Members Page
  * Redesigned to match custom list view
+ * Only super_admin can permanently delete archived users
  */
 export default function ArchivedMembersPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState<string>('');
-  // Debounce search could be added, but for now simple state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [memberToRestore, setMemberToRestore] = useState<TeamMember | null>(null);
   const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null);
   const pageSize = 10;
 
   const { mutate: restoreUser, isPending: isRestoring } = useRestoreUser();
-  const { mutate: deleteUser, isPending: isDeleting } = useDeleteTeamMember();
+  const { mutate: permanentlyDeleteUser, isPending: isDeleting } = usePermanentlyDeleteTeamMember();
 
   // Authorization check
   useEffect(() => {
@@ -50,6 +50,11 @@ export default function ArchivedMembersPage() {
   };
 
   const handleDeleteClick = (member: TeamMember) => {
+    // Only super_admin can permanently delete
+    if (user?.role !== 'super_admin') {
+      toast.error('Only Super Admins can permanently delete archived users');
+      return;
+    }
     setMemberToDelete(member);
   };
 
@@ -67,9 +72,10 @@ export default function ArchivedMembersPage() {
 
   const handleConfirmDelete = () => {
     if (memberToDelete) {
-      deleteUser(memberToDelete.uuid, {
+      permanentlyDeleteUser(memberToDelete.uuid, {
         onSuccess: () => {
           setMemberToDelete(null);
+          toast.success('User permanently deleted');
         },
       });
     }
@@ -163,7 +169,6 @@ export default function ArchivedMembersPage() {
 
                   <span>
                     Deactivated on {formatDate(member.updatedAt)}
-                    {/* "by User" is omitted as it's not available in API currently */}
                   </span>
                 </div>
               </div>
@@ -172,12 +177,19 @@ export default function ArchivedMembersPage() {
                 <button
                   onClick={() => handleRestoreClick(member)}
                   className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                  disabled={isRestoring}
                 >
                   Activate
                 </button>
                 <button
                   onClick={() => handleDeleteClick(member)}
-                  className="text-sm font-semibold text-red-600 hover:text-red-800"
+                  className={`text-sm font-semibold ${
+                    user?.role === 'super_admin'
+                      ? 'text-red-600 hover:text-red-800 cursor-pointer'
+                      : 'text-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={user?.role !== 'super_admin' || isDeleting}
+                  title={user?.role !== 'super_admin' ? 'Only Super Admins can delete' : ''}
                 >
                   Delete
                 </button>
@@ -223,10 +235,10 @@ export default function ArchivedMembersPage() {
         onCancel={() => setMemberToRestore(null)}
       />
 
-      {/* Delete Dialog */}
+      {/* Delete Dialog - Only for Super Admin */}
       <ConfirmationDialog
-        isOpen={false}
-        title="Delete Member"
+        isOpen={!!memberToDelete}
+        title="Permanently Delete Member"
         message={`Are you sure you want to permanently delete ${memberToDelete?.first_name} ${memberToDelete?.last_name}? This action cannot be undone.`}
         confirmLabel={isDeleting ? 'Deleting...' : 'Delete'}
         confirmVariant="danger"

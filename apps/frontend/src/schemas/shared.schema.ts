@@ -129,6 +129,25 @@ export const requiredNameSchema = z
   .min(2, 'Must be at least 2 characters')
   .regex(/\S/, 'Must not be only spaces');
 
+
+export const requiredFirstNameSchema = z
+  .string()
+  .min(1, 'First name is required')
+  .min(2, 'Must be at least 2 characters')
+  .regex(/^[a-zA-Z0-9\s]+$/, 'First name must only contain letters, numbers')
+  .regex(/[a-zA-Z]/, 'First name must contain at least one letter')
+
+export const requiredLastNameSchema = z
+  .string()
+  .optional()
+  .refine(
+    (val) => !val || /^[a-zA-Z0-9\s]+$/.test(val),
+    {
+      message: 'Last name must not contain special characters',
+    }
+  );
+
+
 /**
  * Name Schema (optional)
  *

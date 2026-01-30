@@ -375,6 +375,26 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return true;
   }
 
+  /**
+   * Permanently delete an archived user record from database
+   * Only callable for users with archived status
+   */
+  async hardDelete(id: number): Promise<boolean> {
+    const user = await this.findOneOrThrow(id);
+    
+    // Ensure user is archived before permanent deletion
+    if (user.status !== 'archived') {
+      throw new BadRequestException('Only archived users can be permanently deleted');
+    }
+
+    // Logout user from all devices before deletion
+    await this.logoutUserFromAllDevices(user.uuid);
+    
+    // Permanently delete the user record
+    await user.destroy({ force: true });
+    return true;
+  }
+
   override async restore(id: number): Promise<UserEntity> {
     const user = await this.userModel.findOne({
       where: { id, status: 'archived' },
