@@ -29,9 +29,8 @@ export default function ProfileSettingsPage() {
         avatarUrl: data.avatarUrl && data.avatarUrl.trim() !== '' ? data.avatarUrl : undefined,
       });
     },
+
     onImageUpload: async (fieldName: string, imageUrl: string) => {
-      // Save avatar URL to database immediately after upload
-      // Always include firstName as it's required by the backend
       if (fieldName === 'avatarUrl' && profile?.firstName) {
         await updateProfile.mutateAsync({
           firstName: profile.firstName,
@@ -39,13 +38,12 @@ export default function ProfileSettingsPage() {
         });
       }
     },
+
     onImageDelete: async (fieldName: string) => {
-      // Remove avatar URL from database immediately after deletion
-      // Always include firstName as it's required by the backend
       if (fieldName === 'avatarUrl' && profile?.firstName) {
         await updateProfile.mutateAsync({
           firstName: profile.firstName,
-          avatarUrl: null as any, // Explicitly set to null for deletion
+          avatarUrl: undefined,
         });
       }
     },

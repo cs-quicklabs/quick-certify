@@ -21,7 +21,7 @@ import type { EventType } from '@/services/api/event.service';
  */
 export default function EventTypeSettingsPage() {
   const [newEventType, setNewEventType] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingUuid, setEditingUuid] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function EventTypeSettingsPage() {
     error: queryError,
   } = useEventTypesInfinite();
   const createMutation = useCreateEventType();
-  const updateMutation = useUpdateEventType(editingId || '');
+  const updateMutation = useUpdateEventType(editingUuid || '');
   const deleteMutation = useDeleteEventType();
 
   // Flatten all pages into a single array
@@ -90,7 +90,7 @@ export default function EventTypeSettingsPage() {
   };
 
   const handleEdit = (id: string, currentName: string) => {
-    setEditingId(id);
+    setEditingUuid(id);
     setEditingValue(currentName);
     setError(null);
   };
@@ -101,7 +101,7 @@ export default function EventTypeSettingsPage() {
     setError(null);
     try {
       await updateMutation.mutateAsync({ name: editingValue.trim() });
-      setEditingId(null);
+      setEditingUuid(null);
       setEditingValue('');
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to update event type'));
@@ -109,7 +109,7 @@ export default function EventTypeSettingsPage() {
   };
 
   const handleCancelEdit = () => {
-    setEditingId(null);
+    setEditingUuid(null);
     setEditingValue('');
     setError(null);
   };
@@ -122,9 +122,9 @@ export default function EventTypeSettingsPage() {
     if (!confirmDialog.eventType) return;
 
     setError(null);
-    setDeletingId(confirmDialog.eventType.id);
+    setDeletingId(confirmDialog.eventType.uuid);
     try {
-      await deleteMutation.mutateAsync(confirmDialog.eventType.id);
+      await deleteMutation.mutateAsync(confirmDialog.eventType.uuid);
       setConfirmDialog({ isOpen: false, eventType: null });
       setError(null);
     } catch (err) {
@@ -220,7 +220,7 @@ export default function EventTypeSettingsPage() {
                         <tbody className="table-body">
                           {eventTypes.map((eventType, index) => (
                             <tr
-                              key={eventType.id}
+                              key={eventType.uuid}
                               className={`border-b border-gray-200 dark:border-gray-700 ${
                                 index === 0
                                   ? 'bg-white dark:bg-gray-800'
@@ -230,7 +230,7 @@ export default function EventTypeSettingsPage() {
                               }`}
                             >
                               <td className="px-6 py-4">
-                                {editingId === eventType.id ? (
+                                {editingUuid === eventType.uuid ? (
                                   <input
                                     type="text"
                                     value={editingValue}
@@ -238,7 +238,7 @@ export default function EventTypeSettingsPage() {
                                     className="form-input-field w-full text-sm"
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
-                                        handleSaveEdit(eventType.id);
+                                        handleSaveEdit(eventType.uuid);
                                       } else if (e.key === 'Escape') {
                                         handleCancelEdit();
                                       }
@@ -253,9 +253,9 @@ export default function EventTypeSettingsPage() {
                                 )}
                               </td>
                               <td className="px-6 py-4 text-right whitespace-nowrap">
-                                {editingId === eventType.id ? (
+                                {editingUuid === eventType.uuid ? (
                                   <button
-                                    onClick={() => handleSaveEdit(eventType.id)}
+                                    onClick={() => handleSaveEdit(eventType.uuid)}
                                     className="btn-primary text-sm px-3 py-1.5"
                                     disabled={updateMutation.isPending || !editingValue.trim()}
                                   >
@@ -264,7 +264,7 @@ export default function EventTypeSettingsPage() {
                                 ) : (
                                   <div className="flex items-center justify-end gap-4">
                                     <button
-                                      onClick={() => handleEdit(eventType.id, eventType.name)}
+                                      onClick={() => handleEdit(eventType.uuid, eventType.name)}
                                       className="btn-inline-blue text-sm whitespace-nowrap"
                                       disabled={deletingId !== null}
                                     >
@@ -275,7 +275,7 @@ export default function EventTypeSettingsPage() {
                                       className="btn-inline-red text-sm whitespace-nowrap"
                                       disabled={deletingId !== null}
                                     >
-                                      {deletingId === eventType.id ? 'Deleting...' : 'Delete'}
+                                      {deletingId === eventType.uuid ? 'Deleting...' : 'Delete'}
                                     </button>
                                   </div>
                                 )}

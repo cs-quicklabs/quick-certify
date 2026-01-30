@@ -20,7 +20,7 @@ import type { EventFormat } from '@/services/api/event.service';
  */
 export default function EventFormatSettingsPage() {
   const [newEventFormat, setNewEventFormat] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingUuid, setEditingUuid] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function EventFormatSettingsPage() {
 
   const { data, isLoading, error: queryError } = useEventFormats({ limit: 20 });
   const createMutation = useCreateEventFormat();
-  const updateMutation = useUpdateEventFormat(editingId || '');
+  const updateMutation = useUpdateEventFormat(editingUuid || '');
   const deleteMutation = useDeleteEventFormat();
 
   const eventFormats = data?.data || [];
@@ -49,7 +49,7 @@ export default function EventFormatSettingsPage() {
   };
 
   const handleEdit = (id: string, currentName: string) => {
-    setEditingId(id);
+    setEditingUuid(id);
     setEditingValue(currentName);
     setError(null);
   };
@@ -60,7 +60,7 @@ export default function EventFormatSettingsPage() {
     setError(null);
     try {
       await updateMutation.mutateAsync({ name: editingValue.trim() });
-      setEditingId(null);
+      setEditingUuid(null);
       setEditingValue('');
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to update event format'));
@@ -68,7 +68,7 @@ export default function EventFormatSettingsPage() {
   };
 
   const handleCancelEdit = () => {
-    setEditingId(null);
+    setEditingUuid(null);
     setEditingValue('');
     setError(null);
   };
@@ -81,9 +81,9 @@ export default function EventFormatSettingsPage() {
     if (!confirmDialog.eventFormat) return;
 
     setError(null);
-    setDeletingId(confirmDialog.eventFormat.id);
+    setDeletingId(confirmDialog.eventFormat.uuid);
     try {
-      await deleteMutation.mutateAsync(confirmDialog.eventFormat.id);
+      await deleteMutation.mutateAsync(confirmDialog.eventFormat.uuid);
       setConfirmDialog({ isOpen: false, eventFormat: null });
       setError(null);
     } catch (err) {
@@ -179,7 +179,7 @@ export default function EventFormatSettingsPage() {
                       <tbody className="table-body">
                         {eventFormats.map((eventFormat, index) => (
                           <tr
-                            key={eventFormat.id}
+                            key={eventFormat.uuid}
                             className={`border-b border-gray-200 dark:border-gray-700 ${
                               index === 0
                                 ? 'bg-white dark:bg-gray-800'
@@ -189,7 +189,7 @@ export default function EventFormatSettingsPage() {
                             }`}
                           >
                             <td className="px-6 py-4">
-                              {editingId === eventFormat.id ? (
+                              {editingUuid === eventFormat.uuid ? (
                                 <input
                                   type="text"
                                   value={editingValue}
@@ -197,7 +197,7 @@ export default function EventFormatSettingsPage() {
                                   className="form-input-field w-full text-sm"
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
-                                      handleSaveEdit(eventFormat.id);
+                                      handleSaveEdit(eventFormat.uuid);
                                     } else if (e.key === 'Escape') {
                                       handleCancelEdit();
                                     }
@@ -212,9 +212,9 @@ export default function EventFormatSettingsPage() {
                               )}
                             </td>
                             <td className="px-8 py-4 text-right whitespace-nowrap">
-                              {editingId === eventFormat.id ? (
+                              {editingUuid === eventFormat.uuid ? (
                                 <button
-                                  onClick={() => handleSaveEdit(eventFormat.id)}
+                                  onClick={() => handleSaveEdit(eventFormat.uuid)}
                                   className="btn-primary text-sm px-3 py-1.5"
                                   disabled={updateMutation.isPending || !editingValue.trim()}
                                 >
@@ -223,7 +223,7 @@ export default function EventFormatSettingsPage() {
                               ) : (
                                 <div className="flex items-center justify-end gap-4">
                                   <button
-                                    onClick={() => handleEdit(eventFormat.id, eventFormat.name)}
+                                    onClick={() => handleEdit(eventFormat.uuid, eventFormat.name)}
                                     className="btn-inline-blue text-sm whitespace-nowrap"
                                     disabled={deletingId !== null}
                                   >
@@ -234,7 +234,7 @@ export default function EventFormatSettingsPage() {
                                     className="btn-inline-red text-sm whitespace-nowrap"
                                     disabled={deletingId !== null}
                                   >
-                                    {deletingId === eventFormat.id ? 'Deleting...' : 'Delete'}
+                                    {deletingId === eventFormat.uuid ? 'Deleting...' : 'Delete'}
                                   </button>
                                 </div>
                               )}
