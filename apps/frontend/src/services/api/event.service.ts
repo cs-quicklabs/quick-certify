@@ -2,10 +2,13 @@
  * Event Service - API client for event management
  *
  * Uses centralized query params utility for consistent URL building.
+ *
+ * Uses centralized query params utility for consistent URL building.
  */
 
 import { PaginatedResponse } from '@/types';
 import { apiClient, ApiResponse } from './api-client';
+import { buildUrl } from '@/lib/query-params';
 import { buildUrl } from '@/lib/query-params';
 
 export interface IBaseEvent {

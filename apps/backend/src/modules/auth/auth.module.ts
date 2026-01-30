@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthController } from './auth.controller';
 import { SocialAuthController } from './social-auth.controller';
+import { SocialAuthController } from './social-auth.controller';
 import { AuthService } from './auth.service';
 import {
   PasswordService,
@@ -61,4 +62,4 @@ import { RoleModule } from '../role';
     RolesGuard,
   ],
 })
-export class AuthModule {}
+export class AuthModule { }

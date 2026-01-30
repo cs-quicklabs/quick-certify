@@ -37,7 +37,7 @@ type MulterFile = {
 /**
  * Categories that require admin privileges
  */
-const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner'];
+const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner', 'design'];
 
 /**
  * File Controller
@@ -89,7 +89,7 @@ export class FileController {
       throw new BadRequestException('Category is required');
     }
 
-    const validCategories: UploadCategory[] = ['logo', 'favicon', 'banner', 'avatar'];
+    const validCategories: UploadCategory[] = ['logo', 'favicon', 'banner', 'avatar', 'design'];
     if (!validCategories.includes(category)) {
       throw new BadRequestException(
         `Invalid category. Must be one of: ${validCategories.join(', ')}`,

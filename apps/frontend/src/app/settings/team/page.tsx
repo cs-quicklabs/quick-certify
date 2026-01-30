@@ -37,10 +37,16 @@ export default function TeamsPage() {
     search: searchQuery || undefined,
     sortBy: 'last_login_at',
     sortOrder: 'DESC',
+    sortBy: 'last_login_at',
+    sortOrder: 'DESC',
   });
 
   const totalCount = data?.meta?.total || 0;
   const totalPages = data?.meta?.totalPages || 0;
+  // Filter out archived users and current logged-in user on frontend (backend should also filter, but adding safety check)
+  const members = (data?.data || []).filter(
+    (member) => member.status !== 'archived' && member.id !== user?.id && member.uuid !== user?.id,
+  );
   // Filter out archived users and current logged-in user on frontend (backend should also filter, but adding safety check)
   const members = (data?.data || []).filter(
     (member) => member.status !== 'archived' && member.id !== user?.id && member.uuid !== user?.id,
@@ -78,6 +84,12 @@ export default function TeamsPage() {
   };
 
   const handleRowClick = (member: TeamMember) => {
+    // Disable click for invited users
+    if (member.status === 'invited') {
+      return;
+    }
+    // Navigate directly to edit page
+    router.push(`/settings/team/${member.uuid || member.id}/edit`);
     // Disable click for invited users
     if (member.status === 'invited') {
       return;
@@ -229,9 +241,8 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${
-                          member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                        }`}
+                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                          }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>

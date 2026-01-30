@@ -204,8 +204,7 @@ class MigrationRunner {
 
       console.log('─'.repeat(60));
       console.log(
-        `\nTotal: ${files.length} | Executed: ${executed.length} | Pending: ${
-          files.length - executed.length
+        `\nTotal: ${files.length} | Executed: ${executed.length} | Pending: ${files.length - executed.length
         }`,
       );
     } catch (error) {

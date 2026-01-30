@@ -28,7 +28,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   @Get()
   @UseGuards(RolesGuard)

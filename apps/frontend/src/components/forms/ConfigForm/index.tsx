@@ -254,9 +254,8 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
 
       <form
         onSubmit={handleSubmit}
-        className={`w-full mt-6 ${
-          config.layout === 'grid' ? 'grid grid-cols-2 gap-4' : 'space-y-4'
-        }`}
+        className={`w-full mt-6 ${config.layout === 'grid' ? 'grid grid-cols-2 gap-4' : 'space-y-4'
+          }`}
       >
         {config.fields.map(renderField)}
 

@@ -30,7 +30,7 @@ export class OrganizationService implements IOrganizationService {
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;

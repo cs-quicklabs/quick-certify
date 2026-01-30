@@ -95,13 +95,13 @@ export default function EditTeamMemberPage() {
   // Prepare initial values from member data
   const initialValues = member
     ? {
-        first_name: member.first_name || '',
-        last_name: member.last_name || '',
-        email: member.email || '',
-        roleId: member.role_id || '', // Keep as string for form compatibility
-        // Map status: active -> active, everything else -> archived (inactive/archived/invited)
-        status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
-      }
+      first_name: member.first_name || '',
+      last_name: member.last_name || '',
+      email: member.email || '',
+      roleId: member.role_id || '', // Keep as string for form compatibility
+      // Map status: active -> active, everything else -> archived (inactive/archived/invited)
+      status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
+    }
     : undefined;
 
   if (memberLoading) {
