@@ -95,7 +95,7 @@ export default function TeamsPage() {
           <div>
             <h1 className="mr-3 form-title">Team</h1>
             <p className="form-subtitle">
-              Manage all your existing <span className="font-bold">{totalCount}</span> team member
+              Manage all your existing <span className="font-bold">{members.length}</span> team member
               {totalCount !== 1 ? 's' : ''} or add a new one.
             </p>
           </div>
@@ -229,9 +229,8 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${
-                          member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                        }`}
+                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                          }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>
