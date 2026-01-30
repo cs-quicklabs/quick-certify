@@ -732,6 +732,45 @@ module.exports = {
         { transaction },
       );
 
+      // 11. Create design table
+      await queryInterface.createTable(
+        'designs',
+        {
+          id: {
+            type: DataType.STRING(21),
+            primaryKey: true,
+            allowNull: false,
+          },
+          name: {
+            type: DataType.STRING(100),
+            allowNull: false,
+          },
+          type: {
+            type: DataType.STRING(10),
+            allowNull: false,
+          },
+          url: {
+            type: DataType.STRING(100),
+            allowNull: false,
+          },
+          layout: {
+            type: DataType.JSONB,
+            allowNull: true,
+          },
+          created_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updated_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
       await queryInterface.addIndex('event', ['event_type_id'], {
         name: 'IDX_EVENT_TYPE_ID',
         transaction,

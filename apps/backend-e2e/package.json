@@ -12,7 +12,6 @@
         "executor": "@nx/playwright:playwright",
         "outputs": [
           "{workspaceRoot}/dist/.playwright/apps/backend-e2e"
-          "{workspaceRoot}/dist/.playwright/apps/backend-e2e"
         ],
         "options": {
           "config": "apps/backend-e2e/playwright.config.ts"
