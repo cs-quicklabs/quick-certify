@@ -10,7 +10,6 @@ import {
   passwordSchema,
   strictPasswordSchema,
   emailSchema,
-  optionalNameSchema,
   urlSchema,
   PASSWORD_MESSAGES,
   requiredFirstNameSchema,
