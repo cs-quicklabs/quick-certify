@@ -77,7 +77,7 @@ export default function DesignsPage() {
           </p>
         </div>
 
-        {/* ADD NEW DESIGN DROPDOWN */}
+        {/* Add New Design Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen((v) => !v)}

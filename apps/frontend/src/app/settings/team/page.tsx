@@ -47,10 +47,6 @@ export default function TeamsPage() {
   const members = (data?.data || []).filter(
     (member) => member.status !== 'archived' && member.id !== user?.id && member.uuid !== user?.id,
   );
-  // Filter out archived users and current logged-in user on frontend (backend should also filter, but adding safety check)
-  const members = (data?.data || []).filter(
-    (member) => member.status !== 'archived' && member.id !== user?.id && member.uuid !== user?.id,
-  );
 
   // Don't render if user is not authorized
   if (user && user.role !== 'admin' && user.role !== 'super_admin') {
