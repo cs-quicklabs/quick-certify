@@ -5,7 +5,7 @@
       "type": "node",
       "request": "launch",
       "name": "Debug backend with Nx",
-      "runtimeExecutable": "npx",
+      "runtimeExecutable": "/Users/rac/.nvm/versions/node/v20.20.0/bin/npx",
       "runtimeArgs": ["nx", "serve", "backend"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"

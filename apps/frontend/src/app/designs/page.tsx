@@ -81,39 +81,96 @@ export default function DesignsPage() {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="bg-blue-800 text-white px-4 py-2 rounded-sm text-sm flex items-center gap-2"
+            className="
+    inline-flex items-center justify-center
+    rounded-md
+    bg-blue-700 px-4 py-2
+    text-sm font-medium text-white
+    hover:bg-blue-800
+    focus:outline-none focus:ring-2 focus:ring-blue-300
+    transition-colors
+  "
           >
             Add New Design
             <svg
-              className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 ms-1.5 -me-0.5 transition-transform ${open ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
               viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
             </svg>
           </button>
 
           {open && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow z-50">
-              <Link
-                href="/designs/add?type=certificate"
-                className="block px-4 py-3 text-sm hover:bg-gray-100"
-                onClick={() => setOpen(false)}
-              >
-                Certificate
-              </Link>
+            <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-white shadow">
+              <ul className="p-2 text-sm font-medium text-gray-700">
 
-              <Link
-                href="/designs/add?type=badge"
-                className="block px-4 py-3 text-sm hover:bg-gray-100"
-                onClick={() => setOpen(false)}
-              >
-                Badge
-              </Link>
+                {/* Certificate */}
+                <li>
+                  <Link
+                    href="/designs/add?type=certificate"
+                    onClick={() => setOpen(false)}
+                    className="
+            inline-flex w-full items-center gap-3
+            rounded-md p-2
+            hover:bg-gray-100 hover:text-gray-900
+          "
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3"
+                      />
+                    </svg>
+                    Certificate
+                  </Link>
+                </li>
+
+                {/* Badge */}
+                <li>
+                  <Link
+                    href="/designs/add?type=badge"
+                    onClick={() => setOpen(false)}
+                    className="
+            inline-flex w-full items-center gap-3
+            rounded-md p-2
+            hover:bg-gray-100 hover:text-gray-900
+          "
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.746 3.746 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.746 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"
+                      />
+                    </svg>
+                    Badge
+                  </Link>
+                </li>
+              </ul>
             </div>
           )}
+
+
         </div>
 
       </div>
