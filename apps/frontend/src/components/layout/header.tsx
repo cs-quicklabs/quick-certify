@@ -269,7 +269,7 @@ export function Header() {
                       <button
                         type="button"
                         onClick={handleSignOutClick}
-                        className="hover:bg-gray-50 text-gray-700 block w-full px-4 py-2 text-left text-sm"
+                        className="hover:bg-gray-50 text-gray-700 block w-full px-4 py-2 text-left text-sm cursor-pointer"
                         role="menuitem"
                         tabIndex={-1}
                       >

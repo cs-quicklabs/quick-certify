@@ -146,7 +146,7 @@ export default function TeamsPage() {
                 setRoleFilter('');
                 setCurrentPage(1);
               }}
-              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm"
+              className="underline mt-3 mr-4 font-medium text-blue-600 hover:underline text-sm cursor-pointer"
             >
               Show All
             </button>
@@ -229,9 +229,8 @@ export default function TeamsPage() {
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div
-                        className={`w-3 h-3 mr-2 border rounded-full ${
-                          member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
-                        }`}
+                        className={`w-3 h-3 mr-2 border rounded-full ${member.status === 'active' ? 'bg-green-500' : 'bg-gray-400'
+                          }`}
                       ></div>{' '}
                       <span className="capitalize">{member.status}</span>
                     </div>

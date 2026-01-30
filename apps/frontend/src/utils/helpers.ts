@@ -16,11 +16,16 @@ export function capitalizeFirst(str: string | null | undefined): string {
     .join(' ');
 }
 
-export function filterAndSortRoles(roles: Role[] | undefined): Roles[] {
+export function filterAndSortRoles(
+  roles: Role[] | undefined
+): Roles[] {
   if (!roles || roles.length === 0) return [];
 
-  const filteredRoles = roles.filter((role) => role.role !== 'super_admin');
-  const sortedRole = filteredRoles.sort((a, b) => a.role.localeCompare(b.role));
-  const rl = sortedRole.map((role) => ({ label: capitalizeFirst(role.role), value: role.id }));
-  return rl;
+  return roles
+    .filter(role => role.role !== 'super_admin')
+    .sort((a, b) => a.role.localeCompare(b.role))
+    .map(role => ({
+      label: capitalizeFirst(role.role), // UI label
+      value: role.role,                  // ✅ BACKEND expects this
+    }));
 }
