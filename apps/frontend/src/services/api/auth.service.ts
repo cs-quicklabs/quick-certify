@@ -234,7 +234,7 @@ export const authService = {
    * Get current user
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<ApiResponse<any>>('/profile/me');
+    const response = await apiClient.get<ApiResponse<User>>('/profile/me');
     const profileData = response.data.data;
     // Map profile response to User interface format
     return {
