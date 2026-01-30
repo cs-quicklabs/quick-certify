@@ -16,16 +16,14 @@ export function capitalizeFirst(str: string | null | undefined): string {
     .join(' ');
 }
 
-export function filterAndSortRoles(
-  roles: Role[] | undefined
-): Roles[] {
+export function filterAndSortRoles(roles: Role[] | undefined): Roles[] {
   if (!roles || roles.length === 0) return [];
 
   return roles
-    .filter(role => role.role !== 'super_admin')
+    .filter((role) => role.role !== 'super_admin')
     .sort((a, b) => a.role.localeCompare(b.role))
-    .map(role => ({
+    .map((role) => ({
       label: capitalizeFirst(role.role), // UI label
-      value: role.role,                  // ✅ BACKEND expects this
+      value: role.role, // ✅ BACKEND expects this
     }));
 }
