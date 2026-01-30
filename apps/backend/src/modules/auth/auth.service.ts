@@ -129,13 +129,12 @@ export class AuthService implements IAuthService {
         { transaction },
       );
 
-      const hashedPassword = await this.passwordService.hash(dto.password);
       const user = await this.userService.create(
         {
           firstName: dto.firstName,
           lastName: dto.lastName,
           email: dto.email,
-          password: hashedPassword,
+          password: dto.password,
           organizationId: organization.id,
           roleId: superAdminRole.id,
         },
