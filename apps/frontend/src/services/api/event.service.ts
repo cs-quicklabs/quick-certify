@@ -4,42 +4,27 @@
  * Uses centralized query params utility for consistent URL building.
  */
 
+import { PaginatedResponse } from '@/types';
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
 
-export interface EventType {
+export interface IBaseEvent {
   id: string;
+  uuid: string;
   name: string;
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface EventLevel {
-  id: string;
-  name: string;
-  is_active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+export type EventType = IBaseEvent;
+export type EventLevel = IBaseEvent;
+export type EventFormat = IBaseEvent;
 
-export interface EventFormat {
-  id: string;
-  name: string;
-  is_active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Event {
-  id: string;
-  name: string;
+export interface Event extends IBaseEvent {
   event_type_id: string;
   event_level_id: string;
   event_format_id: string;
-  is_active: boolean;
-  createdAt: string;
-  updatedAt: string;
   event_type?: EventType;
   event_level?: EventLevel;
   event_format?: EventFormat;
@@ -81,18 +66,6 @@ export interface UpdateEventRequest {
   eventTypeId?: string;
   eventLevelId?: string;
   eventFormatId?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
 }
 
 export interface PaginationFilters {
