@@ -41,10 +41,10 @@
   "dependencies": {
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.2",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^7.0.13"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.17"
+    "@types/nodemailer": "^7.0.9"
   },
   "peerDependencies": {
     "@nestjs/common": "^11.0.0",
