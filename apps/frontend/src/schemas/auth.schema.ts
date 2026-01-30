@@ -10,10 +10,11 @@ import {
   passwordSchema,
   strictPasswordSchema,
   emailSchema,
-  requiredNameSchema,
   optionalNameSchema,
   urlSchema,
   PASSWORD_MESSAGES,
+  requiredFirstNameSchema,
+  requiredLastNameSchema,
 } from './shared.schema';
 
 /**
@@ -38,8 +39,8 @@ export type LoginFormData = z.infer<typeof loginSchema>;
  */
 export const registerSchema = z
   .object({
-    firstName: requiredNameSchema,
-    lastName: optionalNameSchema,
+    firstName: requiredFirstNameSchema,
+    lastName: requiredLastNameSchema,
     email: emailSchema,
     companyName: z
       .string()
