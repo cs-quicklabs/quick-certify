@@ -18,7 +18,7 @@ export function DesignFormPage({
 }) {
   const isEdit = mode === 'edit';
 
-  const { design, loading } = useDesignById(id ?? '');
+  const { data: design, isLoading, error } = useDesignById(id ?? '');
   const [name, setName] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
 
@@ -39,6 +39,8 @@ export function DesignFormPage({
   });
 
   const createDesign = useCreateDesign();
+  const updateDesign = useUpdateDesign();
+
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -46,7 +48,6 @@ export function DesignFormPage({
     setSelectedFile(file);        // store locally
   };
 
-  const updateDesign = useUpdateDesign();
 
   const handleSubmit = async ({ name }: { name: string }) => {
     let finalUrl = uploadedUrl;
@@ -86,7 +87,7 @@ export function DesignFormPage({
   }, [success]);
 
 
-  if (isEdit && loading) {
+  if (isEdit && isLoading) {
     return <div className="p-6 text-sm text-gray-500">Loading design…</div>;
   }
 

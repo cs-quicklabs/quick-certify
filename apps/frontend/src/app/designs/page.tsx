@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DesignsList from './_components/DesignsList';
-import { useDesigns } from '@/hooks/useDesigns';
+import { useDesignList } from '@/hooks/useDesigns';
 
 const SEARCH_DEBOUNCE_MS = 1000;
 
@@ -21,7 +21,7 @@ export default function DesignsPage() {
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { designs, meta, loading, error, deleteDesign } = useDesigns({
+  const { designs, meta, loading, error, deleteDesign } = useDesignList({
     page,
     limit: 10,
     search: searchFromUrl,

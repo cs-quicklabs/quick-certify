@@ -6,9 +6,9 @@ import { useDesignById } from '@/hooks/useDesigns';
 
 export default function EditDesignPage() {
   const { id } = useParams<{ id: string }>();
-  const { design, loading, error } = useDesignById(id);
+  const { data: design, isLoading, error } = useDesignById(id);
 
-  if (loading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
   if (error || !design) return <div>Failed to load design</div>;
 
   return (
