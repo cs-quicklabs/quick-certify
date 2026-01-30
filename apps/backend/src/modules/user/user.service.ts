@@ -381,7 +381,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    */
   async hardDelete(id: number): Promise<boolean> {
     const user = await this.findOneOrThrow(id);
-    
+
     // Ensure user is archived before permanent deletion
     if (user.status !== 'archived') {
       throw new BadRequestException('Only archived users can be permanently deleted');
@@ -389,7 +389,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Logout user from all devices before deletion
     await this.logoutUserFromAllDevices(user.uuid);
-    
+
     // Permanently delete the user record
     await user.destroy({ force: true });
     return true;

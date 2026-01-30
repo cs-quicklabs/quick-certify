@@ -169,10 +169,7 @@ export class UserController {
 
     // Only allow permanent deletion of archived users
     if (existingUser.status !== 'archived') {
-      return new SuccessResponse(
-        'Only archived users can be permanently deleted',
-        null,
-      );
+      return new SuccessResponse('Only archived users can be permanently deleted', null);
     }
 
     // Prevent deleting yourself

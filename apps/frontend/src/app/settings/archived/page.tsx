@@ -167,9 +167,7 @@ export default function ArchivedMembersPage() {
                     ></path>
                   </svg>
 
-                  <span>
-                    Deactivated on {formatDate(member.updatedAt)}
-                  </span>
+                  <span>Deactivated on {formatDate(member.updatedAt)}</span>
                 </div>
               </div>
 
