@@ -17,7 +17,6 @@ function ResetPasswordContent() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isValidToken, setIsValidToken] = useState(false);
-  const [isValidToken, setIsValidToken] = useState(false);
 
   const token = searchParams.get('token');
 
@@ -35,19 +34,6 @@ function ResetPasswordContent() {
 
   // Redirect if no token
   useEffect(() => {
-    const checkToken = async () => {
-      if (token) {
-        const response = await authService.checkToken(token);
-        if (response.success) {
-          setIsValidToken(true);
-        } else {
-          setIsValidToken(false);
-        }
-      } else {
-        router.push('/forgot-password');
-      }
-    };
-    checkToken();
     const checkToken = async () => {
       if (token) {
         const response = await authService.checkToken(token);
@@ -82,25 +68,6 @@ function ResetPasswordContent() {
 
   if (!token) {
     return null;
-  }
-
-  if (!isValidToken) {
-    return (
-      <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-            <CircleX className="w-8 h-8 text-red-600 dark:text-red-400" />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invalid token</h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Token has been expired or already used.
-          </p>
-          <Link href="/forgot-password" className="btn-primary inline-block">
-            Back to forgot password
-          </Link>
-        </div>
-      </div>
-    );
   }
 
   if (!isValidToken) {
