@@ -14,7 +14,7 @@ import { DesignLayout } from "@src/modules/design/interfaces/design.layout.inter
 })
 export class DesignEntity extends BaseNanoidEntity {
   @Column({
-    type: DataType.STRING(21),
+    type: DataType.STRING(100),
     allowNull: false,
   })
   declare name: string;
@@ -32,7 +32,7 @@ export class DesignEntity extends BaseNanoidEntity {
   declare url: string;
 
   @Column({
-    type: DataType.JSONB, // JSON for MySQL → use JSON
+    type: DataType.JSONB,
     allowNull: true,
   })
   declare layout: DesignLayout | null;

@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { Input, Checkbox, Button, Alert, GoogleSignInButton } from '@/components';
 import { useLogin } from '@/hooks/auth/useLogin';
 import { ROUTES } from '@/config/routes';
-import { useLogin } from '@/hooks/auth/useLogin';
-import { ROUTES } from '@/config/routes';
 
 export default function LoginPage() {
   const { formMethods, onSubmit, globalError, clearError, isLoading } = useLogin();
@@ -31,55 +29,52 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={onSubmit} className="space-y-4 md:space-y-4">
-          <form onSubmit={onSubmit} className="space-y-4 md:space-y-4">
-            {/* Email Field */}
-            <Input
-              label="Your email"
-              type="email"
-              placeholder="name@company.com"
-              error={errors.email?.message}
-              {...register('email')}
-            />
+          {/* Email Field */}
+          <Input
+            label="Your email"
+            type="email"
+            placeholder="name@company.com"
+            error={errors.email?.message}
+            {...register('email')}
+          />
 
-            {/* Password Field */}
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              showPasswordToggle
-              error={errors.password?.message}
-              {...register('password')}
-            />
+          {/* Password Field */}
+          <Input
+            label="Password"
+            type="password"
+            placeholder="••••••••"
+            showPasswordToggle
+            error={errors.password?.message}
+            {...register('password')}
+          />
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between ">
-              <Checkbox label="Remember me" {...register('rememberMe')} />
-              <Link
-                href={ROUTES.AUTH.FORGOT_PASSWORD}
-                href={ROUTES.AUTH.FORGOT_PASSWORD}
-                className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
-              >
-                Forgot password?
-              </Link>
-            </div>
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between ">
+            <Checkbox label="Remember me" {...register('rememberMe')} />
+            <Link
+              href={ROUTES.AUTH.FORGOT_PASSWORD}
+              className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
-            {/* Submit Button */}
-            <Button type="submit" fullWidth isLoading={isLoading} disabled={isLoading}>
-              Sign in
-            </Button>
+          {/* Submit Button */}
+          <Button type="submit" fullWidth isLoading={isLoading} disabled={isLoading}>
+            Sign in
+          </Button>
 
-            {/* Google Sign-In */}
-            <GoogleSignInButton mode="login" disabled={isLoading} />
-            <GoogleSignInButton mode="login" disabled={isLoading} />
+          {/* Google Sign-In */}
+          <GoogleSignInButton mode="login" disabled={isLoading} />
 
-            {/* Sign Up Link */}
-            <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex items-center justify-center">
-              Don&apos;t have an account yet?{' '}
-              <Link href={ROUTES.AUTH.REGISTER} className="link ml-2">
-                Sign up
-              </Link>
-            </p>
-          </form>
+          {/* Sign Up Link */}
+          <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex items-center justify-center">
+            Don&apos;t have an account yet?{' '}
+            <Link href={ROUTES.AUTH.REGISTER} className="link ml-2">
+              Sign up
+            </Link>
+          </p>
+        </form>
       </div>
     </div>
   );

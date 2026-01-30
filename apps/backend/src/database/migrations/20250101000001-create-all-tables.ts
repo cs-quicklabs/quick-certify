@@ -746,11 +746,11 @@ module.exports = {
             allowNull: false,
           },
           type: {
-            type: DataTypes.STRING(10),
+            type: DataTypes.STRING(15),
             allowNull: false,
           },
           url: {
-            type: DataTypes.STRING(100),
+            type: DataTypes.STRING(500),
             allowNull: false,
           },
           layout: {

@@ -9,7 +9,6 @@
 import { PaginatedResponse } from '@/types';
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
-import { buildUrl } from '@/lib/query-params';
 
 export interface TeamMember {
   id: string;
