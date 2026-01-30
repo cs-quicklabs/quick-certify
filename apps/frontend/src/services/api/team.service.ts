@@ -86,6 +86,13 @@ export const teamService = {
     return response.data.data;
   },
 
+  async permanentlyDeleteTeamMember(uuid: string): Promise<{ deleted: boolean }> {
+    const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(
+      `/users/${uuid}/permanent`,
+    );
+    return response.data.data;
+  },
+
   async cancelInvitation(uuid: string): Promise<TeamMember> {
     const response = await apiClient.post<ApiResponse<TeamMember>>(
       `/users/${uuid}/cancel-invitation`,

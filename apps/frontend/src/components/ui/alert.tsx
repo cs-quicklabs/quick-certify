@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 import { clsx } from 'clsx';
-import { AlertCircle, CheckCircle2, Info, XCircle, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export interface AlertProps {
   type: 'success' | 'error' | 'warning' | 'info';
@@ -37,14 +37,6 @@ const alertStyles = {
     title: 'text-blue-800 dark:text-blue-400',
     message: 'text-blue-700 dark:text-blue-300',
   },
-};
-
-//  @ts-expect-error - icons used dynamically
-const icons = {
-  success: CheckCircle2,
-  error: XCircle,
-  warning: AlertCircle,
-  info: Info,
 };
 
 export function Alert({ type, title, message, onClose, className }: AlertProps) {

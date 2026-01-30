@@ -16,7 +16,7 @@ export class LoginPage {
     this.page = page;
     this.locator_emailField = page.locator(`#your-email`);
     this.locator_passwordField = page.locator(`#password`);
-    this.locator_signinBtn = page.getByRole('button', { name: 'Sign in' });
+    this.locator_signinBtn = page.getByRole('button', { name: 'Sign in', exact: true });
     this.locator_eyeIcon = page.locator('.absolute');
     this.locator_rememberMeCheckBox = page.locator(`#remember-me`);
     this.locator_forgotPassword = page.getByRole('link', { name: 'Forgot password?' });
@@ -26,7 +26,15 @@ export class LoginPage {
   }
 
   async openUrl() {
-    await this.page.goto('/');
+    await this.page.goto('/login');
+  }
+
+  async validateUserLogin() {
+    await Promise.all([
+      this.clickOnSigninBtn(),
+      this.page.waitForResponse((resp) => resp.url().includes('login') && resp.status() === 200),
+    ]);
+    await expect(this.page).toHaveURL(/dashboard/);
   }
 
   async enterUserEmail(email: string) {
@@ -50,15 +58,14 @@ export class LoginPage {
   }
 
   async validateAlertMessage(message: string) {
-    await expect(this.locator_alertToast).toBeVisible({ timeout: 5000 });
-    await expect(this.locator_alertToast).toContainText(message);
+    await expect(this.locator_alertToast.first()).toContainText(message);
   }
 
-  async validateInvalidEmailError(message: string) {
+  async validateEmailFieldError(message: string) {
     await expect(this.locator_emailFieldError.first()).toContainText(message);
   }
 
-  async validateInvalidPasswordError(message: string) {
+  async validatePasswordFieldError(message: string) {
     await expect(this.locator_passwordFieldError.first()).toContainText(message);
   }
 

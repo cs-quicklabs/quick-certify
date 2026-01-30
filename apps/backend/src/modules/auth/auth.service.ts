@@ -129,13 +129,12 @@ export class AuthService implements IAuthService {
         { transaction },
       );
 
-      const hashedPassword = await this.passwordService.hash(dto.password);
       const user = await this.userService.create(
         {
           firstName: dto.firstName,
           lastName: dto.lastName,
           email: dto.email,
-          password: hashedPassword,
+          password: dto.password,
           organizationId: organization.id,
           roleId: superAdminRole.id,
         },
@@ -580,14 +579,16 @@ export class AuthService implements IAuthService {
     userAgent?: string,
   ): Promise<JwtTokens> {
     let googleUser: GoogleUserInfo;
+    let tempToken: string | undefined;
 
     // Determine which flow is being used
     if (dto.idToken) {
       // ID Token flow - verify the token
       googleUser = await this.googleOAuthService.verifyIdToken(dto.idToken);
     } else if (dto.tempToken) {
-      // Authorization Code flow - retrieve stored user data
-      const tempData = this.getTempGoogleUser(dto.tempToken);
+      // Authorization Code flow - retrieve stored user data (without deleting yet)
+      tempToken = dto.tempToken;
+      const tempData = this.getTempGoogleUserWithoutDelete(tempToken);
       if (!tempData) {
         throw new UnauthorizedException(
           'Invalid or expired temporary token. Please restart the signup process.',
@@ -659,6 +660,11 @@ export class AuthService implements IAuthService {
       );
 
       await transaction.commit();
+
+      // Only delete temp token after successful signup
+      if (tempToken) {
+        this.tempGoogleUserStore.delete(tempToken);
+      }
 
       this.emailService
         .sendWelcomeEmail(user.email, { name: user.first_name })
@@ -772,7 +778,11 @@ export class AuthService implements IAuthService {
     return tempToken;
   }
 
-  private getTempGoogleUser(tempToken: string): GoogleUserInfo | null {
+  /**
+   * Retrieve temp Google user data without deleting the token.
+   * Token is only deleted after successful signup.
+   */
+  private getTempGoogleUserWithoutDelete(tempToken: string): GoogleUserInfo | null {
     const data = this.tempGoogleUserStore.get(tempToken);
 
     if (!data) {
@@ -785,8 +795,6 @@ export class AuthService implements IAuthService {
       return null;
     }
 
-    // Remove used token (one-time use)
-    this.tempGoogleUserStore.delete(tempToken);
     return data.googleUser;
   }
 

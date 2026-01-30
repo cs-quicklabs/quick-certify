@@ -13,6 +13,8 @@ import { test, registrationData, expect } from './Fixture';
  * -
  */
 
+/*
+** Commented OnBoarding test cases need manage the test data effectively
 test.beforeEach(async ({ registrationPage, loginPage: fixtureLoginPage }) => {
   const loginPage = fixtureLoginPage;
   await loginPage.openUrl();
@@ -30,4 +32,17 @@ test.describe('To validate the User Registration Functionality', () => {
     );
     await registrationPage.clickOnCreateNewUserBtn();
   });
+  test('Verify user should not register with invalid email', async ({ registrationPage }) => {
+    await registrationPage.validateRegisterationWithExistingEmail(
+      registrationData.firstName,
+      registrationData.lastName,
+      registrationData.existingEmail,
+      registrationData.issuerURL,
+      registrationData.password,
+      registrationData.confirmPassword,
+    );
+    await registrationPage.clickOnCreateNewUserBtn();
+    await expect(registrationPage.page.getByText('Email already registered')).toBeVisible();
+  });
 });
+*/

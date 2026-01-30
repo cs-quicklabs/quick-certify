@@ -20,7 +20,7 @@ import type { EventLevel } from '@/services/api/event.service';
  */
 export default function EventLevelSettingsPage() {
   const [newEventLevel, setNewEventLevel] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingUuid, setEditingUuid] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function EventLevelSettingsPage() {
 
   const { data, isLoading, error: queryError } = useEventLevels({ limit: 20 });
   const createMutation = useCreateEventLevel();
-  const updateMutation = useUpdateEventLevel(editingId || '');
+  const updateMutation = useUpdateEventLevel(editingUuid || '');
   const deleteMutation = useDeleteEventLevel();
 
   const eventLevels = data?.data || [];
@@ -49,7 +49,7 @@ export default function EventLevelSettingsPage() {
   };
 
   const handleEdit = (id: string, currentName: string) => {
-    setEditingId(id);
+    setEditingUuid(id);
     setEditingValue(currentName);
     setError(null);
   };
@@ -60,7 +60,7 @@ export default function EventLevelSettingsPage() {
     setError(null);
     try {
       await updateMutation.mutateAsync({ name: editingValue.trim() });
-      setEditingId(null);
+      setEditingUuid(null);
       setEditingValue('');
     } catch (err) {
       setError(getApiErrorMessage(err, 'Failed to update event level'));
@@ -68,7 +68,7 @@ export default function EventLevelSettingsPage() {
   };
 
   const handleCancelEdit = () => {
-    setEditingId(null);
+    setEditingUuid(null);
     setEditingValue('');
     setError(null);
   };
@@ -81,9 +81,9 @@ export default function EventLevelSettingsPage() {
     if (!confirmDialog.eventLevel) return;
 
     setError(null);
-    setDeletingId(confirmDialog.eventLevel.id);
+    setDeletingId(confirmDialog.eventLevel.uuid);
     try {
-      await deleteMutation.mutateAsync(confirmDialog.eventLevel.id);
+      await deleteMutation.mutateAsync(confirmDialog.eventLevel.uuid);
       setConfirmDialog({ isOpen: false, eventLevel: null });
       setError(null);
     } catch (err) {
@@ -180,17 +180,17 @@ export default function EventLevelSettingsPage() {
                       <tbody className="table-body">
                         {eventLevels.map((eventLevel, index) => (
                           <tr
-                            key={eventLevel.id}
+                            key={eventLevel.uuid}
                             className={`border-b border-gray-200 dark:border-gray-700 ${
                               index === 0
                                 ? 'bg-white dark:bg-gray-800'
                                 : index % 2 === 1
-                                ? 'bg-gray-50 dark:bg-gray-700'
-                                : 'bg-white dark:bg-gray-800'
+                                  ? 'bg-gray-50 dark:bg-gray-700'
+                                  : 'bg-white dark:bg-gray-800'
                             }`}
                           >
                             <td className="px-6 py-4">
-                              {editingId === eventLevel.id ? (
+                              {editingUuid === eventLevel.uuid ? (
                                 <input
                                   type="text"
                                   value={editingValue}
@@ -198,7 +198,7 @@ export default function EventLevelSettingsPage() {
                                   className="form-input-field w-full text-sm"
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
-                                      handleSaveEdit(eventLevel.id);
+                                      handleSaveEdit(eventLevel.uuid);
                                     } else if (e.key === 'Escape') {
                                       handleCancelEdit();
                                     }
@@ -213,9 +213,9 @@ export default function EventLevelSettingsPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-right whitespace-nowrap">
-                              {editingId === eventLevel.id ? (
+                              {editingUuid === eventLevel.uuid ? (
                                 <button
-                                  onClick={() => handleSaveEdit(eventLevel.id)}
+                                  onClick={() => handleSaveEdit(eventLevel.uuid)}
                                   className="btn-primary text-sm px-3 py-1.5"
                                   disabled={updateMutation.isPending || !editingValue.trim()}
                                 >
@@ -224,7 +224,7 @@ export default function EventLevelSettingsPage() {
                               ) : (
                                 <div className="flex items-center justify-end gap-4">
                                   <button
-                                    onClick={() => handleEdit(eventLevel.id, eventLevel.name)}
+                                    onClick={() => handleEdit(eventLevel.uuid, eventLevel.name)}
                                     className="btn-inline-blue text-sm whitespace-nowrap"
                                     disabled={deletingId !== null}
                                   >
@@ -235,7 +235,7 @@ export default function EventLevelSettingsPage() {
                                     className="btn-inline-red text-sm whitespace-nowrap"
                                     disabled={deletingId !== null}
                                   >
-                                    {deletingId === eventLevel.id ? 'Deleting...' : 'Delete'}
+                                    {deletingId === eventLevel.uuid ? 'Deleting...' : 'Delete'}
                                   </button>
                                 </div>
                               )}

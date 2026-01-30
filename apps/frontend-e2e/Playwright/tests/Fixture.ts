@@ -7,6 +7,7 @@ import { test as base, expect as baseExpect } from '@playwright/test';
 import { LoginPage } from '../pageobjects/LoginPage';
 import { RegistrationPage } from '../pageobjects/RegistrationPage';
 import registrationData from '../testData/registrationData.json';
+import loginData from '../testData/loginData.json';
 
 /**
  * Extends the base Playwright test with custom fixtures.
@@ -29,4 +30,4 @@ export const test = base.extend<Fixtures>({
   },
 });
 
-export { baseExpect as expect, registrationData };
+export { baseExpect as expect, registrationData, loginData };
