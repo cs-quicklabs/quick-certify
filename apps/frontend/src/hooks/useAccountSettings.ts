@@ -53,9 +53,8 @@ export interface PortalSettingsData {
  * API Functions
  */
 async function fetchOrganizationSettings(): Promise<OrganizationSettings> {
-  const response = await apiClient.get<ApiResponse<OrganizationSettings>>(
-    '/organizations/settings',
-  );
+  const response =
+    await apiClient.get<ApiResponse<OrganizationSettings>>('/organizations/settings');
   return response.data.data;
 }
 
