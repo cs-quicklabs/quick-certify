@@ -737,24 +737,24 @@ module.exports = {
         'designs',
         {
           id: {
-            type: DataType.STRING(21),
+            type: DataTypes.STRING(21),
             primaryKey: true,
             allowNull: false,
           },
           name: {
-            type: DataType.STRING(100),
+            type: DataTypes.STRING(100),
             allowNull: false,
           },
           type: {
-            type: DataType.STRING(10),
+            type: DataTypes.STRING(10),
             allowNull: false,
           },
           url: {
-            type: DataType.STRING(100),
+            type: DataTypes.STRING(100),
             allowNull: false,
           },
           layout: {
-            type: DataType.JSONB,
+            type: DataTypes.JSONB,
             allowNull: true,
           },
           created_at: {
