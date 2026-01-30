@@ -114,7 +114,7 @@
     "@tanstack/react-query-devtools": "^5.91.1",
     "@types/multer": "^2.0.0",
     "axios": "^1.6.0",
-    "next": "~16.0.1",
+    "next": "~16.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "reflect-metadata": "^0.1.13",
