@@ -2,10 +2,12 @@ import { defineConfig, devices } from '@playwright/test';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-dotenv.config();
+dotenv.config({
+  path: path.resolve(__dirname, '.env'),
+});
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: path.resolve(__dirname, 'Playwright/tests'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

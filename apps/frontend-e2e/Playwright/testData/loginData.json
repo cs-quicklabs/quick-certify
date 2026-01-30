@@ -1,0 +1,16 @@
+{
+  "formData": {
+    "unregisteredEmail": "namaninvalid@login.com",
+    "invalidEmail": "ewhfewe@",
+    "invalidPassword": "jaksoe21",
+    "lessDigitPassword": "671wd"
+  },
+
+  "expectedMessages": {
+    "blankEmailErrorMsg": "Email is required",
+    "blankPasswordErrorMsg": "Password is required",
+    "lessDigitPasswordErrorMsg": "Password must be at least 6 characters",
+    "invalidLoginErrorMsg": "Invalid email or password",
+    "invalidEmailErrorMsg": "Please enter a valid email address"
+  }
+}
