@@ -43,9 +43,14 @@ export const profileSettingsSchema = z.object({
     .string()
     .min(2, 'Name must be at least 2 characters')
     .regex(/\S/, 'Name must not be only spaces')
-    .regex(/^[a-zA-Z0-9\s]+$/, 'Name must only contain letters, numbers')
+    .regex(/^[a-zA-Z\s]+$/, 'Name must only contain letters')
     .regex(/[a-zA-Z]/, 'Name must contain at least one letter'),
-  lastName: optionalNameSchema,
+  lastName: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
+      message: 'Last Name must only contain letters',
+    }),
   email: z.string().email('Invalid email address').optional(),
   avatarUrl: z.string().optional(),
   organizationName: z.string().optional(),
