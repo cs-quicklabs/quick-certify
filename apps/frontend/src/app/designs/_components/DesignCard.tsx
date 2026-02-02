@@ -30,7 +30,7 @@ export default function DesignCard({ design, onDelete }: { design: Design; onDel
       {/* Actions */}
       <div className="flex justify-end gap-1 text-sm font-medium">
         <Link
-          href={`/designs/preview/${design.id}`}
+          href={`/designs/preview/${design.uuid}`}
           className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-xs bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
         >
           <Eye className="w-4 h-4 stroke-0.25" />
@@ -38,7 +38,7 @@ export default function DesignCard({ design, onDelete }: { design: Design; onDel
         </Link>
 
         <Link
-          href={`/designs/edit/${design.id}`}
+          href={`/designs/edit/${design.uuid}`}
           className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-xs bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
         >
           <Pen className="w-4 h-4 stroke-0.25" />

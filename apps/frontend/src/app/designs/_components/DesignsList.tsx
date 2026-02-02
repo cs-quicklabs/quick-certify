@@ -118,7 +118,7 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
 
       {/* List */}
       {filtered.map((designs) => (
-        <DesignCard key={designs.id} design={designs} onDelete={() => onDelete(designs.id)} />
+        <DesignCard key={designs.uuid} design={designs} onDelete={() => onDelete(designs.uuid)} />
       ))}
     </>
   );

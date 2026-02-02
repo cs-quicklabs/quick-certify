@@ -62,10 +62,15 @@ export class DesignService {
     });
   }
 
-  async findOne(id: string): Promise<DesignEntity> {
-    const design = await this.designModel.findByPk(id);
+  async findOne(uuid: string): Promise<DesignEntity> {
+    const queryOptions = {
+      where: {
+        uuid: uuid
+      }
+    }
+    const design = await this.designModel.findOne(queryOptions);
     if (!design) {
-      throw new NotFoundException(`Design with id ${id} not found`);
+      throw new NotFoundException(`Design with id ${uuid} not found`);
     }
     return design;
   }
@@ -81,7 +86,9 @@ export class DesignService {
 
   async update(designId: string, dto: UpdateDesignDto): Promise<DesignEntity> {
     const design = await this.findOne(designId);
+    console.log('design', design)
     const updateData: Partial<DesignEntity> = {};
+    console.log(dto)
     if (dto.name !== undefined) {
       updateData.name = dto.name;
     }
@@ -99,7 +106,7 @@ export class DesignService {
     return this.designModel.findAll({ where: { type } });
   }
 
-  async delete(id: string): Promise<number> {
-    return this.designModel.destroy({ where: { id } });
+  async delete(uuid: string): Promise<number> {
+    return this.designModel.destroy({ where: { uuid } });
   }
 }
