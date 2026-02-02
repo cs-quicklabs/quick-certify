@@ -154,7 +154,7 @@ function AcceptInvitationContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
         <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-            <Check className='w-8 h-8 text-green-600 dark:text-green-400' />
+            <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             Invitation Accepted!

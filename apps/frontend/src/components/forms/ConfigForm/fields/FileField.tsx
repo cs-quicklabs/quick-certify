@@ -113,7 +113,7 @@ export function FileField({
               className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Pen className='w-6 h-6 text-white' />
+              <Pen className="w-6 h-6 text-white" />
             </div>
           )}
 
@@ -122,7 +122,7 @@ export function FileField({
               onClick={handleRemoveClick}
               className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
             >
-              <Trash2Icon className='w-6 h-6 text-white' />
+              <Trash2Icon className="w-6 h-6 text-white" />
             </div>
           )}
         </div>

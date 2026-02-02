@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard } from "lucide-react";
+import { CreditCard } from 'lucide-react';
 
 /**
  * Billing Information Page

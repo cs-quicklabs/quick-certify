@@ -1,5 +1,6 @@
 'use client';
 
+import { X } from 'lucide-react';
 import { ReactNode } from 'react';
 
 export interface ConfirmationDialogProps {
@@ -76,20 +77,7 @@ export function ConfirmationDialog({
             onClick={onCancel}
             className="absolute top-2 right-2 text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-full text-sm w-8 h-8 inline-flex justify-center items-center cursor-pointer"
           >
-            <svg
-              className="w-4 h-4"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18 18 6M18 18 6 6"
-              />
-            </svg>
+            <X className="w-4 h-4" />
             <span className="sr-only">Close modal</span>
           </button>
 

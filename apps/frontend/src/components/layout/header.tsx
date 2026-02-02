@@ -118,9 +118,9 @@ export function Header() {
             >
               <span className="sr-only">Open main menu</span>
               {mobileMenuOpen ? (
-                <X className='block h-6 w-6' />
+                <X className="block h-6 w-6" />
               ) : (
-                <Menu className='block h-6 w-6' />
+                <Menu className="block h-6 w-6" />
               )}
             </button>
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Share2 } from 'lucide-react';
+import { ArrowDownToLine, Link as LinkIcon, Mail, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 // Credential data - this would typically come from API/props
@@ -163,7 +163,7 @@ export default function PublicCredentialPage() {
                       type="button"
                       className="btn-blue inline-flex w-full items-center justify-center gap-x-1.5"
                     >
-                      <Share2 className='h-6 w-6' />
+                      <Share2 className="h-6 w-6" />
                       Share Your Award
                     </button>
                   </div>
@@ -182,20 +182,7 @@ export default function PublicCredentialPage() {
                           onClick={handleDownload}
                           className="inline-flex items-center rounded-sm border border-gray-200 p-2.5 text-center text-sm font-medium hover:border-blue-700 hover:text-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:border-blue-500 dark:text-gray-500 dark:hover:bg-blue-500 dark:hover:text-blue-800 dark:focus:ring-blue-800"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            className="h-4 w-4"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                            />
-                          </svg>
+                          <ArrowDownToLine className="size-4" />
                           <span className="sr-only">Download</span>
                         </button>
                       </div>
@@ -205,20 +192,7 @@ export default function PublicCredentialPage() {
                           onClick={handleDownload}
                           className="inline-flex items-center rounded-sm border border-gray-200 p-2.5 text-center text-sm font-medium hover:border-blue-700 hover:text-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:border-blue-500 dark:text-gray-500 dark:hover:bg-blue-500 dark:hover:text-blue-800 dark:focus:ring-blue-800"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            className="h-4 w-4"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                            />
-                          </svg>
+                          <ArrowDownToLine className="size-4" />
                           <span className="sr-only">Download</span>
                         </button>
                       </div>
@@ -228,20 +202,7 @@ export default function PublicCredentialPage() {
                           onClick={handleCopyLink}
                           className="inline-flex items-center rounded-sm border border-gray-200 p-2.5 text-center text-sm font-medium hover:border-blue-700 hover:text-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:border-blue-500 dark:text-gray-500 dark:hover:bg-blue-500 dark:hover:text-blue-800 dark:focus:ring-blue-800"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            className="h-4 w-4"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-                            />
-                          </svg>
+                          <LinkIcon className="size-4" />
                           <span className="sr-only">Copy link</span>
                         </button>
                       </span>
@@ -251,20 +212,7 @@ export default function PublicCredentialPage() {
                     <p className="text-sm leading-6">Want to report a typo or a mistake?</p>
                     <p className="text-gray-500 dark:text-gray-400">
                       <a href="#" className="link inline-flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="2"
-                          stroke="currentColor"
-                          className="me-1 h-4 w-4"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
-                          />
-                        </svg>
+                        <Mail className="size-4" />
                         Contact Issuer
                       </a>
                     </p>
