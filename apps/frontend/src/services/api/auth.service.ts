@@ -4,6 +4,7 @@
  * Handles authentication API calls
  */
 
+import { AuthProvider } from '@/types';
 import { apiClient, ApiResponse, setTokens, clearTokens } from './api-client';
 
 /**
@@ -67,6 +68,7 @@ export interface User {
   organizationId: string;
   roleId: string;
   role: string;
+  authProvider?: AuthProvider;
   sessionHash?: string;
 }
 
@@ -246,6 +248,7 @@ export const authService = {
       organizationId: profileData.organizationId,
       roleId: profileData.roleId,
       role: profileData.role,
+      authProvider: profileData.authProvider,
       // sessionHash is not available from profile endpoint, but it's optional
       sessionHash: undefined,
     };

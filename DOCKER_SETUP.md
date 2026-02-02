@@ -16,6 +16,7 @@ docker-compose up -d
 ```
 
 This will:
+
 - Pull the PostgreSQL 16 Alpine image (if not already present)
 - Create a container named `quick-certify-postgres`
 - Start PostgreSQL on port 5432
@@ -95,26 +96,31 @@ npx nx serve backend
 ## Useful Docker Commands
 
 ### Stop PostgreSQL
+
 ```bash
 docker-compose down
 ```
 
 ### Stop and Remove Data (⚠️ This will delete all data)
+
 ```bash
 docker-compose down -v
 ```
 
 ### View PostgreSQL Logs
+
 ```bash
 docker-compose logs -f postgres
 ```
 
 ### Access PostgreSQL CLI
+
 ```bash
 docker-compose exec postgres psql -U postgres -d quick_certify
 ```
 
 ### Restart PostgreSQL
+
 ```bash
 docker-compose restart postgres
 ```
@@ -127,10 +133,11 @@ If port 5432 is already in use, you can change it in `docker-compose.yml`:
 
 ```yaml
 ports:
-  - "5433:5432"  # Change 5433 to any available port
+  - '5433:5432' # Change 5433 to any available port
 ```
 
 Then update your `.env` file:
+
 ```
 DATABASE_PORT=5433
 ```
@@ -173,4 +180,3 @@ For production, you should:
 ## Environment Variables Reference
 
 See `apps/backend/.env.example` for all available environment variables and their descriptions.
-

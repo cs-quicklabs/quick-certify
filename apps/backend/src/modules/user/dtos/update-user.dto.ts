@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Gender } from './create-user.dto';
+import { AuthProvider } from '@src/commons/constants';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'John', description: 'First name of the user' })
@@ -70,12 +71,12 @@ export class UpdateUserDto {
   google_id?: string;
 
   @ApiPropertyOptional({
-    enum: ['email', 'google', 'both'],
+    enum: AuthProvider,
     description: 'Authentication provider. Internal use only.',
   })
-  @IsEnum(['email', 'google', 'both'])
+  @IsEnum(AuthProvider)
   @IsOptional()
-  auth_provider?: 'email' | 'google' | 'both';
+  auth_provider?: AuthProvider;
 
   @ApiPropertyOptional({
     description: 'Last login timestamp. Internal use only.',
