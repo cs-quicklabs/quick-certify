@@ -133,7 +133,7 @@
     }
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.978.0",
+    "@aws-sdk/client-s3": "^3.980.0",
     "@crownstack/mailer": "*",
     "@crownstack/sms": "*",
     "@nestjs/common": "^11.0.0",
@@ -153,7 +153,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "nanoid": "^5.0.0",
-    "pg": "^8.16.3",
+    "pg": "^8.18.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0",
     "sequelize": "^6.37.7",
