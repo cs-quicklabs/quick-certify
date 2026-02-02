@@ -5,6 +5,7 @@
 ## Project Context
 
 This is **Quick Certify** - a full-stack credential management platform built with:
+
 - **Backend**: NestJS + Sequelize + PostgreSQL
 - **Frontend**: Next.js 16 (App Router) + React 19 + TanStack Query + Zustand + Zod
 - **Monorepo**: Nx workspace with `apps/backend`, `apps/frontend`, `packages/*`
@@ -14,23 +15,28 @@ This is **Quick Certify** - a full-stack credential management platform built wi
 ### 1. SOLID Principles
 
 **SRP (Single Responsibility)**
+
 - One service = one domain (AuthService handles auth, not emails)
 - Services > 500 lines should be split
 - Controllers ONLY handle HTTP routing
 
 **OCP (Open/Closed)**
+
 - Define interfaces for all services in `interfaces/` folder
 - Extend via `BaseCrudService`, don't modify base code
 
 **LSP (Liskov Substitution)**
+
 - Child classes must honor parent contracts
 - Never throw "not supported" from inherited methods
 
 **ISP (Interface Segregation)**
+
 - Keep interfaces small (3-7 methods)
 - Split into role-specific interfaces
 
 **DIP (Dependency Inversion)**
+
 - Always use constructor injection
 - Use `@InjectModel` for Sequelize models
 - Never instantiate services with `new`
@@ -39,7 +45,7 @@ This is **Quick Certify** - a full-stack credential management platform built wi
 
 ```typescript
 // ✅ Extend BaseCrudService for CRUD
-export class SkillService extends BaseCrudService<SkillEntity, CreateSkillDto, UpdateSkillDto> { }
+export class SkillService extends BaseCrudService<SkillEntity, CreateSkillDto, UpdateSkillDto> {}
 
 // ✅ Use shared utilities
 import { generateSlug } from '@src/commons/utils';

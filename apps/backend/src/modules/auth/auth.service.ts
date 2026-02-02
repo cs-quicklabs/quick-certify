@@ -34,7 +34,7 @@ import { OrganizationService } from '../organization/organization.service';
 import { UserService } from '../user/user.service';
 import { RoleService } from '../role/role.service';
 import { AuthProvider } from '@src/commons/constants';
-import { Transaction } from 'sequelize';
+
 /**
  * Temporary Google user data stored during signup flow
  */

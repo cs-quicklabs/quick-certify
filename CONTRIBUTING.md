@@ -32,7 +32,6 @@ We love feature suggestions! Please create an issue with:
    ```
 
 3. **Make your changes**
-
    - Follow the existing code style
    - Add tests for new features
    - Update documentation as needed
@@ -54,7 +53,6 @@ We love feature suggestions! Please create an issue with:
    ```
 
    Use conventional commits:
-
    - `feat:` for new features
    - `fix:` for bug fixes
    - `docs:` for documentation

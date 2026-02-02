@@ -10,13 +10,11 @@ A production-ready NestJS backend boilerplate with authentication, authorization
   - Role-based access control (RBAC)
   - Password reset flow
 - **Multi-Tenant Architecture**
-
   - Organization-based data isolation
   - Users belong to organizations
   - Guards to prevent cross-organization data access
 
 - **Database**
-
   - PostgreSQL with Sequelize ORM
   - Soft delete support
   - Base entity with timestamps
@@ -24,7 +22,6 @@ A production-ready NestJS backend boilerplate with authentication, authorization
   - Seeders for initial data
 
 - **API Features**
-
   - Swagger/OpenAPI documentation
   - API versioning (URI-based)
   - Request validation with class-validator
@@ -32,7 +29,6 @@ A production-ready NestJS backend boilerplate with authentication, authorization
   - Global exception handling
 
 - **Email & SMS**
-
   - Email sending via `@crownstack/mailer` package
   - SMS sending via `@crownstack/sms` package
   - Dev preview mode (opens in browser)
