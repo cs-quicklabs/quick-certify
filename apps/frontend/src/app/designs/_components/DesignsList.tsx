@@ -109,14 +109,6 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
         </div>
       </div>
 
-      {/* Design Action */}
-
-      <div className="bg-gray-50 border-gray-100 flex shadow-[0_4px_6px_-2px_rgba(0,0,0,0.1)] border-t border-r border-b-0 items-center justify-between py-3 px-2">
-        <span className="text-xs font-extrabold text-gray-500 uppercase ml-2">Design</span>
-
-        <span className="text-xs font-extrabold text-gray-500 uppercase mr-2">Actions</span>
-      </div>
-
       {/* Empty list */}
       {filtered.length === 0 && (
         <div className="py-16 text-center text-gray-500 text-medium font-medium">
