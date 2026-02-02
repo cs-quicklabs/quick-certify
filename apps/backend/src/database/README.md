@@ -22,13 +22,13 @@ database/
 
 The migration creates all tables in the correct order:
 
-| Table            | Description                           |
-| ---------------- | ------------------------------------- |
+| Table            | Description                                        |
+| ---------------- | -------------------------------------------------- |
 | `role`           | User roles (super_admin, admin, manager, designer) |
-| `organization`   | Organizations for multi-tenancy       |
-| `user`           | User accounts                         |
-| `session`        | User authentication sessions          |
-| `password_reset` | Password reset tokens                 |
+| `organization`   | Organizations for multi-tenancy                    |
+| `user`           | User accounts                                      |
+| `session`        | User authentication sessions                       |
+| `password_reset` | Password reset tokens                              |
 
 ## Initial Data Seeded
 

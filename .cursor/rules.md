@@ -25,11 +25,13 @@
 ## 1. Project Overview
 
 This is an Nx monorepo containing:
+
 - **Backend**: NestJS API with Sequelize ORM, PostgreSQL, JWT authentication
 - **Frontend**: Next.js 16 with TanStack Query, Zustand, Zod validation, Tailwind CSS
 - **Packages**: Shared mailer and SMS modules
 
 ### Tech Stack
+
 - **Backend**: NestJS, Sequelize, PostgreSQL, JWT, class-validator
 - **Frontend**: Next.js (App Router), React 19, TanStack Query, Zustand, Zod, Tailwind CSS
 - **Shared**: TypeScript, Nx workspace
@@ -49,10 +51,10 @@ This is an Nx monorepo containing:
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
-    private readonly passwordService: PasswordService,    // Password operations only
-    private readonly tokenService: TokenService,          // JWT operations only
-    private readonly sessionService: SessionService,      // Session management only
-    private readonly emailService: EmailService,          // Email notifications only
+    private readonly passwordService: PasswordService, // Password operations only
+    private readonly tokenService: TokenService, // JWT operations only
+    private readonly sessionService: SessionService, // Session management only
+    private readonly emailService: EmailService, // Email notifications only
     private readonly googleOAuthService: GoogleOAuthService, // Google OAuth only
   ) {}
 }
@@ -60,10 +62,18 @@ export class AuthService implements IAuthService {
 // ❌ BAD: One service doing everything
 @Injectable()
 export class AuthService {
-  async hashPassword() { /* ... */ }
-  async generateToken() { /* ... */ }
-  async sendEmail() { /* ... */ }
-  async validateGoogleToken() { /* ... */ }
+  async hashPassword() {
+    /* ... */
+  }
+  async generateToken() {
+    /* ... */
+  }
+  async sendEmail() {
+    /* ... */
+  }
+  async validateGoogleToken() {
+    /* ... */
+  }
   // Too many responsibilities!
 }
 ```
@@ -90,6 +100,7 @@ export function useEverything() {
 ```
 
 **Enforcement:**
+
 - Services should be named after their domain: `OrganizationService`, `UserService`, `PasswordService`
 - Each service file should be < 500 lines (refactor if larger)
 - Use separate files for DTOs, interfaces, and utilities
@@ -118,11 +129,11 @@ export class OrganizationService implements IOrganizationService {
 // ✅ GOOD: Use base class for common CRUD operations
 export abstract class BaseCrudService<T, CreateDto, UpdateDto> {
   abstract readonly model: ModelStatic<T>;
-  
+
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<T>> {
     // Common implementation
   }
-  
+
   // Child classes can override specific methods
 }
 ```
@@ -141,6 +152,7 @@ interface ButtonProps {
 ```
 
 **Enforcement:**
+
 - Always define interfaces for services in `interfaces/` directory
 - Use abstract base classes for common functionality
 - Extend via composition or inheritance, not modification
@@ -154,9 +166,11 @@ interface ButtonProps {
 export class SkillService extends BaseCrudService<SkillEntity, CreateSkillDto, UpdateSkillDto> {
   protected readonly model = SkillEntity;
   protected readonly entityName = 'Skill';
-  
+
   // Can add new methods, but must honor base class contract
-  async findByOrganization(orgId: string) { /* ... */ }
+  async findByOrganization(orgId: string) {
+    /* ... */
+  }
 }
 
 // ❌ BAD: Child class breaks parent expectations
@@ -168,6 +182,7 @@ export class BadService extends BaseCrudService {
 ```
 
 **Enforcement:**
+
 - Child classes MUST implement all abstract methods
 - Child classes MUST NOT throw exceptions for base class methods
 - Override methods MUST maintain same return types
@@ -197,6 +212,7 @@ export interface IGodService {
 ```
 
 **Enforcement:**
+
 - Interfaces should have 3-7 methods maximum
 - Split large interfaces into role-specific interfaces
 - Use composition to combine interfaces when needed
@@ -226,6 +242,7 @@ const service = new ConcreteService(); // Tight coupling!
 ```
 
 **Enforcement:**
+
 - Use NestJS dependency injection for all services
 - Define service tokens for interface injection
 - Never use `new` for services inside other services
@@ -277,7 +294,9 @@ async findAll(@Query() pagination: PaginationDto) { }
 // ✅ GOOD: Centralized utilities
 // commons/utils/string.util.ts
 export function generateSlug(name: string): string {
-  return name.toLowerCase().trim()
+  return name
+    .toLowerCase()
+    .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
@@ -333,7 +352,8 @@ useQuery({ queryKey: ['settings'] }); // Inconsistent in another file
 ```typescript
 // ✅ GOOD: Centralized validation schemas
 // schemas/auth.schema.ts
-export const passwordSchema = z.string()
+export const passwordSchema = z
+  .string()
   .min(8, 'Password must be at least 8 characters')
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Must contain uppercase, lowercase, and number');
 
@@ -343,10 +363,12 @@ export const loginSchema = z.object({
   password: passwordSchema,
 });
 
-export const registerSchema = z.object({
-  password: passwordSchema,
-  confirmPassword: z.string(),
-}).refine(data => data.password === data.confirmPassword);
+export const registerSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword);
 ```
 
 **Use Shared Components:**
@@ -424,12 +446,10 @@ For non-critical operations, eventual consistency is acceptable:
 
 ```typescript
 // ✅ OK: Email sending can be eventually consistent (fire and forget)
-this.emailService.sendWelcomeEmail(user.email, { name: user.first_name })
-  .catch(console.error); // Don't block registration on email failure
+this.emailService.sendWelcomeEmail(user.email, { name: user.first_name }).catch(console.error); // Don't block registration on email failure
 
 // ✅ OK: Analytics/logging can be async
-this.analyticsService.trackEvent('user_registered', { userId: user.id })
-  .catch(() => {}); // Non-critical
+this.analyticsService.trackEvent('user_registered', { userId: user.id }).catch(() => {}); // Non-critical
 ```
 
 ---
@@ -444,20 +464,20 @@ this.analyticsService.trackEvent('user_registered', { userId: user.id })
 // ✅ GOOD: Wrap related operations in transaction
 async register(dto: RegisterDto): Promise<JwtTokens> {
   const transaction = await this.sequelize.transaction();
-  
+
   try {
     // 1. Create organization
     const organization = await this.organizationModel.create({
       name: dto.companyName,
       slug: this.generateSlug(dto.companyName),
     }, { transaction });
-    
+
     // 2. Create user
     const user = await this.userModel.create({
       email: dto.email.toLowerCase(),
       organization_id: organization.id,
     }, { transaction });
-    
+
     // 3. Commit both or neither
     await transaction.commit();
     return this.createSessionAndTokens(user);
@@ -480,12 +500,12 @@ async create(dto: CreateOrganizationDto): Promise<OrganizationEntity> {
   if (existingSlug) {
     throw new ConflictException('Organization with this slug already exists');
   }
-  
+
   const existingName = await this.organizationModel.findOne({ where: { name: dto.name } });
   if (existingName) {
     throw new ConflictException('Organization with this name already exists');
   }
-  
+
   // Only then create
   return this.organizationModel.create({...});
 }
@@ -515,13 +535,13 @@ async updateWithLock(id: string, dto: UpdateDto): Promise<Entity> {
   const transaction = await this.sequelize.transaction({
     isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
   });
-  
+
   try {
     const entity = await this.model.findByPk(id, {
       lock: transaction.LOCK.UPDATE,
       transaction,
     });
-    
+
     await entity.update(dto, { transaction });
     await transaction.commit();
     return entity;
@@ -549,13 +569,13 @@ async resetPassword(dto: ResetPasswordDto): Promise<SuccessResponse> {
     { password_hash: hashedPassword },
     { where: { id: passwordReset.user_id } },
   );
-  
+
   // Mark token as used (AFTER password is updated)
   await passwordReset.update({ is_used: true, used_at: new Date() });
-  
+
   // Invalidate all sessions (AFTER password change is confirmed)
   await this.sessionService.revokeAllForUser(passwordReset.user_id);
-  
+
   return { success: true, message: 'Password reset successfully' };
 }
 ```
@@ -576,7 +596,7 @@ export class UserService {
     @InjectModel(UserEntity)
     private readonly userModel: typeof UserEntity,
   ) {}
-  
+
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userModel.findOne({ where: { email: email.toLowerCase() } });
   }
@@ -592,7 +612,7 @@ Business logic lives in services, not controllers.
 @Controller('organizations')
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
-  
+
   @Post()
   async create(@Body() dto: CreateOrganizationDto) {
     const organization = await this.organizationService.create(dto);
@@ -624,7 +644,7 @@ export class CreateOrganizationDto {
   @IsNotEmpty()
   @MaxLength(150)
   name: string;
-  
+
   @IsOptional()
   @IsString()
   slug?: string;
@@ -650,7 +670,7 @@ export class TokenService {
   generateTokens(payload: TokenPayload): JwtTokens {
     const accessToken = this.generateAccessToken(payload);
     const refreshToken = this.generateRefreshToken(payload);
-    
+
     return {
       accessToken,
       refreshToken,
@@ -673,11 +693,11 @@ interface AuthStrategy {
 }
 
 class EmailAuthStrategy implements AuthStrategy {
-  async authenticate(credentials: { email: string; password: string }) { }
+  async authenticate(credentials: { email: string; password: string }) {}
 }
 
 class GoogleAuthStrategy implements AuthStrategy {
-  async authenticate(credentials: { idToken: string }) { }
+  async authenticate(credentials: { idToken: string }) {}
 }
 ```
 
@@ -817,10 +837,10 @@ export class UserEntity extends BaseNanoidEntity {
   @ForeignKey(() => OrganizationEntity)
   @Column({ type: DataType.STRING(21), allowNull: false })
   declare organization_id: string;
-  
+
   @BelongsTo(() => OrganizationEntity)
   declare organization: OrganizationEntity;
-  
+
   @Index({ name: 'IDX_USER_EMAIL', unique: true })
   @Column({ type: DataType.STRING(255), allowNull: false })
   declare email: string;
@@ -861,7 +881,8 @@ src/
 ```typescript
 // ✅ GOOD: Typed API function
 async function fetchOrganizationSettings(): Promise<OrganizationSettings> {
-  const response = await apiClient.get<ApiResponse<OrganizationSettings>>('/organizations/settings');
+  const response =
+    await apiClient.get<ApiResponse<OrganizationSettings>>('/organizations/settings');
   return response.data.data;
 }
 
@@ -888,7 +909,9 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       isLoading: false,
       setUser: (user) => set({ user }),
-      logout: async () => { /* ... */ },
+      logout: async () => {
+        /* ... */
+      },
     }),
     { name: 'auth-storage' },
   ),
@@ -936,11 +959,11 @@ interface SettingsFormProps {
 
 export function SettingsForm({ initialData, onSuccess }: SettingsFormProps) {
   const { mutate, isPending } = useUpdateGeneralInfo();
-  
+
   const handleSubmit = (data: FormData) => {
     mutate(data, { onSuccess });
   };
-  
+
   return <form onSubmit={handleSubmit}>...</form>;
 }
 ```
@@ -1148,5 +1171,5 @@ Before submitting code, verify:
 
 ---
 
-*Last Updated: January 2026*
-*Maintainer: Quick Certify Team*
+_Last Updated: January 2026_
+_Maintainer: Quick Certify Team_

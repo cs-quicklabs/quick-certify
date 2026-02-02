@@ -7,9 +7,11 @@ This guide provides instructions on how to run the automated end-to-end (E2E) te
 Ensure the following servers are running in separate terminal windows:
 
 1.  **Backend Server**:
+
     ```bash
     npx nx serve backend
     ```
+
     (Runs on `http://localhost:3001`)
 
 2.  **Frontend Server**:
@@ -25,6 +27,7 @@ Ensure the following servers are running in separate terminal windows:
 To watch the tests execution in a browser window:
 
 ### Option 1: Headed Mode (Fast & Visible)
+
 Runs tests in a Playwright browser window.
 
 ```bash
@@ -33,6 +36,7 @@ npx playwright test --headed
 ```
 
 ### Option 2: UI Mode (Interactive Debugging)
+
 Opens the Playwright UI runner, allowing you to explore tests, view traces, and time-travel debug.
 
 ```bash
@@ -41,6 +45,7 @@ npx playwright test --ui
 ```
 
 ### Running Specific Tests
+
 To run only the Onboarding tests (Login/Signup):
 
 ```bash
@@ -67,5 +72,5 @@ npx playwright test --ui
 
 ## Troubleshooting
 
--   **"Terminal too small" / TTY errors**: If running via `nx` commands fails with TTY errors, run the `playwright` command directly from the project directory as shown above (`cd apps/frontend-e2e && npx playwright test ...`).
--   **Timeout**: If tests timeout, ensure both Backend and Frontend servers are fully running before starting tests.
+- **"Terminal too small" / TTY errors**: If running via `nx` commands fails with TTY errors, run the `playwright` command directly from the project directory as shown above (`cd apps/frontend-e2e && npx playwright test ...`).
+- **Timeout**: If tests timeout, ensure both Backend and Frontend servers are fully running before starting tests.

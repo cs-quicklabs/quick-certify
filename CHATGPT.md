@@ -5,9 +5,10 @@
 ## Project Overview
 
 **Quick Certify** is a credential management platform:
+
 - **Backend**: NestJS + Sequelize ORM + PostgreSQL
 - **Frontend**: Next.js 16 + React 19 + TanStack Query + Zustand + Zod + Tailwind
-- **Structure**: Nx monorepo with apps/backend, apps/frontend, packages/*
+- **Structure**: Nx monorepo with apps/backend, apps/frontend, packages/\*
 
 ## Mandatory Coding Rules
 
@@ -15,19 +16,19 @@ When generating code for this project, ALWAYS follow these rules:
 
 ### SOLID Principles
 
-| Principle | Rule |
-|-----------|------|
-| **SRP** | One service = one domain. Split services > 500 lines. Controllers only route requests. |
-| **OCP** | Define interfaces in `interfaces/` folder. Use BaseCrudService for extension. |
-| **LSP** | Child classes must implement ALL parent methods. No "not supported" exceptions. |
-| **ISP** | Interfaces max 3-7 methods. Split large interfaces. |
-| **DIP** | Always inject dependencies. Use @InjectModel. Never `new Service()`. |
+| Principle | Rule                                                                                   |
+| --------- | -------------------------------------------------------------------------------------- |
+| **SRP**   | One service = one domain. Split services > 500 lines. Controllers only route requests. |
+| **OCP**   | Define interfaces in `interfaces/` folder. Use BaseCrudService for extension.          |
+| **LSP**   | Child classes must implement ALL parent methods. No "not supported" exceptions.        |
+| **ISP**   | Interfaces max 3-7 methods. Split large interfaces.                                    |
+| **DIP**   | Always inject dependencies. Use @InjectModel. Never `new Service()`.                   |
 
 ### DRY (Don't Repeat Yourself)
 
 ```typescript
 // ✅ GOOD: Extend base service
-export class SkillService extends BaseCrudService<SkillEntity, CreateSkillDto, UpdateSkillDto> { }
+export class SkillService extends BaseCrudService<SkillEntity, CreateSkillDto, UpdateSkillDto> {}
 
 // ✅ GOOD: Shared utilities
 import { generateSlug } from '@src/commons/utils';
@@ -167,8 +168,7 @@ export function useFeatures() {
 export function useCreateFeature() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateFeatureDto) => 
-      apiClient.post<ApiResponse<Feature>>('/features', data),
+    mutationFn: (data: CreateFeatureDto) => apiClient.post<ApiResponse<Feature>>('/features', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: featureKeys.all });
     },
@@ -182,9 +182,7 @@ export function useCreateFeature() {
 import { z } from 'zod';
 
 export const createFeatureSchema = z.object({
-  name: z.string()
-    .min(1, 'Name is required')
-    .max(100, 'Name too long'),
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().optional(),
 });
 
@@ -210,17 +208,17 @@ apps/backend/src/modules/[feature]/
 
 ## Naming Rules
 
-| Type | Pattern | Example |
-|------|---------|---------|
-| Entity | `*.entity.ts` | `user.entity.ts` |
-| Service | `*.service.ts` | `user.service.ts` |
-| Controller | `*.controller.ts` | `user.controller.ts` |
-| DTO | `create-*.dto.ts` | `create-user.dto.ts` |
-| Interface | `*-service.interface.ts` | `user-service.interface.ts` |
-| React Component | `PascalCase.tsx` | `UserForm.tsx` |
-| Hook | `use*.ts` | `useUser.ts` |
-| Schema | `*.schema.ts` | `user.schema.ts` |
-| Store | `*.store.ts` | `auth.store.ts` |
+| Type            | Pattern                  | Example                     |
+| --------------- | ------------------------ | --------------------------- |
+| Entity          | `*.entity.ts`            | `user.entity.ts`            |
+| Service         | `*.service.ts`           | `user.service.ts`           |
+| Controller      | `*.controller.ts`        | `user.controller.ts`        |
+| DTO             | `create-*.dto.ts`        | `create-user.dto.ts`        |
+| Interface       | `*-service.interface.ts` | `user-service.interface.ts` |
+| React Component | `PascalCase.tsx`         | `UserForm.tsx`              |
+| Hook            | `use*.ts`                | `useUser.ts`                |
+| Schema          | `*.schema.ts`            | `user.schema.ts`            |
+| Store           | `*.store.ts`             | `auth.store.ts`             |
 
 ## Error Handling
 

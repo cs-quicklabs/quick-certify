@@ -4,3 +4,8 @@ export enum EnvironmentEnum {
   Staging = 'staging',
   Production = 'production',
 }
+
+export enum AuthProvider {
+  Email = 'email',
+  Google = 'google',
+}

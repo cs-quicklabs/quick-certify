@@ -28,6 +28,7 @@ import { SuccessResponse } from '@src/commons/dtos';
 
 @ApiTags('Authentication')
 @Controller({ path: 'auth', version: '1' })
+@ApiBearerAuth()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -77,7 +78,6 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout current session' })
   @ApiResponse({ status: 200, description: 'Logged out successfully' })
   async logout(@CurrentUser() user: AuthInterfaces.CurrentUser) {
@@ -87,7 +87,6 @@ export class AuthController {
 
   @Post('logout-all')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout all sessions' })
   @ApiResponse({ status: 200, description: 'All sessions logged out' })
   async logoutAll(@CurrentUser() user: AuthInterfaces.CurrentUser) {
@@ -144,7 +143,6 @@ export class AuthController {
 
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Change password for authenticated user' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 401, description: 'Current password is incorrect' })
@@ -157,7 +155,6 @@ export class AuthController {
   }
 
   @Get('sessions')
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all active sessions' })
   @ApiResponse({ status: 200, description: 'Active sessions list' })
   async getSessions(@CurrentUser() user: AuthInterfaces.CurrentUser) {
@@ -166,7 +163,6 @@ export class AuthController {
   }
 
   @Delete('sessions/:sessionHash')
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Revoke a specific session by hash' })
   @ApiResponse({ status: 200, description: 'Session revoked' })
   @ApiResponse({ status: 404, description: 'Session not found' })
