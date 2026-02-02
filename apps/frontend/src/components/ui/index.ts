@@ -8,3 +8,4 @@ export * from './divider';
 export * from './file-dropzone';
 export * from './info-tooltip';
 export * from './confirmation-dialog';
+export * from './icons';

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
 import { ConfirmationDialog } from '@/components/ui';
 import { getInitials } from '@/utils';
+import { Bell, Menu, X } from 'lucide-react';
 
 export function Header() {
   const [menuOpened, setMenuOpened] = useState(false);
@@ -117,31 +118,9 @@ export function Header() {
             >
               <span className="sr-only">Open main menu</span>
               {mobileMenuOpen ? (
-                <svg
-                  className="block h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className='block h-6 w-6' />
               ) : (
-                <svg
-                  className="block h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                  />
-                </svg>
+                <Menu className='block h-6 w-6' />
               )}
             </button>
           </div>
@@ -152,20 +131,7 @@ export function Header() {
                 className="shrink-0 rounded-full  p-1 text-gray-400 hover:text-blue  focus:ring-2  focus:ring-offset-blue-800 cursor-pointer"
               >
                 <span className="sr-only">View notifications</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-                  />
-                </svg>
+                <Bell className="h-6 w-6" />
               </button>
               {/* Profile dropdown */}
               <div className="relative ml-2 shrink-0" ref={dropdownRef}>

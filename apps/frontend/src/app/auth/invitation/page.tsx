@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
-import { Loader2 } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { Input, Button, Alert } from '@/components';
 import { acceptInvitationSchema, AcceptInvitationFormData } from '@/schemas/auth.schema';
 import { authService, ApiError } from '@/services';
@@ -154,19 +154,7 @@ function AcceptInvitationContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
         <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-            <svg
-              className="w-8 h-8 text-green-600 dark:text-green-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            <Check className='w-8 h-8 text-green-600 dark:text-green-400' />
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             Invitation Accepted!
