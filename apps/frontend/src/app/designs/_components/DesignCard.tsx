@@ -65,8 +65,8 @@ export default function DesignCard({ design, onDelete }: { design: Design; onDel
           <span>Edit</span>
         </Link>
 
-        <Link
-          href={`/designs/delete/${design.id}`} // Or your specific delete route
+        <button
+          onClick={onDelete}
           className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-xs bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,7 +78,7 @@ export default function DesignCard({ design, onDelete }: { design: Design; onDel
             />
           </svg>
           <span>Delete</span>
-        </Link>
+        </button>
       </div>
     </div>
   );

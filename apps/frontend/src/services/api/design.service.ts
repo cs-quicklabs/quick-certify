@@ -75,6 +75,6 @@ export const designService = {
 
   async deleteDesign(id: string): Promise<{ success: boolean }> {
     const response = await apiClient.delete<ApiResponse<{ success: boolean }>>(`/designs/${id}`);
-    return response.data;
+    return response.data.data;
   },
 };

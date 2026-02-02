@@ -16,7 +16,7 @@ type Props = {
 
 type Filter = 'All' | 'Certificate' | 'Badge';
 
-export default function DesignsList({ designs, meta, onDelete, search, setSearch, page }: Props) {
+export default function DesignsList({ designs, meta, onDelete, search, setSearch }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const filtered = useMemo(() => {
