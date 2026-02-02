@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { UserEntity, RoleEntity, OrganizationEntity } from '@src/entities';
 import { UpdateProfileDto, UpdateEmailPreferencesDto } from './dto';
 import { StorageService } from '@src/commons/services';
+import { AuthProvider } from '@src/commons/constants';
 
 /**
  * Profile Service
@@ -47,7 +48,8 @@ export class ProfileService {
       organizationName: user.organization?.name || '',
       roleId: user.role_id,
       role: user.role?.role || '',
-      signupMethod: user.auth_provider === 'google' ? 'google' : 'email',
+      authProvider:
+        user.auth_provider === AuthProvider.Google ? AuthProvider.Google : AuthProvider.Email,
       emailNotifications: user.is_email_notifications_enabled,
       status: user.status,
       lastLoginAt: user.last_login_at,
