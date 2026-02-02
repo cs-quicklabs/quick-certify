@@ -18,7 +18,7 @@ export class CreateDesignDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'Design name is required' })
-  @MaxLength(125, { message: 'Event name must not exceed 255 characters' })
+  @MaxLength(125, { message: 'Design name must not exceed 125 characters' })
   @Matches(/^[^\s].*[^\s]$|^[^\s]$/, {
     message: 'Design name cannot be empty or only spaces',
   })
@@ -34,7 +34,6 @@ export class CreateDesignDto {
   designUrl?: string = '';
 
   @ApiProperty({ enum: Design })
-  @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEnum(Design, { message: 'Design Type must be a valid Design' })
   designType?: Design = Design.Certificate;

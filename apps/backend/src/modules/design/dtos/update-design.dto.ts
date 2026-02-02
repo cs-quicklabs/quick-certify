@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { Design } from '@src/modules/design/enums';
 import { Transform } from 'class-transformer';
 import { capitalizeFirst } from '@src/commons/utils';
@@ -17,7 +17,7 @@ export class UpdateDesignDto {
     return capitalizeFirst(trimmed);
   })
   @MinLength(1, { message: 'Design name cannot be empty' })
-  @MaxLength(100, { message: 'Desing name must not exceed 100 characters' })
+  @MaxLength(100, { message: 'Design name must not exceed 100 characters' })
   name?: string = '';
 
   @ApiProperty({ description: 'Design Url' })
@@ -25,6 +25,7 @@ export class UpdateDesignDto {
   designUrl?: string = '';
 
   @ApiProperty({ enum: Design })
-  @IsString()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
+  @IsEnum(Design, { message: 'Design Type must be a valid Design' })
   designType?: Design;
 }

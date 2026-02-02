@@ -28,7 +28,7 @@ export class DesignController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get all organizations (Super Admin only)' })
+  @ApiOperation({ summary: 'Get all Designs (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Design list' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
