@@ -23,10 +23,9 @@ export default function DesignsPage() {
 
   const { designs, meta, loading, error, deleteDesign } = useDesignList({
     page,
-    limit: 10,
+    limit: 4,
     search: searchFromUrl,
   });
-
   /* -------- Debounced search → URL -------- */
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -65,11 +64,16 @@ export default function DesignsPage() {
 
   if (loading) return <div className="p-4">Loading designs…</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
+  const goToPage = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(p));
+    router.push(`/designs?${params.toString()}`, { scroll: false });
+  };
 
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col gap-y-3 p-4 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-y-0 sm:gap-x-4 bg-white">
+      <div className="flex flex-col gap-y-3 p-4 py-2 sm:flex-row sm:items-center sm:justify-between shadow sm:gap-y-0 sm:gap-x-4 bg-white">
         {/* Title + Description */}
         <div>
           <h1 className="mr-3 text-lg font-semibold text-gray-900">Designs Library</h1>
@@ -171,6 +175,41 @@ export default function DesignsPage() {
         setSearch={setSearch}
         page={page}
       />
+      {/*  Pagination Tab*/}
+      {meta && meta.totalPages > 1 && (
+        <div className="flex justify-end mt-6 px-4">
+          <nav className="inline-flex rounded-md shadow-sm border border-gray-200 overflow-hidden">
+            <button
+              disabled={page === 1}
+              onClick={() => goToPage(page - 1)}
+              className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border-r border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: meta.totalPages }, (_, i) => i + 1)
+              .slice(0, 5)
+              .map((p) => (
+                <button
+                  key={p}
+                  onClick={() => goToPage(p)}
+                  className={`px-3 py-2 text-sm font-medium border-r border-gray-200
+              ${page === p ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}
+                >
+                  {p}
+                </button>
+              ))}
+
+            <button
+              disabled={page === meta.totalPages}
+              onClick={() => goToPage(page + 1)}
+              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              Next
+            </button>
+          </nav>
+        </div>
+      )}
     </div>
   );
 }
