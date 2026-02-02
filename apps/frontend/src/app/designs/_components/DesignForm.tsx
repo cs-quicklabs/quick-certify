@@ -91,18 +91,14 @@ export default function DesignForm({
         </p>
 
         <label
-          className={`relative block rounded-lg border-2 border-dashed p-10 text-center ${preview
-            ? 'cursor-not-allowed bg-gray-100'
-            : 'cursor-pointer hover:bg-gray-100'
-            }`}
+          className={`relative block rounded-lg border-2 border-dashed p-10 text-center ${
+            preview ? 'cursor-not-allowed bg-gray-100' : 'cursor-pointer hover:bg-gray-100'
+          }`}
           onClick={(e) => preview && e.preventDefault()}
         >
           {preview ? (
             <div className="relative mx-auto aspect-11/8 w-full overflow-hidden rounded border bg-white">
-              <DesignEditor
-                backgroundUrl={preview}
-                onLayoutChangeAction={setLayout}
-              />
+              <DesignEditor backgroundUrl={preview} onLayoutChangeAction={setLayout} />
             </div>
           ) : (
             <p className="text-gray-400">Click to upload</p>
@@ -131,9 +127,7 @@ export default function DesignForm({
                 setError(null);
               } catch (err) {
                 imageRef.current = null;
-                setError(
-                  err instanceof Error ? err.message : 'Invalid image'
-                );
+                setError(err instanceof Error ? err.message : 'Invalid image');
                 e.target.value = '';
               }
             }}
@@ -141,9 +135,7 @@ export default function DesignForm({
         </label>
 
         {(error || uploadError) && (
-          <p className="mt-2 text-sm font-medium text-red-600">
-            {error || uploadError}
-          </p>
+          <p className="mt-2 text-sm font-medium text-red-600">{error || uploadError}</p>
         )}
       </div>
 

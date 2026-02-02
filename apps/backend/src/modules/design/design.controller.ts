@@ -23,7 +23,7 @@ import { UpdateDesignDto } from './dtos/update-design.dto';
 @ApiBearerAuth()
 @Controller({ path: 'designs', version: '1' })
 export class DesignController {
-  constructor(private readonly designService: DesignService) { }
+  constructor(private readonly designService: DesignService) {}
 
   @Get()
   @UseGuards(RolesGuard)
