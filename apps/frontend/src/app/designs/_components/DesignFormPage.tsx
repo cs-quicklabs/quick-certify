@@ -18,7 +18,7 @@ export function DesignFormPage({
 }) {
   const isEdit = mode === 'edit';
 
-  const { data: design, isLoading, error } = useDesignById(id ?? '');
+  const { data: design, isLoading } = useDesignById(id ?? '');
   const [name, setName] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
 

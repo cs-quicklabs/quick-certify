@@ -34,7 +34,7 @@ export default function DesignForm({
 }: Props) {
   const [name, setName] = useState(defaultName);
   const [error, setError] = useState<string | null>(null);
-  const [layout, setLayout] = useState<DesignLayout | null>(null);
+  const [, setLayout] = useState<DesignLayout | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
   const [hasNewImage, setHasNewImage] = useState(false);
   const imageRef = useRef<File | null>(null);

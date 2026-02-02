@@ -2,8 +2,6 @@
  * Team Service - API client for team management
  *
  * Uses centralized query params utility for consistent URL building.
- *
- * Uses centralized query params utility for consistent URL building.
  */
 
 import { PaginatedResponse } from '@/types';
@@ -54,9 +52,6 @@ export interface TeamFilters {
   limit?: number;
   search?: string;
   role?: string;
-  sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
-  [key: string]: unknown;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
   [key: string]: unknown;
