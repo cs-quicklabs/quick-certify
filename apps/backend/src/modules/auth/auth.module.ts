@@ -62,4 +62,4 @@ import { RoleModule } from '../role';
     RolesGuard,
   ],
 })
-export class AuthModule { }
+export class AuthModule {}

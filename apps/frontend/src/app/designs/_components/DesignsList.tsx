@@ -1,34 +1,32 @@
 // "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
-import { Design } from '@/services/api/design.service'
-import DesignCard from "./DesignCard";
-import { PaginatedResponse } from "@/types";
+import { useMemo, useState, useEffect, useRef } from 'react';
+import { Design } from '@/services/api/design.service';
+import DesignCard from './DesignCard';
+import { PaginatedResponse } from '@/types';
 
 type Props = {
-  designs: Design[],
-  meta: PaginatedResponse<Design>['meta'],
+  designs: Design[];
+  meta: PaginatedResponse<Design>['meta'];
   onDelete: (id: string) => void;
   search: string;
   setSearch: (v: string) => void;
   page: number;
-}
+};
 
-type Filter = "All" | "Certificate" | "Badge";
+type Filter = 'All' | 'Certificate' | 'Badge';
 
-export default function DesignsList({ designs, meta, onDelete, search, setSearch, page, }: Props) {
-  const [filter, setFilter] = useState<Filter>("All");
+export default function DesignsList({ designs, meta, onDelete, search, setSearch, page }: Props) {
+  const [filter, setFilter] = useState<Filter>('All');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const filtered = useMemo(() => {
     return designs.filter((d) => {
       const matchFilter =
-        filter === "All" ||
-        (filter === "Certificate" && d.type === "certificate") ||
-        (filter === "Badge" && d.type === "badge");
+        filter === 'All' ||
+        (filter === 'Certificate' && d.type === 'certificate') ||
+        (filter === 'Badge' && d.type === 'badge');
 
-      const matchSearch = d.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      const matchSearch = d.name.toLowerCase().includes(search.toLowerCase());
 
       return matchFilter && matchSearch;
     });
@@ -57,28 +55,22 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-
-
   return (
     <>
       {/* Search and Filter Section */}
       <div className="flex justify-between items-center pt-3 pb-3 px-4 py-5 bg-white border-b border-t sm:flex sm:space-x-4 sm:space-y-0 border-gray-200 shadow-sm">
-
         {/* Filter Options  */}
         <div className="flex items-center text-gray-900 gap-6 text-sm font-medium">
-          <span className="text-gray-900 text-sm font-medium">
-            Show records only for:
-          </span>
+          <span className="text-gray-900 text-sm font-medium">Show records only for:</span>
 
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
               name="designFilter"
               value="Badge"
-              checked={filter === "Badge"}
-              onChange={() => setFilter("Badge")}
+              checked={filter === 'Badge'}
+              onChange={() => setFilter('Badge')}
               className="h-4 w-4 accent-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
-
             />
             <span>Badges</span>
           </label>
@@ -88,8 +80,8 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
               type="radio"
               name="designFilter"
               value="Certificate"
-              checked={filter === "Certificate"}
-              onChange={() => setFilter("Certificate")}
+              checked={filter === 'Certificate'}
+              onChange={() => setFilter('Certificate')}
               className="h-4 w-4 accent-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-offset-0"
             />
             <span>Certificates</span>
@@ -97,7 +89,7 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
 
           <button
             type="button"
-            onClick={() => setFilter("All")}
+            onClick={() => setFilter('All')}
             className="font-bold text-blue-600 underline hover:text-blue-700"
           >
             Show All
@@ -120,17 +112,12 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
         </div>
       </div>
 
-
       {/* Design Action */}
 
       <div className="bg-gray-50 border-gray-100 flex shadow-[0_4px_6px_-2px_rgba(0,0,0,0.1)] border-t border-r border-b-0 items-center justify-between py-3 px-2">
-        <span className="text-xs font-extrabold text-gray-500 uppercase ml-2">
-          Design
-        </span>
+        <span className="text-xs font-extrabold text-gray-500 uppercase ml-2">Design</span>
 
-        <span className="text-xs font-extrabold text-gray-500 uppercase mr-2">
-          Actions
-        </span>
+        <span className="text-xs font-extrabold text-gray-500 uppercase mr-2">Actions</span>
       </div>
 
       {/* Empty list */}

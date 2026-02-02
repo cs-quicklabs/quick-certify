@@ -33,7 +33,11 @@ export function DesignFormPage({
   const [formKey, setFormKey] = useState(0);
   const [success, setSuccess] = useState(false);
 
-  const { upload, isUploading, error: uploadError } = useImageUpload({
+  const {
+    upload,
+    isUploading,
+    error: uploadError,
+  } = useImageUpload({
     category: 'design',
     onSuccess: (url) => setUploadedUrl(url),
   });
@@ -41,13 +45,11 @@ export function DesignFormPage({
   const createDesign = useCreateDesign();
   const updateDesign = useUpdateDesign();
 
-
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleImageSelect = (file: File) => {
-    setSelectedFile(file);        // store locally
+    setSelectedFile(file); // store locally
   };
-
 
   const handleSubmit = async ({ name }: { name: string }) => {
     let finalUrl = uploadedUrl;
@@ -86,7 +88,6 @@ export function DesignFormPage({
     return () => clearTimeout(t);
   }, [success]);
 
-
   if (isEdit && isLoading) {
     return <div className="p-6 text-sm text-gray-500">Loading design…</div>;
   }
@@ -122,12 +123,7 @@ export function DesignFormPage({
         onSubmitAction={handleSubmit}
       />
 
-      {uploadError && (
-        <p className="mt-3 text-center text-sm text-red-600">
-          {uploadError}
-        </p>
-      )}
+      {uploadError && <p className="mt-3 text-center text-sm text-red-600">{uploadError}</p>}
     </>
   );
-
 }

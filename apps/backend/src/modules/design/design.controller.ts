@@ -1,6 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Patch, Query, UseGuards, } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { DesignService } from "./design.services";
+import { DesignService } from './design.services';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { Roles } from '@src/modules/auth/decorators';
@@ -13,7 +23,7 @@ import { UpdateDesignDto } from './dtos/update-design.dto';
 @ApiBearerAuth()
 @Controller({ path: 'designs', version: '1' })
 export class DesignController {
-  constructor(private readonly designService: DesignService) { }
+  constructor(private readonly designService: DesignService) {}
 
   @Get()
   @UseGuards(RolesGuard)
@@ -29,7 +39,7 @@ export class DesignController {
     const result = pagination.search
       ? await this.designService.searchDesigns(pagination.search, pagination)
       : await this.designService.findAll(pagination);
-    return new SuccessResponse('Designs retrieved successfully', result)
+    return new SuccessResponse('Designs retrieved successfully', result);
   }
 
   @Get(':uuid')
@@ -40,7 +50,7 @@ export class DesignController {
   async findOne(@Param('uuid') uuid: string) {
     const design = await this.designService.findOne(uuid);
     if (!design) return new SuccessResponse('Design not found', null);
-    return new SuccessResponse('Design retrieved successfully', design)
+    return new SuccessResponse('Design retrieved successfully', design);
   }
 
   @Patch(':uuid')
@@ -53,7 +63,6 @@ export class DesignController {
     return new SuccessResponse('Design updated successfully', design);
   }
 
-
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
@@ -62,7 +71,7 @@ export class DesignController {
   @ApiResponse({ status: 409, description: 'Email already registered' })
   async create(@Body() dto: CreateDesignDto) {
     const newDesign = await this.designService.create(dto);
-    return new SuccessResponse('Design created successfully', newDesign)
+    return new SuccessResponse('Design created successfully', newDesign);
   }
 
   @Delete(':uuid')
@@ -74,12 +83,10 @@ export class DesignController {
   async delete(@Param('uuid') uuid: string) {
     const existingDesign = await this.designService.findOne(uuid);
     if (!existingDesign) {
-      return new SuccessResponse('Design not found', null)
+      return new SuccessResponse('Design not found', null);
     }
 
     await this.designService.delete(uuid);
-    return new SuccessResponse('Design deleted successfully', { deleted: true })
+    return new SuccessResponse('Design deleted successfully', { deleted: true });
   }
-
-
 }

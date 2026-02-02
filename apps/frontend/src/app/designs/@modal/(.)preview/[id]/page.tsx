@@ -34,10 +34,5 @@ export default function PreviewModalPage() {
   if (loading) return null; // or spinner
   if (!design) return null;
 
-  return (
-    <DesignPreview
-      name={design.name}
-      imageUrl={design.url}
-    />
-  );
+  return <DesignPreview name={design.name} imageUrl={design.url} />;
 }

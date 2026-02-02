@@ -11,7 +11,6 @@ type Params = {
   search?: string;
 };
 
-
 export function useDesignList({ page, limit, search }: Params) {
   const queryClient = useQueryClient();
 
@@ -34,22 +33,18 @@ export function useDesignList({ page, limit, search }: Params) {
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['designs'] });
 
-      const previous =
-        queryClient.getQueryData<PaginatedResponse<Design>>([
-          'designs',
-          page,
-          limit,
-          search,
-        ]);
+      const previous = queryClient.getQueryData<PaginatedResponse<Design>>([
+        'designs',
+        page,
+        limit,
+        search,
+      ]);
 
       if (previous) {
-        queryClient.setQueryData(
-          ['designs', page, limit, search],
-          {
-            ...previous,
-            data: previous.data.filter((d) => d.id !== id),
-          }
-        );
+        queryClient.setQueryData(['designs', page, limit, search], {
+          ...previous,
+          data: previous.data.filter((d) => d.id !== id),
+        });
       }
 
       return { previous };
@@ -57,10 +52,7 @@ export function useDesignList({ page, limit, search }: Params) {
 
     onError: (_err, _id, ctx) => {
       if (ctx?.previous) {
-        queryClient.setQueryData(
-          ['designs', page, limit, search],
-          ctx.previous
-        );
+        queryClient.setQueryData(['designs', page, limit, search], ctx.previous);
       }
     },
 
@@ -78,7 +70,6 @@ export function useDesignList({ page, limit, search }: Params) {
     refetch: query.refetch,
   };
 }
-
 
 // get single design
 export function useDesignById(id?: string) {
@@ -136,4 +127,3 @@ export function useUpdateDesign() {
     },
   });
 }
-

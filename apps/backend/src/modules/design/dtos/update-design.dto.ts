@@ -1,11 +1,14 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
-import { Design } from "@src/modules/design/enums"
-import { Transform } from "class-transformer";
-import { capitalizeFirst } from "@src/commons/utils";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { Design } from '@src/modules/design/enums';
+import { Transform } from 'class-transformer';
+import { capitalizeFirst } from '@src/commons/utils';
 
 export class UpdateDesignDto {
-  @ApiProperty({ example: 'Course Completion Certificate/ Over Achiever Badge', description: 'Name of the Design' })
+  @ApiProperty({
+    example: 'Course Completion Certificate/ Over Achiever Badge',
+    description: 'Name of the Design',
+  })
   @IsString()
   @IsNotEmpty({ message: 'Design name is required' })
   @Transform(({ value }) => {
@@ -19,10 +22,9 @@ export class UpdateDesignDto {
 
   @ApiProperty({ description: 'Design Url' })
   @IsString()
-  designUrl?: string = ''
+  designUrl?: string = '';
 
   @ApiProperty({ enum: Design })
   @IsString()
   designType?: Design;
-
 }

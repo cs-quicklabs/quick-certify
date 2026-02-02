@@ -1,20 +1,17 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
-import { Op } from 'sequelize'
-import { DesignEntity } from "@src/entities";
-import { FindAllOptions, PaginatedResult } from "@src/commons/base";
-import { UpdateDesignDto } from "./dtos/update-design.dto";
-import { CreateDesignDto } from "./dtos/create-design.dto";
-import { capitalizeFirst } from "@src/commons/utils";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
+import { DesignEntity } from '@src/entities';
+import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { UpdateDesignDto } from './dtos/update-design.dto';
+import { CreateDesignDto } from './dtos/create-design.dto';
+import { capitalizeFirst } from '@src/commons/utils';
 @Injectable()
 export class DesignService {
-
   constructor(
     @InjectModel(DesignEntity)
     private readonly designModel: typeof DesignEntity,
-
-  ) { }
-
+  ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<DesignEntity>> {
     const { page = 1, limit = 10, sortBy = 'type', sortOrder = 'ASC', where = {} } = options;
@@ -78,8 +75,8 @@ export class DesignService {
     const design = await this.designModel.create({
       name: capitalizeFirst(dto.name),
       type: dto.designType,
-      url: dto.designUrl
-    })
+      url: dto.designUrl,
+    });
     return design;
   }
 
@@ -99,7 +96,6 @@ export class DesignService {
     return design;
   }
 
-
   async findByType(type: string): Promise<DesignEntity[]> {
     return this.designModel.findAll({ where: { type } });
   }
@@ -107,5 +103,4 @@ export class DesignService {
   async delete(id: string): Promise<number> {
     return this.designModel.destroy({ where: { id } });
   }
-
 }

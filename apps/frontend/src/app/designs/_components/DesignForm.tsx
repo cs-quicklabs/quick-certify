@@ -81,9 +81,7 @@ export default function DesignForm({
 
       {/* Image Upload */}
       <div className="mb-8">
-        <label className="block text-sm font-semibold mb-1">
-          Upload Image
-        </label>
+        <label className="block text-sm font-semibold mb-1">Upload Image</label>
 
         <p className="text-xs text-gray-400 mb-2 font-semibold">
           {isCertificate
@@ -91,21 +89,19 @@ export default function DesignForm({
             : 'Upload badge image (440 × 400)'}
         </p>
 
-        <label className={`relative border-2 border-dashed rounded-lg p-10 text-center block ${preview ? 'cursor-not-allowed bg-gray-100' : 'cursor-pointer hover:bg-gray-100'}`}
+        <label
+          className={`relative border-2 border-dashed rounded-lg p-10 text-center block ${preview ? 'cursor-not-allowed bg-gray-100' : 'cursor-pointer hover:bg-gray-100'}`}
           onClick={(e) => {
             if (preview) e.preventDefault();
-          }}>
-
-
+          }}
+        >
           {preview ? (
             <div className="relative w-full aspect-11/8 mx-auto border rounded overflow-hidden bg-white">
-              <DesignEditor backgroundUrl={preview}
-                onLayoutChangeAction={setLayout} />
+              <DesignEditor backgroundUrl={preview} onLayoutChangeAction={setLayout} />
             </div>
           ) : (
             <p className="text-gray-400">Click to upload</p>
           )}
-
 
           {isUploading && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
@@ -113,11 +109,8 @@ export default function DesignForm({
             </div>
           )}
 
-
           {hasNewImage && uploadComplete && !isUploading && (
-            <p className="mt-2 text-green-600 text-sm font-medium">
-              Upload complete
-            </p>
+            <p className="mt-2 text-green-600 text-sm font-medium">Upload complete</p>
           )}
 
           <input
@@ -145,11 +138,7 @@ export default function DesignForm({
           />
         </label>
 
-        {error && (
-          <p className="mt-2 text-sm font-medium text-red-600">
-            {error}
-          </p>
-        )}
+        {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
       </div>
 
       {/* Actions */}

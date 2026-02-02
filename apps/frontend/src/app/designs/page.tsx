@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import DesignsList from '@/app/designs/_components/DesignsList'
+import DesignsList from '@/app/designs/_components/DesignsList';
 import { useDesignList } from '@/hooks/useDesigns';
 
 const SEARCH_DEBOUNCE_MS = 1000;
@@ -52,7 +52,7 @@ export default function DesignsPage() {
   /* Confirm Delete*/
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm(
-      'Are you sure you want to delete this design? This action cannot be undone.'
+      'Are you sure you want to delete this design? This action cannot be undone.',
     );
     if (!confirmed) return;
 
@@ -72,9 +72,7 @@ export default function DesignsPage() {
       <div className="flex items-center justify-between p-4 bg-white">
         <div>
           <h1 className="text-lg font-bold">Designs Library</h1>
-          <p className="text-sm text-gray-500">
-            Manage certificate and badge designs
-          </p>
+          <p className="text-sm text-gray-500">Manage certificate and badge designs</p>
         </div>
 
         {/* Add New Design Dropdown */}
@@ -108,7 +106,6 @@ export default function DesignsPage() {
           {open && (
             <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-white shadow">
               <ul className="p-2 text-sm font-medium text-gray-700">
-
                 {/* Certificate */}
                 <li>
                   <Link
@@ -169,10 +166,7 @@ export default function DesignsPage() {
               </ul>
             </div>
           )}
-
-
         </div>
-
       </div>
 
       <DesignsList

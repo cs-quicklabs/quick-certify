@@ -10,5 +10,4 @@ import { UserModule } from '../user';
   controllers: [DesignController],
   providers: [DesignService],
 })
-export class DesignModule { }
-
+export class DesignModule {}

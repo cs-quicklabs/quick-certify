@@ -38,10 +38,7 @@ export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
     FabricImage.fromURL(backgroundUrl).then((img) => {
       const iw = img.width ?? CANVAS_WIDTH;
       const ih = img.height ?? CANVAS_HEIGHT;
-      const scale = Math.min(
-        CANVAS_WIDTH / iw,
-        CANVAS_HEIGHT / ih
-      );
+      const scale = Math.min(CANVAS_WIDTH / iw, CANVAS_HEIGHT / ih);
       img.set({
         originX: 'center',
         originY: 'center',
@@ -89,7 +86,6 @@ export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
       onLayoutChangeAction?.(extractLayout(canvas));
     });
 
-
     // Resize observer → adapt to parent
     const resize = () => {
       if (!containerRef.current) return;
@@ -115,19 +111,14 @@ export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
     };
   }, [backgroundUrl]);
 
-  return (
-    <div
-      ref={containerRef}
-      className="w-full aspect-11/8 bg-white overflow-hidden"
-    />
-  );
+  return <div ref={containerRef} className="w-full aspect-11/8 bg-white overflow-hidden" />;
 }
 
 export function extractLayout(canvas: Canvas): DesignLayout {
   const placeholders = canvas
     .getObjects()
-    .filter(obj => obj.type === 'i-text')
-    .map(obj => {
+    .filter((obj) => obj.type === 'i-text')
+    .map((obj) => {
       const text = obj as IText;
 
       return {
@@ -146,4 +137,3 @@ export function extractLayout(canvas: Canvas): DesignLayout {
 
   return { placeholders };
 }
-

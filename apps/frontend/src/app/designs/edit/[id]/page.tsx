@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useParams } from 'next/navigation';
 import { DesignFormPage } from '@/app/designs/_components/DesignFormPage';
@@ -11,11 +11,5 @@ export default function EditDesignPage() {
   if (isLoading) return <div>Loading...</div>;
   if (error || !design) return <div>Failed to load design</div>;
 
-  return (
-    <DesignFormPage
-      mode="edit"
-      id={id}
-      designType={design.type}
-    />
-  );
+  return <DesignFormPage mode="edit" id={id} designType={design.type} />;
 }

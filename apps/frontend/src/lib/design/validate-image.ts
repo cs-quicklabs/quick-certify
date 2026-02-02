@@ -6,10 +6,7 @@ import { IMAGE_RULES, DesignType } from './image-rules';
  * @param designType
  * @returns
  */
-export function validateImageDimensions(
-  file: File,
-  designType: DesignType
-): Promise<void> {
+export function validateImageDimensions(file: File, designType: DesignType): Promise<void> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -23,8 +20,8 @@ export function validateImageDimensions(
       if (width < rule.minWidth || height < rule.minHeight) {
         reject(
           new Error(
-            `Invalid image size. Expected at least ${rule.minWidth}×${rule.minHeight}px for ${rule.label}.`
-          )
+            `Invalid image size. Expected at least ${rule.minWidth}×${rule.minHeight}px for ${rule.label}.`,
+          ),
         );
       } else {
         resolve();

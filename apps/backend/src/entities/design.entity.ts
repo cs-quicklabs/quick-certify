@@ -1,6 +1,6 @@
-import { Column, DataType, Table } from "sequelize-typescript";
-import { BaseNanoidEntity } from "./base-nanoid.entity";
-import { DesignLayout } from "@src/modules/design/interfaces/design.layout.interface";
+import { Column, DataType, Table } from 'sequelize-typescript';
+import { BaseNanoidEntity } from './base-nanoid.entity';
+import { DesignLayout } from '@src/modules/design/interfaces/design.layout.interface';
 
 /**
  * Design Entity

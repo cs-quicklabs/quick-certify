@@ -101,7 +101,7 @@ import { DesignModule } from './modules/design/design.module';
     FileModule,
     SkillModule,
     EventModule,
-    DesignModule
+    DesignModule,
   ],
   controllers: [AppController],
   providers: [

@@ -37,7 +37,6 @@ export async function uploadImage(options: ImageUploadOptions): Promise<ImageUpl
   const { file, category, designType, validateDimensions = false } = options;
 
   try {
-
     if (validateDimensions && designType) {
       await validateImageDimensions(file, designType);
     }

@@ -26,8 +26,6 @@ export default function DesignsLayout({
     }
   }, [user, isInitialized, isLoading, router]);
 
-
-
   if (!isInitialized || isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">

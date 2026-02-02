@@ -803,9 +803,6 @@ export class AuthService implements IAuthService {
     return data.googleUser;
   }
 
-
-
-
   private cleanExpiredTempTokens(): void {
     const now = Date.now();
     for (const [key, value] of this.tempGoogleUserStore.entries()) {
