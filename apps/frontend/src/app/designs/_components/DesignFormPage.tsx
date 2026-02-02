@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import DesignForm from './DesignForm';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { useCreateDesign, useDesignById, useUpdateDesign } from '@/hooks/useDesigns';
+import {
+  useCreateDesign,
+  useDesignById,
+  useUpdateDesign,
+} from '@/hooks/useDesigns';
 
 type DesignType = 'certificate' | 'badge';
 
@@ -18,70 +22,98 @@ export function DesignFormPage({
 }) {
   const isEdit = mode === 'edit';
 
+  /* ---------------- API ---------------- */
   const { data: design, isLoading } = useDesignById(id ?? '');
+  const createDesign = useCreateDesign();
+  const updateDesign = useUpdateDesign();
+
+  /* ---------------- State ---------------- */
   const [name, setName] = useState('');
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Populate fields once design loads
-  useEffect(() => {
-    if (isEdit && design) {
-      setName(design.name);
-      setUploadedUrl(design.url); // existing image
-    }
-  }, [isEdit, design]);
+  const [initialName, setInitialName] = useState('');
+  const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
 
-  const [formKey, setFormKey] = useState(0);
+  const [imageChanged, setImageChanged] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
+  /* ---------------- Image Upload ---------------- */
   const {
     upload,
     isUploading,
     error: uploadError,
   } = useImageUpload({
     category: 'design',
-    onSuccess: (url) => setUploadedUrl(url),
+    onSuccess: (url) => setImageUrl(url),
   });
 
-  const createDesign = useCreateDesign();
-  const updateDesign = useUpdateDesign();
+  /* ---------------- Populate EDIT mode ---------------- */
+  useEffect(() => {
+    if (isEdit && design) {
+      setName(design.name);
+      setImageUrl(design.url);
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+      setInitialName(design.name);
+      setInitialImageUrl(design.url);
+    }
+  }, [isEdit, design]);
 
+  /* ---------------- Dirty State ---------------- */
+  const isDirty = isEdit
+    ? name !== initialName || imageChanged
+    : Boolean(name.trim()) && Boolean(imageUrl || selectedFile);
+
+  /* ---------------- Handlers ---------------- */
   const handleImageSelect = (file: File) => {
-    setSelectedFile(file); // store locally
+    setSelectedFile(file);
+    setImageChanged(true);
   };
 
   const handleSubmit = async ({ name }: { name: string }) => {
-    let finalUrl = uploadedUrl;
+    if (isUploading || !isDirty) return;
 
-    //Upload ONLY on save
-    if (selectedFile) {
-      finalUrl = await upload(selectedFile);
+    let resolvedImageUrl = imageUrl;
+
+    try {
+      if (selectedFile && imageChanged) {
+        resolvedImageUrl = await upload(selectedFile);
+      }
+
+      if (!resolvedImageUrl) return;
+
+      if (isEdit && id) {
+        await updateDesign.mutateAsync({
+          id,
+          name,
+          designType,
+          designUrl: resolvedImageUrl,
+        });
+
+        setInitialName(name);
+        setInitialImageUrl(resolvedImageUrl);
+        setImageChanged(false);
+      } else {
+        await createDesign.mutateAsync({
+          name,
+          type: designType,
+          url: resolvedImageUrl,
+        });
+
+        setSelectedFile(null);
+        setImageUrl(null);
+        setFormKey((k) => k + 1);
+      }
+
+      setSuccess(true);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save design. Please try again.');
     }
-
-    if (!finalUrl) return;
-
-    if (isEdit && id) {
-      await updateDesign.mutateAsync({
-        id,
-        name,
-        designType,
-        designUrl: finalUrl,
-      });
-    } else {
-      await createDesign.mutateAsync({
-        name,
-        type: designType,
-        url: finalUrl,
-      });
-    }
-
-    setSuccess(true);
-    setSelectedFile(null);
-    setUploadedUrl(null);
-    setFormKey((k) => k + 1);
   };
 
+  /* ---------------- Success Toast ---------------- */
   useEffect(() => {
     if (!success) return;
     const t = setTimeout(() => setSuccess(false), 3000);
@@ -95,35 +127,34 @@ export function DesignFormPage({
   return (
     <>
       {success && (
-        <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
+        <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700">
           Design saved successfully
         </div>
       )}
 
-      {/* Design Form */}
       <DesignForm
         key={formKey}
         mode={mode}
         designType={designType}
         title={
-          mode === 'edit'
+          isEdit
             ? `Edit ${designType === 'certificate' ? 'Certificate' : 'Badge'} Design`
             : `Add New ${designType === 'certificate' ? 'Certificate' : 'Badge'}`
         }
         subtitle={
-          mode === 'edit'
+          isEdit
             ? 'Drag and edit name directly on the certificate'
             : 'Upload image and provide a name'
         }
-        defaultName={name}
-        imageUrl={uploadedUrl ?? undefined}
+        name={name}
+        onNameChangeAction={setName}
+        imageUrl={imageUrl ?? undefined}
         isUploading={isUploading}
-        uploadComplete={!!uploadedUrl}
+        uploadError={uploadError}
+        isSaveDisabled={!isDirty || isUploading}
         onImageSelectAction={handleImageSelect}
         onSubmitAction={handleSubmit}
       />
-
-      {uploadError && <p className="mt-3 text-center text-sm text-red-600">{uploadError}</p>}
     </>
   );
 }

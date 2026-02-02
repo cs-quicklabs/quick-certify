@@ -86,9 +86,7 @@ export class DesignService {
 
   async update(designId: string, dto: UpdateDesignDto): Promise<DesignEntity> {
     const design = await this.findOne(designId);
-    console.log('design', design)
     const updateData: Partial<DesignEntity> = {};
-    console.log(dto)
     if (dto.name !== undefined) {
       updateData.name = dto.name;
     }

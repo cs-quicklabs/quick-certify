@@ -58,7 +58,7 @@ export class DesignController {
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiResponse({ status: 200, description: 'Design updated' })
   @ApiResponse({ status: 404, description: 'Design not found' })
-  async update(@Param('uuid') uuid: string, dto: UpdateDesignDto) {
+  async update(@Param('uuid') uuid: string, @Body() dto: UpdateDesignDto) {
     const design = await this.designService.update(uuid, dto);
     return new SuccessResponse('Design updated successfully', design);
   }

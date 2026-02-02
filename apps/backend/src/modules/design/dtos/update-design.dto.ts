@@ -18,7 +18,7 @@ export class UpdateDesignDto {
   })
   @MinLength(1, { message: 'Design name cannot be empty' })
   @MaxLength(100, { message: 'Desing name must not exceed 100 characters' })
-  name = '';
+  name?: string = '';
 
   @ApiProperty({ description: 'Design Url' })
   @IsString()

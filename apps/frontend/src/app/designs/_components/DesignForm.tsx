@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { validateImageDimensions } from '@/lib/design';
 import { DesignEditor } from './DesignEditor';
 import { DesignLayout } from '@/types';
@@ -12,12 +12,17 @@ type Props = {
   subtitle: string;
   mode: 'add' | 'edit';
   designType: DesignType;
-  defaultName?: string;
+
+  name: string;
+  onNameChangeAction: (v: string) => void;
+
   imageUrl?: string;
   isUploading?: boolean;
-  uploadComplete?: boolean;
+  uploadError?: string | null;
+  isSaveDisabled: boolean;
+
   onImageSelectAction: (file: File) => void;
-  onSubmitAction: (data: { name: string; image: File | null }) => void;
+  onSubmitAction: (data: { name: string }) => void;
 };
 
 export default function DesignForm({
@@ -25,40 +30,37 @@ export default function DesignForm({
   subtitle,
   mode,
   designType,
-  defaultName = '',
+  name,
+  onNameChangeAction,
   imageUrl,
   isUploading = false,
-  uploadComplete = false,
+  uploadError,
+  isSaveDisabled,
   onImageSelectAction,
   onSubmitAction,
 }: Props) {
-  const [name, setName] = useState(defaultName);
   const [error, setError] = useState<string | null>(null);
   const [, setLayout] = useState<DesignLayout | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
-  const [hasNewImage, setHasNewImage] = useState(false);
-  const imageRef = useRef<File | null>(null);
-  const canSubmit = name.trim() && (preview || imageRef.current);
 
+  const imageRef = useRef<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isCertificate = designType === 'certificate';
+  const isValid = Boolean(name.trim()) && Boolean(preview);
 
   useEffect(() => {
-    setName(defaultName ?? '');
     setPreview(imageUrl ?? null);
     imageRef.current = null;
     setError(null);
-    setHasNewImage(false);
-  }, [defaultName, imageUrl]);
+  }, [imageUrl]);
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmitAction({ name, image: imageRef.current });
+        onSubmitAction({ name });
       }}
-      className="max-w-xl mx-auto py-6 px-5"
+      className="mx-auto max-w-xl px-5 py-6"
     >
       {/* Header */}
       <div className="mb-4">
@@ -68,49 +70,48 @@ export default function DesignForm({
 
       {/* Name */}
       <div className="mb-4">
-        <label className="block text-sm font-semibold mb-1">
+        <label className="mb-1 block text-sm font-semibold">
           {mode === 'edit' ? 'Edit Name' : 'Add Name'}
         </label>
         <input
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full border text-sm border-gray-200 font-semibold rounded-md px-3 py-2"
+          onChange={(e) => onNameChangeAction(e.target.value)}
+          className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm font-semibold"
           required
         />
       </div>
 
       {/* Image Upload */}
       <div className="mb-8">
-        <label className="block text-sm font-semibold mb-1">Upload Image</label>
-
-        <p className="text-xs text-gray-400 mb-2 font-semibold">
-          {isCertificate
+        <label className="mb-1 block text-sm font-semibold">Upload Image</label>
+        <p className="mb-2 text-xs font-semibold text-gray-400">
+          {designType === 'certificate'
             ? 'Upload A4 size certificate (1100 × 800)'
             : 'Upload badge image (440 × 400)'}
         </p>
 
         <label
-          className={`relative border-2 border-dashed rounded-lg p-10 text-center block ${preview ? 'cursor-not-allowed bg-gray-100' : 'cursor-pointer hover:bg-gray-100'}`}
-          onClick={(e) => {
-            if (preview) e.preventDefault();
-          }}
+          className={`relative block rounded-lg border-2 border-dashed p-10 text-center ${preview
+            ? 'cursor-not-allowed bg-gray-100'
+            : 'cursor-pointer hover:bg-gray-100'
+            }`}
+          onClick={(e) => preview && e.preventDefault()}
         >
           {preview ? (
-            <div className="relative w-full aspect-11/8 mx-auto border rounded overflow-hidden bg-white">
-              <DesignEditor backgroundUrl={preview} onLayoutChangeAction={setLayout} />
+            <div className="relative mx-auto aspect-11/8 w-full overflow-hidden rounded border bg-white">
+              <DesignEditor
+                backgroundUrl={preview}
+                onLayoutChangeAction={setLayout}
+              />
             </div>
           ) : (
             <p className="text-gray-400">Click to upload</p>
           )}
 
           {isUploading && (
-            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
               <span className="text-sm font-semibold">Saving design…</span>
             </div>
-          )}
-
-          {hasNewImage && uploadComplete && !isUploading && (
-            <p className="mt-2 text-green-600 text-sm font-medium">Upload complete</p>
           )}
 
           <input
@@ -126,27 +127,32 @@ export default function DesignForm({
                 await validateImageDimensions(file, designType);
                 imageRef.current = file;
                 setPreview(URL.createObjectURL(file));
-                setHasNewImage(true);
                 onImageSelectAction(file);
                 setError(null);
-              } catch (err: unknown) {
+              } catch (err) {
                 imageRef.current = null;
-                setError(err instanceof Error ? err.message : 'An error occurred');
+                setError(
+                  err instanceof Error ? err.message : 'Invalid image'
+                );
                 e.target.value = '';
               }
             }}
           />
         </label>
 
-        {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
+        {(error || uploadError) && (
+          <p className="mt-2 text-sm font-medium text-red-600">
+            {error || uploadError}
+          </p>
+        )}
       </div>
 
       {/* Actions */}
-      <div className="flex gap-4 items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <button
           type="submit"
-          disabled={isUploading || !canSubmit}
-          className="bg-blue-800 disabled:opacity-50 font-semibold text-sm text-white px-6 py-2 rounded-md"
+          disabled={isSaveDisabled || !isValid}
+          className="rounded-md bg-blue-800 px-6 py-2 text-sm font-semibold text-white disabled:opacity-50"
         >
           Save Design
         </button>
@@ -154,7 +160,8 @@ export default function DesignForm({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="border px-6 py-2 rounded-md font-semibold text-sm border-gray-200 hover:border-gray-400"
+          disabled={isUploading}
+          className="rounded-md border border-gray-200 px-6 py-2 text-sm font-semibold hover:border-gray-400 disabled:opacity-50"
         >
           Replace Image
         </button>
