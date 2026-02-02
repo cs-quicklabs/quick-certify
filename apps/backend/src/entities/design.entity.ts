@@ -1,6 +1,6 @@
-import { Column, DataType, Table } from 'sequelize-typescript';
-import { BaseNanoidEntity } from './base-nanoid.entity';
+import { Column, DataType, Index, Table } from 'sequelize-typescript';
 import { DesignLayout } from '@src/modules/design/interfaces/design.layout.interface';
+import { BaseEntity } from './base.entity';
 
 /**
  * Design Entity
@@ -9,10 +9,15 @@ import { DesignLayout } from '@src/modules/design/interfaces/design.layout.inter
  */
 
 @Table({
-  tableName: 'designs',
+  tableName: 'design',
   underscored: true,
 })
-export class DesignEntity extends BaseNanoidEntity {
+export class DesignEntity extends BaseEntity {
+  // Override UUID with table-specific index
+  @Index({ name: 'IDX_DESIGN_UUID', unique: true })
+  declare uuid: string;
+
+  @Index({ name: 'IDX_DESIGN_NAME' })
   @Column({
     type: DataType.STRING(100),
     allowNull: false,

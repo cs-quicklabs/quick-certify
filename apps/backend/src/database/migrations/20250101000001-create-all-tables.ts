@@ -732,14 +732,41 @@ module.exports = {
         { transaction },
       );
 
+      await queryInterface.addIndex('event', ['event_type_id'], {
+        name: 'IDX_EVENT_TYPE_ID',
+        transaction,
+      });
+
+      await queryInterface.addIndex('event', ['event_level_id'], {
+        name: 'IDX_EVENT_LEVEL_ID',
+        transaction,
+      });
+
+      await queryInterface.addIndex('event', ['event_format_id'], {
+        name: 'IDX_EVENT_FORMAT_ID',
+        transaction,
+      });
+
+      await queryInterface.addIndex('event', ['uuid'], {
+        name: 'IDX_EVENT_UUID',
+        unique: true,
+        transaction,
+      });
+
       // 11. Create design table
       await queryInterface.createTable(
-        'designs',
+        'design',
         {
           id: {
             type: DataTypes.STRING(21),
             primaryKey: true,
             allowNull: false,
+            autoIncrement: true,
+          },
+          uuid: {
+            type: DataTypes.STRING(21),
+            allowNull: false,
+            unique: true,
           },
           name: {
             type: DataTypes.STRING(100),
@@ -771,23 +798,13 @@ module.exports = {
         { transaction },
       );
 
-      await queryInterface.addIndex('event', ['event_type_id'], {
-        name: 'IDX_EVENT_TYPE_ID',
+      await queryInterface.addIndex('design', ['name'], {
+        name: 'IDX_DESIGN_NAME',
         transaction,
       });
 
-      await queryInterface.addIndex('event', ['event_level_id'], {
-        name: 'IDX_EVENT_LEVEL_ID',
-        transaction,
-      });
-
-      await queryInterface.addIndex('event', ['event_format_id'], {
-        name: 'IDX_EVENT_FORMAT_ID',
-        transaction,
-      });
-
-      await queryInterface.addIndex('event', ['uuid'], {
-        name: 'IDX_EVENT_UUID',
+      await queryInterface.addIndex('design', ['uuid'], {
+        name: 'IDX_DESIGN_UUID',
         unique: true,
         transaction,
       });

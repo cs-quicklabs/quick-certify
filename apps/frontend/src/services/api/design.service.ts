@@ -9,9 +9,11 @@ import { buildUrl } from '@/lib/query-params';
 
 export type Design = {
   id: string;
+  uuid: string;
   name: string;
   type: DesignType;
   url: string;
+  layout: string;
   createdAt: string;
 };
 
