@@ -1,6 +1,7 @@
 import { Column, DataType, Index, Table } from 'sequelize-typescript';
 import { DesignLayout } from '@src/modules/design/interfaces/design.layout.interface';
 import { BaseEntity } from './base.entity';
+import { Design } from '@src/modules/design/enums';
 
 /**
  * Design Entity
@@ -28,7 +29,7 @@ export class DesignEntity extends BaseEntity {
     type: DataType.STRING(15),
     allowNull: false,
   })
-  declare type: 'certificate' | 'badge';
+  declare type: Design;
 
   @Column({
     type: DataType.STRING(500),

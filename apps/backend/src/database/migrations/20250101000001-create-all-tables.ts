@@ -758,7 +758,7 @@ module.exports = {
         'design',
         {
           id: {
-            type: DataTypes.STRING(21),
+            type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
             autoIncrement: true,

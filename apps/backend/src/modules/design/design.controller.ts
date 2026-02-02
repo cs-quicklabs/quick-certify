@@ -23,7 +23,7 @@ import { UpdateDesignDto } from './dtos/update-design.dto';
 @ApiBearerAuth()
 @Controller({ path: 'designs', version: '1' })
 export class DesignController {
-  constructor(private readonly designService: DesignService) {}
+  constructor(private readonly designService: DesignService) { }
 
   @Get()
   @UseGuards(RolesGuard)
@@ -66,9 +66,8 @@ export class DesignController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-  @ApiOperation({ summary: 'Create a new user/invitation (Admin/Super Admin only)' })
-  @ApiResponse({ status: 201, description: 'User created successfully' })
-  @ApiResponse({ status: 409, description: 'Email already registered' })
+  @ApiOperation({ summary: 'Create a new design (Admin/Super Admin only)' })
+  @ApiResponse({ status: 201, description: 'Design created successfully' })
   async create(@Body() dto: CreateDesignDto) {
     const newDesign = await this.designService.create(dto);
     return new SuccessResponse('Design created successfully', newDesign);
@@ -77,9 +76,9 @@ export class DesignController {
   @Delete(':uuid')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Delete user (soft delete - archives user) (Admin/Super Admin only)' })
-  @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiOperation({ summary: 'Delete Design (Admin/Super Admin only)' })
+  @ApiResponse({ status: 200, description: 'Design deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Design not found' })
   async delete(@Param('uuid') uuid: string) {
     const existingDesign = await this.designService.findOne(uuid);
     if (!existingDesign) {

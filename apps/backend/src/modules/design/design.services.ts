@@ -11,7 +11,7 @@ export class DesignService {
   constructor(
     @InjectModel(DesignEntity)
     private readonly designModel: typeof DesignEntity,
-  ) {}
+  ) { }
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<DesignEntity>> {
     const { page = 1, limit = 10, sortBy = 'type', sortOrder = 'ASC', where = {} } = options;
@@ -71,7 +71,6 @@ export class DesignService {
   }
 
   async create(dto: CreateDesignDto): Promise<DesignEntity> {
-    // check if we need origanization verification
     const design = await this.designModel.create({
       name: capitalizeFirst(dto.name),
       type: dto.designType,
