@@ -70,15 +70,10 @@ export default function DesignsPage() {
     <div>
       {/* Header */}
       <div className="flex flex-col gap-y-3 p-4 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-y-0 sm:gap-x-4 bg-white">
-
         {/* Title + Description */}
         <div>
-          <h1 className="mr-3 text-lg font-semibold text-gray-900">
-            Designs Library
-          </h1>
-          <p className="text-sm text-gray-500">
-            Manage certificate and badge designs
-          </p>
+          <h1 className="mr-3 text-lg font-semibold text-gray-900">Designs Library</h1>
+          <p className="text-sm text-gray-500">Manage certificate and badge designs</p>
         </div>
 
         {/* Add New Design Dropdown */}
@@ -98,8 +93,7 @@ export default function DesignsPage() {
           >
             Add New Design
             <svg
-              className={`w-4 h-4 ms-1.5 -me-0.5 transition-transform ${open ? 'rotate-180' : ''
-                }`}
+              className={`w-4 h-4 ms-1.5 -me-0.5 transition-transform ${open ? 'rotate-180' : ''}`}
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -114,7 +108,6 @@ export default function DesignsPage() {
           {open && (
             <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg">
               <ul className="p-2 text-sm font-medium text-gray-700">
-
                 {/* Certificate */}
                 <li>
                   <Link
@@ -164,13 +157,11 @@ export default function DesignsPage() {
                     Badge
                   </Link>
                 </li>
-
               </ul>
             </div>
           )}
         </div>
       </div>
-
 
       <DesignsList
         designs={designs}

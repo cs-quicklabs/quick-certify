@@ -57,16 +57,11 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
 
   return (
     <>
-
       {/* Search and Filter Section */}
       <div className="flex flex-wrap items-center gap-y-3 border-t border-b border-gray-200 px-4 py-2 bg-white">
-
         {/* Filter Options */}
         <div className="flex flex-wrap items-center gap-x-4 text-sm font-medium text-gray-900">
-
-          <span className="hidden md:block">
-            Show records only for:
-          </span>
+          <span className="hidden md:block">Show records only for:</span>
 
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -112,10 +107,7 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
             className="w-48 px-3 py-2 text-sm text-gray-700 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
-
       </div>
-
-
 
       {/* Design Action */}
 
