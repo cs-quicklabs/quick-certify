@@ -96,7 +96,6 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     const { count, rows } = await this.userModel.findAndCountAll({
       where: whereClause,
-      where: whereClause,
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
@@ -250,9 +249,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
 
-      const inviteLink = `${
-        process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-      }/auth/invitation?token=${userWithRelations.uuid}`;
+      const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+        }/auth/invitation?token=${userWithRelations.uuid}`;
 
       this.mailService
         .sendInvitationEmail(userWithRelations.email, {
@@ -440,9 +438,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const inviterName = currentUser
       ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
       : 'Administrator';
-    const inviteLink = `${
-      process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-    }/auth/invitation?token=${user.uuid}`;
+    const inviteLink = `${process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+      }/auth/invitation?token=${user.uuid}`;
     const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService
@@ -467,18 +464,6 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       ...options.where,
       organization_id: organizationId,
     };
-
-    // Apply role-based visibility filtering
-    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
-    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
-    let excludedRoleIds: string[] = [];
-    const currentUserRole = (options as any).currentUserRole as string | undefined;
-    if (currentUserRole) {
-      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
-      if (excludedRoles.length > 0) {
-        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
-      }
-    }
 
     // Apply role-based filtering (extracted to avoid duplication)
     await this.applyRoleFiltering(whereClause, options);
@@ -526,18 +511,6 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       organization_id: organizationId,
       ...searchCondition,
     };
-
-    // Apply role-based visibility filtering
-    // Super Admin can see: Admin, Manager, Designer (not other Super Admins)
-    // Admin can see: Manager, Designer (not Super Admin, not other Admins)
-    let excludedRoleIds: string[] = [];
-    const currentUserRole = (options as any).currentUserRole as string | undefined;
-    if (currentUserRole) {
-      const excludedRoles = this.getExcludedRolesForVisibility(currentUserRole);
-      if (excludedRoles.length > 0) {
-        excludedRoleIds = await this.getRoleIdsByNames(excludedRoles);
-      }
-    }
 
     // Apply role-based filtering (extracted to avoid duplication)
     await this.applyRoleFiltering(whereClause, options);
