@@ -11,7 +11,7 @@ export class DesignService {
   constructor(
     @InjectModel(DesignEntity)
     private readonly designModel: typeof DesignEntity,
-  ) { }
+  ) {}
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<DesignEntity>> {
     const { page = 1, limit = 10, sortBy = 'type', sortOrder = 'ASC', where = {} } = options;
