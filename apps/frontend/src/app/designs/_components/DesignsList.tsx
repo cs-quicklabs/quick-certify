@@ -104,7 +104,7 @@ export default function DesignsList({ designs, meta, onDelete, search, setSearch
             placeholder="Search by name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-48 px-3 py-2 text-sm text-gray-700 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="w-48 px-3 py-2 text-sm text-gray-800 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
         </div>
       </div>

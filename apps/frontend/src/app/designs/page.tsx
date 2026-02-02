@@ -73,7 +73,7 @@ export default function DesignsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col gap-y-3 p-4 py-2 sm:flex-row sm:items-center sm:justify-between shadow sm:gap-y-0 sm:gap-x-4 bg-white">
+      <div className="flex flex-col gap-y-3 p-4 py-2 pr-8 sm:flex-row sm:items-center sm:justify-between shadow sm:gap-y-0 sm:gap-x-4 bg-white">
         {/* Title + Description */}
         <div>
           <h1 className="mr-3 text-lg font-semibold text-gray-900">Designs Library</h1>
@@ -86,8 +86,8 @@ export default function DesignsPage() {
             onClick={() => setOpen((v) => !v)}
             className="
         inline-flex items-center
-        rounded-md
-        bg-blue-800 px-4 py-2
+        rounded-sm
+        bg-primary-700 px-4 py-2
         text-sm font-medium text-white
         hover:bg-blue-900
         focus:outline-none focus:ring-2 focus:ring-blue-300
