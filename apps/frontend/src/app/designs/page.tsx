@@ -69,10 +69,16 @@ export default function DesignsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-white">
+      <div className="flex flex-col gap-y-3 p-4 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-y-0 sm:gap-x-4 bg-white">
+
+        {/* Title + Description */}
         <div>
-          <h1 className="text-lg font-bold">Designs Library</h1>
-          <p className="text-sm text-gray-500">Manage certificate and badge designs</p>
+          <h1 className="mr-3 text-lg font-semibold text-gray-900">
+            Designs Library
+          </h1>
+          <p className="text-sm text-gray-500">
+            Manage certificate and badge designs
+          </p>
         </div>
 
         {/* Add New Design Dropdown */}
@@ -80,18 +86,20 @@ export default function DesignsPage() {
           <button
             onClick={() => setOpen((v) => !v)}
             className="
-    inline-flex items-center justify-center
-    rounded-md
-    bg-blue-700 px-4 py-2
-    text-sm font-medium text-white
-    hover:bg-blue-800
-    focus:outline-none focus:ring-2 focus:ring-blue-300
-    transition-colors
-  "
+        inline-flex items-center
+        rounded-md
+        bg-blue-800 px-4 py-2
+        text-sm font-medium text-white
+        hover:bg-blue-900
+        focus:outline-none focus:ring-2 focus:ring-blue-300
+        transition-colors
+      "
+            type="button"
           >
             Add New Design
             <svg
-              className={`w-4 h-4 ms-1.5 -me-0.5 transition-transform ${open ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 ms-1.5 -me-0.5 transition-transform ${open ? 'rotate-180' : ''
+                }`}
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -104,18 +112,15 @@ export default function DesignsPage() {
           </button>
 
           {open && (
-            <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg bg-white shadow">
+            <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg">
               <ul className="p-2 text-sm font-medium text-gray-700">
+
                 {/* Certificate */}
                 <li>
                   <Link
                     href="/designs/add?type=certificate"
                     onClick={() => setOpen(false)}
-                    className="
-            inline-flex w-full items-center gap-3
-            rounded-md p-2
-            hover:bg-gray-100 hover:text-gray-900
-          "
+                    className="inline-flex w-full items-center gap-3 rounded-md p-2 hover:bg-gray-100 hover:text-gray-900"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -140,11 +145,7 @@ export default function DesignsPage() {
                   <Link
                     href="/designs/add?type=badge"
                     onClick={() => setOpen(false)}
-                    className="
-            inline-flex w-full items-center gap-3
-            rounded-md p-2
-            hover:bg-gray-100 hover:text-gray-900
-          "
+                    className="inline-flex w-full items-center gap-3 rounded-md p-2 hover:bg-gray-100 hover:text-gray-900"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -163,11 +164,13 @@ export default function DesignsPage() {
                     Badge
                   </Link>
                 </li>
+
               </ul>
             </div>
           )}
         </div>
       </div>
+
 
       <DesignsList
         designs={designs}
