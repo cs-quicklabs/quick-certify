@@ -18,24 +18,20 @@ export function DesignFormPage({
 }) {
   const isEdit = mode === 'edit';
 
-  /* ---------------- API ---------------- */
   const { data: design, isLoading } = useDesignById(id ?? '');
   const createDesign = useCreateDesign();
   const updateDesign = useUpdateDesign();
 
-  /* ---------------- State ---------------- */
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [initialName, setInitialName] = useState('');
   const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
-
   const [imageChanged, setImageChanged] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
-  /* ---------------- Image Upload ---------------- */
   const {
     upload,
     isUploading,
@@ -45,7 +41,6 @@ export function DesignFormPage({
     onSuccess: (url) => setImageUrl(url),
   });
 
-  /* ---------------- Populate EDIT mode ---------------- */
   useEffect(() => {
     if (isEdit && design) {
       setName(design.name);
@@ -56,12 +51,10 @@ export function DesignFormPage({
     }
   }, [isEdit, design]);
 
-  /* ---------------- Dirty State ---------------- */
   const isDirty = isEdit
-    ? name !== initialName || imageChanged
+    ? name !== initialName || imageChanged || imageUrl !== initialImageUrl
     : Boolean(name.trim()) && Boolean(imageUrl || selectedFile);
 
-  /* ---------------- Handlers ---------------- */
   const handleImageSelect = (file: File) => {
     setSelectedFile(file);
     setImageChanged(true);
@@ -109,7 +102,6 @@ export function DesignFormPage({
     }
   };
 
-  /* ---------------- Success Toast ---------------- */
   useEffect(() => {
     if (!success) return;
     const t = setTimeout(() => setSuccess(false), 3000);
