@@ -1,6 +1,7 @@
-import { Column, DataType, Index, Table } from 'sequelize-typescript';
-import { DesignLayout } from '@src/modules/design/interfaces/design.layout.interface';
+import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
+import { DesignLayout } from '@src/modules/design/interfaces/';
 import { BaseEntity } from './base.entity';
+import { OrganizationEntity } from './organization.entity';
 import { Design } from '@src/modules/design/enums';
 
 /**
@@ -24,6 +25,18 @@ export class DesignEntity extends BaseEntity {
     allowNull: false,
   })
   declare name: string;
+
+  @ForeignKey(() => OrganizationEntity)
+  @Index({ name: 'IDX_DESIGN_ORGNANIZATION_ID' })
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    field: 'organatization_id',
+  })
+  declare organization_id: number;
+
+  @BelongsTo(() => OrganizationEntity)
+  declare organization: OrganizationEntity;
 
   @Column({
     type: DataType.STRING(15),

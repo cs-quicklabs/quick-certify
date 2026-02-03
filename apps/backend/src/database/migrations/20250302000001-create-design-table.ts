@@ -19,6 +19,15 @@ module.exports = {
             unique: true,
           },
           name: { type: DataTypes.STRING(100), allowNull: false },
+          organization_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+              model: 'organization',
+              key: 'id',
+            },
+            onDelete: 'CASCADE',
+          },
           type: { type: DataTypes.STRING(15), allowNull: false },
           url: { type: DataTypes.STRING(500), allowNull: false },
           layout: { type: DataTypes.JSONB, allowNull: true },
