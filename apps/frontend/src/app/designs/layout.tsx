@@ -1,7 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { Header, Logo } from '@/components';
+import { Logo } from '@/components';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function DesignsLayout({
