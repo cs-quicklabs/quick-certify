@@ -27,11 +27,11 @@ export class DesignEntity extends BaseEntity {
   declare name: string;
 
   @ForeignKey(() => OrganizationEntity)
-  @Index({ name: 'IDX_DESIGN_ORGNANIZATION_ID' })
+  @Index({ name: 'IDX_DESIGN_ORGANIZATION_ID' })
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    field: 'organatization_id',
+    field: 'organization_id',
   })
   declare organization_id: number;
 

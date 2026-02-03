@@ -13,21 +13,22 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { DesignService } from './design.services';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import { CreateDesignDto } from './dtos/create-design.dto';
 import { UpdateDesignDto } from './dtos/update-design.dto';
+import type { CurrentUser as CurrentUserType } from '../auth/interfaces';
 
 @ApiTags('Designs')
 @ApiBearerAuth()
+@UseGuards(RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller({ path: 'designs', version: '1' })
 export class DesignController {
   constructor(private readonly designService: DesignService) {}
 
   @Get()
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get all Designs (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Design list' })
   @ApiQuery({ name: 'page', required: false })
@@ -35,7 +36,7 @@ export class DesignController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  async findAll(@Query() pagination: PaginationDto) {
+  async findAll(@CurrentUser() currentUser: CurrentUserType, @Query() pagination: PaginationDto) {
     const result = pagination.search
       ? await this.designService.searchDesigns(pagination.search, pagination)
       : await this.designService.findAll(pagination);
@@ -43,19 +44,14 @@ export class DesignController {
   }
 
   @Get(':uuid')
-  @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiResponse({ status: 200, description: 'Design found' })
   @ApiResponse({ status: 404, description: 'Design not found' })
   async findOne(@Param('uuid') uuid: string) {
     const design = await this.designService.findOne(uuid);
-    if (!design) return new SuccessResponse('Design not found', null);
     return new SuccessResponse('Design retrieved successfully', design);
   }
 
   @Patch(':uuid')
-  @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiResponse({ status: 200, description: 'Design updated' })
   @ApiResponse({ status: 404, description: 'Design not found' })
   async update(@Param('uuid') uuid: string, @Body() dto: UpdateDesignDto) {
@@ -64,27 +60,18 @@ export class DesignController {
   }
 
   @Post()
-  @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Create a new design (Admin/Super Admin only)' })
   @ApiResponse({ status: 201, description: 'Design created successfully' })
-  async create(@Body() dto: CreateDesignDto) {
-    const newDesign = await this.designService.create(dto);
+  async create(@CurrentUser() currentUser: CurrentUserType, @Body() dto: CreateDesignDto) {
+    const newDesign = await this.designService.create(currentUser, dto);
     return new SuccessResponse('Design created successfully', newDesign);
   }
 
   @Delete(':uuid')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Delete Design (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Design deleted successfully' })
   @ApiResponse({ status: 404, description: 'Design not found' })
   async delete(@Param('uuid') uuid: string) {
-    const existingDesign = await this.designService.findOne(uuid);
-    if (!existingDesign) {
-      return new SuccessResponse('Design not found', null);
-    }
-
     await this.designService.delete(uuid);
     return new SuccessResponse('Design deleted successfully', { deleted: true });
   }

@@ -6,6 +6,7 @@ import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UpdateDesignDto } from './dtos/update-design.dto';
 import { CreateDesignDto } from './dtos/create-design.dto';
 import { capitalizeFirst } from '@src/commons/utils';
+import { CurrentUser } from '../auth/interfaces';
 @Injectable()
 export class DesignService {
   constructor(
@@ -75,10 +76,11 @@ export class DesignService {
     return design;
   }
 
-  async create(dto: CreateDesignDto): Promise<DesignEntity> {
+  async create(currentUser: CurrentUser, dto: CreateDesignDto): Promise<DesignEntity> {
     const design = await this.designModel.create({
       name: capitalizeFirst(dto.name),
       type: dto.designType,
+      organization_id: currentUser.organizationId,
       url: dto.designUrl,
     });
     return design;
