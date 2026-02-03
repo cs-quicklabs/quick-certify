@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Header, Logo } from '@/components';
 import { useAuthStore } from '@/store/auth.store';
@@ -13,18 +11,7 @@ export default function DesignsLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }) {
-  const router = useRouter();
   const { user, isInitialized, isLoading } = useAuthStore();
-  const isAdminOrSuperAdmin = user?.role === 'admin' || user?.role === 'super_admin';
-
-  useEffect(() => {
-    if (isInitialized && !isLoading && !user) {
-      router.push('/login');
-    }
-    if (!isAdminOrSuperAdmin) {
-      router.push('/dashboard');
-    }
-  }, [user, isInitialized, isLoading, router]);
 
   if (!isInitialized || isLoading) {
     return (
@@ -42,7 +29,7 @@ export default function DesignsLayout({
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <main className="px-4 mx-auto max-w-screen-2xl lg:px-8 bg-gray-50 py-3 sm:py-5 min-h-screen ">
         {children}
       </main>

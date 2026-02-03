@@ -1,112 +1,101 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { DesignEntity } from '@src/entities';
-import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UpdateDesignDto } from './dtos/update-design.dto';
 import { CreateDesignDto } from './dtos/create-design.dto';
 import { capitalizeFirst } from '@src/commons/utils';
 import { CurrentUser } from '../auth/interfaces';
+
 @Injectable()
-export class DesignService {
+export class DesignService extends BaseCrudService<
+  DesignEntity,
+  CreateDesignDto,
+  UpdateDesignDto,
+  number
+> {
+  protected override readonly model = DesignEntity;
+  protected override readonly entityName = 'Design';
+  protected override readonly defaultSortField = 'type';
+  protected override readonly defaultSortOrder: 'ASC' | 'DESC' = 'ASC';
+  protected override readonly softDeleteField: string | null = null;
+
   constructor(
     @InjectModel(DesignEntity)
     private readonly designModel: typeof DesignEntity,
-  ) {}
+  ) {
+    super();
+  }
 
-  async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<DesignEntity>> {
-    const { page = 1, limit = 10, sortBy = 'type', sortOrder = 'ASC', where = {} } = options;
-
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
-
-    const { count, rows } = await this.designModel.findAndCountAll({
-      where,
-      order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
-    });
-
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+  override async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<DesignEntity>> {
+    return super.findAll(options);
   }
 
   async searchDesigns(
     searchQuery: string,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<DesignEntity>> {
-    const searchCondition = {
-      [Op.or]: [
-        { name: { [Op.iLike]: `%${searchQuery}%` } },
-        { type: { [Op.iLike]: `%${searchQuery}%` } },
-      ],
-    };
-
-    return this.findAll({
+    return super.findAll({
       ...options,
       where: {
         ...options.where,
-        ...searchCondition,
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${searchQuery}%` } },
+          { type: { [Op.iLike]: `%${searchQuery}%` } },
+        ],
       },
     });
   }
 
-  async findOne(uuid: string): Promise<DesignEntity> {
-    const queryOptions = {
-      where: {
-        uuid: uuid,
-      },
-    };
-    const design = await this.designModel.findOne(queryOptions);
+  async findOneByUuid(uuid: string): Promise<DesignEntity> {
+    const design = await this.findByUuid(uuid);
+
     if (!design) {
-      throw new NotFoundException(`Design with id ${uuid} not found`);
+      throw new NotFoundException(`Design with UUID ${uuid} not found`);
     }
+
     return design;
   }
 
-  async create(currentUser: CurrentUser, dto: CreateDesignDto): Promise<DesignEntity> {
-    const design = await this.designModel.create({
+  async createWithUser(currentUser: CurrentUser, dto: CreateDesignDto): Promise<DesignEntity> {
+    return this.designModel.create({
       name: capitalizeFirst(dto.name),
       type: dto.designType,
       organization_id: currentUser.organizationId,
       url: dto.designUrl,
     });
-    return design;
   }
 
-  async update(designId: string, dto: UpdateDesignDto): Promise<DesignEntity> {
-    const design = await this.findOne(designId);
+  override async updateByUuid(uuid: string, dto: UpdateDesignDto): Promise<DesignEntity> {
+    const design = await this.findByUuidOrFail(uuid);
+
     const updateData: Partial<DesignEntity> = {};
+
     if (dto.name !== undefined) {
-      updateData.name = dto.name;
+      updateData.name = capitalizeFirst(dto.name);
     }
+
     if (dto.designUrl !== undefined && dto.designUrl !== '') {
       updateData.url = dto.designUrl;
     }
+
     if (dto.designType !== undefined) {
       updateData.type = dto.designType;
     }
+
     await design.update(updateData);
+
     return design;
   }
 
   async findByType(type: string): Promise<DesignEntity[]> {
-    return this.designModel.findAll({ where: { type } });
+    return this.designModel.findAll({
+      where: { type },
+    });
   }
 
-  async delete(uuid: string): Promise<number> {
-    return this.designModel.destroy({ where: { uuid } });
+  override async deleteByUuid(uuid: string): Promise<boolean> {
+    return super.deleteByUuid(uuid);
   }
 }

@@ -47,7 +47,7 @@ export class DesignController {
   @ApiResponse({ status: 200, description: 'Design found' })
   @ApiResponse({ status: 404, description: 'Design not found' })
   async findOne(@Param('uuid') uuid: string) {
-    const design = await this.designService.findOne(uuid);
+    const design = await this.designService.findOneByUuid(uuid);
     return new SuccessResponse('Design retrieved successfully', design);
   }
 
@@ -55,7 +55,7 @@ export class DesignController {
   @ApiResponse({ status: 200, description: 'Design updated' })
   @ApiResponse({ status: 404, description: 'Design not found' })
   async update(@Param('uuid') uuid: string, @Body() dto: UpdateDesignDto) {
-    const design = await this.designService.update(uuid, dto);
+    const design = await this.designService.updateByUuid(uuid, dto);
     return new SuccessResponse('Design updated successfully', design);
   }
 
@@ -63,7 +63,7 @@ export class DesignController {
   @ApiOperation({ summary: 'Create a new design (Admin/Super Admin only)' })
   @ApiResponse({ status: 201, description: 'Design created successfully' })
   async create(@CurrentUser() currentUser: CurrentUserType, @Body() dto: CreateDesignDto) {
-    const newDesign = await this.designService.create(currentUser, dto);
+    const newDesign = await this.designService.createWithUser(currentUser, dto);
     return new SuccessResponse('Design created successfully', newDesign);
   }
 
@@ -72,7 +72,7 @@ export class DesignController {
   @ApiResponse({ status: 200, description: 'Design deleted successfully' })
   @ApiResponse({ status: 404, description: 'Design not found' })
   async delete(@Param('uuid') uuid: string) {
-    await this.designService.delete(uuid);
+    await this.designService.deleteByUuid(uuid);
     return new SuccessResponse('Design deleted successfully', { deleted: true });
   }
 }

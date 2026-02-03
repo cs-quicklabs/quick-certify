@@ -3,29 +3,9 @@
  */
 
 import { apiClient, ApiResponse } from './api-client';
-import { DesignType } from '@/types/design.types';
+import { DesignType, Design, DesignFilters } from '@/types/design.types';
 import { PaginatedResponse } from '@/types';
 import { buildUrl } from '@/lib/query-params';
-
-export type Design = {
-  id: string;
-  uuid: string;
-  name: string;
-  type: DesignType;
-  url: string;
-  layout: string;
-  createdAt: string;
-};
-
-export interface DesignFilters {
-  page?: number;
-  limit?: number;
-  search?: string;
-  role?: string;
-  sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
-  [key: string]: unknown;
-}
 
 /**
  * Design Service Methods
