@@ -33,7 +33,7 @@ module.exports = {
             defaultValue: DataTypes.NOW,
           },
         },
-        { transaction }
+        { transaction },
       );
 
       await queryInterface.addIndex('design', ['name'], {
@@ -59,5 +59,5 @@ module.exports = {
   async down(queryInterface: QueryInterface) {
     await queryInterface.dropTable('design');
     console.log('✅ Design table dropped successfully');
-  }
+  },
 };
