@@ -753,62 +753,6 @@ module.exports = {
         transaction,
       });
 
-      // 11. Create design table
-      await queryInterface.createTable(
-        'design',
-        {
-          id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull: false,
-            autoIncrement: true,
-          },
-          uuid: {
-            type: DataTypes.STRING(21),
-            allowNull: false,
-            unique: true,
-          },
-          name: {
-            type: DataTypes.STRING(100),
-            allowNull: false,
-          },
-          type: {
-            type: DataTypes.STRING(15),
-            allowNull: false,
-          },
-          url: {
-            type: DataTypes.STRING(500),
-            allowNull: false,
-          },
-          layout: {
-            type: DataTypes.JSONB,
-            allowNull: true,
-          },
-          created_at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-          },
-          updated_at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-          },
-        },
-        { transaction },
-      );
-
-      await queryInterface.addIndex('design', ['name'], {
-        name: 'IDX_DESIGN_NAME',
-        transaction,
-      });
-
-      await queryInterface.addIndex('design', ['uuid'], {
-        name: 'IDX_DESIGN_UUID',
-        unique: true,
-        transaction,
-      });
-
       await transaction.commit();
       console.log('✅ All tables created successfully');
     } catch (error) {
