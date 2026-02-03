@@ -140,7 +140,7 @@ export const requiredLastNameSchema = z
   .string()
   .optional()
   .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
-    message: 'Last name must not contain special characters',
+    message: 'Last name must only contain letters',
   });
 
 /**
