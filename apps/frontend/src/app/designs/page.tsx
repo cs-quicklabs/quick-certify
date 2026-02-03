@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
 import { useDesignList } from '@/hooks/useDesigns';
-import { ChevronDown, Award, BadgeCheck } from 'lucide-react';
+import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 
 const SEARCH_DEBOUNCE_MS = 1000;
 
@@ -114,7 +114,7 @@ export default function DesignsPage() {
                     onClick={() => setOpen(false)}
                     className="inline-flex w-full items-center gap-3 rounded-md p-2 hover:bg-gray-100 hover:text-gray-900"
                   >
-                    <Award className="h-5 w-5 shrink-0 stroke-[1.5]" />
+                    <Layers className="h-5 w-5 shrink-0 stroke-[1.5]" />
                     Certificate
                   </Link>
                 </li>
