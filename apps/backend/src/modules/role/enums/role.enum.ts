@@ -4,6 +4,7 @@
  * Defines all available roles in the system
  */
 export enum Role {
+  SYSTEM_ADMIN = 'system_admin',
   SUPER_ADMIN = 'super_admin',
   ADMIN = 'admin',
   MANAGER = 'manager',
@@ -18,4 +19,4 @@ export const ROLES = Object.values(Role) as string[];
 /**
  * System roles that cannot be deleted
  */
-export const SYSTEM_ROLES = [Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER, Role.DESIGNER] as const;
+export const SYSTEM_ROLES = [Role.SYSTEM_ADMIN, Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER, Role.DESIGNER] as const;

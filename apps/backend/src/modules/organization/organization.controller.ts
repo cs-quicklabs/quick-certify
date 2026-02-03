@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { OrganizationService } from './organization.service';
 import {
@@ -24,8 +24,8 @@ export class OrganizationController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get all organizations (Super Admin only)' })
+  @Roles(Role.SYSTEM_ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all organizations (System Admin / Super Admin)' })
   @ApiResponse({ status: 200, description: 'Organizations list' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -71,8 +71,8 @@ export class OrganizationController {
 
   @Get(':uuid')
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get organization by UUID (Super Admin only)' })
+  @Roles(Role.SYSTEM_ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get organization by UUID (System Admin / Super Admin)' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async findOne(@Param('uuid') uuid: string) {
@@ -92,6 +92,17 @@ export class OrganizationController {
   async create(@Body() dto: CreateOrganizationDto) {
     const organization = await this.organizationService.create(dto);
     return new SuccessResponse('Organization created successfully', organization);
+  }
+
+  @Delete(':uuid')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SYSTEM_ADMIN)
+  @ApiOperation({ summary: 'Permanently delete organization (System Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organization deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async permanentlyDelete(@Param('uuid') uuid: string) {
+    await this.organizationService.permanentlyDelete(uuid);
+    return new SuccessResponse('Organization permanently deleted', { deleted: true });
   }
 
   @Patch('current')

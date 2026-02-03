@@ -1,5 +1,6 @@
-import { Column, DataType, Index, Table } from 'sequelize-typescript';
+import { Column, DataType, HasMany, Index, Table } from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
+import { UserEntity } from './user.entity';
 
 /**
  * Organization Entity
@@ -15,6 +16,13 @@ export class OrganizationEntity extends BaseEntity {
   // Override UUID with table-specific index
   @Index({ name: 'IDX_ORGANIZATION_UUID', unique: true })
   declare uuid: string;
+
+  // ============================================
+  // Associations
+  // ============================================
+
+  @HasMany(() => UserEntity)
+  declare users: UserEntity[];
 
   // ============================================
   // General Information

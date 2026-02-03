@@ -66,6 +66,12 @@ export interface IOrganizationService {
    * Validate if a website domain is already in use
    */
   validateWebsiteDomain(originalOrganizationId: number | null, websiteUrl: string): Promise<void>;
+
+  /**
+   * Permanently delete an organization
+   * Only accessible by SYSTEM_ADMIN role
+   */
+  permanentlyDelete(uuid: string): Promise<boolean>;
 }
 
 export const ORGANIZATION_SERVICE = Symbol('IOrganizationService');
