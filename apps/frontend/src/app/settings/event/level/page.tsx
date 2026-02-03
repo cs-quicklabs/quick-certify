@@ -9,8 +9,14 @@ import {
 import EventSettingList from '../_components/event-setting-list';
 
 export default function EventLevelSettingsPage() {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error: queryError } =
-    useEventLevelsInfinite();
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error: queryError,
+  } = useEventLevelsInfinite();
   const createMutation = useCreateEventLevel();
   const updateMutation = useUpdateEventLevel();
   const deleteMutation = useDeleteEventLevel();

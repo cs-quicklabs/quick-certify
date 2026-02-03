@@ -9,8 +9,14 @@ import {
 import EventSettingList from '../_components/event-setting-list';
 
 export default function EventTypeSettingsPage() {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error: queryError } =
-    useEventTypesInfinite();
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error: queryError,
+  } = useEventTypesInfinite();
   const createMutation = useCreateEventType();
   const updateMutation = useUpdateEventType();
   const deleteMutation = useDeleteEventType();

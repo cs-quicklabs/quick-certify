@@ -141,6 +141,112 @@ export default function EventSettingList({
     }
   };
 
+  const renderItemsList = () => {
+    if (isLoading) {
+      return <div className="text-center py-8 text-gray-500">Loading...</div>;
+    }
+
+    if (queryError && showQueryError) {
+      return null;
+    }
+
+    if (items.length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-500 ">
+          No {title.toLowerCase()} found. Create your first {lowerLabel} above.
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="overflow-x-auto">
+          <table className="table w-full text-sm text-left rtl:text-right text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 w-full">{label.toUpperCase()}</th>
+                <th className="px-6 py-3">ACTION</th>
+              </tr>
+            </thead>
+            <tbody className="table-body">
+              {items.map((item) => (
+                <tr
+                  key={item.uuid}
+                  className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 border-b border-gray-200"
+                >
+                  {editingUuid === item.uuid ? (
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={editingValue}
+                        onChange={(e) => setEditingValue(e.target.value)}
+                        className="form-input-field font-bold w-full"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveEdit();
+                          else if (e.key === 'Escape') handleCancelEdit();
+                        }}
+                        disabled={isUpdating}
+                        autoFocus
+                      />
+                    </td>
+                  ) : (
+                    <td className="px-6 py-4 form-text-normal">{item.name}</td>
+                  )}
+                  {editingUuid === item.uuid ? (
+                    <td className="p-2">
+                      <div className="flex items-center justify-end gap-4">
+                        <button
+                          onClick={handleSaveEdit}
+                          className="btn-primary text-sm px-3 py-1.5"
+                          disabled={isUpdating || !editingValue.trim()}
+                        >
+                          {isUpdating ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="btn-inline-blue text-sm whitespace-nowrap"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </td>
+                  ) : (
+                    <td className="px-6 py-4 inline-flex">
+                      <div className="flex items-center justify-end gap-4">
+                        <button
+                          onClick={() => handleEdit(item.uuid, item.name)}
+                          className="btn-inline-blue"
+                          disabled={deletingId !== null}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setConfirmDialog({ isOpen: true, item })}
+                          className="ml-2 btn-inline-red"
+                          disabled={deletingId !== null}
+                        >
+                          {deletingId === item.uuid ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {items.length >= 15 && hasNextPage && (
+                <tr>
+                  <td colSpan={2} ref={observerTarget} className="h-4 p-0" />
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {isFetchingNextPage && (
+          <div className="text-center py-4 text-gray-500">Loading more...</div>
+        )}
+      </>
+    );
+  };
+
   return (
     <>
       <Header />
@@ -157,7 +263,11 @@ export default function EventSettingList({
               </div>
 
               {successMessage && (
-                <Alert type="success" message={successMessage} onClose={() => setSuccessMessage(null)} />
+                <Alert
+                  type="success"
+                  message={successMessage}
+                  onClose={() => setSuccessMessage(null)}
+                />
               )}
               {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
@@ -191,104 +301,7 @@ export default function EventSettingList({
                 />
               )}
 
-              <div className="overflow-hidden">
-                {isLoading ? (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
-                ) : queryError && showQueryError ? null : items.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No {title.toLowerCase()} found. Create your first {lowerLabel} above.
-                  </div>
-                ) : (
-                  <>
-                    <div className="overflow-x-auto">
-                      <table className="table">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
-                          <tr>
-                            <th className="px-6 py-4 font-bold text-sm text-left text-gray-700 dark:text-gray-300">
-                              {label.toUpperCase()}
-                            </th>
-                            <th className="px-10 py-4 font-bold text-sm text-right text-gray-700 dark:text-gray-300">
-                              ACTION
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="table-body">
-                          {items.map((item) => (
-                            <tr
-                              key={item.uuid}
-                              className="odd:bg-white odd:dark:bg-gray-800 even:bg-gray-50 even:dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700"
-                            >
-                              <td className="px-6 py-4">
-                                {editingUuid === item.uuid ? (
-                                  <input
-                                    type="text"
-                                    value={editingValue}
-                                    onChange={(e) => setEditingValue(e.target.value)}
-                                    className="form-input-field w-full text-sm"
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') handleSaveEdit();
-                                      else if (e.key === 'Escape') handleCancelEdit();
-                                    }}
-                                    disabled={isUpdating}
-                                    autoFocus
-                                  />
-                                ) : (
-                                  <span className="text-sm text-gray-900 dark:text-white">
-                                    {item.name}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 text-right whitespace-nowrap">
-                                {editingUuid === item.uuid ? (
-                                  <div className="flex items-center justify-end gap-4">
-                                    <button
-                                      onClick={handleSaveEdit}
-                                      className="btn-primary text-sm px-3 py-1.5"
-                                      disabled={isUpdating || !editingValue.trim()}
-                                    >
-                                      {isUpdating ? 'Saving...' : 'Save'}
-                                    </button>
-                                    <button onClick={handleCancelEdit} className="btn-inline-blue text-sm whitespace-nowrap">
-                                      Cancel
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center justify-end gap-4">
-                                    <button
-                                      onClick={() => handleEdit(item.uuid, item.name)}
-                                      className="btn-inline-blue text-sm whitespace-nowrap"
-                                      disabled={deletingId !== null}
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => setConfirmDialog({ isOpen: true, item })}
-                                      className="btn-inline-red text-sm whitespace-nowrap"
-                                      disabled={deletingId !== null}
-                                    >
-                                      {deletingId === item.uuid ? 'Deleting...' : 'Delete'}
-                                    </button>
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                          {items.length >= 15 && hasNextPage && (
-                            <tr>
-                              <td colSpan={2} ref={observerTarget} className="h-4 p-0" />
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    {isFetchingNextPage && (
-                      <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                        Loading more...
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+              <div className="overflow-hidden">{renderItemsList()}</div>
             </div>
           </div>
         </div>

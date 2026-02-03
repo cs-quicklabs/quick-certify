@@ -131,7 +131,10 @@ export const eventService = {
     return response.data;
   },
 
-  async updateEventLevel(id: string, data: UpdateEventLevelRequest): Promise<ApiResponse<EventLevel>> {
+  async updateEventLevel(
+    id: string,
+    data: UpdateEventLevelRequest,
+  ): Promise<ApiResponse<EventLevel>> {
     const response = await apiClient.patch<ApiResponse<EventLevel>>(`/event-levels/${id}`, data);
     return response.data;
   },
@@ -161,7 +164,10 @@ export const eventService = {
     return response.data;
   },
 
-  async updateEventFormat(id: string, data: UpdateEventFormatRequest): Promise<ApiResponse<EventFormat>> {
+  async updateEventFormat(
+    id: string,
+    data: UpdateEventFormatRequest,
+  ): Promise<ApiResponse<EventFormat>> {
     const response = await apiClient.patch<ApiResponse<EventFormat>>(`/event-formats/${id}`, data);
     return response.data;
   },
