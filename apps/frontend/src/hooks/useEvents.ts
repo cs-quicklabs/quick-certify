@@ -92,14 +92,15 @@ export function useCreateEventType() {
   });
 }
 
-export function useUpdateEventType(id: string) {
+export function useUpdateEventType() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateEventTypeRequest) => eventService.updateEventType(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, ...data }: { id: string } & UpdateEventTypeRequest) =>
+      eventService.updateEventType(id, data),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: EVENT_TYPE_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: [...EVENT_TYPE_KEYS.all, 'infinite'] });
-      queryClient.invalidateQueries({ queryKey: EVENT_TYPE_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: EVENT_TYPE_KEYS.detail(variables.id) });
     },
   });
 }
@@ -123,6 +124,20 @@ export function useEventLevels(filters?: { page?: number; limit?: number }) {
   });
 }
 
+export function useEventLevelsInfinite() {
+  return useInfiniteQuery({
+    queryKey: [...EVENT_LEVEL_KEYS.all, 'infinite'],
+    queryFn: ({ pageParam = 1 }) => eventService.getEventLevels({ page: pageParam, limit: 20 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.meta.hasNextPage) {
+        return lastPage.meta.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+  });
+}
+
 export function useEventLevel(id: string, enabled = true) {
   return useQuery({
     queryKey: EVENT_LEVEL_KEYS.detail(id),
@@ -137,17 +152,20 @@ export function useCreateEventLevel() {
     mutationFn: (data: CreateEventLevelRequest) => eventService.createEventLevel(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: [...EVENT_LEVEL_KEYS.all, 'infinite'] });
     },
   });
 }
 
-export function useUpdateEventLevel(id: string) {
+export function useUpdateEventLevel() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateEventLevelRequest) => eventService.updateEventLevel(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, ...data }: { id: string } & UpdateEventLevelRequest) =>
+      eventService.updateEventLevel(id, data),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.lists() });
-      queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: [...EVENT_LEVEL_KEYS.all, 'infinite'] });
+      queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.detail(variables.id) });
     },
   });
 }
@@ -158,6 +176,7 @@ export function useDeleteEventLevel() {
     mutationFn: (id: string) => eventService.deleteEventLevel(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: [...EVENT_LEVEL_KEYS.all, 'infinite'] });
     },
   });
 }
@@ -167,6 +186,20 @@ export function useEventFormats(filters?: { page?: number; limit?: number }) {
   return useQuery({
     queryKey: EVENT_FORMAT_KEYS.list(filters),
     queryFn: () => eventService.getEventFormats(filters),
+  });
+}
+
+export function useEventFormatsInfinite() {
+  return useInfiniteQuery({
+    queryKey: [...EVENT_FORMAT_KEYS.all, 'infinite'],
+    queryFn: ({ pageParam = 1 }) => eventService.getEventFormats({ page: pageParam, limit: 20 }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.meta.hasNextPage) {
+        return lastPage.meta.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 }
 
@@ -184,17 +217,20 @@ export function useCreateEventFormat() {
     mutationFn: (data: CreateEventFormatRequest) => eventService.createEventFormat(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: [...EVENT_FORMAT_KEYS.all, 'infinite'] });
     },
   });
 }
 
-export function useUpdateEventFormat(id: string) {
+export function useUpdateEventFormat() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateEventFormatRequest) => eventService.updateEventFormat(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, ...data }: { id: string } & UpdateEventFormatRequest) =>
+      eventService.updateEventFormat(id, data),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.lists() });
-      queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.detail(id) });
+      queryClient.invalidateQueries({ queryKey: [...EVENT_FORMAT_KEYS.all, 'infinite'] });
+      queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.detail(variables.id) });
     },
   });
 }
@@ -205,6 +241,7 @@ export function useDeleteEventFormat() {
     mutationFn: (id: string) => eventService.deleteEventFormat(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.lists() });
+      queryClient.invalidateQueries({ queryKey: [...EVENT_FORMAT_KEYS.all, 'infinite'] });
     },
   });
 }

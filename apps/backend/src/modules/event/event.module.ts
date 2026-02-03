@@ -9,11 +9,13 @@ import {
 import { EventTypeService, EventLevelService, EventFormatService, EventService } from './services';
 import { EventTypeEntity, EventLevelEntity, EventFormatEntity, EventEntity } from '@src/entities';
 import { AuthModule } from '../auth';
+import { OrganizationModule } from '../organization';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([EventTypeEntity, EventLevelEntity, EventFormatEntity, EventEntity]),
-    AuthModule, // For RolesGuard
+    AuthModule,
+    OrganizationModule,
   ],
   controllers: [EventTypeController, EventLevelController, EventFormatController, EventController],
   providers: [EventTypeService, EventLevelService, EventFormatService, EventService],
