@@ -22,8 +22,9 @@ import {
   GoogleCallbackDto,
   GoogleAuthAction,
 } from './dtos';
-import { Public } from './decorators';
+import { CurrentUser, Public } from './decorators';
 import { SuccessResponse } from '@src/commons/dtos';
+import type { CurrentUser as CurrentUserType } from './interfaces';
 
 @ApiTags('Social Authentication')
 @Controller({ path: 'auth', version: '1' })
@@ -192,5 +193,15 @@ export class SocialAuthController {
       tempToken: result.tempToken,
       requiresSignup: result.requiresSignup,
     });
+  }
+
+  @Post('google/disconnect')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Disconnect Google account from user' })
+  @ApiResponse({ status: 200, description: 'Google account disconnected successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid Google token or account not found' })
+  async disconnectGoogle(@CurrentUser() currentUser: CurrentUserType) {
+    await this.authService.disconnectGoogle(currentUser.uuid);
+    return new SuccessResponse('Google account disconnected & reset link shared successfully');
   }
 }

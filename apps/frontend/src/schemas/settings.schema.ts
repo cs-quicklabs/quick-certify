@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import { passwordSchema, PASSWORD_MESSAGES } from './shared.schema';
+import { AuthProvider } from '@/types';
 
 /**
  * Image Upload Configuration
@@ -54,7 +55,7 @@ export const profileSettingsSchema = z.object({
   email: z.string().email('Invalid email address').optional(),
   avatarUrl: z.string().optional(),
   organizationName: z.string().optional(),
-  signupMethod: z.enum(['email', 'google']).optional(),
+  authProvider: z.nativeEnum(AuthProvider).optional(),
 });
 
 export type ProfileSettingsData = z.infer<typeof profileSettingsSchema>;

@@ -19,6 +19,7 @@ import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
 import { RoleService } from '../role/role.service';
 import { OrganizationService } from '../organization/organization.service';
+import { AuthProvider } from '@src/commons/constants';
 
 /**
  * Extended FindAllOptions for User Service
@@ -145,7 +146,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   }
 
   override async create(
-    dto: CreateUserDto & { organizationId?: number; auth_provider?: string; google_id?: string },
+    dto: CreateUserDto & {
+      organizationId?: number;
+      auth_provider?: AuthProvider;
+      google_id?: string;
+    },
     currentUser?: CurrentUser,
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
@@ -201,7 +206,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         role_id: dto.roleId,
         status,
         is_email_notifications_enabled: true,
-        auth_provider: dto.auth_provider || 'email',
+        auth_provider: dto.auth_provider || AuthProvider.Email,
         google_id: dto.google_id || null,
       },
       {
@@ -707,7 +712,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     if (hashedPassword) updateData.password_hash = hashedPassword;
     // Handle OAuth fields
     if (dto.google_id !== undefined) updateData.google_id = dto.google_id;
+    else if (dto.google_id === '') updateData.google_id = null;
+
     if (dto.auth_provider !== undefined) updateData.auth_provider = dto.auth_provider;
+
     // Handle last login timestamp
     if (dto.last_login_at !== undefined) updateData.last_login_at = dto.last_login_at;
 

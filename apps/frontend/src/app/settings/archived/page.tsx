@@ -55,7 +55,7 @@ export default function ArchivedMembersPage() {
       toast.error('Only Super Admins can permanently delete archived users');
       return;
     }
-    setMemberToDelete(member);
+    //setMemberToDelete(member);
   };
 
   const handleConfirmRestore = () => {
