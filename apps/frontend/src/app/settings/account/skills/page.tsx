@@ -201,11 +201,7 @@ export default function SkillsPage() {
       <div className="relative overflow-x-auto mt-4">
         {isLoading ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
-        ) : queryError && showQueryError ? null : skills.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            No skills found. Create your first skill above.
-          </div>
-        ) : (
+        ) : queryError && showQueryError ? null : skills.length === 0 ? null : (
           <div className="overflow-x-auto">
             <table className="table w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
