@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
 import { useDesignList } from '@/hooks/useDesigns';
+import { ChevronDown, Award, BadgeCheck } from 'lucide-react';
 
 const SEARCH_DEBOUNCE_MS = 1000;
 
@@ -84,6 +85,7 @@ export default function DesignsPage() {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen((v) => !v)}
+            type="button"
             className="
         inline-flex items-center
         rounded-sm
@@ -93,20 +95,13 @@ export default function DesignsPage() {
         focus:outline-none focus:ring-2 focus:ring-blue-300
         transition-colors
       "
-            type="button"
           >
             Add New Design
-            <svg
-              className={`w-4 h-4 ms-1.5 -me-0.5 transition-transform ${open ? 'rotate-180' : ''}`}
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
-            </svg>
+            <ChevronDown
+              className={`ml-1.5 h-4 w-4 transition-transform stroke-[1.5] ${
+                open ? 'rotate-180' : ''
+              }`}
+            />
           </button>
 
           {open && (
@@ -119,20 +114,7 @@ export default function DesignsPage() {
                     onClick={() => setOpen(false)}
                     className="inline-flex w-full items-center gap-3 rounded-md p-2 hover:bg-gray-100 hover:text-gray-900"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3"
-                      />
-                    </svg>
+                    <Award className="h-5 w-5 shrink-0 stroke-[1.5]" />
                     Certificate
                   </Link>
                 </li>
@@ -144,20 +126,7 @@ export default function DesignsPage() {
                     onClick={() => setOpen(false)}
                     className="inline-flex w-full items-center gap-3 rounded-md p-2 hover:bg-gray-100 hover:text-gray-900"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.746 3.746 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.746 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"
-                      />
-                    </svg>
+                    <BadgeCheck className="h-5 w-5 shrink-0 stroke-[1.5]" />
                     Badge
                   </Link>
                 </li>

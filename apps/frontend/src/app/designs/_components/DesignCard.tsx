@@ -4,7 +4,7 @@ import { Design } from '@/services/api/design.service';
 
 export default function DesignCard({ design, onDelete }: { design: Design; onDelete: () => void }) {
   return (
-    <div className="flex items-center justify-between px-6 bg-white py-5 border-b border-gray-200 shadow">
+    <div className="flex items-center justify-between px-4 bg-white py-4 border-b border-gray-200 shadow-md">
       {/* Certificate Display */}
       <div className="flex items-center gap-2">
         <img src={design.url} className="w-20 h-14 object-cover rounded" alt={design.name} />
@@ -26,30 +26,20 @@ export default function DesignCard({ design, onDelete }: { design: Design; onDel
           </div>
         </div>
       </div>
-
       {/* Actions */}
       <div className="flex justify-end gap-1 text-sm font-medium">
-        <Link
-          href={`/designs/preview/${design.uuid}`}
-          className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-xs bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
-        >
-          <Eye className="w-4 h-4 stroke-0.25" />
+        <Link href={`/designs/preview/${design.uuid}`} className="action-item action-item-blue">
+          <Eye className="w-4 h-4 stroke-[1.5]" />
           <span>Preview</span>
         </Link>
 
-        <Link
-          href={`/designs/edit/${design.uuid}`}
-          className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-xs bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
-        >
-          <Pen className="w-4 h-4 stroke-0.25" />
+        <Link href={`/designs/edit/${design.uuid}`} className="action-item action-item-gray">
+          <Pen className="w-4 h-4 stroke-[1.5]" />
           <span>Edit</span>
         </Link>
 
-        <button
-          onClick={onDelete}
-          className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-xs bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
-        >
-          <Trash2 className="w-4 h-4 stroke-0.25" />
+        <button onClick={onDelete} className="action-item action-item-red">
+          <Trash2 className="w-4 h-4 stroke-[1.5]" />
           <span>Delete</span>
         </button>
       </div>
