@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
 import { ConfirmationDialog } from '@/components/ui';
 import { getInitials } from '@/utils';
+import { getMobileNavigationTabStatus, getNavigationTabStatus } from '@/utils/navigation';
 
 export function Header() {
   const [menuOpened, setMenuOpened] = useState(false);
@@ -14,6 +16,7 @@ export function Header() {
   const { user, logout } = useAuthStore();
   const { data: profile } = useProfile();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,6 +32,7 @@ export function Header() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [menuOpened]);
+
 
   // Get avatar URL from profile (most up-to-date) or fallback to user or default
   const avatarUrl = profile?.avatarUrl || user?.avatarUrl || '';
@@ -66,25 +70,25 @@ export function Header() {
             </Link>
             <div className="hidden lg:ml-4 lg:block">
               <div className="flex space-x-1">
-                <Link href="/dashboard" className="selected-nav">
+                <Link href="/dashboard" className={getNavigationTabStatus(pathname, '/dashboard')}>
                   Dashboard
                 </Link>
-                <Link href="/events" className="unselected-nav">
+                <Link href="/events" className={getNavigationTabStatus(pathname, '/events')}>
                   Events
                 </Link>
-                <Link href="/credentials" className="unselected-nav">
+                <Link href="/credentials" className={getNavigationTabStatus(pathname, '/credentials')}>
                   Credentials
                 </Link>
-                <Link href="/designs" className="unselected-nav">
+                <Link href="/designs" className={getNavigationTabStatus(pathname, '/designs')}>
                   Designs
                 </Link>
-                <Link href="/emails" className="unselected-nav">
+                <Link href="/emails" className={getNavigationTabStatus(pathname, '/emails')}>
                   Emails
                 </Link>
-                <Link href="/analytics" className="unselected-nav">
+                <Link href="/analytics" className={getNavigationTabStatus(pathname, '/analytics')}>
                   Analytics
                 </Link>
-                <Link href="/integrations" className="unselected-nav">
+                <Link href="/integrations" className={getNavigationTabStatus(pathname, '/integrations')}>
                   Integrations
                 </Link>
               </div>
@@ -290,49 +294,49 @@ export function Header() {
           <div className="space-y-1 px-2 pb-3 pt-2">
             <Link
               href="/dashboard"
-              className="block rounded-sm bg-gray-900 px-3 py-2 text-base font-medium text-white"
+              className={getMobileNavigationTabStatus(pathname, '/dashboard')}
               onClick={() => setMobileMenuOpen(false)}
             >
               Dashboard
             </Link>
             <Link
               href="/events"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={getMobileNavigationTabStatus(pathname, '/events')}
               onClick={() => setMobileMenuOpen(false)}
             >
               Events
             </Link>
             <Link
               href="/credentials"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={getMobileNavigationTabStatus(pathname, '/credentials')}
               onClick={() => setMobileMenuOpen(false)}
             >
               Credentials
             </Link>
             <Link
               href="/designs"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={getMobileNavigationTabStatus(pathname, '/designs')}
               onClick={() => setMobileMenuOpen(false)}
             >
               Designs
             </Link>
             <Link
               href="/emails"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={getMobileNavigationTabStatus(pathname, '/emails')}
               onClick={() => setMobileMenuOpen(false)}
             >
               Emails
             </Link>
             <Link
               href="/analytics"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={getMobileNavigationTabStatus(pathname, '/analytics')}
               onClick={() => setMobileMenuOpen(false)}
             >
               Analytics
             </Link>
             <Link
               href="/integrations"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={getMobileNavigationTabStatus(pathname, '/integrations')}
               onClick={() => setMobileMenuOpen(false)}
             >
               Integrations

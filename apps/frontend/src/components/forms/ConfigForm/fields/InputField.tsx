@@ -4,7 +4,7 @@ import { FieldIcon } from '../FieldIcon';
 
 export function InputField({ field, value, error, onChange, isDisabled }: BaseFieldProps) {
   return (
-    <div>
+    <div className={field.className ?? ''}>
       <FieldLabel field={field} />
       <div className="flex">
         <FieldIcon icon={field.icon} />

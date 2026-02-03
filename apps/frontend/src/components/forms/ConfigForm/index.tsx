@@ -16,12 +16,18 @@ interface ConfigFormProps<T extends z.ZodObject<z.ZodRawShape>> {
   config: FormConfig<T>;
   initialValues?: Partial<z.infer<T>>;
   isLoading?: boolean;
+  /** Optional ref to access the form element (for requestSubmit) */
+  formRef?: React.RefObject<HTMLFormElement | null>;
+  /** Optional children to render inside the form (for custom UI like tags/skills) */
+  children?: React.ReactNode;
 }
 
 export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   config,
   initialValues = {},
   isLoading = false,
+  formRef,
+  children,
 }: ConfigFormProps<T>) {
   // Helper to normalize select field values to strings
   const normalizeSelectValues = useCallback(
@@ -30,21 +36,18 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
         config.fields.filter((field) => field.type === 'select').map((field) => field.name),
       );
 
-      return Object.entries(values).reduce(
-        (acc, [key, value]) => {
-          // Convert null to undefined for schema compatibility
-          if (value === null) {
-            acc[key] = undefined;
-          } else if (selectFieldNames.has(key) && typeof value === 'number') {
-            // Convert number to string for select fields
-            acc[key] = String(value);
-          } else {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {} as Record<string, unknown>,
-      );
+      return Object.entries(values).reduce((acc, [key, value]) => {
+        // Convert null to undefined for schema compatibility
+        if (value === null) {
+          acc[key] = undefined;
+        } else if (selectFieldNames.has(key) && typeof value === 'number') {
+          // Convert number to string for select fields
+          acc[key] = String(value);
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, unknown>);
     },
     [config.fields],
   );
@@ -253,34 +256,41 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       )}
 
       <form
+        ref={formRef}
         onSubmit={handleSubmit}
-        className={`w-full mt-6 ${
-          config.layout === 'grid' ? 'grid grid-cols-2 gap-4' : 'space-y-4'
-        }`}
+        className={`w-full mt-6 ${config.layout === 'grid' ? 'grid grid-cols-2 gap-4' : config.layout === 'grid-3' ? 'grid grid-cols-3 gap-4' : 'space-y-4'
+          }`}
       >
+        {/* Render each configured field */}
         {config.fields.map(renderField)}
 
-        <div className={config.layout === 'grid' ? 'col-span-2' : ''}>
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={isSubmitting || isLoading}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
-            </button>
-            {config.onCancel && (
+        {/* Render any children inside the form (e.g., skills tag UI) */}
+        {children && <div className={(config.layout === 'grid' || config.layout === 'grid-3') ? 'col-span-3' : ''}>{children}</div>}
+
+        {/* Conditionally render submit area. If config.showSubmit === false, parent controls submit. */}
+        {config.showSubmit !== false && (
+          <div className={config.layout === 'grid' ? 'col-span-2' : config.layout === 'grid-3' ? 'col-span-3' : ''}>
+            <div className="flex items-center justify-end gap-3">
+              {config.onCancel && (
+                <button
+                  type="button"
+                  onClick={config.onCancel}
+                  disabled={isSubmitting || isLoading}
+                  className="btn-secondary"
+                >
+                  {config.cancelLabel || 'Cancel'}
+                </button>
+              )}
               <button
-                type="button"
-                onClick={config.onCancel}
+                type="submit"
                 disabled={isSubmitting || isLoading}
-                className="px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition-colors border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {config.cancelLabel || 'Cancel'}
+                {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
               </button>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </form>
     </div>
   );

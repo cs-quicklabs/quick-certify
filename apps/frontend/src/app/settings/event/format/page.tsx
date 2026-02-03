@@ -184,8 +184,8 @@ export default function EventFormatSettingsPage() {
                               index === 0
                                 ? 'bg-white dark:bg-gray-800'
                                 : index % 2 === 1
-                                  ? 'bg-gray-50 dark:bg-gray-700'
-                                  : 'bg-white dark:bg-gray-800'
+                                ? 'bg-gray-50 dark:bg-gray-700'
+                                : 'bg-white dark:bg-gray-800'
                             }`}
                           >
                             <td className="px-6 py-4">
