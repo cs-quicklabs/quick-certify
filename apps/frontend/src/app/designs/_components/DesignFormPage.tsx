@@ -112,36 +112,39 @@ export function DesignFormPage({
   }
 
   return (
-    <>
+    <div>
       {success && (
         <div className="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700">
           Design saved successfully
         </div>
       )}
-
-      <DesignForm
-        key={formKey}
-        mode={mode}
-        designType={designType}
-        title={
-          isEdit
-            ? `Edit ${designType === 'certificate' ? 'Certificate' : 'Badge'} Design`
-            : `Add New ${designType === 'certificate' ? 'Certificate' : 'Badge'}`
-        }
-        subtitle={
-          isEdit
-            ? 'Drag and edit name directly on the certificate'
-            : 'Upload image and provide a name'
-        }
-        name={name}
-        onNameChangeAction={setName}
-        imageUrl={imageUrl ?? undefined}
-        isUploading={isUploading}
-        uploadError={uploadError}
-        isSaveDisabled={!isDirty || isUploading}
-        onImageSelectAction={handleImageSelect}
-        onSubmitAction={handleSubmit}
-      />
-    </>
+      <main className="flex justify-center max-w-7xl mx-auto pb-10 lg:px-8">
+        <div className="w-full max-w-xl">
+          <DesignForm
+            key={formKey}
+            mode={mode}
+            designType={designType}
+            title={
+              isEdit
+                ? `Edit ${designType === 'certificate' ? 'Certificate' : 'Badge'} Design`
+                : `Add New ${designType === 'certificate' ? 'Certificate' : 'Badge'}`
+            }
+            subtitle={
+              isEdit
+                ? 'Drag and edit name directly on the certificate'
+                : 'Upload image and provide a name'
+            }
+            name={name}
+            onNameChangeAction={setName}
+            imageUrl={imageUrl ?? undefined}
+            isUploading={isUploading}
+            uploadError={uploadError}
+            isSaveDisabled={!isDirty || isUploading}
+            onImageSelectAction={handleImageSelect}
+            onSubmitAction={handleSubmit}
+          />
+        </div>
+      </main>
+    </div>
   );
 }
