@@ -19,4 +19,10 @@ export const ROLES = Object.values(Role) as string[];
 /**
  * System roles that cannot be deleted
  */
-export const SYSTEM_ROLES = [Role.SYSTEM_ADMIN, Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER, Role.DESIGNER] as const;
+export const SYSTEM_ROLES = [
+  Role.SYSTEM_ADMIN,
+  Role.SUPER_ADMIN,
+  Role.ADMIN,
+  Role.MANAGER,
+  Role.DESIGNER,
+] as const;

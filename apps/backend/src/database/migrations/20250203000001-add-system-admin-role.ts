@@ -40,10 +40,9 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      await queryInterface.sequelize.query(
-        `DELETE FROM "role" WHERE role = 'system_admin'`,
-        { transaction },
-      );
+      await queryInterface.sequelize.query(`DELETE FROM "role" WHERE role = 'system_admin'`, {
+        transaction,
+      });
       console.log('✅ Removed system_admin role');
 
       await transaction.commit();
