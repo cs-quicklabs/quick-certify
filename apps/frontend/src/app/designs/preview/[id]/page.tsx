@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import DesignPreview from '@/app/designs/_components/DesignPreview';
 import { designService } from '@/services/api';
-import { Design } from '@/services/api/design.service';
+import { Design } from '@/types';
 
 export default function PreviewDesignPage() {
   const { id } = useParams<{ id: string }>();

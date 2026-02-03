@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import DesignForm from './DesignForm';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useCreateDesign, useDesignById, useUpdateDesign } from '@/hooks/useDesigns';
-
-type DesignType = 'certificate' | 'badge';
+import { DesignType } from '@/types';
 
 export function DesignFormPage({
   mode,

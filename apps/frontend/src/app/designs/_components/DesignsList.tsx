@@ -1,9 +1,8 @@
 // "use client";
 
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { Design } from '@/services/api/design.service';
+import { Design, PaginatedResponse } from '@/types';
 import DesignCard from './DesignCard';
-import { PaginatedResponse } from '@/types';
 
 type Props = {
   designs: Design[];

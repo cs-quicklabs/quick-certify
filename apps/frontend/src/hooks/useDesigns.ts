@@ -1,9 +1,10 @@
 'use client';
 
-import { designService, Design } from '@/services/api';
+import { designService } from '@/services/api';
 import { PaginatedResponse } from '@/types';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { DesignFormData } from '@/schemas/design.schema';
+import { Design } from '@/types';
 
 type Params = {
   page: number;

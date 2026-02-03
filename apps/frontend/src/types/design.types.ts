@@ -1,4 +1,5 @@
-export type DesignType = 'certificate' | 'badge';
+export const DESIGN_TYPES = ['certificate', 'badge'] as const;
+export type DesignType = (typeof DESIGN_TYPES)[number];
 
 export interface DesignLayout {
   placeholders: Array<{

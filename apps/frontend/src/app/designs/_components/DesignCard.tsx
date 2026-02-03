@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Eye, Pen, Trash2 } from 'lucide-react';
-import { Design } from '@/services/api/design.service';
+import { Design } from '@/types';
 
 export default function DesignCard({ design, onDelete }: { design: Design; onDelete: () => void }) {
   return (
