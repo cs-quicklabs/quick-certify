@@ -20,4 +20,13 @@ export class RandomDataGenerator {
     }
     return `test_${randomSuffix}issuer`;
   }
+
+  generateRandomUrl(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let randomSuffix = '';
+    for (let i = 0; i < 4; i++) {
+      randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `https://test_${randomSuffix}.com`;
+  }
 }

@@ -30,21 +30,18 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
         config.fields.filter((field) => field.type === 'select').map((field) => field.name),
       );
 
-      return Object.entries(values).reduce(
-        (acc, [key, value]) => {
-          // Convert null to undefined for schema compatibility
-          if (value === null) {
-            acc[key] = undefined;
-          } else if (selectFieldNames.has(key) && typeof value === 'number') {
-            // Convert number to string for select fields
-            acc[key] = String(value);
-          } else {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {} as Record<string, unknown>,
-      );
+      return Object.entries(values).reduce((acc, [key, value]) => {
+        // Convert null to undefined for schema compatibility
+        if (value === null) {
+          acc[key] = undefined;
+        } else if (selectFieldNames.has(key) && typeof value === 'number') {
+          // Convert number to string for select fields
+          acc[key] = String(value);
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as Record<string, unknown>);
     },
     [config.fields],
   );

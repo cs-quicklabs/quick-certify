@@ -1,9 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { RandomDataGenerator } from '../utils/RandomDataGenerator';
 
 export class RegistrationPage {
   readonly page: Page;
-  readonly testData: RandomDataGenerator;
   readonly locator_signupBtn: Locator;
   readonly locator_firstNameField: Locator;
   readonly locator_lastNameField: Locator;
@@ -16,7 +14,6 @@ export class RegistrationPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.testData = new RandomDataGenerator();
     this.locator_signupBtn = page.getByRole('link', { name: 'Sign up' });
     this.locator_firstNameField = page.locator(`#first-name`);
     this.locator_lastNameField = page.locator(`#last-name`);
@@ -32,13 +29,10 @@ export class RegistrationPage {
     await this.locator_signupBtn.click();
   }
 
-  async enterUserEmail() {
-    const email = this.testData.generateRandomEmail();
+  async enterUserEmail(email: string) {
     await this.locator_emailField.fill(email);
   }
-  async enterExistingUserEmail(email: string) {
-    await this.locator_emailField.fill(email);
-  }
+
   async enterPassword(password: string) {
     await this.locator_passwordField.fill(password);
   }
@@ -55,8 +49,7 @@ export class RegistrationPage {
     await this.locator_lastNameField.fill(lastName);
   }
 
-  async enterIssuerName() {
-    const issuerName = this.testData.generateRandomName();
+  async enterIssuerName(issuerName: string) {
     await this.locator_issuerNameField.fill(issuerName);
   }
 
@@ -72,34 +65,20 @@ export class RegistrationPage {
     await expect(this.page).toHaveURL(/\/dashboard/);
   }
 
-  async enterRegistrationFormData(
-    firstName: string,
-    lastName: string,
-    issuerURL: string,
-    password: string,
-    confirmPassword: string,
-  ) {
-    await this.enterFirstName(firstName);
-    await this.enterLastName(lastName);
-    await this.enterUserEmail();
-    await this.enterIssuerName();
-    await this.enterIssuerWebsiteURL(issuerURL);
-    await this.enterPassword(password);
-    await this.enterConfirmPassword(confirmPassword);
-  }
-  async validateRegisterationWithExistingEmail(
+  async fillRegistrationFormData(
     firstName: string,
     lastName: string,
     email: string,
-    issuerURL: string,
+    issuerName: string,
+    issuerUrl: string,
     password: string,
     confirmPassword: string,
   ) {
     await this.enterFirstName(firstName);
     await this.enterLastName(lastName);
-    await this.enterExistingUserEmail(email);
-    await this.enterIssuerName();
-    await this.enterIssuerWebsiteURL(issuerURL);
+    await this.enterUserEmail(email);
+    await this.enterIssuerName(issuerName);
+    await this.enterIssuerWebsiteURL(issuerUrl);
     await this.enterPassword(password);
     await this.enterConfirmPassword(confirmPassword);
   }
