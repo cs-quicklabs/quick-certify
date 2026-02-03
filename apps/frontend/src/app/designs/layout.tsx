@@ -1,7 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { Logo } from '@/components';
+import { Header, Logo } from '@/components';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function DesignsLayout({
@@ -29,7 +29,7 @@ export default function DesignsLayout({
 
   return (
     <>
-      {/* <Header /> */}
+      <Header />
       <main className="px-4 mx-auto max-w-screen-2xl lg:px-8 bg-gray-50 py-3 sm:py-5 min-h-screen ">
         {children}
       </main>

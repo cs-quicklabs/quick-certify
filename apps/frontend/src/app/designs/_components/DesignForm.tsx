@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { validateImageDimensions } from '@/lib/design';
 import { DesignEditor } from './DesignEditor';
 import { DesignLayout } from '@/types';
+import { Header } from '@/components';
 
 type DesignType = 'certificate' | 'badge';
 

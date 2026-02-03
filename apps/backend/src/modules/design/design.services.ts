@@ -29,7 +29,15 @@ export class DesignService extends BaseCrudService<
   }
 
   override async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<DesignEntity>> {
-    return super.findAll(options);
+    const { where = {}, ...rest } = options;
+
+    return super.findAll({
+      ...rest,
+      where: {
+        ...where,
+        ...(options.where?.type ? { type: options.where.type } : {}),
+      },
+    });
   }
 
   async searchDesigns(

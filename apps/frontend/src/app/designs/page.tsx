@@ -9,25 +9,32 @@ import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 
 const SEARCH_DEBOUNCE_MS = 1000;
 
+type Filter = 'All' | 'Certificate' | 'Badge';
+
 export default function DesignsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const page = Number(searchParams.get('page') ?? 1);
   const searchFromUrl = searchParams.get('search') ?? '';
+  const typeFromUrl = searchParams.get('type') as Filter | null;
 
   const [search, setSearch] = useState(searchFromUrl);
+  const [filter, setFilter] = useState<Filter>(typeFromUrl ?? 'All');
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const apiType = filter === 'All' ? undefined : (filter.toLowerCase() as 'certificate' | 'badge');
 
   const { designs, meta, loading, error, deleteDesign } = useDesignList({
     page,
     limit: 4,
     search: searchFromUrl,
+    type: apiType,
   });
-  /* -------- Debounced search → URL -------- */
+
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -42,63 +49,54 @@ export default function DesignsPage() {
     }, SEARCH_DEBOUNCE_MS);
 
     return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
-      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [search]);
 
-  /* Confirm Delete*/
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this design? This action cannot be undone.',
-    );
-    if (!confirmed) return;
+  const handleFilterChange = (value: Filter) => {
+    setFilter(value);
 
-    try {
-      await deleteDesign(id);
-    } catch {
-      alert('Failed to delete design');
-    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', '1');
+
+    if (value === 'All') params.delete('type');
+    else params.set('type', value.toLowerCase());
+
+    router.push(`/designs?${params.toString()}`, { scroll: false });
   };
 
-  if (loading) return <div className="p-4">Loading designs…</div>;
-  if (error) return <div className="p-4 text-red-600">{error}</div>;
   const goToPage = (p: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(p));
     router.push(`/designs?${params.toString()}`, { scroll: false });
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this design?')) return;
+    await deleteDesign(id);
+  };
+
+  if (loading) return <div className="p-4">Loading designs…</div>;
+  if (error) return <div className="p-4 text-red-600">{error}</div>;
+
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col gap-y-3 p-4 py-2 pr-8 sm:flex-row sm:items-center sm:justify-between shadow sm:gap-y-0 sm:gap-x-4 bg-white">
-        {/* Title + Description */}
+      <div className="flex flex-col gap-y-3 p-4 py-2 pr-8 sm:flex-row sm:items-center sm:justify-between shadow bg-white">
         <div>
-          <h1 className="mr-3 text-lg font-semibold text-gray-900">Designs Library</h1>
+          <h1 className="text-lg font-semibold text-gray-900">Designs Library</h1>
           <p className="text-sm text-gray-500">Manage certificate and badge designs</p>
         </div>
 
-        {/* Add New Design Dropdown */}
+        {/* Add New Design */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen((v) => !v)}
-            type="button"
-            className="
-        inline-flex items-center
-        rounded-sm
-        bg-primary-700 px-4 py-2
-        text-sm font-medium text-white
-        hover:bg-blue-900
-        focus:outline-none focus:ring-2 focus:ring-blue-300
-        transition-colors
-      "
+            className="inline-flex items-center rounded-sm bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-900"
           >
             Add New Design
             <ChevronDown
-              className={`ml-1.5 h-4 w-4 transition-transform stroke-[1.5] ${
+              className={`ml-1.5 h-4 w-4 stroke-[1.5] transition-transform ${
                 open ? 'rotate-180' : ''
               }`}
             />
@@ -107,26 +105,23 @@ export default function DesignsPage() {
           {open && (
             <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg">
               <ul className="p-2 text-sm font-medium text-gray-700">
-                {/* Certificate */}
                 <li>
                   <Link
                     href="/designs/add?type=certificate"
                     onClick={() => setOpen(false)}
-                    className="inline-flex w-full items-center gap-3 rounded-md p-2 hover:bg-gray-100 hover:text-gray-900"
+                    className="flex items-center gap-3 rounded-md p-2 hover:bg-gray-100"
                   >
-                    <Layers className="h-5 w-5 shrink-0 stroke-[1.5]" />
+                    <Layers className="h-5 w-5 stroke-[1.5]" />
                     Certificate
                   </Link>
                 </li>
-
-                {/* Badge */}
                 <li>
                   <Link
                     href="/designs/add?type=badge"
                     onClick={() => setOpen(false)}
-                    className="inline-flex w-full items-center gap-3 rounded-md p-2 hover:bg-gray-100 hover:text-gray-900"
+                    className="flex items-center gap-3 rounded-md p-2 hover:bg-gray-100"
                   >
-                    <BadgeCheck className="h-5 w-5 shrink-0 stroke-[1.5]" />
+                    <BadgeCheck className="h-5 w-5 stroke-[1.5]" />
                     Badge
                   </Link>
                 </li>
@@ -136,22 +131,25 @@ export default function DesignsPage() {
         </div>
       </div>
 
+      {/* List */}
       <DesignsList
         designs={designs}
         meta={meta!}
-        onDelete={handleDelete}
         search={search}
-        setSearch={setSearch}
-        page={page}
+        filter={filter}
+        onSearchChange={setSearch}
+        onFilterChange={handleFilterChange}
+        onDelete={handleDelete}
       />
-      {/*  Pagination Tab*/}
+
+      {/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div className="flex justify-end mt-6 px-4">
-          <nav className="inline-flex rounded-md shadow-sm border border-gray-200 overflow-hidden">
+          <nav className="inline-flex rounded-md border border-gray-200 overflow-hidden">
             <button
               disabled={page === 1}
               onClick={() => goToPage(page - 1)}
-              className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border-r border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+              className="px-3 py-2 text-sm disabled:opacity-50"
             >
               Previous
             </button>
@@ -162,8 +160,7 @@ export default function DesignsPage() {
                 <button
                   key={p}
                   onClick={() => goToPage(p)}
-                  className={`px-3 py-2 text-sm font-medium border-r border-gray-200
-              ${page === p ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}
+                  className={`px-3 py-2 text-sm ${page === p ? 'bg-blue-50 text-blue-600' : ''}`}
                 >
                   {p}
                 </button>
@@ -172,7 +169,7 @@ export default function DesignsPage() {
             <button
               disabled={page === meta.totalPages}
               onClick={() => goToPage(page + 1)}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="px-3 py-2 text-sm disabled:opacity-50"
             >
               Next
             </button>

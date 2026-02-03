@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { DesignService } from './design.services';
-import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
@@ -19,6 +18,8 @@ import { Role } from '@src/modules/role/enums';
 import { CreateDesignDto } from './dtos/create-design.dto';
 import { UpdateDesignDto } from './dtos/update-design.dto';
 import type { CurrentUser as CurrentUserType } from '../auth/interfaces';
+import { FindAllOptions } from '@src/commons/base';
+import { GetDesignDto } from './dtos/get-design.dto';
 
 @ApiTags('Designs')
 @ApiBearerAuth()
@@ -36,10 +37,22 @@ export class DesignController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  async findAll(@CurrentUser() currentUser: CurrentUserType, @Query() pagination: PaginationDto) {
-    const result = pagination.search
-      ? await this.designService.searchDesigns(pagination.search, pagination)
-      : await this.designService.findAll(pagination);
+  @ApiQuery({ name: 'type', required: false })
+  async findAll(@CurrentUser() currentUser: CurrentUserType, @Query() pagination: GetDesignDto) {
+    const { search, type, ...rest } = pagination;
+
+    const options: FindAllOptions = {
+      ...rest,
+      where: {
+        ...(type ? { type } : {}),
+        organization_id: currentUser.organizationId,
+      },
+    };
+
+    const result = search
+      ? await this.designService.searchDesigns(search, options)
+      : await this.designService.findAll(options);
+
     return new SuccessResponse('Designs retrieved successfully', result);
   }
 

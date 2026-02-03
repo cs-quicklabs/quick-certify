@@ -115,11 +115,6 @@ export class AuthService implements IAuthService {
       throw new Error('Sequelize instance not available');
     }
 
-    // Check if website URL is already in use
-    if (dto.websiteUrl) {
-      await this.organizationService.validateWebsiteDomain(null, dto.websiteUrl);
-    }
-
     const sequelize = this.sessionModel.sequelize;
     const transaction = await sequelize.transaction();
     let transactionCommitted = false;

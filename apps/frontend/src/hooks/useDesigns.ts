@@ -1,7 +1,7 @@
 'use client';
 
 import { designService } from '@/services/api';
-import { PaginatedResponse } from '@/types';
+import { DesignType, PaginatedResponse } from '@/types';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { DesignFormData } from '@/schemas/design.schema';
 import { Design } from '@/types';
@@ -10,55 +10,54 @@ type Params = {
   page: number;
   limit: number;
   search?: string;
+  type?: DesignType | undefined;
 };
 
-export function useDesignList({ page, limit, search }: Params) {
+export function useDesignList({ page, limit, search, type }: Params) {
   const queryClient = useQueryClient();
 
+  const queryKey = ['designs', page, limit, search ?? '', type ?? 'all'];
+
   const query = useQuery({
-    queryKey: ['designs', page, limit, search],
+    queryKey,
     queryFn: () =>
       designService.getDesigns({
         page,
         limit,
         search,
+        type,
       }),
     placeholderData: (previousData) => previousData,
     staleTime: 30_000,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => designService.deleteDesign(id),
+    mutationFn: (uuid: string) => designService.deleteDesign(uuid),
 
     // optimistic delete
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['designs'] });
+    onMutate: async (uuid) => {
+      await queryClient.cancelQueries({ queryKey });
 
-      const previous = queryClient.getQueryData<PaginatedResponse<Design>>([
-        'designs',
-        page,
-        limit,
-        search,
-      ]);
+      const previous = queryClient.getQueryData<PaginatedResponse<Design>>(queryKey);
 
       if (previous) {
-        queryClient.setQueryData(['designs', page, limit, search], {
+        queryClient.setQueryData(queryKey, {
           ...previous,
-          data: previous.data.filter((d) => d.id !== id),
+          data: previous.data.filter((d) => d.uuid !== uuid),
         });
       }
 
       return { previous };
     },
 
-    onError: (_err, _id, ctx) => {
+    onError: (_err, _uuid, ctx) => {
       if (ctx?.previous) {
-        queryClient.setQueryData(['designs', page, limit, search], ctx.previous);
+        queryClient.setQueryData(queryKey, ctx.previous);
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['designs'] });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
