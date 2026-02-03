@@ -17,10 +17,13 @@ import loginData from '../testData/loginData.json';
 type Fixtures = {
   loginPage: LoginPage;
   registrationPage: RegistrationPage;
+};
+
+type WorkerFixtures = {
   randomDataGenerator: RandomDataGenerator;
 };
 
-export const test = base.extend<Fixtures>({
+export const test = base.extend<Fixtures, WorkerFixtures>({
   loginPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
     await use(loginPage);
@@ -31,10 +34,14 @@ export const test = base.extend<Fixtures>({
     await use(registrationPage);
   },
 
-  randomDataGenerator: async (_, use) => {
-    const randomDataGenerator = new RandomDataGenerator();
-    await use(randomDataGenerator);
-  },
+  randomDataGenerator: [
+    // eslint-disable-next-line no-empty-pattern
+    async ({}, use) => {
+      const randomDataGenerator = new RandomDataGenerator();
+      await use(randomDataGenerator);
+    },
+    { scope: 'worker' },
+  ],
 });
 
 export { baseExpect as expect, registrationData, loginData, RandomDataGenerator };

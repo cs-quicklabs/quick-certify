@@ -27,6 +27,6 @@ export class RandomDataGenerator {
     for (let i = 0; i < 4; i++) {
       randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return `https://test_${randomSuffix}.com`;
+    return `https://test.${randomSuffix}.com`;
   }
 }

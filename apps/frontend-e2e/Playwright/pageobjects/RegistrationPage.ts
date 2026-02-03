@@ -11,6 +11,14 @@ export class RegistrationPage {
   readonly locator_passwordField: Locator;
   readonly locator_confirmPasswordField: Locator;
   readonly locator_createNewUserBtn: Locator;
+  readonly locator_firstNameFieldError: Locator;
+  readonly locator_lastNameFieldError: Locator;
+  readonly locator_emailFieldError: Locator;
+  readonly locator_issuerNameFieldError: Locator;
+  readonly locator_issuerWebsiteFieldError: Locator;
+  readonly locator_passwordFieldError: Locator;
+  readonly locator_confirmPasswordFieldError: Locator;
+  readonly locator_alert: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,6 +31,40 @@ export class RegistrationPage {
     this.locator_passwordField = page.locator(`#password`);
     this.locator_confirmPasswordField = page.locator(`#confirm-password`);
     this.locator_createNewUserBtn = page.getByRole(`button`, { name: 'Create New Issuer Account' });
+    this.locator_firstNameFieldError = page.locator(`#first-name-error`);
+    this.locator_lastNameFieldError = page.locator(`#last-name-error`);
+    this.locator_emailFieldError = page.locator(`#your-email-error`);
+    this.locator_issuerNameFieldError = page.locator(`#issuer-name-error`);
+    this.locator_issuerWebsiteFieldError = page.locator(`#issuer-website-url-error`);
+    this.locator_passwordFieldError = page.locator(`#password-error`);
+    this.locator_confirmPasswordFieldError = page.locator(`#confirm-password-error`);
+    this.locator_alert = page.getByRole(`alert`);
+  }
+
+  async validateFieldErrors(fieldName: string, expectedError: string) {
+    const fieldMap: Record<string, Locator> = {
+      firstName: this.locator_firstNameFieldError,
+      lastName: this.locator_lastNameFieldError,
+      email: this.locator_emailFieldError,
+      issuerName: this.locator_issuerNameFieldError,
+      issuerWebsite: this.locator_issuerWebsiteFieldError,
+      password: this.locator_passwordFieldError,
+      confirmPassword: this.locator_confirmPasswordFieldError,
+    };
+    const validatedField = fieldMap[fieldName];
+    if (!validatedField) {
+      throw new Error(
+        `Please select a valid field name to validate the error message : ${fieldName}`,
+      );
+    }
+    expect(validatedField).toContainText(expectedError);
+  }
+
+  async validateAlertMessages(expectedMsg: string) {
+    await Promise.all([
+      expect(this.locator_alert.first()).toContainText(expectedMsg),
+      this.page.waitForResponse((resp) => resp.url().includes('register') && resp.status() === 422),
+    ]);
   }
 
   async clickOnSignupBtn() {
@@ -62,6 +104,10 @@ export class RegistrationPage {
   }
 
   async validateUserRegistration() {
+    await Promise.all([
+      this.clickOnCreateNewUserBtn(),
+      this.page.waitForResponse((resp) => resp.url().includes('register') && resp.status() === 201),
+    ]);
     await expect(this.page).toHaveURL(/\/dashboard/);
   }
 
