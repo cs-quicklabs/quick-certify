@@ -7,9 +7,10 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
-import { OrganizationEntity } from '@src/entities';
+import { OrganizationEntity, UserEntity, RoleEntity } from '@src/entities';
 import { StorageService } from '@src/commons/services';
 import { extractDomain, generateNanoid } from '@src/commons/utils';
+import { Role } from '@src/modules/role/enums';
 import {
   UpdateOrganizationDto,
   UpdateGeneralInfoDto,
@@ -29,6 +30,8 @@ export class OrganizationService implements IOrganizationService {
   constructor(
     @InjectModel(OrganizationEntity)
     private organizationModel: typeof OrganizationEntity,
+    @InjectModel(UserEntity)
+    private userModel: typeof UserEntity,
     private readonly storageService: StorageService,
   ) {}
 
@@ -44,15 +47,46 @@ export class OrganizationService implements IOrganizationService {
         ...where,
         is_active: true,
       },
+      include: [
+        {
+          model: UserEntity,
+          as: 'users',
+          required: false,
+          where: { status: 'active' },
+          include: [
+            {
+              model: RoleEntity,
+              as: 'role',
+              required: true,
+              where: { [Op.or]: [{ role: Role.SYSTEM_ADMIN }, { role: Role.SUPER_ADMIN }] },
+            },
+          ],
+          attributes: ['uuid', 'first_name', 'last_name', 'email', 'avatar_url', 'role_id'],
+        },
+      ],
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,
+      distinct: true,
+    });
+
+    // Select one admin per organization: prefer system_admin over super_admin
+    const data = rows.map((org) => {
+      const orgData = org.toJSON() as unknown as OrganizationEntity & {
+        users: (UserEntity & { role: RoleEntity })[];
+      };
+      if (orgData.users && orgData.users.length > 0) {
+        const systemAdmin = orgData.users.find((u) => u.role?.role === Role.SYSTEM_ADMIN);
+        const selectedUser = systemAdmin || orgData.users[0];
+        orgData.users = [selectedUser];
+      }
+      return orgData;
     });
 
     const totalPages = Math.ceil(count / safeLimit);
 
     return {
-      data: rows,
+      data: data as unknown as OrganizationEntity[],
       meta: {
         total: count,
         page: safePage,
@@ -182,6 +216,64 @@ export class OrganizationService implements IOrganizationService {
       throw new NotFoundException('Organization not found');
     }
     return this.update(organization.id, dto);
+  }
+
+  /**
+   * Permanently delete an organization from the database
+   * This action is irreversible and removes all associated data
+   * Deletes: users (cascades to sessions, password_resets), skills, and the organization
+   * Only accessible by SYSTEM_ADMIN role
+   */
+  async permanentlyDelete(uuid: string): Promise<boolean> {
+    const sequelize = this.organizationModel.sequelize;
+    if (!sequelize) {
+      throw new Error('Database connection not available');
+    }
+    const transaction = await sequelize.transaction();
+
+    try {
+      const organization = await this.organizationModel.findOne({
+        where: { uuid },
+        transaction,
+      });
+
+      if (!organization) {
+        await transaction.rollback();
+        throw new NotFoundException('Organization not found');
+      }
+
+      // Delete all users in the organization (cascades to sessions, password_resets)
+      await this.userModel.destroy({
+        where: { organization_id: organization.id },
+        transaction,
+      });
+
+      // Clean up associated storage files
+      if (organization.logo_url) {
+        await this.storageService.deleteFileByUrl(organization.logo_url).catch(() => {
+          // Silently fail if deletion fails (file might not exist)
+        });
+      }
+      if (organization.favicon_url) {
+        await this.storageService.deleteFileByUrl(organization.favicon_url).catch(() => {
+          // Silently fail if deletion fails (file might not exist)
+        });
+      }
+      if (organization.banner_url) {
+        await this.storageService.deleteFileByUrl(organization.banner_url).catch(() => {
+          // Silently fail if deletion fails (file might not exist)
+        });
+      }
+
+      // Delete organization (cascades to skills)
+      await organization.destroy({ force: true, transaction });
+
+      await transaction.commit();
+      return true;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   async searchOrganizations(

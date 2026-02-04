@@ -9,6 +9,7 @@ import { useTeamMember, useUpdateTeamMember, useRoles } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { FormConfig } from '@/types/form.types';
 import { toast } from 'react-toastify';
+import { checkIfUserIsNonAdmin } from '@/utils';
 
 /**
  * Edit Team Member Page
@@ -22,7 +23,7 @@ export default function EditTeamMemberPage() {
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -32,7 +33,7 @@ export default function EditTeamMemberPage() {
   const { data: roles, isLoading: rolesLoading } = useRoles();
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 

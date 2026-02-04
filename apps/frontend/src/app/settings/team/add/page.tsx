@@ -8,6 +8,7 @@ import { addTeamMemberSchema, AddTeamMemberFormData } from '@/schemas/team.schem
 import { useCreateTeamMember, useRoles } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { FormConfig } from '@/types/form.types';
+import { checkIfUserIsNonAdmin } from '@/utils';
 
 /**
  * Add Team Member Page
@@ -19,7 +20,7 @@ export default function AddTeamMemberPage() {
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -28,7 +29,7 @@ export default function AddTeamMemberPage() {
   const { data: roles, isLoading: rolesLoading } = useRoles();
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 
