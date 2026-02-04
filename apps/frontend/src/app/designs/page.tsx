@@ -1,0 +1,181 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import DesignsList from '@/app/designs/_components/DesignsList';
+import { useDesignList } from '@/hooks/useDesigns';
+import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
+
+const SEARCH_DEBOUNCE_MS = 1000;
+
+type Filter = 'All' | 'Certificate' | 'Badge';
+
+export default function DesignsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const page = Number(searchParams.get('page') ?? 1);
+  const searchFromUrl = searchParams.get('search') ?? '';
+  const typeFromUrl = searchParams.get('type') as Filter | null;
+
+  const [search, setSearch] = useState(searchFromUrl);
+  const [filter, setFilter] = useState<Filter>(typeFromUrl ?? 'All');
+  const [open, setOpen] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const apiType = filter === 'All' ? undefined : (filter.toLowerCase() as 'certificate' | 'badge');
+
+  const { designs, meta, loading, error, deleteDesign } = useDesignList({
+    page,
+    limit: 4,
+    search: searchFromUrl,
+    type: apiType,
+  });
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('page', '1');
+
+      if (search) params.set('search', search);
+      else params.delete('search');
+
+      router.replace(`/designs?${params.toString()}`, { scroll: false });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [search]);
+
+  const handleFilterChange = (value: Filter) => {
+    setFilter(value);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', '1');
+
+    if (value === 'All') params.delete('type');
+    else params.set('type', value.toLowerCase());
+
+    router.push(`/designs?${params.toString()}`, { scroll: false });
+  };
+
+  const goToPage = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(p));
+    router.push(`/designs?${params.toString()}`, { scroll: false });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this design?')) return;
+    await deleteDesign(id);
+  };
+
+  if (loading) return <div className="p-4">Loading designs…</div>;
+  if (error) return <div className="p-4 text-red-600">{error}</div>;
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex flex-col gap-y-3 p-4 py-2 pr-8 sm:flex-row sm:items-center sm:justify-between shadow bg-white">
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900">Designs Library</h1>
+          <p className="text-sm text-gray-500">Manage certificate and badge designs</p>
+        </div>
+
+        {/* Add New Design */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex items-center rounded-sm bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-900"
+          >
+            Add New Design
+            <ChevronDown
+              className={`ml-1.5 h-4 w-4 stroke-[1.5] transition-transform ${
+                open ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {open && (
+            <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg">
+              <ul className="p-2 text-sm font-medium text-gray-700">
+                <li>
+                  <Link
+                    href="/designs/add?type=certificate"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-md p-2 hover:bg-gray-100"
+                  >
+                    <Layers className="h-5 w-5 stroke-[1.5]" />
+                    Certificate
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/designs/add?type=badge"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-md p-2 hover:bg-gray-100"
+                  >
+                    <BadgeCheck className="h-5 w-5 stroke-[1.5]" />
+                    Badge
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* List */}
+      <DesignsList
+        designs={designs}
+        meta={meta!}
+        search={search}
+        filter={filter}
+        onSearchChange={setSearch}
+        onFilterChange={handleFilterChange}
+        onDelete={handleDelete}
+      />
+
+      {/* Pagination */}
+      {meta && meta.totalPages > 1 && (
+        <div className="flex justify-end mt-6 px-4">
+          <nav className="inline-flex rounded-md border border-gray-200 overflow-hidden">
+            <button
+              disabled={page === 1}
+              onClick={() => goToPage(page - 1)}
+              className="px-3 py-2 text-sm disabled:opacity-50"
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: meta.totalPages }, (_, i) => i + 1)
+              .slice(0, 5)
+              .map((p) => (
+                <button
+                  key={p}
+                  onClick={() => goToPage(p)}
+                  className={`px-3 py-2 text-sm ${page === p ? 'bg-blue-50 text-blue-600' : ''}`}
+                >
+                  {p}
+                </button>
+              ))}
+
+            <button
+              disabled={page === meta.totalPages}
+              onClick={() => goToPage(page + 1)}
+              className="px-3 py-2 text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </nav>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -4,6 +4,7 @@ import {
   FileCategory,
   FileUploadResult,
 } from '@/services/api/file.service';
+import { DesignType, validateImageDimensions } from '@/lib/design/';
 import { getApiErrorMessage } from './api-error';
 
 /**
@@ -12,6 +13,8 @@ import { getApiErrorMessage } from './api-error';
 export interface ImageUploadOptions {
   file: File;
   category: FileCategory;
+  designType?: DesignType;
+  validateDimensions?: boolean;
   onProgress?: (progress: number) => void;
 }
 
@@ -31,9 +34,13 @@ export interface ImageUploadResult {
  * @returns Upload result with URL or error
  */
 export async function uploadImage(options: ImageUploadOptions): Promise<ImageUploadResult> {
-  const { file, category } = options;
+  const { file, category, designType, validateDimensions = false } = options;
 
   try {
+    if (validateDimensions && designType) {
+      await validateImageDimensions(file, designType);
+    }
+
     const result: FileUploadResult = await uploadFile(file, category);
     return {
       url: result.url,
