@@ -51,6 +51,11 @@ export const ROUTES = {
     TEAM: '/settings/team',
   },
 
+  // Admin routes (system_admin only)
+  ADMIN: {
+    ORGANIZATIONS: '/admin/organizations',
+  },
+
   // Feature routes
   EVENTS: '/events',
   CREDENTIALS: '/credentials',

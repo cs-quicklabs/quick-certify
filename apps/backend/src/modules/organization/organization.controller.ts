@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { OrganizationService } from './organization.service';
 import {
@@ -15,6 +25,7 @@ import { CurrentUser, Disabled, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
+import { Op } from 'sequelize';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -24,18 +35,22 @@ export class OrganizationController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get all organizations (Super Admin only)' })
+  @Roles(Role.SYSTEM_ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all organizations (System Admin / Super Admin)' })
   @ApiResponse({ status: 200, description: 'Organizations list' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  async findAll(@Query() pagination: PaginationDto) {
+  async findAll(@Query() pagination: PaginationDto, @CurrentUser() currentUser: CurrentUserType) {
+    const paginationQuery = {
+      ...pagination,
+      where: { id: { [Op.ne]: currentUser.organizationId } },
+    };
     const result = pagination.search
-      ? await this.organizationService.searchOrganizations(pagination.search, pagination)
-      : await this.organizationService.findAll(pagination);
+      ? await this.organizationService.searchOrganizations(pagination.search, paginationQuery)
+      : await this.organizationService.findAll(paginationQuery);
     return new SuccessResponse('Organizations retrieved successfully', result);
   }
 
@@ -71,8 +86,8 @@ export class OrganizationController {
 
   @Get(':uuid')
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get organization by UUID (Super Admin only)' })
+  @Roles(Role.SYSTEM_ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get organization by UUID (System Admin / Super Admin)' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async findOne(@Param('uuid') uuid: string) {
@@ -92,6 +107,17 @@ export class OrganizationController {
   async create(@Body() dto: CreateOrganizationDto) {
     const organization = await this.organizationService.create(dto);
     return new SuccessResponse('Organization created successfully', organization);
+  }
+
+  @Delete(':uuid')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SYSTEM_ADMIN)
+  @ApiOperation({ summary: 'Permanently delete organization (System Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organization deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async permanentlyDelete(@Param('uuid') uuid: string) {
+    await this.organizationService.permanentlyDelete(uuid);
+    return new SuccessResponse('Organization permanently deleted', { deleted: true });
   }
 
   @Patch('current')

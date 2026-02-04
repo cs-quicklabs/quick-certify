@@ -1,8 +1,8 @@
 export interface JwtPayload {
   sub: string; // user uuid (nanoid)
   email: string;
-  organizationId: number;
-  organizationUuid: string; // organization uuid (nanoid)
+  organizationId: number | null; // null for system_admin
+  organizationUuid: string | null; // null for system_admin
   roleId: number;
   roleUuid: string; // role uuid (nanoid)
   role: string; // role name
@@ -25,7 +25,7 @@ export interface CurrentUser {
   email: string;
   firstName: string;
   lastName: string | null;
-  organizationUuid: string; // nanoid
+  organizationUuid: string;
   organizationId: number;
   roleUuid: string; // nanoid
   roleId: number;
