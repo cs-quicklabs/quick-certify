@@ -86,15 +86,14 @@ export default function DesignForm({
       <div>
         <label className="block text-sm font-medium text-gray-700">Upload Image</label>
         <p className="mt-1 text-xs text-gray-500">
-          {designType === 'certificate'
-            ? 'Upload A4 (1100×800 px) size image for certificate'
-            : 'Upload (400×400 px) size image for badge'}
+          Upload A4 (1123x794 px) size image for certificate or (400x400 px) for badge
         </p>
       </div>
 
       {/* Dropzone */}
       <div className="w-full">
         <label
+          htmlFor="design-upload"
           className={`
       relative block w-full
       rounded-sm
@@ -104,8 +103,8 @@ export default function DesignForm({
       ${
         preview
           ? designType === 'certificate'
-            ? 'aspect-[11/8]'
-            : 'mx-auto w-64 aspect-[1/1]'
+            ? 'aspect-11/8'
+            : 'mx-auto w-64 aspect-square'
           : 'h-40'
       }
       ${preview ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'}
@@ -140,30 +139,30 @@ export default function DesignForm({
               <span className="text-sm font-medium">Saving design…</span>
             </div>
           )}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-
-              try {
-                await validateImageDimensions(file, designType);
-                imageRef.current = file;
-                setPreview(URL.createObjectURL(file));
-                onImageSelectAction(file);
-                setError(null);
-              } catch (err) {
-                imageRef.current = null;
-                setError(err instanceof Error ? err.message : 'Invalid image');
-                e.target.value = '';
-              }
-            }}
-          />
         </label>
+        <input
+          id="design-upload"
+          ref={fileInputRef}
+          type="file"
+          hidden
+          accept="image/*"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            try {
+              await validateImageDimensions(file, designType);
+              imageRef.current = file;
+              setPreview(URL.createObjectURL(file));
+              onImageSelectAction(file);
+              setError(null);
+            } catch (err) {
+              imageRef.current = null;
+              setError(err instanceof Error ? err.message : 'Invalid image');
+              e.target.value = '';
+            }
+          }}
+        />
       </div>
 
       {(error || uploadError) && (
