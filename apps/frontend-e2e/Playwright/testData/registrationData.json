@@ -1,5 +1,78 @@
 {
-  "firstName": "Test",
-  "lastName": "Naman",
-  "issuerURL": "https://issuerurl.com"
+  "globalValue": {
+    "blankValue": "",
+    "specialCharacterValue": "!@@",
+    "lessCharacterValue": "a",
+    "numericalValue": "123",
+    "maxCharacterValue": "wewfweeewhawewfweeewhawewfweeewhawewfweeewhawewfweeewhasfew",
+    "validFirstName": "Test",
+    "validLastName": "Naman",
+    "invalidEmailValue": "wefhew@efew",
+    "invalidURL": "https://dscfwhfeweewfewf"
+  },
+
+  "invalidData": {
+    "lastName": "wef!@*2321",
+    "confirmPassword": "qfwekqwef1123@",
+    "password": "efhewewd",
+    "lessCharacterPassword": "ekhfe"
+  },
+
+  "fieldErrors": {
+    "firstName": {
+      "invalid": "First name must only contain letters",
+      "tooShort": "Must be at least 2 characters",
+      "tooLong": "First Name should be less than 50 characters",
+      "required": "First name is required"
+    },
+    "lastName": {
+      "invalid": "Last name must only contain letters",
+      "tooLong": "Last Name should be less than 50 characters"
+    },
+    "email": {
+      "invalid": "Please enter a valid email address",
+      "required": "Email is required",
+      "exists": "Email already registered"
+    },
+    "issuerName": {
+      "tooShort": "Company name must be at least 2 characters",
+      "tooLong": "Issuer Name should be less than 50 characters",
+      "required": "Company name is required",
+      "exists": "Organization with this name already exists"
+    },
+    "issuerWebsite": {
+      "invalidUrl": "Please provide a valid website URL",
+      "exists": "An organization with this domain already exists",
+      "required": "URL is required"
+    },
+    "password": {
+      "mismatch": "Passwords don't match",
+      "noUpperCase": "Password must contain at least one uppercase letter",
+      "tooShort": "Password must be at least 8 characters",
+      "noSpecial": "Password must include uppercase, lowercase, number, and special character",
+      "noNumerical": "Password must contain at least one number",
+      "noLowerCase": "Password must contain at least one lowercase letter",
+      "required": "Password is required",
+      "confirmRequired": "Please confirm your password",
+      "tooLong": "Password should be less than 50 characters"
+    }
+  },
+
+  "passwordValues": {
+    "noUpperCaseValue": "fhweeweheh",
+    "alphaNumericalValue": "Wefehf1829",
+    "alphabeticalValue": "NamanGoel",
+    "noNumbericalValue": "Nama!@#!wf",
+    "noLowerCaseValue": "NAMAN@!@!#11"
+  },
+
+  "registrationFields": {
+    "firstName": "firstName",
+    "lastName": "lastName",
+    "email": "email",
+    "issuerName": "issuerName",
+    "issuerWebsite": "issuerWebsite",
+    "password": "password",
+    "confirmPassword": "confirmPassword"
+  }
 }
