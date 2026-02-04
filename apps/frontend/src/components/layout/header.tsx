@@ -47,6 +47,7 @@ export function Header() {
 
   // Check if user is admin or super_admin
   const isAdminOrSuperAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isSystemAdmin = user?.role === 'system_admin';
 
   return (
     <nav className="sticky top-0 z-50 bg-gray-800">
@@ -66,27 +67,35 @@ export function Header() {
             </Link>
             <div className="hidden lg:ml-4 lg:block">
               <div className="flex space-x-1">
-                <Link href="/dashboard" className="selected-nav">
-                  Dashboard
-                </Link>
-                <Link href="/events" className="unselected-nav">
-                  Events
-                </Link>
-                <Link href="/credentials" className="unselected-nav">
-                  Credentials
-                </Link>
-                <Link href="/designs" className="unselected-nav">
-                  Designs
-                </Link>
-                <Link href="/emails" className="unselected-nav">
-                  Emails
-                </Link>
-                <Link href="/analytics" className="unselected-nav">
-                  Analytics
-                </Link>
-                <Link href="/integrations" className="unselected-nav">
-                  Integrations
-                </Link>
+                {isSystemAdmin ? (
+                  <Link href="/admin/organizations" className="selected-nav">
+                    Organizations
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/dashboard" className="selected-nav">
+                      Dashboard
+                    </Link>
+                    <Link href="/events" className="unselected-nav">
+                      Events
+                    </Link>
+                    <Link href="/credentials" className="unselected-nav">
+                      Credentials
+                    </Link>
+                    <Link href="/designs" className="unselected-nav">
+                      Designs
+                    </Link>
+                    <Link href="/emails" className="unselected-nav">
+                      Emails
+                    </Link>
+                    <Link href="/analytics" className="unselected-nav">
+                      Analytics
+                    </Link>
+                    <Link href="/integrations" className="unselected-nav">
+                      Integrations
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -211,58 +220,73 @@ export function Header() {
                       >
                         {user?.email || 'User'}
                       </p>
-                      <p className="text-xs text-gray-500" role="none">
-                        {profile?.organizationName || ''}
-                      </p>
+                      {!isSystemAdmin && (
+                        <p className="text-xs text-gray-500" role="none">
+                          {profile?.organizationName || ''}
+                        </p>
+                      )}
                     </div>
                     <div className="py-1" role="none">
-                      <Link
-                        href="/settings/profile/general"
-                        className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                        role="menuitem"
-                        tabIndex={-1}
-                      >
-                        Profile Settings
-                      </Link>
-                      {isAdminOrSuperAdmin && (
+                      {isSystemAdmin ? (
                         <Link
-                          href="/settings/account/general-information"
+                          href="/admin/organizations"
                           className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
                           role="menuitem"
                           tabIndex={-1}
                         >
-                          Account Settings
+                          Organizations
                         </Link>
-                      )}
-                      {isAdminOrSuperAdmin && (
-                        <Link
-                          href="/settings/event/type"
-                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                          role="menuitem"
-                          tabIndex={-1}
-                        >
-                          Event Settings
-                        </Link>
-                      )}
-                      {isAdminOrSuperAdmin && (
-                        <Link
-                          href="/settings/team"
-                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                          role="menuitem"
-                          tabIndex={-1}
-                        >
-                          Team
-                        </Link>
-                      )}
-                      {isAdminOrSuperAdmin && (
-                        <Link
-                          href="/settings/archived"
-                          className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
-                          role="menuitem"
-                          tabIndex={-1}
-                        >
-                          Archived
-                        </Link>
+                      ) : (
+                        <>
+                          <Link
+                            href="/settings/profile/general"
+                            className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                            role="menuitem"
+                            tabIndex={-1}
+                          >
+                            Profile Settings
+                          </Link>
+                          {isAdminOrSuperAdmin && (
+                            <Link
+                              href="/settings/account/general-information"
+                              className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                              role="menuitem"
+                              tabIndex={-1}
+                            >
+                              Account Settings
+                            </Link>
+                          )}
+                          {isAdminOrSuperAdmin && (
+                            <Link
+                              href="/settings/event/type"
+                              className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                              role="menuitem"
+                              tabIndex={-1}
+                            >
+                              Event Settings
+                            </Link>
+                          )}
+                          {isAdminOrSuperAdmin && (
+                            <Link
+                              href="/settings/team"
+                              className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                              role="menuitem"
+                              tabIndex={-1}
+                            >
+                              Team
+                            </Link>
+                          )}
+                          {isAdminOrSuperAdmin && (
+                            <Link
+                              href="/settings/archived"
+                              className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
+                              role="menuitem"
+                              tabIndex={-1}
+                            >
+                              Archived
+                            </Link>
+                          )}
+                        </>
                       )}
                     </div>
                     <div className="py-1" role="none">
@@ -288,55 +312,67 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden" id="mobile-menu">
           <div className="space-y-1 px-2 pb-3 pt-2">
-            <Link
-              href="/dashboard"
-              className="block rounded-sm bg-gray-900 px-3 py-2 text-base font-medium text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/events"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Events
-            </Link>
-            <Link
-              href="/credentials"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Credentials
-            </Link>
-            <Link
-              href="/designs"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Designs
-            </Link>
-            <Link
-              href="/emails"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Emails
-            </Link>
-            <Link
-              href="/analytics"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Analytics
-            </Link>
-            <Link
-              href="/integrations"
-              className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Integrations
-            </Link>
+            {isSystemAdmin ? (
+              <Link
+                href="/admin/organizations"
+                className="block rounded-sm bg-gray-900 px-3 py-2 text-base font-medium text-white"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Organizations
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="block rounded-sm bg-gray-900 px-3 py-2 text-base font-medium text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/events"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Events
+                </Link>
+                <Link
+                  href="/credentials"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Credentials
+                </Link>
+                <Link
+                  href="/designs"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Designs
+                </Link>
+                <Link
+                  href="/emails"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Emails
+                </Link>
+                <Link
+                  href="/analytics"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Analytics
+                </Link>
+                <Link
+                  href="/integrations"
+                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Integrations
+                </Link>
+              </>
+            )}
           </div>
           <div className="border-t border-gray-700 pb-3 pt-4">
             <div className="flex items-center px-5">
@@ -362,39 +398,51 @@ export function Header() {
               </div>
             </div>
             <div className="mt-3 space-y-1 px-2">
-              <Link
-                href="/settings/profile/general"
-                className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Profile Settings
-              </Link>
-              {isAdminOrSuperAdmin && (
+              {isSystemAdmin ? (
                 <Link
-                  href="/settings/account/general-information"
+                  href="/admin/organizations"
                   className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Account Settings
+                  Organizations
                 </Link>
-              )}
-              {isAdminOrSuperAdmin && (
-                <Link
-                  href="/settings/event/type"
-                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Event Settings
-                </Link>
-              )}
-              {isAdminOrSuperAdmin && (
-                <Link
-                  href="/settings/team"
-                  className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Team
-                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/settings/profile/general"
+                    className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Profile Settings
+                  </Link>
+                  {isAdminOrSuperAdmin && (
+                    <Link
+                      href="/settings/account/general-information"
+                      className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Account Settings
+                    </Link>
+                  )}
+                  {isAdminOrSuperAdmin && (
+                    <Link
+                      href="/settings/event/type"
+                      className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Event Settings
+                    </Link>
+                  )}
+                  {isAdminOrSuperAdmin && (
+                    <Link
+                      href="/settings/team"
+                      className="block rounded-sm px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Team
+                    </Link>
+                  )}
+                </>
               )}
               <button
                 type="button"
