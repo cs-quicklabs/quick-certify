@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import type { TeamMember } from '@/services/api/team.service';
-import { capitalizeFirst, filterAndSortRoles } from '@/utils/helpers';
+import { capitalizeFirst, checkIfUserIsNonAdmin, filterAndSortRoles } from '@/utils/helpers';
 
 /**
  * Team Listing Page
@@ -24,7 +24,7 @@ export default function TeamsPage() {
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -47,7 +47,7 @@ export default function TeamsPage() {
   );
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 

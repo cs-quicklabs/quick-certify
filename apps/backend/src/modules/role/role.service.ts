@@ -26,7 +26,7 @@ export class RoleService {
     const offset = (safePage - 1) * safeLimit;
 
     const { count, rows } = await this.roleModel.findAndCountAll({
-      where,
+      where: { ...where, role: { [Op.ne]: Role.SYSTEM_ADMIN } },
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,

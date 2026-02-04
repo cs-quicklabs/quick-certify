@@ -57,11 +57,11 @@ export class OrganizationService implements IOrganizationService {
             {
               model: RoleEntity,
               as: 'role',
-              where: { role: Role.SUPER_ADMIN },
+              required: true,
+              where: { [Op.or]: [{ role: Role.SYSTEM_ADMIN }, { role: Role.SUPER_ADMIN }] },
             },
           ],
-          attributes: ['uuid', 'first_name', 'last_name', 'email', 'avatar_url'],
-          limit: 1,
+          attributes: ['uuid', 'first_name', 'last_name', 'email', 'avatar_url', 'role_id'],
         },
       ],
       order: [[sortBy, sortOrder]],
@@ -70,10 +70,23 @@ export class OrganizationService implements IOrganizationService {
       distinct: true,
     });
 
+    // Select one admin per organization: prefer system_admin over super_admin
+    const data = rows.map((org) => {
+      const orgData = org.toJSON() as unknown as OrganizationEntity & {
+        users: (UserEntity & { role: RoleEntity })[];
+      };
+      if (orgData.users && orgData.users.length > 0) {
+        const systemAdmin = orgData.users.find((u) => u.role?.role === Role.SYSTEM_ADMIN);
+        const selectedUser = systemAdmin || orgData.users[0];
+        orgData.users = [selectedUser];
+      }
+      return orgData;
+    });
+
     const totalPages = Math.ceil(count / safeLimit);
 
     return {
-      data: rows,
+      data: data as unknown as OrganizationEntity[],
       meta: {
         total: count,
         page: safePage,

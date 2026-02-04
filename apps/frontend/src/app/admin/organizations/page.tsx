@@ -6,12 +6,21 @@ import { useAuthStore } from '@/store/auth.store';
 import { useOrganizations, useDeleteOrganization } from '@/hooks/useOrganizationAdmin';
 import type { Organization } from '@/services/api/organization-admin.service';
 import { capitalizeFirst } from '@/utils/helpers';
+import { ConfirmationDialog } from '@/components';
 
 /**
  * System Admin - Organizations Listing Page
  *
  * Allows system admins to view and permanently delete organizations
  */
+
+const tableColumns = [
+  { header: 'Organization', accessor: 'name' },
+  { header: 'Owner', accessor: 'owner' },
+  { header: 'Created On', accessor: 'createdAt', className: 'whitespace-nowrap' },
+  { header: 'Actions', accessor: 'actions', className: 'text-right pr-6' },
+];
+
 export default function AdminOrganizationsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -56,10 +65,10 @@ export default function AdminOrganizationsPage() {
 
   // Get owner display name
   const getOwnerDisplay = (org: Organization) => {
-    if (!org.owner) return '—';
-    const firstName = capitalizeFirst(org.owner.first_name || '');
-    const lastName = capitalizeFirst(org.owner.last_name || '');
-    return `${firstName} ${lastName}`.trim() || org.owner.email;
+    if (org.users.length == 0) return '—';
+    const firstName = capitalizeFirst(org.users[0].first_name || '');
+    const lastName = capitalizeFirst(org.users[0].last_name || '');
+    return `${firstName} ${lastName}`.trim() || org.users[0].email;
   };
 
   const handleDeleteClick = (org: Organization, e: React.MouseEvent) => {
@@ -95,6 +104,69 @@ export default function AdminOrganizationsPage() {
     hasPrevPage: false,
   };
 
+  function renderTableBody() {
+    if (isLoading) {
+      return (
+        <tr>
+          <td colSpan={4} className="px-4 py-8 text-center">
+            Loading...
+          </td>
+        </tr>
+      );
+    }
+
+    if (isError) {
+      return (
+        <tr>
+          <td colSpan={4} className="px-4 py-8 text-center text-red-500">
+            Failed to load organizations. Please try again.
+          </td>
+        </tr>
+      );
+    }
+
+    if (organizations.length === 0) {
+      return (
+        <tr>
+          <td colSpan={4} className="px-4 py-8 text-center">
+            No organizations found.
+          </td>
+        </tr>
+      );
+    }
+
+    return organizations.map((org) => (
+      <tr
+        key={org.id || org.uuid}
+        className="border-b border-gray-200 dark:border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        <th scope="row" className="px-4 py-2 form-text-normal">
+          <div className="flex items-center">
+            <span className="ml-2">{org.name}</span>
+          </div>
+        </th>
+        <td className="px-4 py-2">
+          <div className="flex flex-col">
+            <span>{getOwnerDisplay(org)}</span>
+            {org.users[0].email && (
+              <span className="text-xs text-gray-400">{org.users[0].email}</span>
+            )}
+          </div>
+        </td>
+        <td className="px-4 py-2">{formatDate(org.createdAt)}</td>
+        <td className="px-4 py-2 text-right">
+          <button
+            type="button"
+            onClick={(e) => handleDeleteClick(org, e)}
+            className="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-300 rounded-md hover:bg-red-50 hover:text-red-700 cursor-pointer"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    ));
+  }
+
   return (
     <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
       {/* Header */}
@@ -104,7 +176,7 @@ export default function AdminOrganizationsPage() {
             <h1 className="mr-3 form-title">Organizations</h1>
             <p className="form-subtitle">
               Manage all <span className="font-bold">{meta.total}</span> organization
-              {meta.total !== 1 ? 's' : ''} on the platform.
+              {meta.total > 1 ? 's' : ''} on the platform.
             </p>
           </div>
         </div>
@@ -114,73 +186,18 @@ export default function AdminOrganizationsPage() {
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-4 py-3">
-                Organization
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Owner
-              </th>
-              <th scope="col" className="px-4 py-3 whitespace-nowrap">
-                Created On
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Actions
-              </th>
+              {tableColumns.map((column) => (
+                <th
+                  key={column.accessor}
+                  scope="col"
+                  className={`px-4 py-3 ${column.className || ''}`}
+                >
+                  {column.header}
+                </th>
+              ))}
             </tr>
           </thead>
-
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center">
-                  Loading...
-                </td>
-              </tr>
-            ) : isError ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-red-500">
-                  Failed to load organizations. Please try again.
-                </td>
-              </tr>
-            ) : organizations.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center">
-                  No organizations found.
-                </td>
-              </tr>
-            ) : (
-              organizations.map((org) => (
-                <tr
-                  key={org.id || org.uuid}
-                  className="border-b border-gray-200 dark:border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <th scope="row" className="px-4 py-2 form-text-normal">
-                    <div className="flex items-center">
-                      <span className="ml-2">{org.name}</span>
-                    </div>
-                  </th>
-                  <td className="px-4 py-2">
-                    <div className="flex flex-col">
-                      <span>{getOwnerDisplay(org)}</span>
-                      {org.owner?.email && (
-                        <span className="text-xs text-gray-400">{org.owner.email}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-2">{formatDate(org.createdAt)}</td>
-                  <td className="px-4 py-2 text-right">
-                    <button
-                      type="button"
-                      onClick={(e) => handleDeleteClick(org, e)}
-                      className="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-300 rounded-md hover:bg-red-50 hover:text-red-700 cursor-pointer"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
+          <tbody>{renderTableBody()}</tbody>
         </table>
       </div>
 
@@ -211,39 +228,25 @@ export default function AdminOrganizationsPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteModalOpen && organizationToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Delete Organization
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Are you sure you want to permanently delete{' '}
-              <span className="font-semibold">{organizationToDelete.name}</span>? This action cannot
-              be undone and will delete all associated data including users, credentials, and
-              settings.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={handleCancelDelete}
-                disabled={deleteOrganization.isPending}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={deleteOrganization.isPending}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-              >
-                {deleteOrganization.isPending ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationDialog
+        className="p-3 max-w-md rounded-sm"
+        isOpen={deleteModalOpen && !!organizationToDelete}
+        title="Delete Organization"
+        message={
+          <>
+            Are you sure you want to permanently delete{' '}
+            <span className="font-semibold">{organizationToDelete?.name}</span>? This action cannot
+            be undone and will delete all associated data including users, credentials, and
+            settings.
+          </>
+        }
+        confirmLabel="Delete"
+        confirmLoadingLabel="Deleting..."
+        cancelLabel="Cancel"
+        isLoading={deleteOrganization.isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 }

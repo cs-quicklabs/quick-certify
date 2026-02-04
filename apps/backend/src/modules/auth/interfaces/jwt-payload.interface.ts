@@ -25,8 +25,8 @@ export interface CurrentUser {
   email: string;
   firstName: string;
   lastName: string | null;
-  organizationUuid: string | null; // null for system_admin
-  organizationId: number | null; // null for system_admin
+  organizationUuid: string;
+  organizationId: number;
   roleUuid: string; // nanoid
   roleId: number;
   role: string; // role name

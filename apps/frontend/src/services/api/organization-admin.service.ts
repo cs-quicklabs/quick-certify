@@ -23,7 +23,7 @@ export interface Organization {
   slug: string;
   createdAt: string;
   updatedAt: string;
-  owner?: OrganizationOwner | null;
+  users: OrganizationOwner[];
 }
 
 export interface OrganizationFilters {

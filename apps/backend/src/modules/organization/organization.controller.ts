@@ -25,6 +25,7 @@ import { CurrentUser, Disabled, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
+import { Op } from 'sequelize';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -42,10 +43,14 @@ export class OrganizationController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  async findAll(@Query() pagination: PaginationDto) {
+  async findAll(@Query() pagination: PaginationDto, @CurrentUser() currentUser: CurrentUserType) {
+    const paginationQuery = {
+      ...pagination,
+      where: { id: { [Op.ne]: currentUser.organizationId } },
+    };
     const result = pagination.search
-      ? await this.organizationService.searchOrganizations(pagination.search, pagination)
-      : await this.organizationService.findAll(pagination);
+      ? await this.organizationService.searchOrganizations(pagination.search, paginationQuery)
+      : await this.organizationService.findAll(paginationQuery);
     return new SuccessResponse('Organizations retrieved successfully', result);
   }
 

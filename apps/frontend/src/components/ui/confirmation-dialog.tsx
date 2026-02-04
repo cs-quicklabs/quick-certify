@@ -20,6 +20,10 @@ export interface ConfirmationDialogProps {
    */
   confirmLabel?: string;
   /**
+   * Label for the confirm button when loading
+   */
+  confirmLoadingLabel?: string;
+  /**
    * Label for the cancel button
    */
   cancelLabel?: string;
@@ -27,6 +31,10 @@ export interface ConfirmationDialogProps {
    * Variant of the confirm button (danger, primary, etc.)
    */
   confirmVariant?: 'danger' | 'primary' | 'secondary';
+  /**
+   * Whether the confirm action is in progress
+   */
+  isLoading?: boolean;
   /**
    * Callback when confirm is clicked
    */
@@ -52,24 +60,22 @@ export function ConfirmationDialog({
   title,
   message,
   confirmLabel = 'Confirm',
+  confirmLoadingLabel = 'Processing...',
   cancelLabel = 'Cancel',
+  isLoading = false,
   onConfirm,
   onCancel,
-  className,
+  className = 'p-3 max-w-sm rounded-sm',
 }: ConfirmationDialogProps) {
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm "
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
       onClick={onCancel}
     >
-      <div className="relative p-3 w-full max-w-sm rounded-sm" onClick={(e) => e.stopPropagation()}>
-        <div
-          className={`relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4 ${
-            className || ''
-          }`}
-        >
+      <div className={`relative w-full ${className}`} onClick={(e) => e.stopPropagation()}>
+        <div className="relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4">
           {/* Close button */}
           <button
             type="button"
@@ -110,22 +116,26 @@ export function ConfirmationDialog({
               />
             </svg>
 
-            <h3 className="mb-4 text-body font-medium">{message || title}</h3>
+            <h3 className="mb-4 text-body font-medium">{title}</h3>
+
+            {message && <p className="mb-6 text-sm text-body-secondary">{message}</p>}
 
             {/* Actions */}
             <div className="flex items-center gap-3 justify-center">
               <button
                 type="button"
                 onClick={onConfirm}
-                className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium rounded-full text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer"
+                disabled={isLoading}
+                className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium rounded-full text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {confirmLabel}
+                {isLoading ? confirmLoadingLabel : confirmLabel}
               </button>
 
               <button
                 type="button"
                 onClick={onCancel}
-                className="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium rounded-sm text-sm px-4 py-2 focus:outline-none cursor-pointer"
+                disabled={isLoading}
+                className="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium rounded-sm text-sm px-4 py-2 focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cancelLabel}
               </button>
