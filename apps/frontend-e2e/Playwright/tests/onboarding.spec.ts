@@ -261,26 +261,24 @@ test.describe('Validate Registration Form', () => {
   });
 
   test.describe('Issuer Name validation Test', () => {
-    test.fixme(
-      'UR114_Verify: Existing Issuer Name validation',
-      async ({ registrationPage, randomDataGenerator }) => {
-        console.log('Starting test: UR114_Verify: Existing Issuer Name validation');
-        const newEmail = randomDataGenerator.generateRandomEmail();
-        await registrationPage.fillRegistrationFormData(
-          registrationData.globalValue.validFirstName,
-          registrationData.globalValue.validLastName,
-          newEmail,
-          issuerName,
-          issuerUrl,
-          password,
-          password,
-        );
-        await registrationPage.clickOnCreateNewUserBtn();
-        await registrationPage.validateAlertMessages(
-          registrationData.fieldErrors.issuerName.exists,
-        );
-      },
-    );
+    test.fixme('UR114_Verify: Existing Issuer Name validation', async ({
+      registrationPage,
+      randomDataGenerator,
+    }) => {
+      console.log('Starting test: UR114_Verify: Existing Issuer Name validation');
+      const newEmail = randomDataGenerator.generateRandomEmail();
+      await registrationPage.fillRegistrationFormData(
+        registrationData.globalValue.validFirstName,
+        registrationData.globalValue.validLastName,
+        newEmail,
+        issuerName,
+        issuerUrl,
+        password,
+        password,
+      );
+      await registrationPage.clickOnCreateNewUserBtn();
+      await registrationPage.validateAlertMessages(registrationData.fieldErrors.issuerName.exists);
+    });
 
     test('UR115_Verify: Less than 2 character validation', async ({ registrationPage }) => {
       console.log('Starting test: UR115_Verify: Less than 2 character validation');
@@ -338,27 +336,27 @@ test.describe('Validate Registration Form', () => {
   });
 
   test.describe('Issuer URL validation Test', () => {
-    test.fixme(
-      'UR118_Verify: Existing Issuer URL validation',
-      async ({ registrationPage, randomDataGenerator }) => {
-        console.log('Starting test: UR118_Verify: Existing Issuer URL validation');
-        const newEmail = randomDataGenerator.generateRandomEmail();
-        const newIssuerName = randomDataGenerator.generateRandomName();
-        await registrationPage.fillRegistrationFormData(
-          registrationData.globalValue.validFirstName,
-          registrationData.globalValue.validLastName,
-          newEmail,
-          newIssuerName,
-          issuerUrl,
-          password,
-          password,
-        );
-        await registrationPage.clickOnCreateNewUserBtn();
-        await registrationPage.validateAlertMessages(
-          registrationData.fieldErrors.issuerWebsite.exists,
-        );
-      },
-    );
+    test.fixme('UR118_Verify: Existing Issuer URL validation', async ({
+      registrationPage,
+      randomDataGenerator,
+    }) => {
+      console.log('Starting test: UR118_Verify: Existing Issuer URL validation');
+      const newEmail = randomDataGenerator.generateRandomEmail();
+      const newIssuerName = randomDataGenerator.generateRandomName();
+      await registrationPage.fillRegistrationFormData(
+        registrationData.globalValue.validFirstName,
+        registrationData.globalValue.validLastName,
+        newEmail,
+        newIssuerName,
+        issuerUrl,
+        password,
+        password,
+      );
+      await registrationPage.clickOnCreateNewUserBtn();
+      await registrationPage.validateAlertMessages(
+        registrationData.fieldErrors.issuerWebsite.exists,
+      );
+    });
 
     test('UR119_Verify: Invalid URL validation', async ({
       registrationPage,
@@ -548,29 +546,29 @@ test.describe('Validate Registration Form', () => {
       );
     });
 
-    test.fixme(
-      'UR127_Verify: More than 50 character validation',
-      async ({ registrationPage, randomDataGenerator }) => {
-        console.log('Starting test: UR127_Verify: More than 50 character validation');
-        const newEmail = randomDataGenerator.generateRandomEmail();
-        const newIssuerName = randomDataGenerator.generateRandomName();
-        const newIssuerUrl = randomDataGenerator.generateRandomUrl();
-        await registrationPage.fillRegistrationFormData(
-          registrationData.globalValue.validFirstName,
-          registrationData.globalValue.validLastName,
-          newEmail,
-          newIssuerName,
-          newIssuerUrl,
-          registrationData.globalValue.maxCharacterValue,
-          registrationData.globalValue.maxCharacterValue,
-        );
-        await registrationPage.clickOnCreateNewUserBtn();
-        await registrationPage.validateFieldErrors(
-          registrationData.registrationFields.password,
-          registrationData.fieldErrors.password.tooLong,
-        );
-      },
-    );
+    test.fixme('UR127_Verify: More than 50 character validation', async ({
+      registrationPage,
+      randomDataGenerator,
+    }) => {
+      console.log('Starting test: UR127_Verify: More than 50 character validation');
+      const newEmail = randomDataGenerator.generateRandomEmail();
+      const newIssuerName = randomDataGenerator.generateRandomName();
+      const newIssuerUrl = randomDataGenerator.generateRandomUrl();
+      await registrationPage.fillRegistrationFormData(
+        registrationData.globalValue.validFirstName,
+        registrationData.globalValue.validLastName,
+        newEmail,
+        newIssuerName,
+        newIssuerUrl,
+        registrationData.globalValue.maxCharacterValue,
+        registrationData.globalValue.maxCharacterValue,
+      );
+      await registrationPage.clickOnCreateNewUserBtn();
+      await registrationPage.validateFieldErrors(
+        registrationData.registrationFields.password,
+        registrationData.fieldErrors.password.tooLong,
+      );
+    });
 
     test('UR128_Verify: Mandatory confirm password field validation', async ({
       registrationPage,
