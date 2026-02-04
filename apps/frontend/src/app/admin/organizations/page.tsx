@@ -20,7 +20,11 @@ export default function AdminOrganizationsPage() {
   const [organizationToDelete, setOrganizationToDelete] = useState<Organization | null>(null);
   const pageSize = 10;
 
-  const { data: paginatedData, isLoading, isError } = useOrganizations({
+  const {
+    data: paginatedData,
+    isLoading,
+    isError,
+  } = useOrganizations({
     page: currentPage,
     limit: pageSize,
     sortBy: 'createdAt',

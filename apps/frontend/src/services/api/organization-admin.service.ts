@@ -36,9 +36,7 @@ export interface OrganizationFilters {
 }
 
 export const organizationAdminService = {
-  async getOrganizations(
-    filters?: OrganizationFilters,
-  ): Promise<PaginatedResponse<Organization>> {
+  async getOrganizations(filters?: OrganizationFilters): Promise<PaginatedResponse<Organization>> {
     const response = await apiClient.get<ApiResponse<PaginatedResponse<Organization>>>(
       buildUrl('/organizations', filters),
     );

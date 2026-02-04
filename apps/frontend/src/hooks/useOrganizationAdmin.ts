@@ -8,7 +8,8 @@ import { organizationAdminService, OrganizationFilters } from '@/services';
 export const ORGANIZATION_ADMIN_KEYS = {
   all: ['organizations-admin'] as const,
   lists: () => [...ORGANIZATION_ADMIN_KEYS.all, 'list'] as const,
-  list: (filters?: OrganizationFilters) => [...ORGANIZATION_ADMIN_KEYS.lists(), { filters }] as const,
+  list: (filters?: OrganizationFilters) =>
+    [...ORGANIZATION_ADMIN_KEYS.lists(), { filters }] as const,
   detail: (uuid: string) => [...ORGANIZATION_ADMIN_KEYS.all, 'detail', uuid] as const,
 };
 
