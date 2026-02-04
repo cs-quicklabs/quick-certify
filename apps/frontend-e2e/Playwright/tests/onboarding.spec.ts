@@ -23,9 +23,6 @@ test.describe('Validate Registration Form', () => {
     email = randomDataGenerator.generateRandomEmail();
     issuerUrl = randomDataGenerator.generateRandomUrl();
     issuerName = randomDataGenerator.generateRandomName();
-    console.log('Yeh Registered Email h : ' + email);
-    console.log('Yeh Registered Url h  : ' + issuerUrl);
-    console.log('Yeh registered issuerName h : ' + issuerName);
 
     if (!process.env.USER_PASS) {
       throw new Error('USER_PASS is not defined in environment variables');
@@ -214,7 +211,6 @@ test.describe('Validate Registration Form', () => {
   test.describe('Email field validation Test', () => {
     test.fixme('UR111_Verify: Existing Email validation', async ({ registrationPage }) => {
       console.log('Starting test: UR111_Verify: Existing Email validation');
-      console.log('Iss Email se bnane ki try ki : ' + email);
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -270,7 +266,6 @@ test.describe('Validate Registration Form', () => {
       async ({ registrationPage, randomDataGenerator }) => {
         console.log('Starting test: UR114_Verify: Existing Issuer Name validation');
         const newEmail = randomDataGenerator.generateRandomEmail();
-        console.log('Iss issuer Name se bnane ki try ki : ' + issuerName);
         await registrationPage.fillRegistrationFormData(
           registrationData.globalValue.validFirstName,
           registrationData.globalValue.validLastName,
@@ -349,7 +344,6 @@ test.describe('Validate Registration Form', () => {
         console.log('Starting test: UR118_Verify: Existing Issuer URL validation');
         const newEmail = randomDataGenerator.generateRandomEmail();
         const newIssuerName = randomDataGenerator.generateRandomName();
-        console.log('Iss issuer URL se bnane ki try ki thi : ' + issuerUrl);
         await registrationPage.fillRegistrationFormData(
           registrationData.globalValue.validFirstName,
           registrationData.globalValue.validLastName,
