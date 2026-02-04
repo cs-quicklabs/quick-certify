@@ -278,3 +278,19 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--read-more-line-clamp, 3);
 }
+
+.action-item {
+  @apply flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded-xs transition-colors cursor-pointer;
+}
+
+.action-item-blue {
+  @apply bg-blue-50 text-blue-700 hover:bg-blue-100;
+}
+
+.action-item-gray {
+  @apply bg-gray-50 text-gray-700 hover:bg-gray-100;
+}
+
+.action-item-red {
+  @apply bg-red-50 text-red-700 hover:bg-red-100;
+}
