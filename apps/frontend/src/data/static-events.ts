@@ -5,7 +5,7 @@ export const STATIC_EVENTS = [
     createdAt: '2024-12-12T10:00:00Z',
     event_type: { name: 'Badge' },
     event_level: { name: 'Level 1' },
-    image: '/quick-certify/rashi.png',
+    image: '',
   },
   {
     id: '2',
@@ -13,7 +13,7 @@ export const STATIC_EVENTS = [
     createdAt: '2024-12-08T10:00:00Z',
     event_type: { name: 'Certificate' },
     event_level: { name: 'Level 2' },
-    image: '/quick-certify/rashi.png',
+    image: '',
   },
   {
     id: '3',
@@ -21,7 +21,7 @@ export const STATIC_EVENTS = [
     createdAt: '2024-12-04T10:00:00Z',
     event_type: { name: 'Badge' },
     event_level: { name: 'Level 1' },
-    image: '/quick-certify/rashi.png',
+    image: '',
   },
   {
     id: '4',
@@ -29,6 +29,6 @@ export const STATIC_EVENTS = [
     createdAt: '2024-11-25T10:00:00Z',
     event_type: { name: 'Certificate' },
     event_level: { name: 'Level 3' },
-    image: '/quick-certify/rashi.png',
+    image: '',
   },
 ];

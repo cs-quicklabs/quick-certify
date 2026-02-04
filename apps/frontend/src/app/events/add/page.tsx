@@ -7,8 +7,9 @@ import { ConfigForm } from '@/components/ConfigForm';
 import type { FormFieldConfig } from '@/types/form.types';
 import { Stepper } from '@/components/Stepper';
 import { useEventTypes, useEventLevels, useEventFormats, useCreateEvent } from '@/hooks/useEvents';
-import { FileDropzone } from '@/components';
-import { useOrganizationSettings } from '@/hooks/useAccountSettings';
+import { /*FileDropzone,*/ } from '@/components';
+import { DesignSelectorModal } from '@/components/designs/DesignSelectorModal';
+import { CloudUpload } from 'lucide-react';
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -16,8 +17,7 @@ export default function CreateEventPage() {
   const [step, setStep] = useState<number>(0);
 
   // temporary storage for step0 (info + appearance) values
-  const [step0Data, setStep0Data] = useState<{ name: string; design?: string }>({ name: '' });
-  const { data: settings } = useOrganizationSettings();
+  const [step0Data, setStep0Data] = useState<{ name: string; design?: string; designId?: string; designTitle?: string; designType?: string }>({ name: '' });
 
   const createEvent = useCreateEvent();
 
@@ -49,6 +49,9 @@ export default function CreateEventPage() {
   const step0Schema = z.object({
     name: z.string().min(1, 'Name is required'),
     design: z.string().optional(),
+    designId: z.string().optional(),
+    designTitle: z.string().optional(),
+    designType: z.string().optional(),
   });
 
   const step0Config = {
@@ -58,7 +61,15 @@ export default function CreateEventPage() {
     schema: step0Schema,
     submitLabel: 'Next',
     onSubmit: async (data: z.infer<typeof step0Schema>) => {
-      setStep0Data({ name: data.name, design: data.design });
+      // preserve design selected via modal if form field's design is empty
+      setStep0Data((prev) => ({
+        ...prev,
+        name: data.name,
+        design: data.design ?? prev.design,
+        designId: data.designId ?? prev.designId,
+        designTitle: data.designTitle ?? prev.designTitle,
+        designType: data.designType ?? prev.designType,
+      }));
       goNext();
     },
   };
@@ -104,14 +115,11 @@ export default function CreateEventPage() {
     onCancel: () => router.push('/events'),
   };
 
-  const [isUploading, setIsUploading] = useState(false);
-
+  const [isDesignModalOpen, setIsDesignModalOpen] = useState(false);
   const step0FormRef = useRef<HTMLFormElement>(null);
 
-  const handleBannerChange = async (url: string | null) => {
-    // FileDropzone will call this with the uploaded file url. Save into step0Data so it is included in payload.
-    setStep0Data((s) => ({ ...s, design: url || undefined }));
-    setIsUploading(false);
+  const handleDesignSelect = (design: { id: string; title: string; type: string; thumbnail: string }) => {
+    setStep0Data((s) => ({ ...s, design: design.thumbnail, designId: design.id, designTitle: design.title, designType: design.type }));
   };
 
   return (
@@ -132,28 +140,87 @@ export default function CreateEventPage() {
                     initialValues={step0Data}
                     formRef={step0FormRef}
                   />
-                  <div className='mt-4' />
-                  <FileDropzone
-                    label="Appearance"
-                    description="Attach a design to this group. If it contains multiple pages, all of them will be included."
-                    accept="image/png,image/jpg,image/jpeg"
-                    currentImage={settings?.banner_url || null}
-                    onImageChange={handleBannerChange}
-                    category="banner"
-                    maxSizeMB={1}
-                    imageSize="large"
-                    dropzoneHeight="large"
-                    dropzoneWidth="full"
-                    isUploading={isUploading}
-                    setIsUploading={setIsUploading}
-                  />
+
+                  {/* Design placeholder - opens modal on click */}
+                  <div className="mt-4"
+                    tabIndex={0}
+                    role='button'
+                    onClick={() => setIsDesignModalOpen(true)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') setIsDesignModalOpen(true); }}>
+                    <div className="mb-2">
+                      <label htmlFor="dropzone-file" className="form-input-label">Appearence</label>
+                      <p className="form-input-description -mt-2 mb-2">Attach a design to this group. If it contains multiple pages, all of them will be included.</p>
+                    </div>
+                    {step0Data.design ? (
+                      <div className="w-full cursor-pointer rounded border border-dashed border-gray-300 p-4 flex items-center gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-28 h-20 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                            <img src={step0Data.design} alt={step0Data.designTitle || 'Design'} className="object-contain max-h-full" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{step0Data.designTitle || 'Selected design'}</div>
+                            <div className="text-xs text-muted mt-1">{step0Data.designType}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) :
+
+                      <div className="flex justify-center items-center w-full cursor-pointer"
+                      >
+                        <label htmlFor="dropzone-file" className="flex flex-col justify-center items-center w-full h-40 bg-gray-50 rounded-sm border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                          <div className="flex flex-col justify-center items-center pt-5 pb-6">
+                            {/* <svg aria-hidden="true" className="mb-3 w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                          </svg> */}
+                            <CloudUpload className="mb-3" size={'42'} strokeWidth={'2'} color='#99a1af' />
+                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">Size: 1920x300</p></div>
+                          <input id="dropzone-file" type="file" className="hidden" />
+                        </label>
+                      </div>
+                    }
+                  </div>
+
+                  {/* <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setIsDesignModalOpen(true)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') setIsDesignModalOpen(true); }}
+                    className="w-full cursor-pointer rounded border border-dashed border-gray-300 p-4 flex items-center gap-4"
+                  >
+                    {step0Data.design ? (
+                      <div className="flex items-center gap-4">
+                        <div className="w-28 h-20 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                          <img src={step0Data.design} alt={step0Data.designTitle || 'Design'} className="object-contain max-h-full" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">{step0Data.designTitle || 'Selected design'}</div>
+                          <div className="text-xs text-muted mt-1">{step0Data.designType}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div className="w-28 h-20 bg-gray-50 rounded border border-gray-100 flex items-center justify-center">
+                          <svg className="w-8 h-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 5h18M4 7h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">Select a design</div>
+                          <div className="text-xs text-muted mt-1">Click to choose from your designs library</div>
+                        </div>
+                      </div>
+                    )}
+                  </div> */}
 
                   <div className="flex justify-between items-center mt-4">
                     <div />
                     <div className="flex gap-2">
                       <button type="button" className="btn-secondary" onClick={() => router.push('/events')}>Cancel</button>
-                      <button type="button" className="btn-primary" onClick={() => { if (!isUploading) step0FormRef.current?.requestSubmit(); }} disabled={isUploading}>
-                        {isUploading ? 'Uploading...' : 'Next'}
+                      <button type="button" className="btn-primary" onClick={() => step0FormRef.current?.requestSubmit()}>
+                        Next
                       </button>
                     </div>
                   </div>
@@ -185,8 +252,12 @@ export default function CreateEventPage() {
                     <p className="form-input-description mt-2">Specify the name of the skills associated with this event</p>
                   </div>
                 </ConfigForm>
+
               </main>
             )}
+
+            {/* Design selector modal - render once so it can be opened from any step */}
+            <DesignSelectorModal isOpen={isDesignModalOpen} onClose={() => setIsDesignModalOpen(false)} onSelect={handleDesignSelect} />
           </section>
         </div>
       </div>

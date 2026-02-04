@@ -19,9 +19,9 @@ export const EventItem = ({ id, name, createdAt, event_type, event_level, image 
         <div className="flex items-center gap-3">
           <div>
             {image ? (
-              <img src={image} alt={name} className="w-20 md:w-20 max-w-full shadow-md" />
+              <img src={image} alt={name} className="w-20 md:w-20 max-w-full shadow-md bg-gray-200" />
             ) : (
-              <span className="text-xs">Thumb</span>
+              <span className="p-5 w-20 md:w-20 max-w-full shadow-md bg-gray-200">Thumb</span>
             )}
           </div>
           <div>

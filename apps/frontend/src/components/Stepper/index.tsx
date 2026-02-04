@@ -15,11 +15,11 @@ interface StepperProps {
 export function Stepper({ steps, activeIndex, onSelect }: StepperProps) {
   return (
     <aside className="lg:col-span-3">
-      <ol className="relative text-body border-s-2 border-gray-400 pt-1 pb-2">
+      <ol className="relative text-body border-s-2 border-gray-400 pb-2">
         {steps.map((s, i) => (
           <li key={s.title} className="mb-12 ms-7 cursor-pointer" onClick={() => onSelect?.(i)}>
             <span
-              className={`absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 ring-2  ${i === activeIndex ? 'text-fg-success-strong bg-success-soft' : 'bg-neutral-tertiary text-body ring-gray-400'
+              className={`absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 ring-2  ${i === activeIndex ? 'text-blue-900 bg-blue-200' : 'bg-neutral-tertiary text-body ring-gray-400'
                 }`}
             >
               {i === activeIndex ? (
