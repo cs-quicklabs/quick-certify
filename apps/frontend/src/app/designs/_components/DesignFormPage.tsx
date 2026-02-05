@@ -5,6 +5,7 @@ import DesignForm from './DesignForm';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useCreateDesign, useDesignById, useUpdateDesign } from '@/hooks/useDesigns';
 import { DesignType } from '@/types';
+import { useRouter } from 'next/navigation';
 
 export function DesignFormPage({
   mode,
@@ -15,6 +16,7 @@ export function DesignFormPage({
   designType: DesignType;
   id?: string;
 }) {
+  const router = useRouter();
   const isEdit = mode === 'edit';
 
   const { data: design, isLoading } = useDesignById(id ?? '');
@@ -29,7 +31,6 @@ export function DesignFormPage({
   const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
   const [imageChanged, setImageChanged] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [formKey, setFormKey] = useState(0);
 
   const {
     upload,
@@ -50,24 +51,21 @@ export function DesignFormPage({
     }
   }, [isEdit, design]);
 
-  const isDirty = isEdit
-    ? name !== initialName || imageChanged || imageUrl !== initialImageUrl
-    : Boolean(name.trim()) && Boolean(imageUrl || selectedFile);
+  const isEditDirty = name !== initialName || imageChanged || imageUrl !== initialImageUrl;
+
+  const isCreateDirty = Boolean(name.trim()) && Boolean(imageUrl || selectedFile);
+
+  const isDirty = isEdit ? isEditDirty : isCreateDirty;
 
   const handleImageSelect = (file: File) => {
     setSelectedFile(file);
     setImageChanged(true);
   };
-
   const handleSubmit = async ({ name }: { name: string }) => {
     if (isUploading || !isDirty) return;
 
-    let resolvedImageUrl = imageUrl;
-
     try {
-      if (selectedFile && imageChanged) {
-        resolvedImageUrl = await upload(selectedFile);
-      }
+      const resolvedImageUrl = selectedFile && imageChanged ? await upload(selectedFile) : imageUrl;
 
       if (!resolvedImageUrl) return;
 
@@ -78,23 +76,15 @@ export function DesignFormPage({
           designType,
           designUrl: resolvedImageUrl,
         });
-
-        setInitialName(name);
-        setInitialImageUrl(resolvedImageUrl);
-        setImageChanged(false);
       } else {
         await createDesign.mutateAsync({
           name,
           type: designType,
           url: resolvedImageUrl,
         });
-
-        setSelectedFile(null);
-        setImageUrl(null);
-        setFormKey((k) => k + 1);
       }
 
-      setSuccess(true);
+      router.push('/designs');
     } catch (err) {
       console.error(err);
       alert('Failed to save design. Please try again.');
@@ -121,18 +111,13 @@ export function DesignFormPage({
       <main className="flex justify-center max-w-7xl mx-auto pb-10 lg:px-8">
         <div className="w-full max-w-xl">
           <DesignForm
-            key={formKey}
             mode={mode}
             designType={designType}
-            title={
-              isEdit
-                ? `Edit ${designType === 'certificate' ? 'Certificate' : 'Badge'} Design`
-                : `Add New ${designType === 'certificate' ? 'Certificate' : 'Badge'}`
-            }
+            title={isEdit ? `Edit Design` : `Add New Design`}
             subtitle={
               isEdit
-                ? 'Drag and edit name directly on the certificate'
-                : 'Upload image and provide a name'
+                ? 'Edit certificate or badge design by updating the name and selecting a new image.'
+                : 'Add new certificate or badge design by giving it a name and selecting the image.'
             }
             name={name}
             onNameChangeAction={setName}
