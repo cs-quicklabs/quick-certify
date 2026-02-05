@@ -78,13 +78,15 @@ export default function DesignsList({
             <span>Certificates</span>
           </label>
 
-          <button
-            type="button"
-            onClick={() => onFilterChange('All')}
-            className="text-sm font-medium text-blue-600 hover:underline"
-          >
-            Show All
-          </button>
+          {filter !== 'All' && (
+            <button
+              type="button"
+              onClick={() => onFilterChange('All')}
+              className="text-sm font-medium text-blue-600 hover:underline"
+            >
+              Show All
+            </button>
+          )}
         </div>
 
         {/* Search Box */}

@@ -4,7 +4,7 @@
 export const IMAGE_RULES = {
   certificate: {
     minHeight: 800,
-    minWidth: 1100,
+    minWidth: 1108,
     label: 'Certificate (A4-like)',
   },
   badge: {

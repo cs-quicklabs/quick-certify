@@ -43,6 +43,7 @@ export default function DesignForm({
   const [error, setError] = useState<string | null>(null);
   const [, setLayout] = useState<DesignLayout | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const imageRef = useRef<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +55,55 @@ export default function DesignForm({
     imageRef.current = null;
     setError(null);
   }, [imageUrl]);
+
+  // Drag and Drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    if (preview) return;
+    e.preventDefault();
+  };
+
+  const handleDragEnter = () => {
+    if (!preview) setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    if (preview) return;
+
+    e.preventDefault();
+    setIsDragging(false);
+
+    await handleFile(e.dataTransfer.files);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await handleFile(e.target.files);
+    e.target.value = '';
+  };
+
+  const handleFile = async (files?: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+
+    await processFile(file);
+  };
+
+  const processFile = async (file: File) => {
+    try {
+      await validateImageDimensions(file, designType);
+
+      imageRef.current = file;
+      setPreview(URL.createObjectURL(file));
+      onImageSelectAction(file);
+      setError(null);
+    } catch (err) {
+      imageRef.current = null;
+      setError(err instanceof Error ? err.message : 'Invalid image');
+    }
+  };
 
   return (
     <form
@@ -86,15 +136,18 @@ export default function DesignForm({
       <div>
         <label className="block text-sm font-medium text-gray-700">Upload Image</label>
         <p className="mt-1 text-xs text-gray-500">
-          {designType === 'certificate'
-            ? 'Upload A4 (1100×800 px) size image for certificate'
-            : 'Upload (400×400 px) size image for badge'}
+          Upload A4 (1108x800 px) size image for certificate or (440x400 px) for badge
         </p>
       </div>
 
       {/* Dropzone */}
       <div className="w-full">
         <label
+          htmlFor="design-upload"
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           className={`
       relative block w-full
       rounded-sm
@@ -104,11 +157,12 @@ export default function DesignForm({
       ${
         preview
           ? designType === 'certificate'
-            ? 'aspect-[11/8]'
-            : 'mx-auto w-64 aspect-[1/1]'
+            ? 'aspect-11/8'
+            : 'mx-auto w-64 aspect-square'
           : 'h-40'
       }
       ${preview ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'}
+        ${isDragging ? 'border-blue-500 bg-blue-50' : ''}
     `}
           onClick={(e) => preview && e.preventDefault()}
         >
@@ -122,7 +176,7 @@ export default function DesignForm({
               </p>
 
               <p className="text-xs text-gray-400">
-                {designType === 'certificate' ? 'A4 size image (1100×800)' : '400×400 image'}
+                {designType === 'certificate' ? 'A4 size image (1108×800)' : '440×400 image'}
               </p>
             </div>
           )}
@@ -140,30 +194,15 @@ export default function DesignForm({
               <span className="text-sm font-medium">Saving design…</span>
             </div>
           )}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-
-              try {
-                await validateImageDimensions(file, designType);
-                imageRef.current = file;
-                setPreview(URL.createObjectURL(file));
-                onImageSelectAction(file);
-                setError(null);
-              } catch (err) {
-                imageRef.current = null;
-                setError(err instanceof Error ? err.message : 'Invalid image');
-                e.target.value = '';
-              }
-            }}
-          />
         </label>
+        <input
+          id="design-upload"
+          ref={fileInputRef}
+          type="file"
+          hidden
+          accept="image/*"
+          onChange={handleFileChange}
+        />
       </div>
 
       {(error || uploadError) && (
