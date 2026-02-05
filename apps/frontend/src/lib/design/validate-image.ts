@@ -1,4 +1,4 @@
-import { IMAGE_RULES, DesignType } from './image-rules';
+import { IMAGE_RULES, DIMENSION_TOLERANCE, DesignType } from './image-rules';
 
 /**
  * Validate's Designs' file dimensions
@@ -14,18 +14,23 @@ export function validateImageDimensions(file: File, designType: DesignType): Pro
     img.onload = () => {
       const { width, height } = img;
       const rule = IMAGE_RULES[designType];
+      const tolerance = DIMENSION_TOLERANCE[designType];
 
       URL.revokeObjectURL(url);
 
-      if (width < rule.minWidth || height < rule.minHeight) {
+      const widthOk = Math.abs(width - rule.width) <= tolerance;
+      const heightOk = Math.abs(height - rule.height) <= tolerance;
+
+      if (!widthOk || !heightOk) {
         reject(
           new Error(
-            `Invalid image size. Expected at least ${rule.minWidth}×${rule.minHeight}px for ${rule.label}.`,
+            `Invalid image size. Expected ${rule.width}×${rule.height}px (±${tolerance}px).`,
           ),
         );
-      } else {
-        resolve();
+        return;
       }
+
+      resolve();
     };
 
     img.onerror = () => {
