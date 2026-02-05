@@ -43,6 +43,7 @@ export default function DesignForm({
   const [error, setError] = useState<string | null>(null);
   const [, setLayout] = useState<DesignLayout | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const imageRef = useRef<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +55,54 @@ export default function DesignForm({
     imageRef.current = null;
     setError(null);
   }, [imageUrl]);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (preview) return;
+    e.preventDefault();
+  };
+
+  const handleDragEnter = () => {
+    if (!preview) setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    if (preview) return;
+
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    await processFile(file);
+  };
+
+  // Handle File change
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    await processFile(file);
+    e.target.value = '';
+  };
+
+  const processFile = async (file: File) => {
+    try {
+      await validateImageDimensions(file, designType);
+
+      imageRef.current = file;
+      setPreview(URL.createObjectURL(file));
+      onImageSelectAction(file);
+      setError(null);
+    } catch (err) {
+      imageRef.current = null;
+      setError(err instanceof Error ? err.message : 'Invalid image');
+    }
+  };
 
   return (
     <form
@@ -94,6 +143,10 @@ export default function DesignForm({
       <div className="w-full">
         <label
           htmlFor="design-upload"
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           className={`
       relative block w-full
       rounded-sm
@@ -108,6 +161,7 @@ export default function DesignForm({
           : 'h-40'
       }
       ${preview ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'}
+        ${isDragging ? 'border-blue-500 bg-blue-50' : ''}
     `}
           onClick={(e) => preview && e.preventDefault()}
         >
@@ -146,22 +200,7 @@ export default function DesignForm({
           type="file"
           hidden
           accept="image/*"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-
-            try {
-              await validateImageDimensions(file, designType);
-              imageRef.current = file;
-              setPreview(URL.createObjectURL(file));
-              onImageSelectAction(file);
-              setError(null);
-            } catch (err) {
-              imageRef.current = null;
-              setError(err instanceof Error ? err.message : 'Invalid image');
-              e.target.value = '';
-            }
-          }}
+          onChange={handleFileChange}
         />
       </div>
 
