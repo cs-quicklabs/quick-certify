@@ -56,6 +56,7 @@ export default function DesignForm({
     setError(null);
   }, [imageUrl]);
 
+  // Drag and Drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     if (preview) return;
     e.preventDefault();
@@ -69,28 +70,25 @@ export default function DesignForm({
     setIsDragging(false);
   };
 
-  const getFirstFile = (files?: FileList | null) => {
-    return files && files.length > 0 ? files[0] : null;
-  };
-
   const handleDrop = async (e: React.DragEvent) => {
     if (preview) return;
 
     e.preventDefault();
     setIsDragging(false);
 
-    const file = getFirstFile(e.dataTransfer.files);
-    if (!file) return;
-
-    await processFile(file);
+    await handleFile(e.dataTransfer.files);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = getFirstFile(e.target.files);
+    await handleFile(e.target.files);
+    e.target.value = '';
+  };
+
+  const handleFile = async (files?: FileList | null) => {
+    const file = files?.[0];
     if (!file) return;
 
     await processFile(file);
-    e.target.value = '';
   };
 
   const processFile = async (file: File) => {
@@ -138,7 +136,7 @@ export default function DesignForm({
       <div>
         <label className="block text-sm font-medium text-gray-700">Upload Image</label>
         <p className="mt-1 text-xs text-gray-500">
-          Upload A4 (1123x794 px) size image for certificate or (400x400 px) for badge
+          Upload A4 (1108x800 px) size image for certificate or (440x400 px) for badge
         </p>
       </div>
 
@@ -178,7 +176,7 @@ export default function DesignForm({
               </p>
 
               <p className="text-xs text-gray-400">
-                {designType === 'certificate' ? 'A4 size image (1100×800)' : '400×400 image'}
+                {designType === 'certificate' ? 'A4 size image (1108×800)' : '440×400 image'}
               </p>
             </div>
           )}
