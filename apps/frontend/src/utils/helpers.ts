@@ -1,5 +1,5 @@
-import { Role } from '@/services';
-import { Roles } from '@/types';
+import { Role, User } from '@/services';
+import { Roles, RoleType } from '@/types';
 
 export const getInitials = (firstName?: string, lastName?: string, fallback = 'U'): string => {
   if (!firstName && !lastName) return fallback;
@@ -26,4 +26,12 @@ export function filterAndSortRoles(roles: Role[] | undefined): Roles[] {
       label: capitalizeFirst(role.role), // UI label
       value: role.role, // ✅ BACKEND expects this
     }));
+}
+
+export function checkIfUserIsNonAdmin(user: User) {
+  return (
+    user &&
+    user.role &&
+    ![RoleType.SystemAdmin, RoleType.SuperAdmin, RoleType.Admin].includes(user.role as RoleType)
+  );
 }

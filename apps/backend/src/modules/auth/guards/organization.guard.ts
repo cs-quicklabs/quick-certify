@@ -1,9 +1,11 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { CurrentUser } from '../interfaces';
+import { Role } from '@src/modules/role/enums';
 
 /**
  * Guard to ensure users can only access resources within their organization (multi-tenant)
  * This guard checks if the organizationId in the request params/body matches the user's organizationId
+ * System admins can access any organization's resources
  */
 @Injectable()
 export class OrganizationGuard implements CanActivate {
@@ -13,6 +15,11 @@ export class OrganizationGuard implements CanActivate {
 
     if (!user) {
       throw new ForbiddenException('User not found in request');
+    }
+
+    // System admins can access any organization
+    if (user.role === Role.SYSTEM_ADMIN) {
+      return true;
     }
 
     // Get organizationId from params, query, or body
@@ -25,13 +32,6 @@ export class OrganizationGuard implements CanActivate {
     if (!requestOrgId) {
       return true;
     }
-
-    // const orgIdNumber = parseInt(requestOrgId, 10);
-    // TODO: Uncomment this when we have a system level super admin
-    // Super admins can access any organization (you might want to customize this)
-    // if (user.userTypeCode === 'SUPER_ADMIN') {
-    //   return true;
-    // }
 
     // Check if user belongs to the requested organization
     if (user.organizationId !== requestOrgId) {
