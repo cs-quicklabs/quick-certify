@@ -69,21 +69,24 @@ export default function DesignForm({
     setIsDragging(false);
   };
 
+  const getFirstFile = (files?: FileList | null) => {
+    return files && files.length > 0 ? files[0] : null;
+  };
+
   const handleDrop = async (e: React.DragEvent) => {
     if (preview) return;
 
     e.preventDefault();
     setIsDragging(false);
 
-    const file = e.dataTransfer.files?.[0];
+    const file = getFirstFile(e.dataTransfer.files);
     if (!file) return;
 
     await processFile(file);
   };
 
-  // Handle File change
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = getFirstFile(e.target.files);
     if (!file) return;
 
     await processFile(file);
