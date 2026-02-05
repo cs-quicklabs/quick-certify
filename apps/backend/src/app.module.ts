@@ -26,6 +26,7 @@ import { EventModule } from './modules/event';
 import { SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
 import { SessionEntity, UserEntity } from './entities';
 import { ProfileModule } from './modules/profile/profile.module';
+import { DesignModule } from './modules/design/design.module';
 
 /**
  * Application Root Module
@@ -100,6 +101,7 @@ import { ProfileModule } from './modules/profile/profile.module';
     FileModule,
     SkillModule,
     EventModule,
+    DesignModule,
   ],
   controllers: [AppController],
   providers: [

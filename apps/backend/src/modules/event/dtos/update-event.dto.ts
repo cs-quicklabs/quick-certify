@@ -38,4 +38,12 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString({ message: 'Event format ID must be a string' })
   eventFormatId?: string;
+
+  @ApiPropertyOptional({
+    example: 'design123',
+    description: 'Optional design ID (nanoid) to attach to this event',
+  })
+  @IsOptional()
+  @IsString({ message: 'Design ID must be a string' })
+  designId?: string;
 }

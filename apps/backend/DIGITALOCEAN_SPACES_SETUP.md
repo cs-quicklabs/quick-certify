@@ -23,6 +23,7 @@ DO_SPACES_REGION=sfo3
 ### URL Format
 
 Files will be accessible at:
+
 ```
 https://dev.quick-certify.sfo3.digitaloceanspaces.com/organizations/.../logo/...jpg
 ```
@@ -60,6 +61,7 @@ DO_SPACES_CDN_ENDPOINT=https://dev.quick-certify.sfo3.cdn.digitaloceanspaces.com
 ### 3. URL Format with CDN
 
 Files will be accessible at:
+
 ```
 https://dev.quick-certify.sfo3.cdn.digitaloceanspaces.com/organizations/.../logo/...jpg
 ```
@@ -94,4 +96,3 @@ All uploaded files are automatically set with `public-read` ACL, so they are pub
    - Copy the URL from the API response
    - Paste it directly in a browser to see if it loads
    - If it doesn't load in browser, the issue is with DigitalOcean configuration, not the code
-

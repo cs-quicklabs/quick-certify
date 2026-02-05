@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MaxLength, Matches } from 'class-validator';
 
 export class CreateEventDto {
@@ -38,4 +38,11 @@ export class CreateEventDto {
   @IsNotEmpty({ message: 'Event format ID is required' })
   @IsString({ message: 'Event format ID must be a string' })
   eventFormatId!: string;
+
+  @ApiPropertyOptional({
+    example: 'design123',
+    description: 'Optional design ID (nanoid) to attach to this event',
+  })
+  @IsString({ message: 'Design ID must be a string' })
+  designId?: string;
 }

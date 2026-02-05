@@ -5,6 +5,7 @@ import {
   ChangePasswordData,
   EmailPreferencesData,
 } from '../schemas/settings.schema';
+import { AuthProvider } from '@/types';
 
 // API Types
 interface UserProfile {
@@ -14,12 +15,18 @@ interface UserProfile {
   lastName?: string;
   avatarUrl?: string;
   organizationName?: string;
-  signupMethod?: 'email' | 'google';
+  authProvider?: AuthProvider;
   emailNotifications?: boolean;
 }
 
 interface EmailPreferencesResponse {
   emailNotifications: boolean;
+}
+
+interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+  sessionsRevoked: boolean;
 }
 
 // API functions
@@ -32,7 +39,7 @@ async function fetchProfile(): Promise<ProfileSettingsData> {
     email: user.email,
     avatarUrl: user.avatarUrl ?? undefined,
     organizationName: user.organizationName ?? undefined,
-    signupMethod: user.signupMethod,
+    authProvider: user.authProvider,
   };
 }
 
@@ -67,14 +74,8 @@ async function updateProfile(
     lastName: user.lastName ?? undefined,
     email: user.email,
     avatarUrl: user.avatarUrl ?? undefined,
-    signupMethod: user.signupMethod,
+    authProvider: user.authProvider,
   };
-}
-
-interface ChangePasswordResponse {
-  success: boolean;
-  message: string;
-  sessionsRevoked: boolean;
 }
 
 async function changePassword(data: ChangePasswordData): Promise<ChangePasswordResponse> {
@@ -108,6 +109,11 @@ async function updateEmailPreferences(data: EmailPreferencesData): Promise<Email
   return {
     enableAllAlerts: response.data.data.emailNotifications,
   };
+}
+
+async function disconnectGoogle(): Promise<ApiResponse<string | null>> {
+  const response = await apiClient.post<ApiResponse<string | null>>('/auth/google/disconnect', {});
+  return response.data;
 }
 
 // Query Keys
@@ -155,5 +161,11 @@ export function useUpdateEmailPreferences() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: settingsKeys.emailPreferences() });
     },
+  });
+}
+
+export function useDisconnectGoogle() {
+  return useMutation({
+    mutationFn: disconnectGoogle,
   });
 }

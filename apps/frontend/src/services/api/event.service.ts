@@ -96,21 +96,21 @@ export const eventService = {
     return response.data.data;
   },
 
-  async createEventType(data: CreateEventTypeRequest): Promise<EventType> {
+  async createEventType(data: CreateEventTypeRequest): Promise<ApiResponse<EventType>> {
     const response = await apiClient.post<ApiResponse<EventType>>('/event-types', data);
-    return response.data.data;
+    return response.data;
   },
 
-  async updateEventType(id: string, data: UpdateEventTypeRequest): Promise<EventType> {
+  async updateEventType(id: string, data: UpdateEventTypeRequest): Promise<ApiResponse<EventType>> {
     const response = await apiClient.patch<ApiResponse<EventType>>(`/event-types/${id}`, data);
-    return response.data.data;
+    return response.data;
   },
 
-  async deleteEventType(id: string): Promise<{ deleted: boolean }> {
+  async deleteEventType(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
     const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(
       `/event-types/${id}`,
     );
-    return response.data.data;
+    return response.data;
   },
 
   // Event Levels
@@ -126,21 +126,24 @@ export const eventService = {
     return response.data.data;
   },
 
-  async createEventLevel(data: CreateEventLevelRequest): Promise<EventLevel> {
+  async createEventLevel(data: CreateEventLevelRequest): Promise<ApiResponse<EventLevel>> {
     const response = await apiClient.post<ApiResponse<EventLevel>>('/event-levels', data);
-    return response.data.data;
+    return response.data;
   },
 
-  async updateEventLevel(id: string, data: UpdateEventLevelRequest): Promise<EventLevel> {
+  async updateEventLevel(
+    id: string,
+    data: UpdateEventLevelRequest,
+  ): Promise<ApiResponse<EventLevel>> {
     const response = await apiClient.patch<ApiResponse<EventLevel>>(`/event-levels/${id}`, data);
-    return response.data.data;
+    return response.data;
   },
 
-  async deleteEventLevel(id: string): Promise<{ deleted: boolean }> {
+  async deleteEventLevel(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
     const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(
       `/event-levels/${id}`,
     );
-    return response.data.data;
+    return response.data;
   },
 
   // Event Formats
@@ -156,21 +159,24 @@ export const eventService = {
     return response.data.data;
   },
 
-  async createEventFormat(data: CreateEventFormatRequest): Promise<EventFormat> {
+  async createEventFormat(data: CreateEventFormatRequest): Promise<ApiResponse<EventFormat>> {
     const response = await apiClient.post<ApiResponse<EventFormat>>('/event-formats', data);
-    return response.data.data;
+    return response.data;
   },
 
-  async updateEventFormat(id: string, data: UpdateEventFormatRequest): Promise<EventFormat> {
+  async updateEventFormat(
+    id: string,
+    data: UpdateEventFormatRequest,
+  ): Promise<ApiResponse<EventFormat>> {
     const response = await apiClient.patch<ApiResponse<EventFormat>>(`/event-formats/${id}`, data);
-    return response.data.data;
+    return response.data;
   },
 
-  async deleteEventFormat(id: string): Promise<{ deleted: boolean }> {
+  async deleteEventFormat(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
     const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(
       `/event-formats/${id}`,
     );
-    return response.data.data;
+    return response.data;
   },
 
   // Events

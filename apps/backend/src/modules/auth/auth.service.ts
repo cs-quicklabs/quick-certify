@@ -33,6 +33,8 @@ import {
 import { OrganizationService } from '../organization/organization.service';
 import { UserService } from '../user/user.service';
 import { RoleService } from '../role/role.service';
+import { AuthProvider } from '@src/commons/constants';
+
 /**
  * Temporary Google user data stored during signup flow
  */
@@ -167,15 +169,14 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Validate user status (extracted to avoid duplication)
-    this.userService.validateUserStatusForAuth(user);
-
-    // Handle mixed auth providers
-    if (user.auth_provider === 'google' && !user.password_hash) {
+    if (user.auth_provider !== AuthProvider.Email) {
       throw new UnauthorizedException(
         'This account uses Google authentication. Please sign in with Google.',
       );
     }
+
+    // Validate user status (extracted to avoid duplication)
+    this.userService.validateUserStatusForAuth(user);
 
     if (!user.password_hash) {
       throw new UnauthorizedException('Password authentication not available for this account');
@@ -611,7 +612,7 @@ export class AuthService implements IAuthService {
       if (!existingUser.google_id) {
         await this.userService.update(existingUser.id, {
           google_id: googleUser.id,
-          auth_provider: existingUser.password_hash ? 'both' : 'google',
+          auth_provider: existingUser.password_hash ? AuthProvider.Google : AuthProvider.Email,
         });
       }
 
@@ -653,7 +654,7 @@ export class AuthService implements IAuthService {
           organizationId: organization.id,
           roleId: superAdminRole.id,
           google_id: googleUser.id,
-          auth_provider: 'google',
+          auth_provider: AuthProvider.Google,
         },
         undefined, // currentUser
         { transaction },
@@ -741,28 +742,60 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    // Validate user status (extracted to avoid duplication)
     this.userService.validateUserStatusForPasswordReset(user);
 
-    // Handle account linking
-    if (user.auth_provider === 'email' && !user.google_id) {
-      // User signed up with email, now trying Google login
-      // Link Google account to existing email account
-      await this.userService.update(user.id, {
-        google_id: googleUser.id,
-        auth_provider: 'both', // Support both auth methods
-      });
-    } else if (user.auth_provider === 'google' && user.google_id !== googleUser.id) {
+    if (
+      user.google_id &&
+      user.auth_provider === AuthProvider.Google &&
+      user.google_id !== googleUser.id
+    ) {
       throw new UnauthorizedException('Google account mismatch');
-    } else if (!user.google_id) {
-      // First time Google login, update google_id
-      await this.userService.update(user.id, {
-        google_id: googleUser.id,
-        auth_provider: user.password_hash ? 'both' : 'google',
-      });
     }
 
+    const updateData = {
+      google_id: user.google_id ? user.google_id : googleUser.id,
+      auth_provider: AuthProvider.Google,
+    };
+
+    await this.userService.update(user.id, updateData);
+
     return this.createSessionAndTokens(user, ipAddress, userAgent);
+  }
+
+  async disconnectGoogle(userUuid: string) {
+    const user = await this.userService.findByUuid(userUuid);
+    if (!user) {
+      throw new NotFoundException('User not found or already disconnected');
+    }
+
+    if (!this.sessionModel.sequelize) {
+      throw new Error('Sequelize instance not available');
+    }
+
+    const sequelize = this.sessionModel.sequelize;
+    const transaction = await sequelize.transaction();
+
+    try {
+      await this.userService.update(
+        user.id,
+        { google_id: '', auth_provider: AuthProvider.Email },
+        { transaction },
+      );
+      await this.forgotPassword({ email: user.email });
+
+      // Revoke all sessions for security (password changed)
+      await this.sessionService.revokeAllForUser(user.uuid, transaction);
+
+      await transaction.commit();
+      return {
+        success: true,
+        message: 'Password changed successfully. All sessions have been revoked.',
+        sessionsRevoked: true,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   private createTempGoogleToken(googleUser: GoogleUserInfo): string {

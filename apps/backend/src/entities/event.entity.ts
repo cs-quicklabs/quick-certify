@@ -1,14 +1,20 @@
-import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Index,
+  Table,
+  Unique,
+} from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
+import { OrganizationEntity } from './organization.entity';
 import { EventTypeEntity } from './event-type.entity';
 import { EventLevelEntity } from './event-level.entity';
 import { EventFormatEntity } from './event-format.entity';
+import { Optional } from '@nestjs/common';
+import { DesignEntity } from './design.entity';
 
-/**
- * Event Entity
- *
- * Represents an event with references to type, level, and format
- */
 @Table({
   tableName: 'event',
   underscored: true,
@@ -18,6 +24,20 @@ export class EventEntity extends BaseEntity {
   @Index({ name: 'IDX_EVENT_UUID', unique: true })
   declare uuid: string;
 
+  // Organization relationship (multi-tenant)
+  @ForeignKey(() => OrganizationEntity)
+  @Index({ name: 'IDX_EVENT_ORGANIZATION_ID' })
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    field: 'organization_id',
+  })
+  declare organization_id: number;
+
+  @BelongsTo(() => OrganizationEntity)
+  declare organization: OrganizationEntity;
+
+  // Composite unique index on (organization_id, name) - defined in migration
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
@@ -67,4 +87,15 @@ export class EventEntity extends BaseEntity {
     field: 'is_active',
   })
   declare is_active: boolean;
+
+  @ForeignKey(() => DesignEntity)
+  @Index({ name: 'IDX_DESIGN_ID' })
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  declare design_id: number;
+
+  @BelongsTo(() => DesignEntity)
+  declare design: DesignEntity;
 }

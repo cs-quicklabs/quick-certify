@@ -14,7 +14,7 @@ export interface FileUploadResult {
 /**
  * File upload category types
  */
-export type FileCategory = 'logo' | 'favicon' | 'banner' | 'avatar';
+export type FileCategory = 'logo' | 'favicon' | 'banner' | 'avatar' | 'design';
 
 /**
  * Upload a file to the server
