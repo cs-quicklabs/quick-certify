@@ -10,6 +10,9 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  images: {
+    domains: ['images.unsplash.com'],
+  },
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
