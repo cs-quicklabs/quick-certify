@@ -3,13 +3,8 @@
  */
 export const IMAGE_RULES = {
   certificate: {
-<<<<<<< HEAD
     height: 800,
     width: 1108,
-=======
-    minHeight: 800,
-    minWidth: 1108,
->>>>>>> origin/dev
     label: 'Certificate (A4-like)',
   },
   badge: {
