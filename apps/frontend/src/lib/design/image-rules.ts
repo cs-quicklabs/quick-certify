@@ -14,9 +14,6 @@ export const IMAGE_RULES = {
   },
 } as const;
 
-export const DIMENSION_TOLERANCE = {
-  certificate: 5,
-  badge: 2,
-} as const;
+export const ASPECT_RATIO_TOLERANCE = 0.2; // 20% tolerance
 
 export type DesignType = keyof typeof IMAGE_RULES;
