@@ -4,7 +4,7 @@ import {
   FileCategory,
   FileUploadResult,
 } from '@/services/api/file.service';
-import { DesignType, validateImageDimensions } from '@/lib/design/';
+import { DesignType, validateImageAspectRatio } from '@/lib/design/';
 import { getApiErrorMessage } from './api-error';
 
 /**
@@ -38,7 +38,7 @@ export async function uploadImage(options: ImageUploadOptions): Promise<ImageUpl
 
   try {
     if (validateDimensions && designType) {
-      await validateImageDimensions(file, designType);
+      await validateImageAspectRatio(file, designType);
     }
 
     const result: FileUploadResult = await uploadFile(file, category);

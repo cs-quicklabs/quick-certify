@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { validateImageDimensions } from '@/lib/design';
+import { validateImageAspectRatio } from '@/lib/design';
 import { DesignEditor } from './DesignEditor';
 import { DesignLayout } from '@/types';
 import { UploadCloud } from 'lucide-react';
@@ -93,8 +93,7 @@ export default function DesignForm({
 
   const processFile = async (file: File) => {
     try {
-      await validateImageDimensions(file, designType);
-
+      await validateImageAspectRatio(file, designType);
       imageRef.current = file;
       setPreview(URL.createObjectURL(file));
       onImageSelectAction(file);
