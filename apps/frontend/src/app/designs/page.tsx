@@ -9,6 +9,7 @@ import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 import Pagination from '@/components/ui/pagination';
 
 const SEARCH_DEBOUNCE_MS = 1000;
+const DESIGN_CARD_ITEM_LIMIT = 10;
 
 type Filter = 'All' | 'Certificate' | 'Badge';
 
@@ -31,7 +32,7 @@ export default function DesignsPage() {
 
   const { designs, meta, loading, error, deleteDesign } = useDesignList({
     page,
-    limit: 4,
+    limit: DESIGN_CARD_ITEM_LIMIT,
     search: searchFromUrl,
     type: apiType,
   });
