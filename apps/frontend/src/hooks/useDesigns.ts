@@ -62,7 +62,7 @@ export function useDesignList({ page, limit, search, type }: Params) {
   });
 
   return {
-    designs: query.data?.data ?? [],
+    designs: query.data?.data ?? ([] as Design[]),
     meta: query.data?.meta ?? null,
     loading: query.isLoading,
     error: query.error instanceof Error ? query.error.message : null,

@@ -1,19 +1,34 @@
 'use client';
 
 import { EventItem } from './EventItem';
-import type { EventItemProps } from './EventItem';
+import { Event } from '@/services';
 
 export interface EventsTableProps {
-  events: EventItemProps[];
+  events: Event[];
+  onDelete?: (uuid: string) => void;
+  deletingEventId?: string | null;
 }
 
-export const EventsTable = ({ events }: EventsTableProps) => {
+export const EventsTable = ({ events, onDelete, deletingEventId }: EventsTableProps) => {
+  if (events.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12 text-gray-500">
+        <p>No events found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="border-gray-200">
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <tbody>
-          {events.map((e) => (
-            <EventItem key={e.id} {...e} />
+          {events.map((event) => (
+            <EventItem
+              key={event.uuid}
+              {...event}
+              onDelete={onDelete}
+              isDeleting={deletingEventId === event.uuid}
+            />
           ))}
         </tbody>
       </table>

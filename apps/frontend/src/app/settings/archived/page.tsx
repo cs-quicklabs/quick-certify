@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTeamMembers, useRestoreUser, usePermanentlyDeleteTeamMember } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { ConfirmationDialog } from '@/components';
+import { Pagination } from '@/components/ui/pagination';
 import type { TeamMember } from '@/services/api/team.service';
 import { toast } from 'react-toastify';
 import { X } from 'lucide-react';
@@ -197,30 +198,16 @@ export default function ArchivedMembersPage() {
         )}
       </div>
 
-      {/* Pagination (Simple) */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1 || isLoading}
-              className="px-3 py-1 text-sm text-gray-600 border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages || isLoading}
-              className="px-3 py-1 text-sm text-gray-600 border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Pagination */}
+      <div className="pt-4 border-t border-gray-200">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          isLoading={isLoading}
+          variant="compact"
+        />
+      </div>
 
       {/* Restore Dialog */}
       <ConfirmationDialog

@@ -61,15 +61,21 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const didMountRef = useRef(false);
 
-  // Update form data when initialValues changes
+  // Update form data when initialValues changes - only on initial mount, not subsequent changes
   useEffect(() => {
-    if (initialValues && Object.keys(initialValues).length > 0) {
-      const sanitizedValues = normalizeSelectValues(initialValues);
-      setFormData(sanitizedValues);
-      initialFormDataRef.current = sanitizedValues;
+    if (!didMountRef.current) {
+      // Initial mount - set form data from initialValues
+      if (initialValues && Object.keys(initialValues).length > 0) {
+        const sanitizedValues = normalizeSelectValues(initialValues);
+        setFormData(sanitizedValues);
+        initialFormDataRef.current = sanitizedValues;
+      }
+      didMountRef.current = true;
     }
-  }, [initialValues, normalizeSelectValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount
 
   // Auto-hide success message
   useEffect(() => {

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
 import { useDesignList } from '@/hooks/useDesigns';
+import { Pagination } from '@/components/ui/pagination';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 
 const SEARCH_DEBOUNCE_MS = 1000;
@@ -143,37 +144,14 @@ export default function DesignsPage() {
       />
 
       {/* Pagination */}
-      {meta && meta.totalPages > 1 && (
+      {meta && (
         <div className="flex justify-end mt-6 px-4">
-          <nav className="inline-flex rounded-md border border-gray-200 overflow-hidden">
-            <button
-              disabled={page === 1}
-              onClick={() => goToPage(page - 1)}
-              className="px-3 py-2 text-sm disabled:opacity-50"
-            >
-              Previous
-            </button>
-
-            {Array.from({ length: meta.totalPages }, (_, i) => i + 1)
-              .slice(0, 5)
-              .map((p) => (
-                <button
-                  key={p}
-                  onClick={() => goToPage(p)}
-                  className={`px-3 py-2 text-sm ${page === p ? 'bg-blue-50 text-blue-600' : ''}`}
-                >
-                  {p}
-                </button>
-              ))}
-
-            <button
-              disabled={page === meta.totalPages}
-              onClick={() => goToPage(page + 1)}
-              className="px-3 py-2 text-sm disabled:opacity-50"
-            >
-              Next
-            </button>
-          </nav>
+          <Pagination
+            currentPage={page}
+            totalPages={meta.totalPages}
+            onPageChange={goToPage}
+            //isLoading={isLoading}
+          />
         </div>
       )}
     </div>

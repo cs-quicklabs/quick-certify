@@ -1,8 +1,17 @@
 /**
  * Event Hooks - React Query hooks for event management
+ *
+ * All mutations automatically show toast notifications on error via global handler.
+ * Success toasts should be handled at the component level.
  */
 
-import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import {
   eventService,
   CreateEventTypeRequest,
@@ -14,6 +23,8 @@ import {
   CreateEventRequest,
   UpdateEventRequest,
   EventFilters,
+  EventServiceError,
+  Event,
 } from '@/services';
 
 // Event Type Query Keys
@@ -89,6 +100,7 @@ export function useCreateEventType() {
       queryClient.invalidateQueries({ queryKey: EVENT_TYPE_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: [...EVENT_TYPE_KEYS.all, 'infinite'] });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -102,6 +114,7 @@ export function useUpdateEventType() {
       queryClient.invalidateQueries({ queryKey: [...EVENT_TYPE_KEYS.all, 'infinite'] });
       queryClient.invalidateQueries({ queryKey: EVENT_TYPE_KEYS.detail(variables.id) });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -113,6 +126,7 @@ export function useDeleteEventType() {
       queryClient.invalidateQueries({ queryKey: EVENT_TYPE_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: [...EVENT_TYPE_KEYS.all, 'infinite'] });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -154,6 +168,7 @@ export function useCreateEventLevel() {
       queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: [...EVENT_LEVEL_KEYS.all, 'infinite'] });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -167,6 +182,7 @@ export function useUpdateEventLevel() {
       queryClient.invalidateQueries({ queryKey: [...EVENT_LEVEL_KEYS.all, 'infinite'] });
       queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.detail(variables.id) });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -178,6 +194,7 @@ export function useDeleteEventLevel() {
       queryClient.invalidateQueries({ queryKey: EVENT_LEVEL_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: [...EVENT_LEVEL_KEYS.all, 'infinite'] });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -219,6 +236,7 @@ export function useCreateEventFormat() {
       queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: [...EVENT_FORMAT_KEYS.all, 'infinite'] });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -232,6 +250,7 @@ export function useUpdateEventFormat() {
       queryClient.invalidateQueries({ queryKey: [...EVENT_FORMAT_KEYS.all, 'infinite'] });
       queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.detail(variables.id) });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -243,6 +262,7 @@ export function useDeleteEventFormat() {
       queryClient.invalidateQueries({ queryKey: EVENT_FORMAT_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: [...EVENT_FORMAT_KEYS.all, 'infinite'] });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -262,16 +282,38 @@ export function useEvent(id: string, enabled = true) {
   });
 }
 
-export function useCreateEvent() {
+/**
+ * Hook result type with error type specified
+ */
+export type CreateEventMutationResult = UseMutationResult<
+  Event,
+  EventServiceError,
+  CreateEventRequest
+>;
+
+/**
+ * Create a new event
+ *
+ * Automatically shows toast notification on error via global handler.
+ * Component should handle success toast and navigation.
+ */
+export function useCreateEvent(): CreateEventMutationResult {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateEventRequest) => eventService.createEvent(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EVENT_KEYS.lists() });
     },
+    // Error is handled by global handler in query-client.ts
   });
 }
 
+/**
+ * Update an existing event
+ *
+ * Automatically shows toast notification on error via global handler.
+ * Component should handle success toast and navigation.
+ */
 export function useUpdateEvent(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -280,6 +322,7 @@ export function useUpdateEvent(id: string) {
       queryClient.invalidateQueries({ queryKey: EVENT_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: EVENT_KEYS.detail(id) });
     },
+    // Error is handled by global handler
   });
 }
 
@@ -290,5 +333,6 @@ export function useDeleteEvent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EVENT_KEYS.lists() });
     },
+    // Error is handled by global handler
   });
 }

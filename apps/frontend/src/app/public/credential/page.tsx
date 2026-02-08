@@ -50,7 +50,7 @@ export default function PublicCredentialPage() {
       await navigator.clipboard.writeText(getCredentialUrl());
       alert('Link copied to clipboard!');
     } catch (err) {
-      console.error('Failed to copy link:', err);
+      console.log('Failed to copy link:', err);
     }
   };
 

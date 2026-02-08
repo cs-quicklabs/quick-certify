@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import type { TeamMember } from '@/services/api/team.service';
-import { capitalizeFirst, filterAndSortRoles } from '@/utils/helpers';
+import { Pagination } from '@/components/ui/pagination';
+import { capitalizeFirst, checkIfUserIsNonAdmin, filterAndSortRoles } from '@/utils/helpers';
 
 /**
  * Team Listing Page
@@ -24,7 +25,7 @@ export default function TeamsPage() {
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -47,7 +48,7 @@ export default function TeamsPage() {
   );
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 
@@ -247,30 +248,17 @@ export default function TeamsPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing {members.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
-            {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1 || isLoading}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages || isLoading}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="px-6 py-4 border-t border-gray-200">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          isLoading={isLoading}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          variant="compact"
+        />
+      </div>
     </div>
   );
 }
