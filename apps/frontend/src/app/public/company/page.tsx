@@ -1,5 +1,6 @@
 'use client';
 
+import { LinkedIn, X } from '@/utils/icons';
 import Image from 'next/image';
 
 export default function PublicCompanyPage() {
@@ -81,17 +82,17 @@ export default function PublicCompanyPage() {
                 target="_blank"
                 className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
               >
-                linkedin.com/company/crownstack
+                <LinkedIn className="w-4 h-4" /> linkedin.com/company/crownstack
               </a>
             </InfoItem>
 
-            <InfoItem title="Twitter">
+            <InfoItem title="X">
               <a
-                href="https://twitter.com/crownstack"
+                href="https://x.com/crownstack"
                 target="_blank"
                 className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
               >
-                twitter.com/crownstack
+                <X className="w-4 h-4" /> x.com/crownstack
               </a>
             </InfoItem>
           </div>
@@ -162,7 +163,7 @@ export default function PublicCompanyPage() {
               />
               <button
                 type="submit"
-                className="mt-1 rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="mt-1 rounded-sm bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 Send Message
               </button>
