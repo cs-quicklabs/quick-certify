@@ -64,11 +64,7 @@ export default function EventPage() {
       <div className="max-w-7xl mx-auto mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="max-w-sm bg-white border border-gray-200 rounded-sm shadow-sm">
-            <img
-              src="../../../../public/credential/image_720.png"
-              alt="Event"
-              className="rounded-t-sm"
-            />
+            <img src="/credential/image_720.png" alt="Event" className="rounded-t-sm" />
 
             <div className="p-5">
               <h5 className="mb-2 text-xl font-bold text-gray-900">

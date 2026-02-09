@@ -123,7 +123,7 @@ export default function PublicCompanyPage() {
               ].map((item) => (
                 <li key={item.title} className="flex gap-3 p-4">
                   <Image
-                    src="/quick-certify/rashi.png"
+                    src="/credential/image_720.png"
                     alt="Certificate thumbnail"
                     width={80}
                     height={56}
