@@ -41,12 +41,7 @@ import { DesignModule } from '../design/design.module';
     OrganizationModule,
     DesignModule,
   ],
-  controllers: [
-    EventTypeController,
-    EventLevelController,
-    EventFormatController,
-    EventController,
-  ],
+  controllers: [EventTypeController, EventLevelController, EventFormatController, EventController],
   providers: [
     // Services
     EventTypeService,

@@ -36,18 +36,21 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
         config.fields.filter((field) => field.type === 'select').map((field) => field.name),
       );
 
-      return Object.entries(values).reduce((acc, [key, value]) => {
-        // Convert null to undefined for schema compatibility
-        if (value === null) {
-          acc[key] = undefined;
-        } else if (selectFieldNames.has(key) && typeof value === 'number') {
-          // Convert number to string for select fields
-          acc[key] = String(value);
-        } else {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as Record<string, unknown>);
+      return Object.entries(values).reduce(
+        (acc, [key, value]) => {
+          // Convert null to undefined for schema compatibility
+          if (value === null) {
+            acc[key] = undefined;
+          } else if (selectFieldNames.has(key) && typeof value === 'number') {
+            // Convert number to string for select fields
+            acc[key] = String(value);
+          } else {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
     },
     [config.fields],
   );
@@ -74,7 +77,6 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       }
       didMountRef.current = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount
 
   // Auto-hide success message
@@ -264,18 +266,37 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className={`w-full mt-6 ${config.layout === 'grid' ? 'grid grid-cols-2 gap-4' : config.layout === 'grid-3' ? 'grid grid-cols-3 gap-4' : 'space-y-4'
-          }`}
+        className={`w-full mt-6 ${
+          config.layout === 'grid'
+            ? 'grid grid-cols-2 gap-4'
+            : config.layout === 'grid-3'
+              ? 'grid grid-cols-3 gap-4'
+              : 'space-y-4'
+        }`}
       >
         {/* Render each configured field */}
         {config.fields.map(renderField)}
 
         {/* Render any children inside the form (e.g., skills tag UI) */}
-        {children && <div className={(config.layout === 'grid' || config.layout === 'grid-3') ? 'col-span-3' : ''}>{children}</div>}
+        {children && (
+          <div
+            className={config.layout === 'grid' || config.layout === 'grid-3' ? 'col-span-3' : ''}
+          >
+            {children}
+          </div>
+        )}
 
         {/* Conditionally render submit area. If config.showSubmit === false, parent controls submit. */}
         {config.showSubmit !== false && (
-          <div className={config.layout === 'grid' ? 'col-span-2' : config.layout === 'grid-3' ? 'col-span-3' : ''}>
+          <div
+            className={
+              config.layout === 'grid'
+                ? 'col-span-2'
+                : config.layout === 'grid-3'
+                  ? 'col-span-3'
+                  : ''
+            }
+          >
             <div className="flex items-center justify-end gap-3">
               {config.onCancel && (
                 <button

@@ -23,7 +23,7 @@ export interface ValidatedEventReferences {
  *
  * Validates and retrieves event reference entities.
  * Centralizes validation logic to avoid duplication.
- * 
+ *
  * Single Responsibility: Validate event references only
  */
 @Injectable()
@@ -83,9 +83,7 @@ export class EventReferenceValidator {
 
     const eventType = await this.eventTypeService.findByUuid(eventTypeId, organizationUuid);
     if (!eventType) {
-      throw new BadRequestException(
-        `Event type with UUID ${eventTypeId} not found or inactive`,
-      );
+      throw new BadRequestException(`Event type with UUID ${eventTypeId} not found or inactive`);
     }
     return eventType;
   }
@@ -104,9 +102,7 @@ export class EventReferenceValidator {
 
     const eventLevel = await this.eventLevelService.findByUuid(eventLevelId, organizationUuid);
     if (!eventLevel) {
-      throw new BadRequestException(
-        `Event level with UUID ${eventLevelId} not found or inactive`,
-      );
+      throw new BadRequestException(`Event level with UUID ${eventLevelId} not found or inactive`);
     }
     return eventLevel;
   }

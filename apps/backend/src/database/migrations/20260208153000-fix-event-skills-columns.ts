@@ -50,15 +50,11 @@ module.exports = {
           },
           { transaction },
         );
-        await queryInterface.addIndex(
-          'event_skill',
-          ['uuid'],
-          {
-            name: 'IDX_event_skill_UUID',
-            unique: true,
-            transaction,
-          },
-        );
+        await queryInterface.addIndex('event_skill', ['uuid'], {
+          name: 'IDX_event_skill_UUID',
+          unique: true,
+          transaction,
+        });
       }
 
       // Add updated_at column back if needed

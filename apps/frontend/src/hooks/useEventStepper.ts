@@ -53,7 +53,7 @@ const STEP_VALIDATIONS = {
     }
 
     const isComplete = missingFields.length === 0;
-    const isPartial = !isComplete && (data.name?.trim() || data.designUuid);
+    const isPartial = !isComplete && !!(data.name?.trim() || data.designUuid);
 
     return {
       isComplete,
@@ -79,10 +79,16 @@ const STEP_VALIDATIONS = {
     if (!hasSkills) missingFields.push('skills');
 
     const isComplete = missingFields.length === 0;
-    
+
     // Partial if at least one field is filled but not all
-    const filledCount = [hasDescription, hasLearningLink, hasTypeId, hasLevelId, hasFormatId, hasSkills]
-      .filter(Boolean).length;
+    const filledCount = [
+      hasDescription,
+      hasLearningLink,
+      hasTypeId,
+      hasLevelId,
+      hasFormatId,
+      hasSkills,
+    ].filter(Boolean).length;
     const isPartial = !isComplete && filledCount > 0;
 
     return {
@@ -158,7 +164,7 @@ export interface UseEventStepperReturn {
  * @returns Stepper state and control functions
  */
 export function useEventStepper(
-  initialStep: number = 0,
+  initialStep: number,
   step0Data: Step0Data,
   step1Data: Step1Data,
   skillIds: string[] = [],
@@ -221,7 +227,7 @@ export function useEventStepper(
    */
   const partialSteps = useMemo(() => {
     const partial: number[] = [];
-    
+
     // Step 0 doesn't show partial, only complete or empty
     // Step 1 shows partial when some fields are filled but not all
     if (step1Validation.isPartial && !step1Validation.isComplete) {
@@ -249,13 +255,16 @@ export function useEventStepper(
   /**
    * Set current step with validation
    */
-  const setCurrentStep = useCallback((step: number) => {
-    setCurrentStepState((prev) => {
-      const maxStep = Math.max(prev, ...manuallyCompletedSteps) + 1;
-      const clampedStep = Math.min(Math.max(0, step), maxStep);
-      return clampedStep;
-    });
-  }, [manuallyCompletedSteps]);
+  const setCurrentStep = useCallback(
+    (step: number) => {
+      setCurrentStepState((prev) => {
+        const maxStep = Math.max(prev, ...manuallyCompletedSteps) + 1;
+        const clampedStep = Math.min(Math.max(0, step), maxStep);
+        return clampedStep;
+      });
+    },
+    [manuallyCompletedSteps],
+  );
 
   /**
    * Navigate to next step
@@ -281,15 +290,18 @@ export function useEventStepper(
   /**
    * Check if user can navigate to a specific step
    */
-  const canNavigateToStep = useCallback((step: number): boolean => {
-    // Can always navigate to completed steps
-    if (completedSteps.includes(step)) {
-      return true;
-    }
-    // Can navigate to the next immediate step after the last completed
-    const lastCompleted = Math.max(-1, ...completedSteps);
-    return step === lastCompleted + 1;
-  }, [completedSteps]);
+  const canNavigateToStep = useCallback(
+    (step: number): boolean => {
+      // Can always navigate to completed steps
+      if (completedSteps.includes(step)) {
+        return true;
+      }
+      // Can navigate to the next immediate step after the last completed
+      const lastCompleted = Math.max(-1, ...completedSteps);
+      return step === lastCompleted + 1;
+    },
+    [completedSteps],
+  );
 
   /**
    * Mark a step as completed (manual override)
@@ -303,11 +315,14 @@ export function useEventStepper(
   /**
    * Get validation for a specific step
    */
-  const getStepValidation = useCallback((stepIndex: number): StepValidation => {
-    if (stepIndex === 0) return step0Validation;
-    if (stepIndex === 1) return step1Validation;
-    return { isComplete: false, isPartial: false, missingFields: [] };
-  }, [step0Validation, step1Validation]);
+  const getStepValidation = useCallback(
+    (stepIndex: number): StepValidation => {
+      if (stepIndex === 0) return step0Validation;
+      if (stepIndex === 1) return step1Validation;
+      return { isComplete: false, isPartial: false, missingFields: [] };
+    },
+    [step0Validation, step1Validation],
+  );
 
   return {
     currentStep,

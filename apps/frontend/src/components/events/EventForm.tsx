@@ -88,7 +88,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     markStepCompleted,
     isStep0Complete,
     isStep1Complete,
-    isStep1Partial,
     steps,
   } = useEventStepper(initialStep, step0CoreData, step1Data, selectedSkillIds);
 
@@ -107,7 +106,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const shouldFetchEvent = isEditMode && !!eventUuid && !initialEventData;
   const { data: eventData, isLoading: isLoadingEvent } = useEvent(
     eventUuid ?? '',
-    shouldFetchEvent
+    shouldFetchEvent,
   );
 
   // Data fetching for dropdowns
@@ -143,13 +142,12 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const formats = formatsData?.data ?? [];
   const skills = skillsData?.data ?? [];
 
-  const isLoadingDropdowns = isLoadingTypes || isLoadingLevels || isLoadingFormats || isLoadingSkills;
+  const isLoadingDropdowns =
+    isLoadingTypes || isLoadingLevels || isLoadingFormats || isLoadingSkills;
 
   // Filter skills based on search query
   const filteredSkills = skillSearchQuery.trim()
-    ? skills.filter((skill) =>
-      skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase())
-    )
+    ? skills.filter((skill) => skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()))
     : skills;
 
   // Get selected skill objects
@@ -196,7 +194,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       // Note: API may return snake_case fields
       setStep1Data({
         description: (apiData.description as string) || undefined,
-        learningLink: (apiData.learning_link as string) || (apiData.learningLink as string) || undefined,
+        learningLink:
+          (apiData.learning_link as string) || (apiData.learningLink as string) || undefined,
         typeId: eventData.event_type?.uuid,
         levelId: eventData.event_level?.uuid,
         formatId: eventData.event_format?.uuid,
@@ -213,32 +212,38 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   }, [isEditMode, eventData]);
 
   // Stepper navigation with toast for restricted steps
-  const handleStepSelect = useCallback((step: number) => {
-    if (canNavigateToStep(step)) {
-      setCurrentStep(step);
-    } else {
-      toast.info('Please complete the current step first');
-    }
-  }, [canNavigateToStep, setCurrentStep]);
+  const handleStepSelect = useCallback(
+    (step: number) => {
+      if (canNavigateToStep(step)) {
+        setCurrentStep(step);
+      } else {
+        toast.info('Please complete the current step first');
+      }
+    },
+    [canNavigateToStep, setCurrentStep],
+  );
 
   /**
    * Add a skill to the list
    */
-  const addSkill = useCallback((skillUuid: string) => {
-    if (selectedSkillIds.length >= MAX_SKILLS) {
-      toast.error(`Maximum ${MAX_SKILLS} skills allowed`);
-      return;
-    }
+  const addSkill = useCallback(
+    (skillUuid: string) => {
+      if (selectedSkillIds.length >= MAX_SKILLS) {
+        toast.error(`Maximum ${MAX_SKILLS} skills allowed`);
+        return;
+      }
 
-    if (selectedSkillIds.includes(skillUuid)) {
-      toast.error('This skill has already been added');
-      return;
-    }
+      if (selectedSkillIds.includes(skillUuid)) {
+        toast.error('This skill has already been added');
+        return;
+      }
 
-    setSelectedSkillIds((prev) => [...prev, skillUuid]);
-    setSkillSearchQuery('');
-    setIsSkillDropdownOpen(false);
-  }, [selectedSkillIds]);
+      setSelectedSkillIds((prev) => [...prev, skillUuid]);
+      setSkillSearchQuery('');
+      setIsSkillDropdownOpen(false);
+    },
+    [selectedSkillIds],
+  );
 
   /**
    * Remove a skill from the list
@@ -410,7 +415,16 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         setIsUpdating(false);
       }
     },
-    [eventUuid, updateEvent, step0CoreData.name, step0FormData.designUuid, selectedSkillIds, router, markStepCompleted, isEditMode],
+    [
+      eventUuid,
+      updateEvent,
+      step0CoreData.name,
+      step0FormData.designUuid,
+      selectedSkillIds,
+      router,
+      markStepCompleted,
+      isEditMode,
+    ],
   );
 
   // Step 0 form schema and config
@@ -424,7 +438,9 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
   const step0Config = {
     title: isEditMode ? 'Edit Event' : 'Add New Event',
-    subtitle: isEditMode ? 'Edit the event details.' : 'Create a new event to issue credentials on specific occasions.',
+    subtitle: isEditMode
+      ? 'Edit the event details.'
+      : 'Create a new event to issue credentials on specific occasions.',
     fields: [
       {
         name: 'name',
@@ -432,7 +448,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         type: 'text' as FormFieldConfig['type'],
         placeholder: 'Event name',
         required: true,
-        description: 'Specify the name of the occasion on which you would like to issue credentials. '
+        description:
+          'Specify the name of the occasion on which you would like to issue credentials. ',
       },
     ] as FormFieldConfig[],
     schema: step0Schema,
@@ -553,9 +570,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
               {/* Design Selection */}
               <div className="mt-4">
                 <div className="mb-2">
-                  <label className="form-input-label">
-                    Appearance
-                  </label>
+                  <label className="form-input-label">Appearance</label>
                   <p className="form-input-description -mt-2 mb-2">
                     Add a design to this event (required)
                   </p>
@@ -668,10 +683,15 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                     {selectedSkills.map((skill) => (
                       <span
                         key={skill.uuid}
-                        className='ps-1.5 pe-0.5 py-0.5 inline-flex items-center bg-neutral-secondary-medium border border-default-medium text-heading text-xs font-medium  rounded gap-1 m-0.5'>
+                        className="ps-1.5 pe-0.5 py-0.5 inline-flex items-center bg-neutral-secondary-medium border border-default-medium text-heading text-xs font-medium  rounded gap-1 m-0.5"
+                      >
                         {skill.name}
-                        <X size={'15'} strokeWidth={'2.3'} className='hover:bg-neutral-quaternary rounded-xs p-0.5'
-                          onClick={() => removeSkill(skill.uuid)} />
+                        <X
+                          size={'15'}
+                          strokeWidth={'2.3'}
+                          className="hover:bg-neutral-quaternary rounded-xs p-0.5"
+                          onClick={() => removeSkill(skill.uuid)}
+                        />
                       </span>
                     ))}
 
@@ -681,7 +701,9 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                         <input
                           className="w-full h-10 border-0 outline-none bg-transparent"
                           type="text"
-                          placeholder={isLoadingSkills ? 'Loading skills...' : 'Search and select skills...'}
+                          placeholder={
+                            isLoadingSkills ? 'Loading skills...' : 'Search and select skills...'
+                          }
                           value={skillSearchQuery}
                           onChange={(e) => {
                             setSkillSearchQuery(e.target.value);
@@ -696,7 +718,9 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
                             {filteredSkills.length === 0 ? (
                               <div className="px-4 py-3 text-sm text-gray-500">
-                                {skillSearchQuery.trim() ? 'No matching skills found' : 'No skills available'}
+                                {skillSearchQuery.trim()
+                                  ? 'No matching skills found'
+                                  : 'No skills available'}
                               </div>
                             ) : (
                               filteredSkills.map((skill) => {
@@ -707,8 +731,11 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                                     type="button"
                                     onClick={() => !isSelected && addSkill(skill.uuid)}
                                     disabled={isSelected}
-                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${isSelected ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'text-gray-900'
-                                      }`}
+                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
+                                      isSelected
+                                        ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                        : 'text-gray-900'
+                                    }`}
                                   >
                                     <span>{skill.name}</span>
                                     {isSelected && <span className="text-xs">Already added</span>}

@@ -9,6 +9,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 
 const SEARCH_DEBOUNCE_MS = 1000;
+const DESIGN_CARD_ITEM_LIMIT = 10;
 
 type Filter = 'All' | 'Certificate' | 'Badge';
 
@@ -31,7 +32,7 @@ export default function DesignsPage() {
 
   const { designs, meta, loading, error, deleteDesign } = useDesignList({
     page,
-    limit: 4,
+    limit: DESIGN_CARD_ITEM_LIMIT,
     search: searchFromUrl,
     type: apiType,
   });
@@ -131,11 +132,10 @@ export default function DesignsPage() {
           )}
         </div>
       </div>
-
       {/* List */}
       <DesignsList
         designs={designs}
-        meta={meta!}
+        meta={meta}
         search={search}
         filter={filter}
         onSearchChange={setSearch}
@@ -146,12 +146,7 @@ export default function DesignsPage() {
       {/* Pagination */}
       {meta && (
         <div className="flex justify-end mt-6 px-4">
-          <Pagination
-            currentPage={page}
-            totalPages={meta.totalPages}
-            onPageChange={goToPage}
-            //isLoading={isLoading}
-          />
+          <Pagination currentPage={page} totalPages={meta.totalPages} onPageChange={goToPage} />
         </div>
       )}
     </div>

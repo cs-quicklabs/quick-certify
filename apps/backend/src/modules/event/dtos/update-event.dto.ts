@@ -1,12 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsOptional,
-  IsString,
-  IsUrl,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import { IsArray, IsOptional, IsString, IsUrl, MaxLength, Matches } from 'class-validator';
 
 /**
  * DTO for updating an existing event

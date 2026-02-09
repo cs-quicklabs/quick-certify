@@ -8,7 +8,7 @@ type Filter = 'All' | 'Certificate' | 'Badge';
 
 type Props = {
   designs: Design[];
-  meta: PaginatedResponse<Design>['meta'];
+  meta?: PaginatedResponse<Design>['meta'] | null;
   search: string;
   filter: Filter;
   onSearchChange: (v: string) => void;

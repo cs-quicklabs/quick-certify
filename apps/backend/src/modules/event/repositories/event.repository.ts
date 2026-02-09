@@ -117,7 +117,11 @@ export class EventRepository {
   /**
    * Find event by name (case-insensitive)
    */
-  async findByName(name: string, organizationId: number, excludeId?: number): Promise<EventEntity | null> {
+  async findByName(
+    name: string,
+    organizationId: number,
+    excludeId?: number,
+  ): Promise<EventEntity | null> {
     const where: Record<string, unknown> = {
       organization_id: organizationId,
       name: { [Op.iLike]: name.trim() },

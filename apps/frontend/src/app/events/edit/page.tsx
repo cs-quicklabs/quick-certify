@@ -12,7 +12,7 @@ function EditEventContent() {
   const searchParams = useSearchParams();
   const eventUuid = searchParams.get('id');
   const stepParam = searchParams.get('step');
-  
+
   // Parse step from URL, default to 0 (first step)
   const initialStep = stepParam ? parseInt(stepParam, 10) : 0;
 

@@ -16,8 +16,9 @@ module.exports = {
 
     try {
       // Check if description column exists
-      const descriptionExists = await queryInterface.describeTable('event')
-        .then(columns => 'description' in columns)
+      const descriptionExists = await queryInterface
+        .describeTable('event')
+        .then((columns) => 'description' in columns)
         .catch(() => false);
 
       if (!descriptionExists) {
@@ -34,8 +35,9 @@ module.exports = {
       }
 
       // Check if learning_link column exists
-      const learningLinkExists = await queryInterface.describeTable('event')
-        .then(columns => 'learning_link' in columns)
+      const learningLinkExists = await queryInterface
+        .describeTable('event')
+        .then((columns) => 'learning_link' in columns)
         .catch(() => false);
 
       if (!learningLinkExists) {

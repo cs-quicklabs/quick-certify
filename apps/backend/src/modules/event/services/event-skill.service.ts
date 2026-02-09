@@ -5,12 +5,16 @@ import { SkillEntity } from '@src/entities/skill.entity';
 import { EventEntity } from '@src/entities/event.entity';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 
+interface EventSkillWithSkill extends EventSkillEntity {
+  skill: SkillEntity;
+}
+
 /**
  * Event Skill Service
  *
  * Handles skill associations for events.
  * Separates skill management from event CRUD operations.
- * 
+ *
  * Single Responsibility: Manage event-skill relationships only
  */
 @Injectable()
@@ -29,13 +33,15 @@ export class EventSkillService {
   async getEventSkills(eventId: number): Promise<SkillEntity[]> {
     const eventSkills = await this.eventSkillModel.findAll({
       where: { event_id: eventId },
-      include: [{
-        model: SkillEntity,
-        as: 'skill',
-      }],
+      include: [
+        {
+          model: SkillEntity,
+          as: 'skill',
+        },
+      ],
     });
 
-    return eventSkills.map(es => (es as any).skill);
+    return eventSkills.map((es) => (es as EventSkillWithSkill).skill);
   }
 
   /**
@@ -84,9 +90,7 @@ export class EventSkillService {
     if (skills.length !== skillUuids.length) {
       const foundUuids = skills.map((s) => s.uuid);
       const missingUuids = skillUuids.filter((uuid) => !foundUuids.includes(uuid));
-      throw new BadRequestException(
-        `Skills not found or inactive: ${missingUuids.join(', ')}`,
-      );
+      throw new BadRequestException(`Skills not found or inactive: ${missingUuids.join(', ')}`);
     }
 
     // Create associations
@@ -112,10 +116,7 @@ export class EventSkillService {
   /**
    * Validate that skills exist for an organization
    */
-  async validateSkills(
-    skillUuids: string[],
-    organizationUuid: string,
-  ): Promise<SkillEntity[]> {
+  async validateSkills(skillUuids: string[], organizationUuid: string): Promise<SkillEntity[]> {
     const organization = await this.organizationService.findByUuid(organizationUuid);
     if (!organization) {
       throw new NotFoundException('Organization not found');
@@ -131,9 +132,7 @@ export class EventSkillService {
     if (skills.length !== skillUuids.length) {
       const foundUuids = skills.map((s) => s.uuid);
       const missingUuids = skillUuids.filter((uuid) => !foundUuids.includes(uuid));
-      throw new BadRequestException(
-        `Skills not found or inactive: ${missingUuids.join(', ')}`,
-      );
+      throw new BadRequestException(`Skills not found or inactive: ${missingUuids.join(', ')}`);
     }
 
     return skills;

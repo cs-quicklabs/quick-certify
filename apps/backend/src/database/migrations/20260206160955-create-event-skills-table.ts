@@ -57,15 +57,11 @@ module.exports = {
       );
 
       // Add unique index to prevent duplicate associations
-      await queryInterface.addIndex(
-        'event_skill',
-        ['event_id', 'skill_id'],
-        {
-          name: 'IDX_EVENT_SKILLS_UNIQUE',
-          unique: true,
-          transaction,
-        },
-      );
+      await queryInterface.addIndex('event_skill', ['event_id', 'skill_id'], {
+        name: 'IDX_EVENT_SKILLS_UNIQUE',
+        unique: true,
+        transaction,
+      });
 
       // Add index for skill lookups
       await queryInterface.addIndex('event_skill', ['skill_id'], {

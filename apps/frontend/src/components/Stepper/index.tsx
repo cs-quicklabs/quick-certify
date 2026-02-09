@@ -10,7 +10,7 @@ interface StepperProps {
   steps: Step[];
   activeIndex: number;
   completedSteps?: number[]; // Array of step indices that are completed
-    partialSteps?: number[];   // Array of step indices that are partially complete (show dot)
+  partialSteps?: number[]; // Array of step indices that are partially complete (show dot)
   onSelect?: (index: number) => void;
 }
 
@@ -19,10 +19,11 @@ export function Stepper({
   activeIndex,
   completedSteps = [],
   partialSteps = [],
-  onSelect
+  onSelect,
 }: StepperProps) {
   const isStepCompleted = (index: number) => completedSteps.includes(index);
-  const isStepPartial = (index: number) => partialSteps.includes(index) && !completedSteps.includes(index);
+  const isStepPartial = (index: number) =>
+    partialSteps.includes(index) && !completedSteps.includes(index);
   const isStepActive = (index: number) => index === activeIndex;
 
   return (
@@ -68,7 +69,9 @@ export function Stepper({
                 {completed ? (
                   <Check size={18} strokeWidth={3} className={iconColor} />
                 ) : active ? (
-                  <span className={`w-2.5 h-2.5 rounded-full ${iconColor.replace('text-', 'bg-')}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${iconColor.replace('text-', 'bg-')}`}
+                  />
                 ) : (
                   <Dot size={40} strokeWidth={6} className={iconColor} />
                 )}

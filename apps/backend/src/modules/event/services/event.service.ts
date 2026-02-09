@@ -19,7 +19,7 @@ import { EventReferenceValidator } from '../validators/event-reference.validator
  * Refactored to follow SOLID principles:
  * - Single Responsibility: Only handles event business logic
  * - Dependencies: Uses Repository, Validator, and SkillService
- * 
+ *
  * Progressive Creation Pattern:
  * - Step 1: Create event with minimal data (name + design)
  * - Step 2: Update with additional details (type, level, format, description, skills)
@@ -41,7 +41,7 @@ export class EventService {
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<EventEntity>> {
     const organization = await this.getOrganization(organizationUuid);
-    
+
     if (!organization) {
       return this.emptyPaginatedResult(options.limit || 10);
     }
@@ -52,10 +52,7 @@ export class EventService {
   /**
    * Find one event by UUID within organization
    */
-  async findByUuid(
-    uuid: string,
-    organizationUuid: string,
-  ): Promise<EventEntity | null> {
+  async findByUuid(uuid: string, organizationUuid: string): Promise<EventEntity | null> {
     const organization = await this.getOrganization(organizationUuid);
     if (!organization) return null;
 
@@ -66,10 +63,7 @@ export class EventService {
    * Create a new event
    * Supports restoring soft-deleted events with the same name
    */
-  async create(
-    organizationUuid: string,
-    dto: CreateEventDto,
-  ): Promise<EventEntity> {
+  async create(organizationUuid: string, dto: CreateEventDto): Promise<EventEntity> {
     const organization = await this.requireOrganization(organizationUuid);
     const normalizedName = dto.name.trim();
 
@@ -87,10 +81,7 @@ export class EventService {
     });
 
     // Check for existing event
-    const existingEvent = await this.eventRepository.findByName(
-      normalizedName,
-      organization.id,
-    );
+    const existingEvent = await this.eventRepository.findByName(normalizedName, organization.id);
 
     if (existingEvent) {
       return this.restoreOrThrow(existingEvent, normalizedName, dto, refs, organizationUuid);
@@ -132,11 +123,7 @@ export class EventService {
 
     // Handle name update with duplicate check
     if (dto.name !== undefined) {
-      updateData.name = await this.validateNameUpdate(
-        dto.name,
-        event.organization_id,
-        event.id,
-      );
+      updateData.name = await this.validateNameUpdate(dto.name, event.organization_id, event.id);
     }
 
     // Handle simple field updates
@@ -236,10 +223,7 @@ export class EventService {
     return org;
   }
 
-  private async requireEvent(
-    uuid: string,
-    organizationUuid: string,
-  ): Promise<EventEntity> {
+  private async requireEvent(uuid: string, organizationUuid: string): Promise<EventEntity> {
     const event = await this.findByUuid(uuid, organizationUuid);
     if (!event) throw new NotFoundException('Event not found');
     return event;
@@ -259,9 +243,7 @@ export class EventService {
     );
 
     if (existing) {
-      throw new ConflictException(
-        `Event "${normalizedName}" already exists in this organization`,
-      );
+      throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
     }
 
     return normalizedName;
@@ -280,9 +262,7 @@ export class EventService {
     organizationUuid: string,
   ): Promise<EventEntity> {
     if (existingEvent.is_active) {
-      throw new ConflictException(
-        `Event "${normalizedName}" already exists in this organization`,
-      );
+      throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
     }
 
     // Restore soft-deleted event with new values

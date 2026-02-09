@@ -1,10 +1,4 @@
-import {
-  Column,
-  DataType,
-  ForeignKey,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { EventEntity } from './event.entity';
 import { SkillEntity } from './skill.entity';
 

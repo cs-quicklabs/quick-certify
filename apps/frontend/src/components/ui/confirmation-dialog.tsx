@@ -154,6 +154,6 @@ export function ConfirmationDialog({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

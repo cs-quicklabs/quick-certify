@@ -81,7 +81,8 @@ export function Pagination({
       <div className={`flex items-center justify-between ${className}`}>
         {totalCount !== undefined && pageSize !== undefined && (
           <div className="text-sm text-gray-700">
-            Showing {((pageSafe - 1) * pageSize) + 1} to {Math.min(pageSafe * pageSize, totalCount)} of {totalCount} entries
+            Showing {(pageSafe - 1) * pageSize + 1} to {Math.min(pageSafe * pageSize, totalCount)}{' '}
+            of {totalCount} entries
           </div>
         )}
         <div className="flex items-center gap-2">
@@ -186,7 +187,7 @@ export function PaginationInfo({
   totalCount,
   className = '',
 }: PaginationInfoProps) {
-  const start = ((currentPage - 1) * pageSize) + 1;
+  const start = (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, totalCount);
 
   return (

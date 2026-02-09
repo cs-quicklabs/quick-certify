@@ -254,10 +254,7 @@ export default function EventsPage() {
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <p>No events found</p>
             {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="mt-2 text-sm text-blue-600 hover:underline"
-              >
+              <button onClick={clearFilters} className="mt-2 text-sm text-blue-600 hover:underline">
                 Clear filters
               </button>
             )}
