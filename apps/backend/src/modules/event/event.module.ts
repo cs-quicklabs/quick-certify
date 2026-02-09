@@ -12,6 +12,7 @@ import {
   EventFormatService,
   EventService,
   EventSkillService,
+  EventParticipantService,
 } from './services';
 import { EventRepository } from './repositories/event.repository';
 import { EventReferenceValidator } from './validators/event-reference.validator';
@@ -22,6 +23,7 @@ import {
   EventEntity,
   EventSkillEntity,
   SkillEntity,
+  EventParticipantEntity,
 } from '@src/entities';
 import { AuthModule } from '../auth';
 import { OrganizationModule } from '../organization';
@@ -36,6 +38,7 @@ import { DesignModule } from '../design/design.module';
       EventEntity,
       EventSkillEntity,
       SkillEntity,
+      EventParticipantEntity,
     ]),
     AuthModule,
     OrganizationModule,
@@ -49,6 +52,7 @@ import { DesignModule } from '../design/design.module';
     EventFormatService,
     EventService,
     EventSkillService,
+    EventParticipantService,
     // Repository
     EventRepository,
     // Validator
@@ -60,6 +64,7 @@ import { DesignModule } from '../design/design.module';
     EventFormatService,
     EventService,
     EventSkillService,
+    EventParticipantService,
     EventRepository,
   ],
 })

@@ -7,6 +7,7 @@ import { EventLevelEntity } from '@src/entities/event-level.entity';
 import { EventFormatEntity } from '@src/entities/event-format.entity';
 import { DesignEntity } from '@src/entities/design.entity';
 import { SkillEntity } from '@src/entities/skill.entity';
+import { EventParticipantEntity } from '@src/entities/event-participant.entity';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 
 /**
@@ -42,6 +43,11 @@ export const DEFAULT_EVENT_INCLUDES = [
     as: 'skills',
     required: false,
     through: { attributes: [] },
+  },
+  {
+    model: EventParticipantEntity,
+    as: 'event_participants',
+    required: false,
   },
 ];
 

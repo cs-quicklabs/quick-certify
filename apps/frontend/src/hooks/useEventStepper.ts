@@ -20,6 +20,21 @@ export interface Step1Data {
 }
 
 /**
+ * Participant data interface
+ */
+export interface ParticipantData {
+  name: string;
+  email: string;
+}
+
+/**
+ * Step 2 (Participants) data interface
+ */
+export interface Step2Data {
+  participants: ParticipantData[];
+}
+
+/**
  * Step validation result
  */
 export interface StepValidation {
@@ -97,6 +112,16 @@ const STEP_VALIDATIONS = {
       missingFields,
     };
   },
+  2: (data: Step2Data): StepValidation => {
+    // Step 2: Complete if at least one participant is added
+    const hasParticipants = data.participants.length > 0;
+
+    return {
+      isComplete: hasParticipants,
+      isPartial: false,
+      missingFields: hasParticipants ? [] : ['participants'],
+    };
+  },
 };
 
 /**
@@ -114,6 +139,12 @@ export const EVENT_STEPS: StepConfig[] = [
     title: 'Enhanced details',
     subtitle: 'Description, links and tags',
     requiredFields: ['description', 'learningLink', 'type', 'level', 'format', 'skills'],
+  },
+  {
+    id: 2,
+    title: 'Participants',
+    subtitle: 'Add event participants',
+    requiredFields: ['participants'],
   },
 ];
 
@@ -145,6 +176,8 @@ export interface UseEventStepperReturn {
   isStep0Complete: boolean;
   /** Check if step 1 is complete based on current data */
   isStep1Complete: boolean;
+  /** Check if step 2 is complete based on current data */
+  isStep2Complete: boolean;
   /** Step configuration */
   steps: StepConfig[];
 }
@@ -161,6 +194,7 @@ export interface UseEventStepperReturn {
  * @param step0Data - Current step 0 data
  * @param step1Data - Current step 1 data
  * @param skillIds - Selected skill IDs
+ * @param step2Data - Current step 2 data (participants)
  * @returns Stepper state and control functions
  */
 export function useEventStepper(
@@ -168,6 +202,7 @@ export function useEventStepper(
   step0Data: Step0Data,
   step1Data: Step1Data,
   skillIds: string[] = [],
+  step2Data: Step2Data = { participants: [] },
 ): UseEventStepperReturn {
   // Current active step
   const [currentStep, setCurrentStepState] = useState<number>(initialStep);
@@ -206,6 +241,14 @@ export function useEventStepper(
   );
 
   /**
+   * Get validation for step 2
+   */
+  const step2Validation = useMemo(
+    () => STEP_VALIDATIONS[2](step2Data),
+    [step2Data.participants.length],
+  );
+
+  /**
    * Computed list of completed steps based on data validation
    */
   const completedSteps = useMemo(() => {
@@ -217,10 +260,13 @@ export function useEventStepper(
     if (step1Validation.isComplete) {
       completed.push(1);
     }
+    if (step2Validation.isComplete) {
+      completed.push(2);
+    }
 
     // Merge with manually completed steps (for navigation history)
     return [...new Set([...completed, ...manuallyCompletedSteps])].sort((a, b) => a - b);
-  }, [step0Validation.isComplete, step1Validation.isComplete, manuallyCompletedSteps]);
+  }, [step0Validation.isComplete, step1Validation.isComplete, step2Validation.isComplete, manuallyCompletedSteps]);
 
   /**
    * Computed list of partial steps (for dot indicator)
@@ -246,6 +292,11 @@ export function useEventStepper(
    * Check if step 1 is complete
    */
   const isStep1Complete = step1Validation.isComplete;
+
+  /**
+   * Check if step 2 is complete
+   */
+  const isStep2Complete = step2Validation.isComplete;
 
   /**
    * Check if step 1 is partial (some fields filled but not all)
@@ -319,9 +370,10 @@ export function useEventStepper(
     (stepIndex: number): StepValidation => {
       if (stepIndex === 0) return step0Validation;
       if (stepIndex === 1) return step1Validation;
+      if (stepIndex === 2) return step2Validation;
       return { isComplete: false, isPartial: false, missingFields: [] };
     },
-    [step0Validation, step1Validation],
+    [step0Validation, step1Validation, step2Validation],
   );
 
   return {
@@ -336,6 +388,7 @@ export function useEventStepper(
     getStepValidation,
     isStep0Complete,
     isStep1Complete,
+    isStep2Complete,
     isStep1Partial,
     steps: EVENT_STEPS,
   };

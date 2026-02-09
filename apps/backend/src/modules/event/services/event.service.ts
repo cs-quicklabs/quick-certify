@@ -10,6 +10,7 @@ import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { EventRepository } from '../repositories/event.repository';
 import { EventSkillService } from './event-skill.service';
+import { EventParticipantService } from './event-participant.service';
 import { EventReferenceValidator } from '../validators/event-reference.validator';
 
 /**
@@ -29,6 +30,7 @@ export class EventService {
   constructor(
     private readonly eventRepository: EventRepository,
     private readonly eventSkillService: EventSkillService,
+    private readonly eventParticipantService: EventParticipantService,
     private readonly referenceValidator: EventReferenceValidator,
     private readonly organizationService: OrganizationService,
   ) {}
@@ -105,6 +107,11 @@ export class EventService {
       await this.eventSkillService.addSkills(event, dto.skillIds, organizationUuid);
     }
 
+    // Add participants if provided
+    if (dto.participants?.length) {
+      await this.eventParticipantService.bulkAddParticipants(event.id, dto.participants);
+    }
+
     return this.eventRepository.reload(event);
   }
 
@@ -171,6 +178,11 @@ export class EventService {
     // Handle skills update if provided
     if (dto.skillIds !== undefined) {
       await this.eventSkillService.syncSkills(event, dto.skillIds, organizationUuid);
+    }
+
+    // Handle participants update if provided
+    if (dto.participants !== undefined) {
+      await this.eventParticipantService.syncParticipants(event.id, dto.participants);
     }
 
     return this.eventRepository.reload(event);

@@ -15,7 +15,8 @@ import {
   useEvent,
 } from '@/hooks/useEvents';
 import { useSkills } from '@/hooks/useSkills';
-import { useEventStepper, Step0Data, Step1Data } from '@/hooks/useEventStepper';
+import { useEventStepper, Step0Data, Step1Data, ParticipantData } from '@/hooks/useEventStepper';
+import { ParticipantManager } from './ParticipantManager';
 import { DesignSelectorModal } from '@/components/designs/DesignSelectorModal';
 import { Eye, Images, Plus, SquarePen, Trash, Loader2, X } from 'lucide-react';
 import { useDesignList } from '@/hooks/useDesigns';
@@ -77,6 +78,9 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   // Skills state - stores selected skill UUIDs
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
 
+  // Step 2 data storage (participants)
+  const [participants, setParticipants] = useState<ParticipantData[]>([]);
+
   // Stepper hook - manages step state based on field completion
   const {
     currentStep,
@@ -89,7 +93,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     isStep0Complete,
     isStep1Complete,
     steps,
-  } = useEventStepper(initialStep, step0CoreData, step1Data, selectedSkillIds);
+  } = useEventStepper(initialStep, step0CoreData, step1Data, selectedSkillIds, { participants });
 
   // Skills search UI state
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
@@ -204,6 +208,17 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       // Populate skills from event data
       if (eventData.skills && eventData.skills.length > 0) {
         setSelectedSkillIds(eventData.skills.map((skill) => skill.uuid));
+      }
+
+      // Populate participants from event data
+      if (eventData.event_participants && eventData.event_participants.length > 0) {
+        setParticipants(
+          eventData.event_participants.map((p: { name: string; email: string; uuid?: string }) => ({
+            uuid: p.uuid,
+            name: p.name,
+            email: p.email,
+          })),
+        );
       }
 
       // Mark as initialized to prevent re-running
@@ -375,7 +390,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   );
 
   /**
-   * Handle Step 1 submission - Update the event with full details
+   * Handle Step 1 submission - Update the event with full details and go to step 2
    */
   const handleStep1Submit = useCallback(
     async (formData: Step1FormData) => {
@@ -405,8 +420,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         // Mark Step 1 as completed
         markStepCompleted(1);
 
-        toast.success(isEditMode ? 'Event updated successfully!' : 'Event saved successfully!');
-        router.push('/events');
+        // Navigate to step 2
+        goToNextStep();
       } catch (error) {
         const message = getApiErrorMessage(error, 'Failed to update event');
         toast.error(message);
@@ -421,10 +436,83 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       step0CoreData.name,
       step0FormData.designUuid,
       selectedSkillIds,
-      router,
+      goToNextStep,
       markStepCompleted,
-      isEditMode,
     ],
+  );
+
+  /**
+   * Handle Step 2 submission - Save participants and complete
+   */
+  const handleStep2Submit = useCallback(async () => {
+    if (!eventUuid) {
+      toast.error('Event not found. Please start over.');
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      // Update event with participants
+      await updateEvent.mutateAsync({
+        name: step0CoreData.name,
+        designId: step0FormData.designUuid,
+        eventTypeId: step1Data.typeId || null,
+        eventLevelId: step1Data.levelId || null,
+        eventFormatId: step1Data.formatId || null,
+        description: step1Data.description || null,
+        learningLink: step1Data.learningLink || null,
+        skillIds: selectedSkillIds,
+        participants: participants,
+      });
+
+      // Mark Step 2 as completed
+      markStepCompleted(2);
+
+      toast.success(isEditMode ? 'Event updated successfully!' : 'Event saved successfully!');
+      router.push('/events');
+    } catch (error) {
+      const message = getApiErrorMessage(error, 'Failed to save participants');
+      toast.error(message);
+      console.error('Failed to save participants:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [
+    eventUuid,
+    updateEvent,
+    step0CoreData.name,
+    step0FormData.designUuid,
+    step1Data,
+    selectedSkillIds,
+    participants,
+    markStepCompleted,
+    isEditMode,
+    router,
+  ]);
+
+  /**
+   * Handle adding a participant
+   */
+  const handleAddParticipant = useCallback((participant: ParticipantData) => {
+    setParticipants((prev) => [...prev, participant]);
+  }, []);
+
+  /**
+   * Handle removing a participant
+   */
+  const handleRemoveParticipant = useCallback((index: number) => {
+    setParticipants((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  /**
+   * Handle updating a participant
+   */
+  const handleUpdateParticipant = useCallback(
+    (index: number, participant: ParticipantData) => {
+      setParticipants((prev) => prev.map((p, i) => (i === index ? participant : p)));
+    },
+    [],
   );
 
   // Step 0 form schema and config
@@ -523,7 +611,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       },
     ] as FormFieldConfig[],
     schema: step1Schema,
-    submitLabel: isUpdating ? 'Saving...' : isEditMode ? 'Update Event' : 'Save Event',
+    submitLabel: isUpdating ? 'Saving...' : 'Next',
     onSubmit: handleStep1Submit,
     onCancel: () => router.push('/events'),
     // Show checkmark when step is complete
@@ -671,7 +759,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                   <label className="form-input-label">
                     Skills
                     <span className="text-gray-400 font-normal ml-1">
-                      ({selectedSkillIds.length}/{MAX_SKILLS})
+                      ({selectedSkillIds.length}/{filteredSkills.length})
                     </span>
                     {selectedSkillIds.length > 0 && (
                       <span className="ml-2 text-green-600 text-xs">✓</span>
@@ -731,11 +819,10 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                                     type="button"
                                     onClick={() => !isSelected && addSkill(skill.uuid)}
                                     disabled={isSelected}
-                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
-                                      isSelected
-                                        ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                        : 'text-gray-900'
-                                    }`}
+                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${isSelected
+                                      ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                                      : 'text-gray-900'
+                                      }`}
                                   >
                                     <span>{skill.name}</span>
                                     {isSelected && <span className="text-xs">Already added</span>}
@@ -754,6 +841,57 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                   </p>
                 </div>
               </ConfigForm>
+            </main>
+          )}
+
+          {/* Step 2: Participants */}
+          {currentStep === 2 && (
+            <main className="max-w-3xl pb-12 px-4 lg:col-span-9">
+              {/* <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">Participants</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Add participants who will receive credentials for this event.
+                </p>
+              </div> */}
+
+              <ParticipantManager
+                participants={participants}
+                onAdd={handleAddParticipant}
+                onRemove={handleRemoveParticipant}
+                onUpdate={handleUpdateParticipant}
+                isLoading={isUpdating}
+              />
+
+              {/* Step 2 Actions */}
+              <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setCurrentStep(1)}
+                  disabled={isUpdating}
+                >
+                  Back
+                </button>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => router.push('/events')}
+                    disabled={isUpdating}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary flex items-center gap-2"
+                    onClick={handleStep2Submit}
+                    disabled={isUpdating}
+                  >
+                    {isUpdating && <Loader2 size={16} className="animate-spin" />}
+                    {isUpdating ? 'Saving...' : isEditMode ? 'Update Event' : 'Save Event'}
+                  </button>
+                </div>
+              </div>
             </main>
           )}
 

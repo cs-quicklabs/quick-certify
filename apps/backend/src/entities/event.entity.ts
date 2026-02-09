@@ -4,6 +4,7 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Index,
   Table,
 } from 'sequelize-typescript';
@@ -15,6 +16,7 @@ import { EventFormatEntity } from './event-format.entity';
 import { DesignEntity } from './design.entity';
 import { SkillEntity } from './skill.entity';
 import { EventSkillEntity } from './event-skill.entity';
+import { EventParticipantEntity } from './event-participant.entity';
 
 /**
  * Event Entity
@@ -132,4 +134,8 @@ export class EventEntity extends BaseEntity {
   // Skills associated with this event (many-to-many)
   @BelongsToMany(() => SkillEntity, () => EventSkillEntity)
   declare skills: SkillEntity[];
+
+  // Participants registered for this event (one-to-many)
+  @HasMany(() => EventParticipantEntity)
+  declare event_participants: EventParticipantEntity[];
 }

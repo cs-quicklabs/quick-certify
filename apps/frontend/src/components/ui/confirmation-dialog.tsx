@@ -136,7 +136,7 @@ export function ConfirmationDialog({
                 type="button"
                 onClick={onConfirm}
                 disabled={isLoading}
-                className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium rounded-full text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? confirmLoadingLabel : confirmLabel}
               </button>

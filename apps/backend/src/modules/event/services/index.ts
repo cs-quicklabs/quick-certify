@@ -3,3 +3,4 @@ export * from './event-level.service';
 export * from './event-format.service';
 export * from './event.service';
 export * from './event-skill.service';
+export * from './event-participant.service';

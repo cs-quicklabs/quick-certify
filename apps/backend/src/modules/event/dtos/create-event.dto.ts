@@ -89,4 +89,15 @@ export class CreateEventDto {
   @IsArray({ message: 'Skills must be an array' })
   @IsString({ each: true, message: 'Each skill ID must be a string' })
   skillIds?: string[];
+
+  @ApiPropertyOptional({
+    example: [
+      { name: 'John Doe', email: 'john@example.com' },
+      { name: 'Jane Smith', email: 'jane@example.com' },
+    ],
+    description: 'Array of participants to add to this event',
+    type: [Object],
+  })
+  @IsOptional()
+  participants?: { name: string; email: string }[];
 }

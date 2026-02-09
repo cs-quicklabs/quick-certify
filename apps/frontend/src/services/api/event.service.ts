@@ -115,6 +115,14 @@ export interface Event extends IBaseEvent {
     uuid: string;
     name: string;
   }[];
+  /** Associated participants */
+  event_participants?: {
+    id: string;
+    uuid: string;
+    name: string;
+    email: string;
+    createdAt: string;
+  }[];
 }
 
 export interface CreateEventTypeRequest {
@@ -182,6 +190,8 @@ export interface UpdateEventRequest {
   learningLink?: string | null;
   /** Skill UUIDs to associate with the event (optional, empty array clears all skills) */
   skillIds?: string[];
+  /** Participants to add to the event (optional, replaces existing participants) */
+  participants?: { name: string; email: string }[];
 }
 
 export interface PaginationFilters {

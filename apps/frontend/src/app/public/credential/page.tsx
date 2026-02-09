@@ -297,7 +297,7 @@ export default function PublicCredentialPage() {
                         </h4>
                       </div>
                       <div className="flex gap-2">
-                        <h2 className="text-2xl font-medium leading-[26px]">
+                        <h2 className="text-2xl font-medium leading-6.5">
                           {credentialData.issuerName}
                         </h2>
                       </div>
