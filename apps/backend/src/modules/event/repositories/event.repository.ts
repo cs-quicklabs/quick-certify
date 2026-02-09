@@ -1,0 +1,182 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { FindOptions, Op } from 'sequelize';
+import { EventEntity } from '@src/entities/event.entity';
+import { EventTypeEntity } from '@src/entities/event-type.entity';
+import { EventLevelEntity } from '@src/entities/event-level.entity';
+import { EventFormatEntity } from '@src/entities/event-format.entity';
+import { DesignEntity } from '@src/entities/design.entity';
+import { SkillEntity } from '@src/entities/skill.entity';
+import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+
+/**
+ * Default include configuration for Event queries
+ * Used consistently across find operations to avoid duplication
+ */
+export const DEFAULT_EVENT_INCLUDES = [
+  {
+    model: EventTypeEntity,
+    as: 'event_type',
+    where: { is_active: true },
+    required: false,
+  },
+  {
+    model: EventLevelEntity,
+    as: 'event_level',
+    where: { is_active: true },
+    required: false,
+  },
+  {
+    model: EventFormatEntity,
+    as: 'event_format',
+    where: { is_active: true },
+    required: false,
+  },
+  {
+    model: DesignEntity,
+    as: 'design',
+    required: false,
+  },
+  {
+    model: SkillEntity,
+    as: 'skills',
+    required: false,
+    through: { attributes: [] },
+  },
+];
+
+/**
+ * Event Repository
+ *
+ * Abstracts data access for EventEntity.
+ * Follows Repository Pattern for better testability and separation of concerns.
+ *
+ * Single Responsibility: Only handles data access, no business logic
+ */
+@Injectable()
+export class EventRepository {
+  constructor(
+    @InjectModel(EventEntity)
+    private readonly model: typeof EventEntity,
+  ) {}
+
+  /**
+   * Find all events with pagination
+   */
+  async findAll(
+    organizationId: number,
+    options: FindAllOptions = {},
+  ): Promise<PaginatedResult<EventEntity>> {
+    const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {} } = options;
+
+    const safeLimit = Math.min(Math.max(1, limit), 100);
+    const safePage = Math.max(1, page);
+    const offset = (safePage - 1) * safeLimit;
+
+    const { count, rows } = await this.model.findAndCountAll({
+      where: {
+        organization_id: organizationId,
+        is_active: true,
+        ...where,
+      },
+      include: DEFAULT_EVENT_INCLUDES,
+      order: [[sortBy, sortOrder]],
+      limit: safeLimit,
+      offset,
+    });
+
+    const totalPages = Math.ceil(count / safeLimit);
+
+    return {
+      data: rows,
+      meta: {
+        total: count,
+        page: safePage,
+        limit: safeLimit,
+        totalPages,
+        hasNextPage: safePage < totalPages,
+        hasPrevPage: safePage > 1,
+      },
+    };
+  }
+
+  /**
+   * Find event by UUID
+   */
+  async findByUuid(uuid: string, organizationId: number): Promise<EventEntity | null> {
+    return this.model.findOne({
+      where: {
+        uuid,
+        organization_id: organizationId,
+        is_active: true,
+      },
+      include: DEFAULT_EVENT_INCLUDES,
+    });
+  }
+
+  /**
+   * Find event by name (case-insensitive)
+   */
+  async findByName(name: string, organizationId: number, excludeId?: number): Promise<EventEntity | null> {
+    const where: Record<string, unknown> = {
+      organization_id: organizationId,
+      name: { [Op.iLike]: name.trim() },
+    };
+
+    if (excludeId) {
+      where.id = { [Op.ne]: excludeId };
+    }
+
+    return this.model.findOne({ where });
+  }
+
+  /**
+   * Create a new event
+   */
+  async create(data: Partial<EventEntity>): Promise<EventEntity> {
+    return this.model.create(data as EventEntity['_creationAttributes']);
+  }
+
+  /**
+   * Update an event
+   */
+  async update(event: EventEntity, data: Partial<EventEntity>): Promise<EventEntity> {
+    await event.update(data);
+    return event;
+  }
+
+  /**
+   * Soft delete an event
+   */
+  async softDelete(event: EventEntity): Promise<void> {
+    await event.update({ is_active: false });
+  }
+
+  /**
+   * Reload event with includes
+   */
+  async reload(event: EventEntity): Promise<EventEntity> {
+    return event.reload({
+      include: DEFAULT_EVENT_INCLUDES,
+    });
+  }
+
+  /**
+   * Find with custom options
+   */
+  async findOne(options: FindOptions): Promise<EventEntity | null> {
+    return this.model.findOne(options);
+  }
+
+  /**
+   * Count events
+   */
+  async count(organizationId: number): Promise<number> {
+    return this.model.count({
+      where: {
+        organization_id: organizationId,
+        is_active: true,
+      },
+    });
+  }
+}

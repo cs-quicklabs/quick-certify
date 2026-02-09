@@ -67,7 +67,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
   // Step 0 data storage (core data for stepper validation)
   const [step0CoreData, setStep0CoreData] = useState<Step0Data>({ name: '' });
-  
+
   // Step 0 UI data storage (includes display fields)
   const [step0FormData, setStep0FormData] = useState<Step0FormData>({ name: '' });
 
@@ -168,11 +168,11 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     if (isEditMode && eventData && !isInitializedRef.current) {
       // Handle both snake_case and camelCase from API
       const apiData = eventData as unknown as Record<string, unknown>;
-      const designData = apiData.design as { 
-        url?: string; 
-        id?: string; 
-        name?: string; 
-        type?: string; 
+      const designData = apiData.design as {
+        url?: string;
+        id?: string;
+        name?: string;
+        type?: string;
         uuid?: string;
       } | null;
 
@@ -270,7 +270,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       ...prev,
       designUuid: design.uuid,
     }));
-    
+
     // Update UI data for display
     setStep0FormData((prev) => ({
       ...prev,
@@ -292,7 +292,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       ...prev,
       designUuid: undefined,
     }));
-    
+
     // Update UI data for display
     setStep0FormData((prev) => ({
       ...prev,
@@ -330,7 +330,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         name: formData.name,
       };
       setStep0CoreData(updatedCoreData);
-      
+
       // Update UI data for display
       setStep0FormData((prev) => ({
         ...prev,
@@ -423,15 +423,16 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   });
 
   const step0Config = {
-    title: isEditMode ? 'Edit Info & Appearance' : 'Info & Appearance',
-    subtitle: 'Provide a name and attach a design for this event',
+    title: isEditMode ? 'Edit Event' : 'Add New Event',
+    subtitle: isEditMode ? 'Edit the event details.' : 'Create a new event to issue credentials on specific occasions.',
     fields: [
       {
         name: 'name',
-        label: 'Event Name',
+        label: 'Name',
         type: 'text' as FormFieldConfig['type'],
-        placeholder: 'Enter event name',
+        placeholder: 'Event name',
         required: true,
+        description: 'Specify the name of the occasion on which you would like to issue credentials. '
       },
     ] as FormFieldConfig[],
     schema: step0Schema,
@@ -461,7 +462,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
   const step1Config = {
     title: 'About',
-    subtitle: 'Add details and type information',
+    subtitle: 'Add a detailed description of your event.',
     layout: 'grid-3' as const,
     fields: [
       {
@@ -554,9 +555,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                 <div className="mb-2">
                   <label className="form-input-label">
                     Appearance
-                    {isStep0Complete && (
-                      <span className="ml-2 text-green-600 text-xs font-medium">✓ Complete</span>
-                    )}
                   </label>
                   <p className="form-input-description -mt-2 mb-2">
                     Add a design to this event (required)
@@ -647,19 +645,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           {/* Step 1: Enhanced Details */}
           {currentStep === 1 && (
             <main className="max-w-xl pb-12 px-4 lg:col-span-6">
-              {/* Step completion indicator */}
-              {isStep1Complete ? (
-                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                  <span className="text-green-700 text-sm font-medium">✓ Step complete</span>
-                  <span className="text-green-600 text-xs ml-2">(All fields filled - you can save the event)</span>
-                </div>
-              ) : isStep1Partial ? (
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <span className="text-yellow-700 text-sm font-medium">● In progress</span>
-                  <span className="text-yellow-600 text-xs ml-2">(Fill all fields to complete this step)</span>
-                </div>
-              ) : null}
-              
               <ConfigForm
                 key={step1Data.learningLink || step1Data.description || 'empty'} // Force remount when data loads
                 config={step1Config}

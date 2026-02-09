@@ -45,7 +45,7 @@ export function Stepper({
             : completed
               ? 'bg-gray-100 ring-gray-400'
               : partial
-                ? 'bg-yellow-50 ring-yellow-400'
+                ? 'bg-gray-50 ring-gray-400'
                 : 'bg-neutral-tertiary ring-gray-400';
 
           const iconColor = active
@@ -53,7 +53,7 @@ export function Stepper({
             : completed
               ? 'text-gray-700'
               : partial
-                ? 'text-yellow-600'
+                ? 'text-gray-600'
                 : 'text-gray-400';
 
           return (
