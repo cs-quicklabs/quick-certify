@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { useOrganizations, useDeleteOrganization } from '@/hooks/useOrganizationAdmin';
-import type { Organization } from '@/services/api/organization-admin.service';
+import { Organization } from '@/types';
 import { capitalizeFirst } from '@/utils/helpers';
 import { ConfirmationDialog } from '@/components';
 
