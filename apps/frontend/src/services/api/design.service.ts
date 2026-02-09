@@ -3,7 +3,7 @@
  */
 
 import { apiClient, ApiResponse } from './api-client';
-import { DesignType, Design, DesignFilters } from '@/types/design.types';
+import { DesignType, Design, DesignFilters } from '@/types';
 import { PaginatedResponse } from '@/types';
 import { buildUrl } from '@/lib/query-params';
 

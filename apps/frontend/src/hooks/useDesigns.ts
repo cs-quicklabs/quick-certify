@@ -1,7 +1,5 @@
-'use client';
-
-import { designService } from '@/services/api';
 import { DesignType, PaginatedResponse } from '@/types';
+import { designService } from '@/services';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { DesignFormData } from '@/schemas/design.schema';
 import { Design } from '@/types';
