@@ -204,4 +204,18 @@ export class OrganizationController {
     );
     return new SuccessResponse('Portal settings updated successfully', organization);
   }
+
+  // PUBLIC ROUTES
+
+  @Get('public/:slug')
+  @ApiOperation({ summary: 'Get public organization data by UUID' })
+  @ApiResponse({ status: 200, description: 'Organization found' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async findOnePublic(@Param('slug') slug: string) {
+    const organization = await this.organizationService.findBySlug(slug);
+    if (!organization) {
+      return new SuccessResponse('Organization not found', null);
+    }
+    return new SuccessResponse('Organization retrieved successfully', organization);
+  }
 }
