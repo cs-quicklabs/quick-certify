@@ -2,10 +2,11 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators';
 import { CurrentUser } from '../interfaces';
+import { Role } from '@src/modules/role/enums';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
@@ -23,6 +24,10 @@ export class RolesGuard implements CanActivate {
 
     if (!user) {
       throw new ForbiddenException('User not found in request');
+    }
+
+    if (user.role === Role.SYSTEM_ADMIN) {
+      return true;
     }
 
     const hasRole = requiredRoles.includes(user.role);

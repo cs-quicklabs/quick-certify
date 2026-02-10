@@ -43,8 +43,12 @@ export const useLogin = () => {
       const user = await authService.getCurrentUser();
       setUser(user);
 
-      // Redirect to dashboard
-      router.push(ROUTES.DASHBOARD.HOME);
+      // Redirect based on role
+      if (user.role === 'system_admin') {
+        router.push(ROUTES.ADMIN.ORGANIZATIONS);
+      } else {
+        router.push(ROUTES.DASHBOARD.HOME);
+      }
     } catch (error) {
       setGlobalError(getApiErrorMessage(error));
     } finally {
