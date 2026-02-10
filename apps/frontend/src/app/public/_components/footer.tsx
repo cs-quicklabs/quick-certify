@@ -4,6 +4,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Github, Globe } from 'lucide-react';
 
+const DIRECTORY_LINKS = [
+  { label: 'Events', href: '/public/event' },
+  { label: 'Recipients', href: '/public/recipients' },
+];
+
+const CREDENTIAL_LINKS = [
+  { label: 'Credential Verification', href: '/verify' },
+  { label: 'Credential Retrieval', href: '/retrieve' },
+];
+
+const SOCIAL_LINKS = [
+  { href: 'https://github.com/cs-quicklabs/quickcertify', label: 'GitHub', icon: Github },
+  { href: 'https://github.com/cs-quicklabs/quick-certify', label: 'Website', icon: Globe },
+];
+
 export default function PublicFooter() {
   return (
     <footer className="border-t border-gray-200 bg-white dark:bg-gray-800">
@@ -30,39 +45,35 @@ export default function PublicFooter() {
 
           {/* Links */}
           <div className="grid grid-cols-2 gap-10 text-sm">
+            {/* Directories */}
             <div>
               <h3 className="mb-4 font-semibold uppercase text-gray-900 dark:text-white">
                 Directories
               </h3>
               <ul className="space-y-3 text-gray-600 dark:text-gray-400">
-                <li>
-                  <Link href="/public/event" className="hover:underline">
-                    Events
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/public/recipients" className="hover:underline">
-                    Recipients
-                  </Link>
-                </li>
+                {DIRECTORY_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="hover:underline">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
+            {/* Credentials */}
             <div>
               <h3 className="mb-4 font-semibold uppercase text-gray-900 dark:text-white">
                 Credentials
               </h3>
               <ul className="space-y-3 text-gray-600 dark:text-gray-400">
-                <li>
-                  <Link href="/verify" className="hover:underline">
-                    Credential Verification
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/retrieve" className="hover:underline">
-                    Credential Retrieval
-                  </Link>
-                </li>
+                {CREDENTIAL_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="hover:underline">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -81,22 +92,19 @@ export default function PublicFooter() {
             . All rights reserved.
           </span>
 
+          {/* Social */}
           <div className="flex items-center gap-5">
-            <Link
-              href="https://github.com"
-              target="_blank"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
-            >
-              <Github className="h-5 w-5" />
-            </Link>
-
-            <Link
-              href="https://quickcertify.io"
-              target="_blank"
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
-            >
-              <Globe className="h-5 w-5" />
-            </Link>
+            {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                target="_blank"
+                aria-label={label}
+                className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              >
+                <Icon className="h-5 w-5" />
+              </Link>
+            ))}
           </div>
         </div>
       </div>
