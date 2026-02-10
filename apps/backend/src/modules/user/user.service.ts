@@ -155,7 +155,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
     // Validate email uniqueness globally (across all organizations)
-    await this.validateEmailUniqueness(dto.email);
+    await this.validateEmailUniqueness(dto.email, undefined, currentUser?.organizationId);
 
     // Validate organization
     // Handle both UUID (from currentUser) and ID (from dto)
@@ -583,7 +583,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return user;
   }
 
-  private async validateEmailUniqueness(email: string, excludeId?: number): Promise<void> {
+  private async validateEmailUniqueness(
+    email: string,
+    excludeId?: number,
+    organization_id?: number,
+  ): Promise<void> {
     // Email must be unique globally across all organizations (including archived users)
     const whereClause: Record<string, unknown> = {
       email: email.toLowerCase(),
@@ -594,6 +598,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     const existingUser = await this.userModel.findOne({ where: whereClause });
+
+    if (existingUser && organization_id && existingUser.organization_id !== organization_id) {
+      throw new ConflictException('Email already registered in another organization');
+    }
 
     if (existingUser) {
       throw new ConflictException('Email already registered');
