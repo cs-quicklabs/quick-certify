@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 
 export default function PublicCompanyPage() {
   const params = useParams();
-  const slug = params?.slug as string; // Changed from uuid to slug
+  const slug = params?.slug as string;
 
   const { data, isLoading, error } = usePublicOrganization(slug); // Changed from uuid to slug
 
@@ -87,7 +87,7 @@ export default function PublicCompanyPage() {
         {/* Left Column */}
         <div className="flex flex-1 flex-col gap-4">
           {/* About */}
-          <div className="rounded border border-gray-200 bg-gray-50 p-4">
+          <div className="rounded border border-gray-200 bg-white p-4">
             <h4 className="mb-2 font-medium text-gray-700">About</h4>
             <p className="text-sm text-gray-600">{organization.description}</p>
           </div>
@@ -106,22 +106,22 @@ export default function PublicCompanyPage() {
               </InfoItem>
             )}
 
-            {/* {organization.email && (
+            {organization.support_email && (
               <InfoItem title="Email">
                 <a
-                  href={`mailto:${organization.email}`}
+                  href={`mailto:${organization.support_email}`}
                   className="text-sm text-blue-600 hover:underline"
                 >
-                  {organization.email}
+                  {organization.support_email}
                 </a>
               </InfoItem>
-            )} */}
+            )}
 
-            {/* {organization.phone && (
+            {organization.support_phone && (
               <InfoItem title="Phone">
-                <p className="text-sm text-gray-600">{organization.phone}</p>
+                <p className="text-sm text-gray-600">{organization.support_phone}</p>
               </InfoItem>
-            )} */}
+            )}
 
             {organization.linkedin_url && (
               <InfoItem title="LinkedIn">
@@ -198,7 +198,7 @@ export default function PublicCompanyPage() {
           </div>
 
           {/* Contact Form */}
-          <div className="rounded border border-gray-200 bg-gray-50 p-4">
+          <div className="rounded border border-gray-200 bg-white p-4">
             <h4 className="mb-4 font-semibold text-gray-800">Contact {organization.name}</h4>
             <form className="flex flex-col gap-3">
               <input

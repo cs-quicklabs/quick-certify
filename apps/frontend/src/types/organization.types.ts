@@ -14,6 +14,8 @@ export interface Organization {
   description?: string;
   slogan: string;
   linkedin_company_id: string;
+  support_email: string;
+  support_phone: string;
   website: string;
   linkedin_url: string;
   facebook_url: string;
