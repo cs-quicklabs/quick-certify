@@ -135,7 +135,7 @@ export default function DesignsPage() {
       {/* List */}
       <DesignsList
         designs={designs}
-        meta={meta!}
+        meta={meta}
         search={search}
         filter={filter}
         onSearchChange={setSearch}
