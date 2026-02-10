@@ -5,6 +5,7 @@ import { DesignType, PaginatedResponse } from '@/types';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { DesignFormData } from '@/schemas/design.schema';
 import { Design } from '@/types';
+import { showSuccessToast } from '@/lib/toast';
 
 type Params = {
   page: number;
@@ -97,6 +98,7 @@ export function useCreateDesign(onSuccess?: () => void) {
       }),
 
     onSuccess: () => {
+      showSuccessToast('Design created successfully');
       queryClient.invalidateQueries({ queryKey: ['designs'] });
       onSuccess?.();
     },
@@ -124,6 +126,7 @@ export function useUpdateDesign() {
       queryClient.invalidateQueries({
         queryKey: ['design', variables.id],
       });
+      showSuccessToast('Design edited successfully');
     },
   });
 }
