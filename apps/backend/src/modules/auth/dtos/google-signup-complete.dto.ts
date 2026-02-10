@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUrl, MAX, MaxLength } from 'class-validator';
 
 /**
  * DTO for completing Google signup with organization details
@@ -42,6 +42,7 @@ export class GoogleSignupCompleteDto {
   @ApiProperty({ example: 'Acme Corporation', description: 'Company / Issuer Name' })
   @IsString()
   @IsNotEmpty({ message: 'Company / Issuer Name is required' })
+  @MaxLength(150, { message: 'Company name must be at most 150 characters long' })
   companyName = '';
 
   @ApiProperty({ example: 'https://acme.com', description: 'Website URL' })
