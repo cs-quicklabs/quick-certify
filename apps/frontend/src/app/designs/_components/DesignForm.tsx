@@ -213,7 +213,7 @@ export default function DesignForm({
         <button
           type="submit"
           disabled={isSaveDisabled || !isValid}
-          className="rounded-sm bg-blue-700 px-6 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded-sm bg-primary-700 px-6 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
           Save Design
         </button>
