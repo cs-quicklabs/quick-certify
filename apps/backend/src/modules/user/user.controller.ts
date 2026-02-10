@@ -3,10 +3,12 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Query,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
@@ -138,13 +140,14 @@ export class UserController {
       uuid,
       user.organizationUuid,
     );
+
     if (!existingUser) {
-      return new SuccessResponse('User not found', null);
+      throw new NotFoundException('User not found');
     }
 
     // Prevent deleting yourself (compare UUIDs)
     if (user.uuid === existingUser.uuid) {
-      return new SuccessResponse('Cannot delete your own account', null);
+      throw new UnauthorizedException('Cannot delete your own account');
     }
 
     await this.userService.softDelete(existingUser.id);
@@ -153,7 +156,7 @@ export class UserController {
 
   @Delete(':uuid/permanent')
   @UseGuards(RolesGuard, OrganizationGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.SYSTEM_ADMIN)
   @ApiOperation({ summary: 'Permanently delete archived user (Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User permanently deleted' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
@@ -163,18 +166,20 @@ export class UserController {
       uuid,
       user.organizationUuid,
     );
+
     if (!existingUser) {
-      return new SuccessResponse('User not found', null);
+      throw new NotFoundException('User not found');
     }
 
+    // TODO: use soft delete status to determine if user can be permanently deleted instead of checking for archived role
     // Only allow permanent deletion of archived users
     if (existingUser.status !== 'archived') {
-      return new SuccessResponse('Only archived users can be permanently deleted', null);
+      throw new UnauthorizedException('Only archived users can be permanently deleted');
     }
 
     // Prevent deleting yourself
     if (user.uuid === existingUser.uuid) {
-      return new SuccessResponse('Cannot delete your own account', null);
+      throw new UnauthorizedException('Cannot delete your own account', null);
     }
 
     await this.userService.hardDelete(existingUser.id);

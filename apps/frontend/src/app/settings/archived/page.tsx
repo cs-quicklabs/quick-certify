@@ -8,6 +8,7 @@ import { ConfirmationDialog } from '@/components';
 import type { TeamMember } from '@/services/api/team.service';
 import { toast } from 'react-toastify';
 import { X } from 'lucide-react';
+import { checkIfUserIsNonAdmin, checkIfUserIsSuperAdmin, checkIfUserIsSystemAdmin } from '@/utils';
 
 /**
  * Archived Members Page
@@ -21,6 +22,7 @@ export default function ArchivedMembersPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [memberToRestore, setMemberToRestore] = useState<TeamMember | null>(null);
   const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null);
+  const [isDeletePermission, setIsDeletePermission] = useState<boolean>(false);
   const pageSize = 10;
 
   const { mutate: restoreUser, isPending: isRestoring } = useRestoreUser();
@@ -28,8 +30,9 @@ export default function ArchivedMembersPage() {
 
   // Authorization check
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
-      router.push('/dashboard');
+    if (user) {
+      setIsDeletePermission(checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user));
+      if (checkIfUserIsNonAdmin(user)) router.push('/dashboard');
     }
   }, [user, router]);
 
@@ -50,12 +53,11 @@ export default function ArchivedMembersPage() {
   };
 
   const handleDeleteClick = (member: TeamMember) => {
-    // Only super_admin can permanently delete
-    if (user?.role !== 'super_admin') {
+    if (!isDeletePermission) {
       toast.error('Only Super Admins can permanently delete archived users');
       return;
     }
-    //setMemberToDelete(member);
+    setMemberToDelete(member);
   };
 
   const handleConfirmRestore = () => {
@@ -81,7 +83,7 @@ export default function ArchivedMembersPage() {
     }
   };
 
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 
@@ -103,6 +105,75 @@ export default function ArchivedMembersPage() {
     };
     return roleMap[role] || role;
   };
+
+  function renderList() {
+    if (isLoading) {
+      return <div className="py-10 text-center text-sm text-gray-500">Loading...</div>;
+    }
+
+    if (members.length === 0) {
+      return (
+        <div className="py-10 text-center text-sm text-gray-500">No archived members found.</div>
+      );
+    }
+
+    return members.map((member) => (
+      <div
+        key={member.id}
+        className="bg-white mb-4 border-gray-100  flex flex-col sm:flex-row sm:items-center justify-between"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex text-sm font-medium text-gray-600 truncate">
+            <span className="text-sm font-medium text-gray-700">
+              {member.first_name} {member.last_name}
+            </span>
+            <span className="ml-1 font-normal text-gray-500">
+              {getRoleDisplay(member.role?.role)}
+            </span>
+          </div>
+          <div className="flex items-center text-sm text-gray-500 mt-2">
+            <svg
+              className="shrink-0 mr-1.5 h-5 w-5 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                clipRule="evenodd"
+              ></path>
+            </svg>
+
+            <span>Deactivated on {formatDate(member.updatedAt)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 shrink-0">
+          <button
+            onClick={() => handleRestoreClick(member)}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+            disabled={isRestoring}
+          >
+            Activate
+          </button>
+          <button
+            onClick={() => handleDeleteClick(member)}
+            className={`text-sm font-semibold ${
+              isDeletePermission
+                ? 'text-red-600 hover:text-red-800 cursor-pointer'
+                : 'text-gray-400 cursor-not-allowed'
+            }`}
+            disabled={!isDeletePermission || isDeleting}
+            title={isDeletePermission ? 'Only Super Admins can delete' : ''}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ));
+  }
 
   return (
     <div className="px-4 pb-12 lg:col-span-8">
@@ -132,70 +203,7 @@ export default function ArchivedMembersPage() {
       </div>
 
       {/* List */}
-      <div className="border-separate mt-6 w-full">
-        {isLoading ? (
-          <div className="py-10 text-center text-sm text-gray-500">Loading...</div>
-        ) : members.length === 0 ? (
-          <div className="py-10 text-center text-sm text-gray-500">No archived members found.</div>
-        ) : (
-          members.map((member) => (
-            <div
-              key={member.id}
-              className="bg-white mb-4 border-gray-100  flex flex-col sm:flex-row sm:items-center justify-between"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex text-sm font-medium text-gray-600 truncate">
-                  <span className="text-sm font-medium text-gray-700">
-                    {member.first_name} {member.last_name}
-                  </span>
-                  <span className="ml-1 font-normal text-gray-500">
-                    {getRoleDisplay(member.role?.role)}
-                  </span>
-                </div>
-                <div className="flex items-center text-sm text-gray-500 mt-2">
-                  <svg
-                    className="shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-
-                  <span>Deactivated on {formatDate(member.updatedAt)}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 shrink-0">
-                <button
-                  onClick={() => handleRestoreClick(member)}
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-                  disabled={isRestoring}
-                >
-                  Activate
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(member)}
-                  className={`text-sm font-semibold ${
-                    user?.role === 'super_admin'
-                      ? 'text-red-600 hover:text-red-800 cursor-pointer'
-                      : 'text-gray-400 cursor-not-allowed'
-                  }`}
-                  disabled={user?.role !== 'super_admin' || isDeleting}
-                  title={user?.role !== 'super_admin' ? 'Only Super Admins can delete' : ''}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <div className="border-separate mt-6 w-full">{renderList()}</div>
 
       {/* Pagination (Simple) */}
       {totalPages > 1 && (

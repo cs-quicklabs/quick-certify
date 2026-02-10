@@ -259,6 +259,12 @@ export class AuthService implements IAuthService {
       return { success: true, message: 'If the email exists, a reset link has been sent' };
     }
 
+    if (user.auth_provider !== AuthProvider.Email) {
+      throw new BadRequestException(
+        'This account was linked to Google Sign-In, so password reset isn’t available. Please sign in with Google authentication or unlink your Google account to create a password.',
+      );
+    }
+
     // Validate user status (extracted to avoid duplication)
     this.userService.validateUserStatusForPasswordReset(user);
 

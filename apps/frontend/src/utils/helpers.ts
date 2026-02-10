@@ -29,9 +29,21 @@ export function filterAndSortRoles(roles: Role[] | undefined): Roles[] {
 }
 
 export function checkIfUserIsNonAdmin(user: User) {
-  return (
-    user &&
-    user.role &&
-    ![RoleType.SystemAdmin, RoleType.SuperAdmin, RoleType.Admin].includes(user.role as RoleType)
+  return !(
+    checkIfUserIsSystemAdmin(user) ||
+    checkIfUserIsSuperAdmin(user) ||
+    checkIfUserIsAdmin(user)
   );
+}
+
+export function checkIfUserIsSystemAdmin(user: User) {
+  return user?.role === RoleType.SystemAdmin || false;
+}
+
+export function checkIfUserIsSuperAdmin(user: User) {
+  return user?.role === RoleType.SuperAdmin || false;
+}
+
+export function checkIfUserIsAdmin(user: User) {
+  return user?.role === RoleType.Admin || false;
 }
