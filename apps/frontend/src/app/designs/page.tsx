@@ -9,6 +9,7 @@ import { useDesignList } from '@/hooks/useDesigns';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 import Pagination from '@/components/ui/pagination';
 import { ConfirmationDialog } from '@/components';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const SEARCH_DEBOUNCE_MS = 1000;
 const DESIGN_CARD_ITEM_LIMIT = 10;
@@ -78,10 +79,10 @@ export default function DesignsPage() {
     try {
       setIsDeleting(true);
       await deleteDesign(selectedDesign.uuid);
-      // showSuccess('Design deleted successfully');
+      showSuccessToast('Design deleted successfully');
       handleCancelDelete();
     } catch {
-      // showError('Failed to delete design');
+      showErrorToast('Failed to delete design');
     } finally {
       setIsDeleting(false);
     }
@@ -103,11 +104,6 @@ export default function DesignsPage() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(p));
     router.push(`/designs?${params.toString()}`, { scroll: false });
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this design?')) return;
-    await deleteDesign(id);
   };
 
   if (loading) return <div className="p-4">Loading designs…</div>;
