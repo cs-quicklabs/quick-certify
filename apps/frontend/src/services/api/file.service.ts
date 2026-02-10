@@ -55,8 +55,7 @@ export async function deleteFile(url: string): Promise<void> {
  * Check if storage is configured on the server
  */
 export async function checkStorageStatus(): Promise<{ configured: boolean }> {
-  const response = await apiClient.post<ApiResponse<{ configured: boolean }>>(
-    '/files/check-status',
-  );
+  const response =
+    await apiClient.post<ApiResponse<{ configured: boolean }>>('/files/check-status');
   return response.data.data;
 }

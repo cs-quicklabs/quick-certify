@@ -5,7 +5,11 @@
   "nx": {
     "implicitDependencies": [
       "frontend"
-    ]
+    ],
+    "targets": {
+      "format": {},
+      "format:check": {}
+    }
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",

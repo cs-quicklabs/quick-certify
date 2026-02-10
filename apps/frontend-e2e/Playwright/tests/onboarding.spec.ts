@@ -556,29 +556,29 @@ test.describe('Validate Registration Form', () => {
       );
     });
 
-    test.fixme(
-      'UR127_Verify: More than 50 character validation',
-      async ({ registrationPage, randomDataGenerator }) => {
-        console.log('Starting test: UR127_Verify: More than 50 character validation');
-        const newEmail = randomDataGenerator.generateRandomEmail();
-        const newIssuerName = randomDataGenerator.generateRandomName();
-        const newIssuerUrl = randomDataGenerator.generateRandomUrl();
-        await registrationPage.fillRegistrationFormData(
-          registrationData.globalValue.validFirstName,
-          registrationData.globalValue.validLastName,
-          newEmail,
-          newIssuerName,
-          newIssuerUrl,
-          registrationData.globalValue.maxCharacterValue,
-          registrationData.globalValue.maxCharacterValue,
-        );
-        await registrationPage.clickOnCreateNewUserBtn();
-        await registrationPage.validateFieldErrors(
-          registrationData.registrationFields.password,
-          registrationData.fieldErrors.password.tooLong,
-        );
-      },
-    );
+    test.fixme('UR127_Verify: More than 50 character validation', async ({
+      registrationPage,
+      randomDataGenerator,
+    }) => {
+      console.log('Starting test: UR127_Verify: More than 50 character validation');
+      const newEmail = randomDataGenerator.generateRandomEmail();
+      const newIssuerName = randomDataGenerator.generateRandomName();
+      const newIssuerUrl = randomDataGenerator.generateRandomUrl();
+      await registrationPage.fillRegistrationFormData(
+        registrationData.globalValue.validFirstName,
+        registrationData.globalValue.validLastName,
+        newEmail,
+        newIssuerName,
+        newIssuerUrl,
+        registrationData.globalValue.maxCharacterValue,
+        registrationData.globalValue.maxCharacterValue,
+      );
+      await registrationPage.clickOnCreateNewUserBtn();
+      await registrationPage.validateFieldErrors(
+        registrationData.registrationFields.password,
+        registrationData.fieldErrors.password.tooLong,
+      );
+    });
 
     test('UR128_Verify: Mandatory confirm password field validation', async ({
       registrationPage,
