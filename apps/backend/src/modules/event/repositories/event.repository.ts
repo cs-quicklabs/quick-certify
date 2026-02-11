@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { FindOptions, Op } from 'sequelize';
+import { FindOptions, Op, Transaction } from 'sequelize';
 import { EventEntity } from '@src/entities/event.entity';
 import { EventTypeEntity } from '@src/entities/event-type.entity';
 import { EventLevelEntity } from '@src/entities/event-level.entity';
@@ -61,25 +61,45 @@ export class EventRepository {
   ) {}
 
   /**
+   * Get the Sequelize instance for transaction management
+   */
+  getSequelize() {
+    const sequelize = this.model.sequelize;
+    if (!sequelize) {
+      throw new Error('Database connection not available');
+    }
+    return sequelize;
+  }
+
+  /**
    * Find all events with pagination
    */
   async findAll(
     organizationId: number,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<EventEntity>> {
-    const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {} } = options;
+    const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {}, search } = options;
 
     const safeLimit = Math.min(Math.max(1, limit), 100);
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
 
+    const queryWhere: Record<string, unknown> = {
+      organization_id: organizationId,
+      is_active: true,
+      ...where,
+    };
+
+    // Apply search filter at database level
+    if (search?.trim()) {
+      queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
+    }
+
     const { count, rows } = await this.model.findAndCountAll({
-      where: {
-        organization_id: organizationId,
-        is_active: true,
-        ...where,
-      },
+      where: queryWhere,
       include: DEFAULT_EVENT_INCLUDES,
+      distinct: true,
+      subQuery: false,
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,
@@ -116,11 +136,14 @@ export class EventRepository {
 
   /**
    * Find event by name (case-insensitive)
+   * @param activeOnly - When true, only matches active events (use for update name validation).
+   *                     When false/undefined, matches all including soft-deleted (use for create/restore flow).
    */
   async findByName(
     name: string,
     organizationId: number,
     excludeId?: number,
+    activeOnly?: boolean,
   ): Promise<EventEntity | null> {
     const where: Record<string, unknown> = {
       organization_id: organizationId,
@@ -131,21 +154,31 @@ export class EventRepository {
       where.id = { [Op.ne]: excludeId };
     }
 
+    if (activeOnly) {
+      where.is_active = true;
+    }
+
     return this.model.findOne({ where });
   }
 
   /**
    * Create a new event
    */
-  async create(data: Partial<EventEntity>): Promise<EventEntity> {
-    return this.model.create(data as EventEntity['_creationAttributes']);
+  async create(data: Partial<EventEntity>, transaction?: Transaction): Promise<EventEntity> {
+    return this.model.create(data as EventEntity['_creationAttributes'], {
+      ...(transaction && { transaction }),
+    });
   }
 
   /**
    * Update an event
    */
-  async update(event: EventEntity, data: Partial<EventEntity>): Promise<EventEntity> {
-    await event.update(data);
+  async update(
+    event: EventEntity,
+    data: Partial<EventEntity>,
+    transaction?: Transaction,
+  ): Promise<EventEntity> {
+    await event.update(data, { ...(transaction && { transaction }) });
     return event;
   }
 

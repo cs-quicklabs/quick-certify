@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Transaction } from 'sequelize';
 import { EventEntity } from '@src/entities/event.entity';
 import { CreateEventDto, UpdateEventDto } from '../dtos';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
@@ -87,25 +88,37 @@ export class EventService {
       return this.restoreOrThrow(existingEvent, normalizedName, dto, refs, organizationUuid);
     }
 
-    // Create new event
-    const event = await this.eventRepository.create({
-      organization_id: organization.id,
-      name: normalizedName,
-      description: dto.description ?? null,
-      learning_link: dto.learningLink ?? null,
-      event_type_id: refs.eventType?.id ?? null,
-      event_level_id: refs.eventLevel?.id ?? null,
-      event_format_id: refs.eventFormat?.id ?? null,
-      design_id: refs.design?.id ?? null,
-      is_active: true,
-    });
+    // Use transaction to ensure atomicity of event + skill creation
+    const sequelize = this.eventRepository.getSequelize();
+    const transaction = await sequelize.transaction();
 
-    // Associate skills if provided
-    if (dto.skillIds?.length) {
-      await this.eventSkillService.addSkills(event, dto.skillIds, organizationUuid);
+    try {
+      const event = await this.eventRepository.create(
+        {
+          organization_id: organization.id,
+          name: normalizedName,
+          description: dto.description ?? null,
+          learning_link: dto.learningLink ?? null,
+          event_type_id: refs.eventType?.id ?? null,
+          event_level_id: refs.eventLevel?.id ?? null,
+          event_format_id: refs.eventFormat?.id ?? null,
+          design_id: refs.design?.id ?? null,
+          is_active: true,
+        },
+        transaction,
+      );
+
+      // Associate skills if provided
+      if (dto.skillIds?.length) {
+        await this.eventSkillService.addSkills(event, dto.skillIds, organizationUuid, transaction);
+      }
+
+      await transaction.commit();
+      return this.eventRepository.reload(event);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    return this.eventRepository.reload(event);
   }
 
   /**
@@ -165,15 +178,24 @@ export class EventService {
       updateData.design_id = design?.id ?? null;
     }
 
-    // Apply updates
-    await this.eventRepository.update(event, updateData);
+    // Use transaction for atomicity across event update + skill sync
+    const sequelize = this.eventRepository.getSequelize();
+    const transaction = await sequelize.transaction();
 
-    // Handle skills update if provided
-    if (dto.skillIds !== undefined) {
-      await this.eventSkillService.syncSkills(event, dto.skillIds, organizationUuid);
+    try {
+      await this.eventRepository.update(event, updateData, transaction);
+
+      // Handle skills update if provided
+      if (dto.skillIds !== undefined) {
+        await this.eventSkillService.syncSkills(event, dto.skillIds, organizationUuid, transaction);
+      }
+
+      await transaction.commit();
+      return this.eventRepository.reload(event);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    return this.eventRepository.reload(event);
   }
 
   /**
@@ -183,32 +205,6 @@ export class EventService {
     const event = await this.requireEvent(uuid, organizationUuid);
     await this.eventRepository.softDelete(event);
     return true;
-  }
-
-  /**
-   * Search events by name or design name
-   * Note: Currently filters results client-side after DB query
-   */
-  async searchEvents(
-    organizationUuid: string,
-    searchQuery: string,
-    options: FindAllOptions = {},
-  ): Promise<PaginatedResult<EventEntity>> {
-    // First get paginated results
-    const result = await this.findAll(organizationUuid, options);
-
-    // Filter by search query (event name or design name)
-    const query = searchQuery.toLowerCase();
-    const filteredData = result.data.filter((event) => {
-      const eventNameMatch = event.name.toLowerCase().includes(query);
-      const designNameMatch = event.design?.name?.toLowerCase().includes(query);
-      return eventNameMatch || designNameMatch;
-    });
-
-    return {
-      ...result,
-      data: filteredData,
-    };
   }
 
   // Private helper methods
@@ -240,6 +236,7 @@ export class EventService {
       normalizedName,
       organizationId,
       excludeId,
+      true, // Only check active events for name conflicts
     );
 
     if (existing) {
@@ -265,26 +262,40 @@ export class EventService {
       throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
     }
 
-    // Restore soft-deleted event with new values
-    const updateData: Partial<EventEntity> = {
-      is_active: true,
-    };
+    // Use transaction to ensure atomicity of restore + skill association
+    const sequelize = this.eventRepository.getSequelize();
+    const transaction = await sequelize.transaction();
 
-    if (dto.description !== undefined) updateData.description = dto.description;
-    if (dto.learningLink !== undefined) updateData.learning_link = dto.learningLink;
-    if (refs.eventType) updateData.event_type_id = refs.eventType.id;
-    if (refs.eventLevel) updateData.event_level_id = refs.eventLevel.id;
-    if (refs.eventFormat) updateData.event_format_id = refs.eventFormat.id;
-    if (refs.design) updateData.design_id = refs.design.id;
+    try {
+      const updateData: Partial<EventEntity> = {
+        is_active: true,
+      };
 
-    await this.eventRepository.update(existingEvent, updateData);
+      if (dto.description !== undefined) updateData.description = dto.description;
+      if (dto.learningLink !== undefined) updateData.learning_link = dto.learningLink;
+      if (refs.eventType) updateData.event_type_id = refs.eventType.id;
+      if (refs.eventLevel) updateData.event_level_id = refs.eventLevel.id;
+      if (refs.eventFormat) updateData.event_format_id = refs.eventFormat.id;
+      if (refs.design) updateData.design_id = refs.design.id;
 
-    // Associate skills if provided
-    if (dto.skillIds?.length) {
-      await this.eventSkillService.addSkills(existingEvent, dto.skillIds, organizationUuid);
+      await this.eventRepository.update(existingEvent, updateData, transaction);
+
+      // Associate skills if provided
+      if (dto.skillIds?.length) {
+        await this.eventSkillService.addSkills(
+          existingEvent,
+          dto.skillIds,
+          organizationUuid,
+          transaction,
+        );
+      }
+
+      await transaction.commit();
+      return this.eventRepository.reload(existingEvent);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    return this.eventRepository.reload(existingEvent);
   }
 
   private emptyPaginatedResult(limit: number): PaginatedResult<EventEntity> {

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Transaction } from 'sequelize';
 import { EventSkillEntity } from '@src/entities/event-skill.entity';
 import { SkillEntity } from '@src/entities/skill.entity';
 import { EventEntity } from '@src/entities/event.entity';
@@ -51,9 +52,10 @@ export class EventSkillService {
     event: EventEntity,
     skillUuids: string[],
     organizationUuid: string,
+    transaction?: Transaction,
   ): Promise<void> {
     // Clear existing skills
-    await this.clearSkills(event.id);
+    await this.clearSkills(event.id, transaction);
 
     // If empty array, we're done
     if (skillUuids.length === 0) {
@@ -61,7 +63,7 @@ export class EventSkillService {
     }
 
     // Add new skills
-    await this.addSkills(event, skillUuids, organizationUuid);
+    await this.addSkills(event, skillUuids, organizationUuid, transaction);
   }
 
   /**
@@ -71,6 +73,7 @@ export class EventSkillService {
     event: EventEntity,
     skillUuids: string[],
     organizationUuid: string,
+    transaction?: Transaction,
   ): Promise<void> {
     if (!skillUuids || skillUuids.length === 0) return;
 
@@ -85,6 +88,7 @@ export class EventSkillService {
         uuid: skillUuids,
         organization_id: organization.id,
       },
+      ...(transaction && { transaction }),
     });
 
     if (skills.length !== skillUuids.length) {
@@ -101,15 +105,17 @@ export class EventSkillService {
 
     await this.eventSkillModel.bulkCreate(associations, {
       fields: ['event_id', 'skill_id'],
+      ...(transaction && { transaction }),
     });
   }
 
   /**
    * Clear all skills from an event
    */
-  async clearSkills(eventId: number): Promise<void> {
+  async clearSkills(eventId: number, transaction?: Transaction): Promise<void> {
     await this.eventSkillModel.destroy({
       where: { event_id: eventId },
+      ...(transaction && { transaction }),
     });
   }
 

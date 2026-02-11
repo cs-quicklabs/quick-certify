@@ -4,6 +4,7 @@ import { Design } from '@/types';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface Props {
   isOpen: boolean;
@@ -34,7 +35,7 @@ export function DesignSelectorModal({ isOpen, onClose, onSelect, designsList }: 
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm py-8"
       onClick={onClose}
@@ -155,6 +156,7 @@ export function DesignSelectorModal({ isOpen, onClose, onSelect, designsList }: 
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

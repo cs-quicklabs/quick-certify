@@ -179,9 +179,12 @@ export function useEventStepper(
 
   // Update current step when initialStep changes (e.g., from URL)
   useEffect(() => {
-    if (initialStep !== currentStep) {
-      setCurrentStepState(initialStep);
-      // Ensure all previous steps are marked as completed
+    setCurrentStepState((prev) => {
+      if (prev === initialStep) return prev;
+      return initialStep;
+    });
+    // Ensure all previous steps are marked as completed
+    if (initialStep > 0) {
       setManuallyCompletedSteps((prev) => {
         const newCompleted = Array.from({ length: initialStep }, (_, i) => i);
         return [...new Set([...prev, ...newCompleted])];

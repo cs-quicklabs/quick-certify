@@ -49,9 +49,7 @@ export class EventController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
   async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
-    const result = pagination.search
-      ? await this.eventService.searchEvents(user.organizationUuid, pagination.search, pagination)
-      : await this.eventService.findAll(user.organizationUuid, pagination);
+    const result = await this.eventService.findAll(user.organizationUuid, pagination);
     return new SuccessResponse('Events retrieved successfully', result);
   }
 

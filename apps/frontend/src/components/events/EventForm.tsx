@@ -17,7 +17,8 @@ import {
 import { useSkills } from '@/hooks/useSkills';
 import { useEventStepper, Step0Data, Step1Data } from '@/hooks/useEventStepper';
 import { DesignSelectorModal } from '@/components/designs/DesignSelectorModal';
-import { Eye, Images, Plus, SquarePen, Trash, Loader2, X } from 'lucide-react';
+import { SkillSelector } from '@/components/events/SkillSelector';
+import { Eye, Images, Plus, SquarePen, Trash, Loader2 } from 'lucide-react';
 import { useDesignList } from '@/hooks/useDesigns';
 import { Design } from '@/types';
 import Link from 'next/link';
@@ -27,9 +28,6 @@ import { Event } from '@/services';
 
 // Maximum number of items to fetch for dropdown lists
 const DROPDOWN_PAGE_SIZE = 100;
-
-// Maximum number of skills allowed
-const MAX_SKILLS = 20;
 
 /**
  * Extended Step0Data with UI-specific fields
@@ -91,11 +89,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     steps,
   } = useEventStepper(initialStep, step0CoreData, step1Data, selectedSkillIds);
 
-  // Skills search UI state
-  const [skillSearchQuery, setSkillSearchQuery] = useState('');
-  const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
-  const skillDropdownRef = useRef<HTMLDivElement>(null);
-
   // Modal state
   const [isDesignModalOpen, setIsDesignModalOpen] = useState(false);
 
@@ -144,14 +137,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
   const isLoadingDropdowns =
     isLoadingTypes || isLoadingLevels || isLoadingFormats || isLoadingSkills;
-
-  // Filter skills based on search query
-  const filteredSkills = skillSearchQuery.trim()
-    ? skills.filter((skill) => skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()))
-    : skills;
-
-  // Get selected skill objects
-  const selectedSkills = skills.filter((skill) => selectedSkillIds.includes(skill.uuid));
 
   // Track if form has been initialized to prevent infinite loops
   const isInitializedRef = useRef(false);
@@ -224,46 +209,14 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   );
 
   /**
-   * Add a skill to the list
+   * Add/remove skill handlers for SkillSelector
    */
-  const addSkill = useCallback(
-    (skillUuid: string) => {
-      if (selectedSkillIds.length >= MAX_SKILLS) {
-        toast.error(`Maximum ${MAX_SKILLS} skills allowed`);
-        return;
-      }
-
-      if (selectedSkillIds.includes(skillUuid)) {
-        toast.error('This skill has already been added');
-        return;
-      }
-
-      setSelectedSkillIds((prev) => [...prev, skillUuid]);
-      setSkillSearchQuery('');
-      setIsSkillDropdownOpen(false);
-    },
-    [selectedSkillIds],
-  );
-
-  /**
-   * Remove a skill from the list
-   */
-  const removeSkill = useCallback((skillUuid: string) => {
-    setSelectedSkillIds((prev) => prev.filter((id) => id !== skillUuid));
+  const handleAddSkill = useCallback((skillUuid: string) => {
+    setSelectedSkillIds((prev) => [...prev, skillUuid]);
   }, []);
 
-  /**
-   * Handle click outside to close dropdown
-   */
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (skillDropdownRef.current && !skillDropdownRef.current.contains(event.target as Node)) {
-        setIsSkillDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+  const handleRemoveSkill = useCallback((skillUuid: string) => {
+    setSelectedSkillIds((prev) => prev.filter((id) => id !== skillUuid));
   }, []);
 
   /**
@@ -560,7 +513,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           {currentStep === 0 && (
             <div className="max-w-xl pb-12 px-4 lg:col-span-6">
               <ConfigForm
-                key={step0FormData.name || 'empty'} // Force remount when data loads
+                key={eventUuid ?? 'create'}
                 config={{ ...step0Config, showSubmit: false }}
                 initialValues={step0FormData}
                 formRef={step0FormRef}
@@ -661,98 +614,18 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           {currentStep === 1 && (
             <main className="max-w-xl pb-12 px-4 lg:col-span-6">
               <ConfigForm
-                key={step1Data.learningLink || step1Data.description || 'empty'} // Force remount when data loads
+                key={eventUuid ?? 'create'}
                 config={step1Config}
                 initialValues={step1Data}
                 isLoading={isUpdating || isLoadingDropdowns}
               >
-                {/* Skills Selection */}
-                <div className="w-full col-span-3" ref={skillDropdownRef}>
-                  <label className="form-input-label">
-                    Skills
-                    <span className="text-gray-400 font-normal ml-1">
-                      ({selectedSkillIds.length}/{MAX_SKILLS})
-                    </span>
-                    {selectedSkillIds.length > 0 && (
-                      <span className="ml-2 text-green-600 text-xs">✓</span>
-                    )}
-                  </label>
-
-                  {/* Selected Skills Chips */}
-                  <div className="form-input-field flex flex-wrap items-center gap-2 min-h-13">
-                    {selectedSkills.map((skill) => (
-                      <span
-                        key={skill.uuid}
-                        className="ps-1.5 pe-0.5 py-0.5 inline-flex items-center bg-neutral-secondary-medium border border-default-medium text-heading text-xs font-medium  rounded gap-1 m-0.5"
-                      >
-                        {skill.name}
-                        <X
-                          size={'15'}
-                          strokeWidth={'2.3'}
-                          className="hover:bg-neutral-quaternary rounded-xs p-0.5"
-                          onClick={() => removeSkill(skill.uuid)}
-                        />
-                      </span>
-                    ))}
-
-                    {/* Skill Search Input */}
-                    {selectedSkillIds.length < MAX_SKILLS && (
-                      <div className="relative flex-1 min-w-50">
-                        <input
-                          className="w-full h-10 border-0 outline-none bg-transparent"
-                          type="text"
-                          placeholder={
-                            isLoadingSkills ? 'Loading skills...' : 'Search and select skills...'
-                          }
-                          value={skillSearchQuery}
-                          onChange={(e) => {
-                            setSkillSearchQuery(e.target.value);
-                            setIsSkillDropdownOpen(true);
-                          }}
-                          onFocus={() => setIsSkillDropdownOpen(true)}
-                          disabled={isLoadingSkills}
-                        />
-
-                        {/* Skills Dropdown */}
-                        {isSkillDropdownOpen && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                            {filteredSkills.length === 0 ? (
-                              <div className="px-4 py-3 text-sm text-gray-500">
-                                {skillSearchQuery.trim()
-                                  ? 'No matching skills found'
-                                  : 'No skills available'}
-                              </div>
-                            ) : (
-                              filteredSkills.map((skill) => {
-                                const isSelected = selectedSkillIds.includes(skill.uuid);
-                                return (
-                                  <button
-                                    key={skill.uuid}
-                                    type="button"
-                                    onClick={() => !isSelected && addSkill(skill.uuid)}
-                                    disabled={isSelected}
-                                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between ${
-                                      isSelected
-                                        ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                                        : 'text-gray-900'
-                                    }`}
-                                  >
-                                    <span>{skill.name}</span>
-                                    {isSelected && <span className="text-xs">Already added</span>}
-                                  </button>
-                                );
-                              })
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="form-input-description mt-2">
-                    Select skills associated with this event from the available options.
-                  </p>
-                </div>
+                <SkillSelector
+                  skills={skills}
+                  selectedSkillIds={selectedSkillIds}
+                  onAdd={handleAddSkill}
+                  onRemove={handleRemoveSkill}
+                  isLoading={isLoadingSkills}
+                />
               </ConfigForm>
             </main>
           )}

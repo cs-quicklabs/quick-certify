@@ -267,10 +267,12 @@ export function useDeleteEventFormat() {
 }
 
 // Event Hooks
-export function useEvents(filters?: EventFilters) {
+export function useEvents(filters?: EventFilters & { enabled?: boolean }) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
-    queryKey: EVENT_KEYS.list(filters),
-    queryFn: () => eventService.getEvents(filters),
+    queryKey: EVENT_KEYS.list(queryFilters),
+    queryFn: () => eventService.getEvents(queryFilters),
+    enabled,
   });
 }
 

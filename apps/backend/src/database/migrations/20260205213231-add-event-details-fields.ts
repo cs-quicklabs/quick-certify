@@ -113,56 +113,55 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      // Revert event_format_id to NOT NULL
-      await queryInterface.changeColumn(
-        'event',
-        'event_format_id',
-        {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: 'event_format',
-            key: 'id',
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'RESTRICT',
-        },
-        { transaction },
-      );
+      // Before reverting to NOT NULL, backfill NULL values with a valid default
+      // to prevent constraint violations if rows with NULL references exist
+      const fkColumns = [
+        { column: 'event_format_id', table: 'event_format' },
+        { column: 'event_level_id', table: 'event_level' },
+        { column: 'event_type_id', table: 'event_type' },
+      ];
 
-      // Revert event_level_id to NOT NULL
-      await queryInterface.changeColumn(
-        'event',
-        'event_level_id',
-        {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: 'event_level',
-            key: 'id',
-          },
-          onUpdate: 'CASCADE',
-          onDelete: 'RESTRICT',
-        },
-        { transaction },
-      );
+      for (const { column, table } of fkColumns) {
+        const [nullCount] = (await queryInterface.sequelize.query(
+          `SELECT COUNT(*) as count FROM event WHERE ${column} IS NULL`,
+          { transaction },
+        )) as unknown as [Array<{ count: string }>];
 
-      // Revert event_type_id to NOT NULL
-      await queryInterface.changeColumn(
-        'event',
-        'event_type_id',
-        {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: 'event_type',
-            key: 'id',
+        if (Number.parseInt(nullCount[0].count) > 0) {
+          const [defaultRow] = (await queryInterface.sequelize.query(
+            `SELECT id FROM ${table} WHERE is_active = true LIMIT 1`,
+            { transaction },
+          )) as unknown as [Array<{ id: number }>];
+
+          if (!defaultRow.length) {
+            throw new Error(
+              `Cannot revert ${column} to NOT NULL: rows with NULL exist and no active ${table} record found as default`,
+            );
+          }
+
+          await queryInterface.sequelize.query(
+            `UPDATE event SET ${column} = ${defaultRow[0].id} WHERE ${column} IS NULL`,
+            { transaction },
+          );
+          console.log(`✅ Backfilled ${nullCount[0].count} NULL ${column} rows with default id ${defaultRow[0].id}`);
+        }
+
+        await queryInterface.changeColumn(
+          'event',
+          column,
+          {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+              model: table,
+              key: 'id',
+            },
+            onUpdate: 'CASCADE',
+            onDelete: 'RESTRICT',
           },
-          onUpdate: 'CASCADE',
-          onDelete: 'RESTRICT',
-        },
-        { transaction },
-      );
+          { transaction },
+        );
+      }
 
       // Remove learning_link column
       await queryInterface.removeColumn('event', 'learning_link', { transaction });

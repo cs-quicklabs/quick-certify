@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ListFilter, Loader2, X } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import { toast } from 'react-toastify';
@@ -25,11 +25,20 @@ export default function EventsPage() {
     search: query || undefined,
   });
 
-  // Fetch all events for filter dropdown (no pagination)
+  // Fetch events for filter dropdown only when dropdown is opened (lazy load, then cached)
+  const [filterLoaded, setFilterLoaded] = useState(false);
   const { data: allEventsData, isLoading: isLoadingAll } = useEvents({
     page: 1,
-    limit: 100, // Get more events for filter
+    limit: 100,
+    enabled: isFilterOpen || filterLoaded,
   });
+
+  // Once opened, keep the data cached
+  useEffect(() => {
+    if (isFilterOpen && !filterLoaded) {
+      setFilterLoaded(true);
+    }
+  }, [isFilterOpen, filterLoaded]);
 
   // Delete event mutation
   const deleteEventMutation = useDeleteEvent();
@@ -86,27 +95,11 @@ export default function EventsPage() {
     }
   };
 
-  // Client-side filter for search and selected events
-  const filteredEvents = useMemo(() => {
-    let result = events;
-
-    // Filter by search query (event name or design name)
-    if (query) {
-      const searchTerm = query.toLowerCase();
-      result = result.filter(
-        (e: Event) =>
-          e.name.toLowerCase().includes(searchTerm) ||
-          e.design?.name?.toLowerCase().includes(searchTerm),
-      );
-    }
-
-    // Filter by selected events
-    if (selectedEventIds.length > 0) {
-      result = result.filter((e: Event) => selectedEventIds.includes(e.uuid));
-    }
-
-    return result;
-  }, [events, query, selectedEventIds]);
+  // Client-side filter for selected event IDs only (search is handled server-side)
+  const filteredEvents =
+    selectedEventIds.length > 0
+      ? events.filter((e: Event) => selectedEventIds.includes(e.uuid))
+      : events;
 
   // Pagination from API meta
   const total = meta?.total ?? filteredEvents.length;
