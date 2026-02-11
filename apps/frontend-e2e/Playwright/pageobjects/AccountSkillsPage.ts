@@ -19,16 +19,16 @@ export class AccountSkillsPage {
 
     // Page elements
     this.locator_pageTitle = page.locator('h1.form-title, h1').filter({ hasText: 'Skills' });
-    this.locator_pageSubtitle = page
-      .locator('p.form-subtitle')
-      .filter({
-        hasText:
-          'Skills help categorize participants based on expertise. You can add, edit, or delete skills as needed.',
-      });
+    this.locator_pageSubtitle = page.locator('p.form-subtitle').filter({
+      hasText:
+        'Skills help categorize participants based on expertise. You can add, edit, or delete skills as needed.',
+    });
 
     // Add skill form
     this.locator_newSkillInput = page.locator('#skill');
-    this.locator_addSkillButton = page.getByRole('button', { name: /^(Save|Saving\.\.\.)$/ }).first();
+    this.locator_addSkillButton = page
+      .getByRole('button', { name: /^(Save|Saving\.\.\.)$/ })
+      .first();
 
     // Skills table
     this.locator_skillsTable = page.locator('table');
@@ -39,11 +39,17 @@ export class AccountSkillsPage {
 
     // Confirmation dialog
     // Dialog is a fixed overlay div with backdrop-blur-sm class
-    this.locator_confirmationDialog = page.locator('div.fixed.inset-0.z-50').filter({ hasText: 'Delete Skill?' });
+    this.locator_confirmationDialog = page
+      .locator('div.fixed.inset-0.z-50')
+      .filter({ hasText: 'Delete Skill?' });
     // Delete button is inside the dialog with bg-danger class
-    this.locator_confirmDeleteButton = page.locator('div.fixed.inset-0.z-50').getByRole('button', { name: 'Delete' });
+    this.locator_confirmDeleteButton = page
+      .locator('div.fixed.inset-0.z-50')
+      .getByRole('button', { name: 'Delete' });
     // Cancel button is inside the dialog
-    this.locator_cancelDeleteButton = page.locator('div.fixed.inset-0.z-50').getByRole('button', { name: 'Cancel' });
+    this.locator_cancelDeleteButton = page
+      .locator('div.fixed.inset-0.z-50')
+      .getByRole('button', { name: 'Cancel' });
   }
 
   /**
@@ -103,10 +109,13 @@ export class AccountSkillsPage {
   async waitForSkillToAppear(skillName: string, timeout = 10000) {
     await this.page.waitForLoadState('networkidle').catch(() => {});
     await this.page.waitForTimeout(1000);
-    
+
     // Wait for the skill row to appear
     const skillRow = this.getSkillRowByName(skillName);
-    await skillRow.first().waitFor({ state: 'visible', timeout }).catch(() => {});
+    await skillRow
+      .first()
+      .waitFor({ state: 'visible', timeout })
+      .catch(() => {});
   }
 
   /**
@@ -128,7 +137,9 @@ export class AccountSkillsPage {
    * Check if skill exists in the table
    */
   async isSkillVisible(skillName: string): Promise<boolean> {
-    return await this.getSkillRowByName(skillName).isVisible({ timeout: 2000 }).catch(() => false);
+    return await this.getSkillRowByName(skillName)
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
   }
 
   /**
@@ -235,7 +246,10 @@ export class AccountSkillsPage {
     // Success might be implicit (skill appears in table) or explicit alert
     await this.page.waitForTimeout(1000);
     if (message) {
-      const alertVisible = await this.locator_alertToast.first().isVisible({ timeout: 2000 }).catch(() => false);
+      const alertVisible = await this.locator_alertToast
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
       if (alertVisible) {
         await expect(this.locator_alertToast.first()).toContainText(message);
       }
@@ -256,14 +270,14 @@ export class AccountSkillsPage {
   async validateSkillInTable(skillName: string) {
     // Wait for table to be visible first
     await this.waitForSkillsTable();
-    
+
     // Wait for network requests to complete (table might be refreshing)
     await this.page.waitForLoadState('networkidle').catch(() => {});
     await this.page.waitForTimeout(1000);
-    
+
     // Try to find the skill row - wait up to 10 seconds
     const skillRow = this.getSkillRowByName(skillName);
-    
+
     // First check if any rows exist
     const rowCount = await this.locator_skillsRows.count();
     if (rowCount === 0) {
@@ -271,10 +285,10 @@ export class AccountSkillsPage {
       await this.page.waitForTimeout(2000);
       await this.page.waitForLoadState('networkidle').catch(() => {});
     }
-    
+
     // Wait for the skill row to appear
     await expect(skillRow).toBeVisible({ timeout: 10000 });
-    
+
     // Double check the skill name is correct by checking the text content
     const rowText = await skillRow.first().textContent();
     expect(rowText).toContain(skillName);
@@ -301,7 +315,10 @@ export class AccountSkillsPage {
     // Wait for table to be visible
     await this.locator_skillsTable.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     // Wait for at least one row to be present (table has data)
-    await this.locator_skillsRows.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+    await this.locator_skillsRows
+      .first()
+      .waitFor({ state: 'attached', timeout: 5000 })
+      .catch(() => {});
     await this.page.waitForTimeout(1000);
   }
 }

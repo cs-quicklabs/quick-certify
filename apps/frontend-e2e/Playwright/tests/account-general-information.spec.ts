@@ -1,4 +1,4 @@
-import { test, accountGeneralInfoData,expect } from './Fixture';
+import { test, accountGeneralInfoData, expect } from './Fixture';
 import type { AccountGeneralInfoPage } from '../pageobjects/AccountGeneralInfoPage';
 
 /**
@@ -57,7 +57,9 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.page.waitForSelector('#support_email', { state: 'visible' });
     await accountGeneralInfoPage.page.waitForSelector('#slogan', { state: 'visible' });
     await accountGeneralInfoPage.page.waitForSelector('#linkedin_company_id', { state: 'visible' });
-    await accountGeneralInfoPage.page.waitForSelector('button:has-text("Save")', { state: 'visible' });
+    await accountGeneralInfoPage.page.waitForSelector('button:has-text("Save")', {
+      state: 'visible',
+    });
   });
 
   test('A103_Verify successful save with valid data', async ({ page }) => {
@@ -76,8 +78,7 @@ test.describe('Account Settings - General Information', () => {
       accountGeneralInfoPage.saveGeneralInfo(data),
       page
         .waitForResponse(
-          (resp) =>
-            resp.url().includes('organizations/settings') && resp.status() === 200,
+          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
           { timeout: 10000 },
         )
         .catch(() => {}),
@@ -96,8 +97,7 @@ test.describe('Account Settings - General Information', () => {
       accountGeneralInfoPage.saveGeneralInfo({ name }),
       page
         .waitForResponse(
-          (resp) =>
-            resp.url().includes('organizations/settings') && resp.status() === 200,
+          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
           { timeout: 10000 },
         )
         .catch(() => {}),
@@ -115,8 +115,6 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-   
-    
     // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
@@ -134,7 +132,7 @@ test.describe('Account Settings - General Information', () => {
       'name',
       accountGeneralInfoData.expectedMessages.nameNotOnlySpaces,
     );
-    
+
     // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
@@ -144,12 +142,12 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.waitForFormReady();
 
     await accountGeneralInfoPage.enterName(accountGeneralInfoData.formData.validName);
-    await accountGeneralInfoPage.enterSupportEmail(accountGeneralInfoData.formData.invalidSupportEmail);
+    await accountGeneralInfoPage.enterSupportEmail(
+      accountGeneralInfoData.formData.invalidSupportEmail,
+    );
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    
-    
     // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
@@ -170,7 +168,7 @@ test.describe('Account Settings - General Information', () => {
       'linkedin_company_id',
       accountGeneralInfoData.expectedMessages.linkedInIdInvalid,
     );
-    
+
     // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
@@ -213,8 +211,7 @@ test.describe('Account Settings - General Information', () => {
       accountGeneralInfoPage.saveGeneralInfo(data),
       page
         .waitForResponse(
-          (resp) =>
-            resp.url().includes('organizations/settings') && resp.status() === 200,
+          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
           { timeout: 10000 },
         )
         .catch(() => {}),
