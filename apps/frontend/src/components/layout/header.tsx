@@ -230,7 +230,11 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 onClick={closeMenus}
-                className={`block rounded-sm px-3 py-2 text-base font-medium ${i === 0 ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+                className={`block rounded-sm px-3 py-2 text-base font-medium ${
+                  i === 0
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
               >
                 {item.label}
               </Link>

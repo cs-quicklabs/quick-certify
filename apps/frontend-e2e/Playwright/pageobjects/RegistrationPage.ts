@@ -60,10 +60,12 @@ export class RegistrationPage {
     expect(validatedField).toContainText(expectedError);
   }
 
-  async validateAlertMessages(expectedMsg: string) {
+  async validateAlertMessages(expectedMsg: string, expectedResponseCode: number) {
     await Promise.all([
       expect(this.locator_alert.first()).toContainText(expectedMsg),
-      this.page.waitForResponse((resp) => resp.url().includes('register') && resp.status() === 422),
+      this.page.waitForResponse(
+        (resp) => resp.url().includes('register') && resp.status() === expectedResponseCode,
+      ),
     ]);
   }
 
