@@ -13,32 +13,34 @@ import type { AccountSocialLinksPage } from '../pageobjects/AccountSocialLinksPa
 
 let accountSocialLinksPage: AccountSocialLinksPage;
 
-test.beforeEach(async ({ page, loginPage, accountSocialLinksPage: fixtureAccountSocialLinksPage }) => {
-  accountSocialLinksPage = fixtureAccountSocialLinksPage;
+test.beforeEach(
+  async ({ page, loginPage, accountSocialLinksPage: fixtureAccountSocialLinksPage }) => {
+    accountSocialLinksPage = fixtureAccountSocialLinksPage;
 
-  const userName = process.env.USER_EMAIL;
-  const password = process.env.USER_PASS;
+    const userName = process.env.USER_EMAIL;
+    const password = process.env.USER_PASS;
 
-  if (!userName || !password) {
-    throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
-  }
+    if (!userName || !password) {
+      throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
+    }
 
-  await page.goto('/settings/account/social-links');
-
-  const currentUrl = page.url();
-  if (currentUrl.includes('/login')) {
-    await loginPage.enterUserEmail(userName);
-    await loginPage.enterPassword(password);
-    await Promise.all([
-      loginPage.clickOnSigninBtn(),
-      page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-    ]);
     await page.goto('/settings/account/social-links');
-    await page.waitForLoadState('networkidle');
-  } else {
-    await page.waitForLoadState('networkidle');
-  }
-});
+
+    const currentUrl = page.url();
+    if (currentUrl.includes('/login')) {
+      await loginPage.enterUserEmail(userName);
+      await loginPage.enterPassword(password);
+      await Promise.all([
+        loginPage.clickOnSigninBtn(),
+        page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
+      ]);
+      await page.goto('/settings/account/social-links');
+      await page.waitForLoadState('networkidle');
+    } else {
+      await page.waitForLoadState('networkidle');
+    }
+  },
+);
 
 test.describe('Account Settings - Social Links', () => {
   test('SL01_Verify Super Admin can add valid social links for a company', async ({ page }) => {
@@ -64,7 +66,9 @@ test.describe('Account Settings - Social Links', () => {
         .catch(() => {}),
     ]);
 
-    await accountSocialLinksPage.validateSuccessMessage(socialLinksData.expectedMessages.successMessage);
+    await accountSocialLinksPage.validateSuccessMessage(
+      socialLinksData.expectedMessages.successMessage,
+    );
 
     // Verify values persist after reload
     await page.reload();
@@ -76,7 +80,9 @@ test.describe('Account Settings - Social Links', () => {
     await accountSocialLinksPage.openUrl();
     await accountSocialLinksPage.waitForFormReady();
 
-    await accountSocialLinksPage.enterLinkedInUrl(socialLinksData.formData.invalidLinkedinWrongDomain);
+    await accountSocialLinksPage.enterLinkedInUrl(
+      socialLinksData.formData.invalidLinkedinWrongDomain,
+    );
     await accountSocialLinksPage.clickSaveButton();
 
     await accountSocialLinksPage.page.waitForTimeout(1500);
@@ -92,7 +98,9 @@ test.describe('Account Settings - Social Links', () => {
     await accountSocialLinksPage.openUrl();
     await accountSocialLinksPage.waitForFormReady();
 
-    await accountSocialLinksPage.enterWebsite(socialLinksData.formData.invalidWebsiteMissingProtocol);
+    await accountSocialLinksPage.enterWebsite(
+      socialLinksData.formData.invalidWebsiteMissingProtocol,
+    );
     await accountSocialLinksPage.clickSaveButton();
 
     await accountSocialLinksPage.page.waitForTimeout(1500);
@@ -104,4 +112,3 @@ test.describe('Account Settings - Social Links', () => {
     await accountSocialLinksPage.validateNoSuccessMessage();
   });
 });
-

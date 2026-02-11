@@ -31,7 +31,23 @@ export class RandomDataGenerator {
   }
 
   generateRandomSkillName(): string {
-    const skillPrefixes = ['JavaScript', 'TypeScript', 'React', 'Vue', 'Angular', 'Node', 'Python', 'Java', 'CSharp', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin'];
+    const skillPrefixes = [
+      'JavaScript',
+      'TypeScript',
+      'React',
+      'Vue',
+      'Angular',
+      'Node',
+      'Python',
+      'Java',
+      'CSharp',
+      'Go',
+      'Rust',
+      'PHP',
+      'Ruby',
+      'Swift',
+      'Kotlin',
+    ];
     const randomPrefix = skillPrefixes[Math.floor(Math.random() * skillPrefixes.length)];
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     return `${randomPrefix}_${randomSuffix}`;
