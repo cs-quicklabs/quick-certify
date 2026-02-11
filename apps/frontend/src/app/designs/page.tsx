@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
+import { Design } from '@/types';
 import { useDesignList } from '@/hooks/useDesigns';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 import Pagination from '@/components/ui/pagination';
+import { ConfirmationDialog } from '@/components';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const SEARCH_DEBOUNCE_MS = 1000;
 const DESIGN_CARD_ITEM_LIMIT = 10;
@@ -25,8 +28,10 @@ export default function DesignsPage() {
   const [filter, setFilter] = useState<Filter>(typeFromUrl ?? 'All');
   const [open, setOpen] = useState(false);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  /* ---------------- Delete dialog state ---------------- */
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDesign, setSelectedDesign] = useState<Design | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const apiType = filter === 'All' ? undefined : (filter.toLowerCase() as 'certificate' | 'badge');
 
@@ -36,6 +41,9 @@ export default function DesignsPage() {
     search: searchFromUrl,
     type: apiType,
   });
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -55,6 +63,31 @@ export default function DesignsPage() {
     };
   }, [search]);
 
+  // Handlers
+  const handleDeleteClick = (design: Design) => {
+    setSelectedDesign(design);
+    setIsDialogOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDialogOpen(false);
+    setSelectedDesign(null);
+  };
+  const handleConfirmDelete = async () => {
+    if (!selectedDesign) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteDesign(selectedDesign.uuid);
+      showSuccessToast('Design deleted successfully');
+      handleCancelDelete();
+    } catch {
+      showErrorToast('Failed to delete design');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleFilterChange = (value: Filter) => {
     setFilter(value);
 
@@ -71,11 +104,6 @@ export default function DesignsPage() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(p));
     router.push(`/designs?${params.toString()}`, { scroll: false });
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this design?')) return;
-    await deleteDesign(id);
   };
 
   if (loading) return <div className="p-4">Loading designs…</div>;
@@ -140,13 +168,30 @@ export default function DesignsPage() {
         filter={filter}
         onSearchChange={setSearch}
         onFilterChange={handleFilterChange}
-        onDelete={handleDelete}
+        onDelete={handleDeleteClick}
       />
 
       <Pagination
         currentPage={page}
         totalPages={meta?.totalPages ?? 0}
         onPageChangeAction={goToPage}
+      />
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isDialogOpen}
+        title="Delete design?"
+        message={
+          <>
+            Are you sure you want to delete{' '}
+            <span className="font-medium">{selectedDesign?.name}</span>?<br />
+            This action cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        confirmLoadingLabel="Deleting..."
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
       />
     </div>
   );
