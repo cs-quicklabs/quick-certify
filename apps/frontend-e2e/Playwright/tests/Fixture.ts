@@ -6,9 +6,13 @@
 import { test as base, expect as baseExpect } from '@playwright/test';
 import { LoginPage } from '../pageobjects/LoginPage';
 import { RegistrationPage } from '../pageobjects/RegistrationPage';
+import { ProfileSettingsPage } from '../pageobjects/ProfileSettingsPage';
+import { AccountGeneralInfoPage } from '../pageobjects/AccountGeneralInfoPage';
 import { RandomDataGenerator } from '../utils/RandomDataGenerator';
 import registrationData from '../testData/registrationData.json';
 import loginData from '../testData/loginData.json';
+import profileData from '../testData/profileData.json';
+import accountGeneralInfoData from '../testData/accountGeneralInfoData.json';
 
 /**
  * Extends the base Playwright test with custom fixtures.
@@ -17,6 +21,8 @@ import loginData from '../testData/loginData.json';
 type Fixtures = {
   loginPage: LoginPage;
   registrationPage: RegistrationPage;
+  profileSettingsPage: ProfileSettingsPage;
+  accountGeneralInfoPage: AccountGeneralInfoPage;
 };
 
 type WorkerFixtures = {
@@ -34,6 +40,16 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await use(registrationPage);
   },
 
+  profileSettingsPage: async ({ page }, use) => {
+    const profileSettingsPage = new ProfileSettingsPage(page);
+    await use(profileSettingsPage);
+  },
+
+  accountGeneralInfoPage: async ({ page }, use) => {
+    const accountGeneralInfoPage = new AccountGeneralInfoPage(page);
+    await use(accountGeneralInfoPage);
+  },
+
   randomDataGenerator: [
     // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {
@@ -44,4 +60,11 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
   ],
 });
 
-export { baseExpect as expect, registrationData, loginData, RandomDataGenerator };
+export {
+  baseExpect as expect,
+  registrationData,
+  loginData,
+  profileData,
+  accountGeneralInfoData,
+  RandomDataGenerator,
+};
