@@ -23,9 +23,7 @@ export class AccountGeneralInfoPage {
     this.locator_linkedinCompanyIdField = page.locator('#linkedin_company_id');
     this.locator_saveButton = page.getByRole('button', { name: 'Save', exact: true });
     this.locator_alertToast = page.getByRole('alert');
-    this.locator_pageTitle = page
-      .locator('h1.form-title, h1')
-      .filter({ hasText: 'General Information' });
+    this.locator_pageTitle = page.locator('h1.form-title, h1').filter({ hasText: 'General Information' });
     this.locator_pageSubtitle = page
       .locator('p')
       .filter({ hasText: 'Add more details about the organisation or the certificate issuer' });
@@ -156,9 +154,7 @@ export class AccountGeneralInfoPage {
   async validateNoSuccessMessage() {
     // Wait a bit to ensure no success message appears
     await this.page.waitForTimeout(1000);
-    const successMessages = this.page
-      .locator('[role="alert"]')
-      .filter({ hasText: /saved successfully|success/i });
+    const successMessages = this.page.locator('[role="alert"]').filter({ hasText: /saved successfully|success/i });
     const count = await successMessages.count();
     // Success message should not be visible
     expect(count).toBe(0);

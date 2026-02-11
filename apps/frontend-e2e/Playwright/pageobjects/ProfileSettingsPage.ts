@@ -22,24 +22,12 @@ export class ProfileSettingsPage {
     this.locator_avatarUpload = page.locator('input[type="file"][name="avatarUrl"]');
     this.locator_saveButton = page.getByRole('button', { name: 'Save', exact: true });
     // Error messages are siblings of the input's parent container
-    this.locator_firstNameError = page
-      .locator('#firstName')
-      .locator('..')
-      .locator('..')
-      .locator('p.text-red-500');
-    this.locator_lastNameError = page
-      .locator('#lastName')
-      .locator('..')
-      .locator('..')
-      .locator('p.text-red-500');
+    this.locator_firstNameError = page.locator('#firstName').locator('..').locator('..').locator('p.text-red-500');
+    this.locator_lastNameError = page.locator('#lastName').locator('..').locator('..').locator('p.text-red-500');
     this.locator_alertToast = page.getByRole('alert');
     this.locator_profileSettingsLink = page.getByRole('link', { name: 'Profile Settings' });
-    this.locator_pageTitle = page
-      .locator('h1.form-title, h1')
-      .filter({ hasText: 'Profile Settings' });
-    this.locator_pageSubtitle = page
-      .locator('p')
-      .filter({ hasText: 'Change your personal profile settings' });
+    this.locator_pageTitle = page.locator('h1.form-title, h1').filter({ hasText: 'Profile Settings' });
+    this.locator_pageSubtitle = page.locator('p').filter({ hasText: 'Change your personal profile settings' });
   }
 
   /**
@@ -56,18 +44,18 @@ export class ProfileSettingsPage {
   async navigateViaHeader() {
     // Wait for nav element to be visible (header is actually a nav element)
     await this.page.waitForSelector('nav', { state: 'visible', timeout: 10000 });
-
+    
     // Find the avatar button - it's a button with cursor-pointer class inside a div.relative
     // Structure: nav > div.relative.ml-2 > button.cursor-pointer
     const avatarButton = this.page.locator('nav div.relative button.cursor-pointer');
-
+    
     // Wait for button to be visible and click it
     await avatarButton.waitFor({ state: 'visible', timeout: 10000 });
     await avatarButton.click();
-
+    
     // Wait for dropdown menu to appear
     await this.page.waitForTimeout(500);
-
+    
     // Wait for dropdown to appear and click Profile Settings link
     await this.locator_profileSettingsLink.waitFor({ state: 'visible', timeout: 5000 });
     await this.locator_profileSettingsLink.click();
