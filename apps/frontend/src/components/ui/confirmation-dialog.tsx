@@ -83,17 +83,17 @@ export function ConfirmationDialog({
             className="absolute top-2 right-2 text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-full text-sm w-8 h-8 inline-flex justify-center items-center cursor-pointer"
           >
             <svg
-              className="w-4 h-4"
+              className="w-3 h-3"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
-              viewBox="0 0 24 24"
+              viewBox="0 0 14 14"
             >
               <path
                 stroke="currentColor"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                d="M6 18 18 6M18 18 6 6"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
               />
             </svg>
             <span className="sr-only">Close modal</span>
@@ -116,7 +116,7 @@ export function ConfirmationDialog({
               />
             </svg>
 
-            <h3 className=" text-slate-800 text-[10px] font-bold">{title}</h3>
+            <h3 className=" text-lg font-bold text-gray-700 dark:text-gray-400">{title}</h3>
 
             {message && (
               <p className="mb-6 text-xs text-slate-500 max-w-[90%] mx-auto">{message}</p>

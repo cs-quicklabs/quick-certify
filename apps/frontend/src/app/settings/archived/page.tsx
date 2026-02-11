@@ -260,7 +260,7 @@ export default function ArchivedMembersPage() {
         confirmLabel={isDeleting ? 'Deleting...' : 'Yes, Delete'}
         confirmVariant="danger"
         cancelLabel="No, Cancel"
-        className="max-w-md w-full rounded-2xl "
+        className="max-w-md w-full rounded-sm"
         onConfirm={handleConfirmDelete}
         onCancel={() => setMemberToDelete(null)}
       />
