@@ -78,7 +78,14 @@ export class EventRepository {
     organizationId: number,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<EventEntity>> {
-    const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {}, search } = options;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'created_at',
+      sortOrder = 'DESC',
+      where = {},
+      search,
+    } = options;
 
     const safeLimit = Math.min(Math.max(1, limit), 100);
     const safePage = Math.max(1, page);

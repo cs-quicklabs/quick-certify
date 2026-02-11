@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Transaction } from 'sequelize';
 import { EventEntity } from '@src/entities/event.entity';
 import { CreateEventDto, UpdateEventDto } from '../dtos';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';

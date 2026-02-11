@@ -143,7 +143,9 @@ module.exports = {
             `UPDATE event SET ${column} = ${defaultRow[0].id} WHERE ${column} IS NULL`,
             { transaction },
           );
-          console.log(`✅ Backfilled ${nullCount[0].count} NULL ${column} rows with default id ${defaultRow[0].id}`);
+          console.log(
+            `✅ Backfilled ${nullCount[0].count} NULL ${column} rows with default id ${defaultRow[0].id}`,
+          );
         }
 
         await queryInterface.changeColumn(
