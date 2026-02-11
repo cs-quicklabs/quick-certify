@@ -36,7 +36,11 @@
     "crownstack"
   ],
   "nx": {
-    "name": "mailer"
+    "name": "mailer",
+    "targets": {
+      "format": {},
+      "format:check": {}
+    }
   },
   "dependencies": {
     "@nestjs/common": "^11.1.13",
