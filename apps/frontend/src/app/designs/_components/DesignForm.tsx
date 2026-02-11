@@ -120,20 +120,20 @@ export default function DesignForm({
 
       {/* Name */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <label className="mb-1 block text-sm font-medium">
           {mode === 'edit' ? 'Edit Name' : 'Add Name'}
         </label>
         <input
           value={name}
           onChange={(e) => onNameChangeAction(e.target.value)}
           required
-          className="w-full rounded-sm border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-sm border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
       {/* Upload heading */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Upload Image</label>
+        <label className="block text-sm font-medium">Upload Image</label>
         <p className="mt-1 text-xs text-gray-500">
           Upload A4 (1108x800 px) size image for certificate or (440x400 px) for badge
         </p>
