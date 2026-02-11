@@ -17,40 +17,33 @@ import type { AccountSkillsPage } from '../pageobjects/AccountSkillsPage';
 let accountSkillsPage: AccountSkillsPage;
 let randomDataGenerator: RandomDataGenerator;
 
-test.beforeEach(
-  async ({
-    page,
-    loginPage,
-    accountSkillsPage: fixtureAccountSkillsPage,
-    randomDataGenerator: fixtureRandomDataGenerator,
-  }) => {
-    accountSkillsPage = fixtureAccountSkillsPage;
-    randomDataGenerator = fixtureRandomDataGenerator;
+test.beforeEach(async ({ page, loginPage, accountSkillsPage: fixtureAccountSkillsPage, randomDataGenerator: fixtureRandomDataGenerator }) => {
+  accountSkillsPage = fixtureAccountSkillsPage;
+  randomDataGenerator = fixtureRandomDataGenerator;
 
-    const userName = process.env.USER_EMAIL;
-    const password = process.env.USER_PASS;
+  const userName = process.env.USER_EMAIL;
+  const password = process.env.USER_PASS;
 
-    if (!userName || !password) {
-      throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
-    }
+  if (!userName || !password) {
+    throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
+  }
 
+  await page.goto('/settings/account/skills');
+
+  const currentUrl = page.url();
+  if (currentUrl.includes('/login')) {
+    await loginPage.enterUserEmail(userName);
+    await loginPage.enterPassword(password);
+    await Promise.all([
+      loginPage.clickOnSigninBtn(),
+      page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
+    ]);
     await page.goto('/settings/account/skills');
-
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login')) {
-      await loginPage.enterUserEmail(userName);
-      await loginPage.enterPassword(password);
-      await Promise.all([
-        loginPage.clickOnSigninBtn(),
-        page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-      ]);
-      await page.goto('/settings/account/skills');
-      await page.waitForLoadState('networkidle');
-    } else {
-      await page.waitForLoadState('networkidle');
-    }
-  },
-);
+    await page.waitForLoadState('networkidle');
+  } else {
+    await page.waitForLoadState('networkidle');
+  }
+});
 
 test.describe('Account Settings - Skills', () => {
   test('SK01_Verify Skills page loads successfully', async () => {
@@ -80,7 +73,7 @@ test.describe('Account Settings - Skills', () => {
 
     // Wait for skill to appear in table after adding
     await accountSkillsPage.waitForSkillToAppear(skillName);
-
+    
     // Validate skill appears in table
     await accountSkillsPage.validateSkillInTable(skillName);
 
@@ -89,9 +82,7 @@ test.describe('Account Settings - Skills', () => {
     expect(inputValue).toBe('');
   });
 
-  test('SK03_Verify Super Admin can edit existing skill and change skill name', async ({
-    page,
-  }) => {
+  test('SK03_Verify Super Admin can edit existing skill and change skill name', async ({ page }) => {
     // Step 1: Go to skills page
     await accountSkillsPage.openUrl();
     await accountSkillsPage.waitForPageReady();
@@ -289,10 +280,7 @@ test.describe('Account Settings - Skills', () => {
       );
       // If HTML5 validation doesn't trigger, check for custom error
       if (!isInvalid) {
-        const errorVisible = await accountSkillsPage.locator_alertToast
-          .first()
-          .isVisible({ timeout: 2000 })
-          .catch(() => false);
+        const errorVisible = await accountSkillsPage.locator_alertToast.first().isVisible({ timeout: 2000 }).catch(() => false);
         if (errorVisible) {
           await accountSkillsPage.validateErrorMessage(
             skillsData.expectedMessages.emptySkillNameError,
@@ -312,7 +300,9 @@ test.describe('Account Settings - Skills', () => {
     await accountSkillsPage.page.waitForTimeout(1500);
 
     // Verify error message appears
-    await accountSkillsPage.validateErrorMessage(skillsData.expectedMessages.whitespaceOnlyError);
+    await accountSkillsPage.validateErrorMessage(
+      skillsData.expectedMessages.whitespaceOnlyError,
+    );
   });
 
   test('SK10_Verify error shown when trying to add duplicate skill name', async ({ page }) => {
@@ -365,6 +355,10 @@ test.describe('Account Settings - Skills', () => {
     const duplicateCount = await skillRows.filter({ hasText: skillName }).count();
     expect(duplicateCount).toBe(1); // Should only have one instance
   });
+
+ 
+
+
 
   test('SK09_Verify skills table displays correctly', async () => {
     await accountSkillsPage.openUrl();
