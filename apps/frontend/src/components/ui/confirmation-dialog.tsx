@@ -10,7 +10,7 @@ export interface ConfirmationDialogProps {
   /**
    * Title of the dialog
    */
-  title: string;
+  title: string | ReactNode;
   /**
    * Message/description to display
    */
@@ -65,7 +65,7 @@ export function ConfirmationDialog({
   isLoading = false,
   onConfirm,
   onCancel,
-  className = 'p-3 max-w-sm rounded-sm',
+  className = 'p-10 max-w-120 max-h-80 rounded-xs',
 }: ConfirmationDialogProps) {
   if (!isOpen) return null;
 
@@ -75,7 +75,7 @@ export function ConfirmationDialog({
       onClick={onCancel}
     >
       <div className={`relative w-full ${className}`} onClick={(e) => e.stopPropagation()}>
-        <div className="relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-3 md:p-4">
+        <div className="relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-2 md:p-4">
           {/* Close button */}
           <button
             type="button"
@@ -102,7 +102,7 @@ export function ConfirmationDialog({
           {/* Content */}
           <div className="p-2 md:p-3 text-center ">
             <svg
-              className="mx-auto mb-3 text-fg-disabled w-10 h-10"
+              className="mx-auto mb-2 text-red-500 w-14 h-14"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -116,21 +116,14 @@ export function ConfirmationDialog({
               />
             </svg>
 
-            <h3 className="mb-4 text-body font-medium">{title}</h3>
+            <h3 className=" text-slate-800 text-[10px] font-bold">{title}</h3>
 
-            {message && <p className="mb-6 text-sm text-body-secondary">{message}</p>}
+            {message && (
+              <p className="mb-6 text-xs text-slate-500 max-w-[90%] mx-auto">{message}</p>
+            )}
 
             {/* Actions */}
             <div className="flex items-center gap-3 justify-center">
-              <button
-                type="button"
-                onClick={onConfirm}
-                disabled={isLoading}
-                className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium rounded-full text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? confirmLoadingLabel : confirmLabel}
-              </button>
-
               <button
                 type="button"
                 onClick={onCancel}
@@ -138,6 +131,15 @@ export function ConfirmationDialog({
                 className="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium rounded-sm text-sm px-4 py-2 focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cancelLabel}
+              </button>
+
+              <button
+                type="button"
+                onClick={onConfirm}
+                disabled={isLoading}
+                className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? confirmLoadingLabel : confirmLabel}
               </button>
             </div>
           </div>
