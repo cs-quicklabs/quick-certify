@@ -1,4 +1,4 @@
-import { test, brandingData, expect } from './Fixture';
+import { test, brandingData,expect } from './Fixture';
 import type { AccountBrandingPage } from '../pageobjects/AccountBrandingPage';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -18,7 +18,7 @@ import * as path from 'node:path';
 /**
  * Helper function to create a minimal valid PNG image for testing
  */
-function createTestImage(filePath: string, sizeKB: number = 50): void {
+function createTestImage(filePath: string, sizeKB = 50): void {
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -42,18 +42,9 @@ function createTestImage(filePath: string, sizeKB: number = 50): void {
   ihdrChunk.writeUInt32BE(ihdrCrc, 21);
 
   const iendChunk = Buffer.from([
-    0x00,
-    0x00,
-    0x00,
-    0x00, // Length
-    0x49,
-    0x45,
-    0x4e,
-    0x44, // IEND
-    0xae,
-    0x42,
-    0x60,
-    0x82, // CRC
+    0x00, 0x00, 0x00, 0x00, // Length
+    0x49, 0x45, 0x4e, 0x44, // IEND
+    0xae, 0x42, 0x60, 0x82, // CRC
   ]);
 
   // For larger files, pad with IDAT chunk data
@@ -137,9 +128,7 @@ test.describe('Account Settings - Branding', () => {
     ]);
 
     await accountBrandingPage.waitForUploadComplete(15000);
-    await accountBrandingPage.validateSuccessMessage(
-      brandingData.expectedMessages.logoSuccessMessage,
-    );
+    await accountBrandingPage.validateSuccessMessage(brandingData.expectedMessages.logoSuccessMessage);
 
     // Verify logo is displayed
     const isLogoDisplayed = await accountBrandingPage.isLogoDisplayed();
@@ -172,9 +161,7 @@ test.describe('Account Settings - Branding', () => {
     ]);
 
     await accountBrandingPage.waitForUploadComplete(15000);
-    await accountBrandingPage.validateSuccessMessage(
-      brandingData.expectedMessages.faviconSuccessMessage,
-    );
+    await accountBrandingPage.validateSuccessMessage(brandingData.expectedMessages.faviconSuccessMessage);
 
     // Verify favicon is displayed
     const isFaviconDisplayed = await accountBrandingPage.isFaviconDisplayed();
@@ -194,9 +181,7 @@ test.describe('Account Settings - Branding', () => {
     if (!fs.existsSync(pdfPath)) {
       fs.mkdirSync(testAssetsDir, { recursive: true });
       // Create a minimal PDF file
-      const pdfContent = Buffer.from(
-        '%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj\nxref\n0 1\ntrailer\n<<\n/Root 1 0 R\n>>\n%%EOF',
-      );
+      const pdfContent = Buffer.from('%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj\nxref\n0 1\ntrailer\n<<\n/Root 1 0 R\n>>\n%%EOF');
       fs.writeFileSync(pdfPath, pdfContent);
     }
 
@@ -222,12 +207,12 @@ test.describe('Account Settings - Branding', () => {
     await page.waitForTimeout(2000);
 
     // Check for file size error
-    const errorVisible = await accountBrandingPage.locator_logoError
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    const errorVisible = await accountBrandingPage.locator_logoError.isVisible({ timeout: 5000 }).catch(() => false);
     if (errorVisible) {
       const errorText = await accountBrandingPage.locator_logoError.textContent();
       expect(errorText).toContain(brandingData.expectedMessages.fileSizeError);
     }
   });
+
+  
 });

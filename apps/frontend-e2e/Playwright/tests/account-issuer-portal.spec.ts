@@ -1,4 +1,4 @@
-import { test, issuerPortalData, expect } from './Fixture';
+import { test, issuerPortalData,expect } from './Fixture';
 import type { AccountIssuerPortalPage } from '../pageobjects/AccountIssuerPortalPage';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -16,7 +16,7 @@ import * as path from 'node:path';
 /**
  * Helper function to create a minimal valid PNG image for testing
  */
-function createTestImage(filePath: string, sizeKB: number = 50): void {
+function createTestImage(filePath: string, sizeKB = 50): void {
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -40,18 +40,9 @@ function createTestImage(filePath: string, sizeKB: number = 50): void {
   ihdrChunk.writeUInt32BE(ihdrCrc, 21);
 
   const iendChunk = Buffer.from([
-    0x00,
-    0x00,
-    0x00,
-    0x00, // Length
-    0x49,
-    0x45,
-    0x4e,
-    0x44, // IEND
-    0xae,
-    0x42,
-    0x60,
-    0x82, // CRC
+    0x00, 0x00, 0x00, 0x00, // Length
+    0x49, 0x45, 0x4e, 0x44, // IEND
+    0xae, 0x42, 0x60, 0x82, // CRC
   ]);
 
   // For larger files, pad with IDAT chunk data

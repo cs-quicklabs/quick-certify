@@ -24,10 +24,12 @@ export class AccountSocialLinksPage {
     this.locator_alertToast = page.getByRole('alert');
 
     this.locator_pageTitle = page.locator('h1.form-title, h1').filter({ hasText: 'Social Links' });
-    this.locator_pageSubtitle = page.locator('p').filter({
-      hasText:
-        'Add social links to your issuer profile. These are shown on various public pages to help users connect with you.',
-    });
+    this.locator_pageSubtitle = page
+      .locator('p')
+      .filter({
+        hasText:
+          'Add social links to your issuer profile. These are shown on various public pages to help users connect with you.',
+      });
   }
 
   /**
@@ -130,8 +132,7 @@ export class AccountSocialLinksPage {
       await expect(this.locator_facebookUrlField).toHaveValue(data.facebook_url);
     if (data.twitter_url !== undefined)
       await expect(this.locator_twitterUrlField).toHaveValue(data.twitter_url);
-    if (data.website !== undefined)
-      await expect(this.locator_websiteField).toHaveValue(data.website);
+    if (data.website !== undefined) await expect(this.locator_websiteField).toHaveValue(data.website);
   }
 
   async validateSuccessMessage(message?: string) {

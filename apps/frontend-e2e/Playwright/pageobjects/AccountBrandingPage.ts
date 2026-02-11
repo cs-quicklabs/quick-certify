@@ -29,18 +29,8 @@ export class AccountBrandingPage {
     this.locator_faviconFileInput = fileInputs.nth(1);
 
     // Dropzones (clickable areas)
-    this.locator_logoDropzone = page
-      .locator('text=Issuer Logo')
-      .locator('..')
-      .locator('..')
-      .locator('div[class*="border-dashed"]')
-      .first();
-    this.locator_faviconDropzone = page
-      .locator('text=Favicon')
-      .locator('..')
-      .locator('..')
-      .locator('div[class*="border-dashed"]')
-      .first();
+    this.locator_logoDropzone = page.locator('text=Issuer Logo').locator('..').locator('..').locator('div[class*="border-dashed"]').first();
+    this.locator_faviconDropzone = page.locator('text=Favicon').locator('..').locator('..').locator('div[class*="border-dashed"]').first();
 
     // Remove buttons (X button on existing images)
     this.locator_logoRemoveButton = page.locator('button[title="Remove image"]').first();
@@ -60,18 +50,8 @@ export class AccountBrandingPage {
       .filter({ hasText: 'Add issuer logo and other brand related information' });
 
     // Error messages (under each dropzone)
-    this.locator_logoError = page
-      .locator('text=Issuer Logo')
-      .locator('..')
-      .locator('..')
-      .locator('p.text-red-500')
-      .first();
-    this.locator_faviconError = page
-      .locator('text=Favicon')
-      .locator('..')
-      .locator('..')
-      .locator('p.text-red-500')
-      .first();
+    this.locator_logoError = page.locator('text=Issuer Logo').locator('..').locator('..').locator('p.text-red-500').first();
+    this.locator_faviconError = page.locator('text=Favicon').locator('..').locator('..').locator('p.text-red-500').first();
   }
 
   /**
@@ -131,6 +111,9 @@ export class AccountBrandingPage {
   async clickFaviconDropzone() {
     await this.locator_faviconDropzone.click();
   }
+
+
+
 
   /**
    * Check if logo image is displayed
@@ -195,7 +178,7 @@ export class AccountBrandingPage {
   /**
    * Wait for upload to complete (check for success message or image display)
    */
-  async waitForUploadComplete(timeout: number = 15000) {
+  async waitForUploadComplete(timeout = 15000) {
     // Wait for either success message or image to appear
     await Promise.race([
       this.locator_alertToast.first().waitFor({ state: 'visible', timeout }),

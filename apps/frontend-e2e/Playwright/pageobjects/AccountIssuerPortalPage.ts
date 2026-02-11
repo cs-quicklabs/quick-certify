@@ -46,9 +46,12 @@ export class AccountIssuerPortalPage {
 
     // Page elements
     this.locator_pageTitle = page.locator('h1.form-title, h1').filter({ hasText: 'Issuer Portal' });
-    this.locator_pageSubtitle = page.locator('p').filter({
-      hasText: 'Issuer Portal is public page where all the public events are visible to internet.',
-    });
+    this.locator_pageSubtitle = page
+      .locator('p')
+      .filter({
+        hasText:
+          'Issuer Portal is public page where all the public events are visible to internet.',
+      });
 
     // Error message (under banner dropzone)
     this.locator_bannerError = page
@@ -103,7 +106,9 @@ export class AccountIssuerPortalPage {
    * Remove banner (click X button)
    */
   async removeBanner() {
-    if (await this.locator_bannerRemoveButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (
+      (await this.locator_bannerRemoveButton.isVisible({ timeout: 2000 }).catch(() => false))
+    ) {
       await this.locator_bannerRemoveButton.click();
       await this.page.waitForTimeout(1000);
     }
@@ -196,7 +201,7 @@ export class AccountIssuerPortalPage {
   /**
    * Wait for upload to complete (check for success message or image display)
    */
-  async waitForUploadComplete(timeout: number = 15000) {
+  async waitForUploadComplete(timeout = 15000) {
     // Wait for either success message or image to appear
     await Promise.race([
       this.locator_alertToast.first().waitFor({ state: 'visible', timeout }),
@@ -210,13 +215,10 @@ export class AccountIssuerPortalPage {
   /**
    * Wait for portal toggle to complete (check for success message)
    */
-  async waitForToggleComplete(timeout: number = 10000) {
-    await this.locator_alertToast
-      .first()
-      .waitFor({ state: 'visible', timeout })
-      .catch(() => {
-        // Ignore timeout, continue
-      });
+  async waitForToggleComplete(timeout = 10000) {
+    await this.locator_alertToast.first().waitFor({ state: 'visible', timeout }).catch(() => {
+      // Ignore timeout, continue
+    });
     await this.page.waitForTimeout(1000);
   }
 }
