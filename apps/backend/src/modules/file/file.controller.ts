@@ -98,7 +98,10 @@ export class FileController {
 
     // Check authorization: admin-only categories require admin/super_admin role
     if (ADMIN_ONLY_CATEGORIES.includes(category)) {
-      const isAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+      const isAdmin =
+        user.role === Role.ADMIN ||
+        user.role === Role.SUPER_ADMIN ||
+        user.role === Role.SYSTEM_ADMIN;
       if (!isAdmin) {
         throw new ForbiddenException(
           `Access denied. Only Admin/Super Admin can upload ${category} files.`,

@@ -12,8 +12,8 @@ import {
 /**
  * DTO for creating a new event
  *
- * Required fields: name, designId
- * Optional fields: eventTypeId, eventLevelId, eventFormatId, description, learningLink
+ * Required fields: name, designId, eventTypeId, eventLevelId, eventFormatId
+ * Optional fields: description, learningLink, skillIds
  */
 export class CreateEventDto {
   @ApiProperty({
@@ -29,29 +29,29 @@ export class CreateEventDto {
   })
   name!: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'abc123xyz789',
-    description: 'Event type UUID (nanoid) - optional',
+    description: 'Event type UUID (nanoid)',
   })
-  @IsOptional()
+  @IsNotEmpty({ message: 'Event type ID is required' })
   @IsString({ message: 'Event type ID must be a string' })
-  eventTypeId?: string;
+  eventTypeId!: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'def456uvw012',
-    description: 'Event level UUID (nanoid) - optional',
+    description: 'Event level UUID (nanoid)',
   })
-  @IsOptional()
+  @IsNotEmpty({ message: 'Event level ID is required' })
   @IsString({ message: 'Event level ID must be a string' })
-  eventLevelId?: string;
+  eventLevelId!: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'ghi789rst345',
-    description: 'Event format UUID (nanoid) - optional',
+    description: 'Event format UUID (nanoid)',
   })
-  @IsOptional()
+  @IsNotEmpty({ message: 'Event format ID is required' })
   @IsString({ message: 'Event format ID must be a string' })
-  eventFormatId?: string;
+  eventFormatId!: string;
 
   @ApiProperty({
     example: 'design123',

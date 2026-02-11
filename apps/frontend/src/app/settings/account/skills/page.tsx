@@ -2,14 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSkills, useCreateSkill, useDeleteSkill } from '@/hooks/useSkills';
+import { useSkills, useCreateSkill, useDeleteSkill, SKILL_KEYS } from '@/hooks/useSkills';
 import { useAuthStore } from '@/store/auth.store';
 import { Alert, ConfirmationDialog } from '@/components';
 import type { Skill } from '@/services/api/skill.service';
 import { skillService } from '@/services';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useQueryClient } from '@tanstack/react-query';
-import { SKILL_KEYS } from '@/hooks/useSkills';
+import {
+  checkIfUserIsAdmin,
+  checkIfUserIsNonAdmin,
+  checkIfUserIsSuperAdmin,
+  checkIfUserIsSystemAdmin,
+} from '@/utils';
 
 /**
  * Skills Page
@@ -36,7 +41,7 @@ export default function SkillsPage() {
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -61,7 +66,7 @@ export default function SkillsPage() {
   }, [queryError]);
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 
@@ -141,7 +146,9 @@ export default function SkillsPage() {
     }
   };
 
-  const isAuthorized = user && (user.role === 'admin' || user.role === 'super_admin');
+  const isAuthorized =
+    user &&
+    (checkIfUserIsAdmin(user) || checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user));
 
   return (
     <div className="space-y-6">

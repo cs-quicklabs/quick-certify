@@ -99,7 +99,6 @@ export class EventRepository {
       where: queryWhere,
       include: DEFAULT_EVENT_INCLUDES,
       distinct: true,
-      subQuery: false,
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,

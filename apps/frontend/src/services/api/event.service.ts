@@ -144,20 +144,20 @@ export interface UpdateEventFormatRequest {
 /**
  * Request body for creating a new event
  *
- * Required fields: name, designId
- * Optional fields: eventTypeId, eventLevelId, eventFormatId, description, learningLink
+ * Required fields: name, designId, eventTypeId, eventLevelId, eventFormatId
+ * Optional fields: description, learningLink, skillIds
  */
 export interface CreateEventRequest {
   /** Event name (required) */
   name: string;
   /** Design UUID (required) */
   designId: string;
-  /** Event type UUID (optional) */
-  eventTypeId?: string;
-  /** Event level UUID (optional) */
-  eventLevelId?: string;
-  /** Event format UUID (optional) */
-  eventFormatId?: string;
+  /** Event type UUID (required) */
+  eventTypeId: string;
+  /** Event level UUID (required) */
+  eventLevelId: string;
+  /** Event format UUID (required) */
+  eventFormatId: string;
   /** Event description (optional) */
   description?: string;
   /** External learning resources link (optional) */

@@ -68,7 +68,7 @@ export const EventItem = ({
               )}
             </div>
             <div>
-              <div className="font-medium text-gray-900 dark:text-white">{name}</div>
+              <div className="font-medium text-gray-900 dark:text-white capitalize">{name}</div>
               <div className="text-xs text-gray-500 flex gap-2">
                 <span className="capitalize py-0.5 rounded">
                   Created On: {new Date(createdAt).toLocaleDateString()}

@@ -60,8 +60,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const isEditMode = mode === 'edit';
 
   // Loading states
-  const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isFormReady, setIsFormReady] = useState(!isEditMode);
 
   // Step 0 data storage (core data for stepper validation)
   const [step0CoreData, setStep0CoreData] = useState<Step0Data>({ name: '' });
@@ -144,7 +144,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   // Reset initialization when mode or eventUuid changes
   useEffect(() => {
     isInitializedRef.current = false;
-  }, [mode, eventUuid]);
+    setIsFormReady(!isEditMode);
+  }, [mode, eventUuid, isEditMode]);
 
   // Initialize form data when event data is loaded (edit mode)
   useEffect(() => {
@@ -191,8 +192,9 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         setSelectedSkillIds(eventData.skills.map((skill) => skill.uuid));
       }
 
-      // Mark as initialized to prevent re-running
+      // Mark as initialized and ready to render form
       isInitializedRef.current = true;
+      setIsFormReady(true);
     }
   }, [isEditMode, eventData]);
 
@@ -278,7 +280,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   }, []);
 
   /**
-   * Handle Step 0 submission - Create or validate event
+   * Handle Step 0 submission - Validate and navigate to Step 1
    */
   const handleStep0Submit = useCallback(
     async (formData: { name: string }) => {
@@ -301,30 +303,11 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         return;
       }
 
-      if (isEditMode) {
-        // In edit mode, just go next (stepper hook will auto-mark as complete)
-        goToNextStep();
-      } else {
-        // In create mode, create the event
-        setIsCreating(true);
-
-        try {
-          const createdEvent = await createEvent.mutateAsync({
-            name: formData.name,
-            designId: step0FormData.designUuid,
-          });
-
-          // Navigate to edit page with step=1 to go directly to Enhanced details
-          router.replace(`/events/edit?id=${createdEvent.uuid}&step=1`);
-        } catch (error) {
-          const message = getApiErrorMessage(error, 'Failed to create event');
-          toast.error(message);
-        } finally {
-          setIsCreating(false);
-        }
-      }
+      // In both create and edit mode, just navigate to Step 1
+      // Event creation happens on final submit in Step 1
+      goToNextStep();
     },
-    [createEvent, goToNextStep, step0CoreData, step0FormData.designUuid, isEditMode, router],
+    [goToNextStep, step0CoreData, step0FormData.designUuid],
   );
 
   /**
@@ -332,44 +315,56 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
    */
   const handleStep1Submit = useCallback(
     async (formData: Step1FormData) => {
-      if (!eventUuid) {
-        toast.error('Event not found. Please start over.');
-        return;
-      }
-
       setIsUpdating(true);
 
       try {
         // Store form data for persistence
         setStep1Data(formData);
 
-        // Update event with full details including skills
-        await updateEvent.mutateAsync({
-          name: step0CoreData.name,
-          designId: step0FormData.designUuid,
-          eventTypeId: formData.typeId || null,
-          eventLevelId: formData.levelId || null,
-          eventFormatId: formData.formatId || null,
-          description: formData.description || null,
-          learningLink: formData.learningLink || null,
-          skillIds: selectedSkillIds,
-        });
+        if (isEditMode && eventUuid) {
+          // Edit mode: update existing event (supports null to clear optional fields)
+          await updateEvent.mutateAsync({
+            name: step0CoreData.name,
+            designId: step0FormData.designUuid || null,
+            eventTypeId: formData.typeId || null,
+            eventLevelId: formData.levelId || null,
+            eventFormatId: formData.formatId || null,
+            description: formData.description || null,
+            learningLink: formData.learningLink || null,
+            skillIds: selectedSkillIds,
+          });
+          toast.success('Event updated successfully!');
+        } else {
+          // Create mode: create event with all data from both steps
+          await createEvent.mutateAsync({
+            name: step0CoreData.name,
+            designId: step0FormData.designUuid || '',
+            eventTypeId: formData.typeId || '',
+            eventLevelId: formData.levelId || '',
+            eventFormatId: formData.formatId || '',
+            description: formData.description || undefined,
+            learningLink: formData.learningLink || undefined,
+            skillIds: selectedSkillIds,
+          });
+          toast.success('Event created successfully!');
+        }
 
         // Mark Step 1 as completed
         markStepCompleted(1);
-
-        toast.success(isEditMode ? 'Event updated successfully!' : 'Event saved successfully!');
         router.push('/events');
       } catch (error) {
-        const message = getApiErrorMessage(error, 'Failed to update event');
+        const message = getApiErrorMessage(
+          error,
+          isEditMode ? 'Failed to update event' : 'Failed to create event',
+        );
         toast.error(message);
-        console.error('Failed to update event:', error);
       } finally {
         setIsUpdating(false);
       }
     },
     [
       eventUuid,
+      createEvent,
       updateEvent,
       step0CoreData.name,
       step0FormData.designUuid,
@@ -425,9 +420,9 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       .url('Please enter a valid URL')
       .optional()
       .or(z.literal('')),
-    typeId: z.string().optional(),
-    levelId: z.string().optional(),
-    formatId: z.string().optional(),
+    typeId: z.string().min(1, 'Event type is required'),
+    levelId: z.string().min(1, 'Event level is required'),
+    formatId: z.string().min(1, 'Event format is required'),
   });
 
   const step1Config = {
@@ -457,6 +452,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         placeholder: isLoadingTypes ? 'Loading...' : 'Select type',
         options: types.map((t) => ({ label: t.name, value: t.uuid })),
         disabled: isLoadingTypes,
+        required: true,
       },
       {
         name: 'levelId',
@@ -465,6 +461,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         placeholder: isLoadingLevels ? 'Loading...' : 'Select level',
         options: levels.map((l) => ({ label: l.name, value: l.uuid })),
         disabled: isLoadingLevels,
+        required: true,
       },
       {
         name: 'formatId',
@@ -473,6 +470,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         placeholder: isLoadingFormats ? 'Loading...' : 'Select format',
         options: formats.map((f) => ({ label: f.name, value: f.uuid })),
         disabled: isLoadingFormats,
+        required: true,
       },
     ] as FormFieldConfig[],
     schema: step1Schema,
@@ -483,8 +481,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     isComplete: isStep1Complete,
   };
 
-  // Show loading state when fetching event data in edit mode
-  if (isEditMode && isLoadingEvent && !initialEventData) {
+  // Show loading state until form data is populated
+  if (!isFormReady || (isEditMode && isLoadingEvent && !initialEventData)) {
     return (
       <div className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
         <div className="flex items-center justify-center py-12">
@@ -517,7 +515,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                 config={{ ...step0Config, showSubmit: false }}
                 initialValues={step0FormData}
                 formRef={step0FormRef}
-                isLoading={isCreating}
+                isLoading={false}
               />
 
               {/* Design Selection */}
@@ -593,7 +591,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                   type="button"
                   className="btn-secondary"
                   onClick={() => router.push('/events')}
-                  disabled={isCreating}
                 >
                   Cancel
                 </button>
@@ -601,10 +598,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                   type="button"
                   className="btn-primary ml-3 flex items-center gap-2"
                   onClick={triggerStep0Submit}
-                  disabled={isCreating}
                 >
-                  {isCreating && <Loader2 size={16} className="animate-spin" />}
-                  {isEditMode ? 'Next' : isCreating ? 'Creating...' : 'Next'}
+                  Next
                 </button>
               </div>
             </div>
