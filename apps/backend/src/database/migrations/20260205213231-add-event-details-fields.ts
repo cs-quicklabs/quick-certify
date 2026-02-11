@@ -12,15 +12,14 @@ import { QueryInterface, DataTypes } from 'sequelize';
  */
 module.exports = {
   async up(queryInterface: QueryInterface) {
+    const existingColumns = await queryInterface.describeTable('event').catch(() => ({}));
+
+    const descriptionExists = 'description' in existingColumns;
+    const learningLinkExists = 'learning_link' in existingColumns;
+
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      // Check if description column exists
-      const descriptionExists = await queryInterface
-        .describeTable('event')
-        .then((columns) => 'description' in columns)
-        .catch(() => false);
-
       if (!descriptionExists) {
         await queryInterface.addColumn(
           'event',
@@ -33,12 +32,6 @@ module.exports = {
         );
         console.log('✅ Added description column to event table');
       }
-
-      // Check if learning_link column exists
-      const learningLinkExists = await queryInterface
-        .describeTable('event')
-        .then((columns) => 'learning_link' in columns)
-        .catch(() => false);
 
       if (!learningLinkExists) {
         await queryInterface.addColumn(
