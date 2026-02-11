@@ -8,11 +8,17 @@ import { LoginPage } from '../pageobjects/LoginPage';
 import { RegistrationPage } from '../pageobjects/RegistrationPage';
 import { ProfileSettingsPage } from '../pageobjects/ProfileSettingsPage';
 import { AccountGeneralInfoPage } from '../pageobjects/AccountGeneralInfoPage';
+import { AccountSocialLinksPage } from '../pageobjects/AccountSocialLinksPage';
+import { AccountBrandingPage } from '../pageobjects/AccountBrandingPage';
+import { AccountIssuerPortalPage } from '../pageobjects/AccountIssuerPortalPage';
 import { RandomDataGenerator } from '../utils/RandomDataGenerator';
 import registrationData from '../testData/registrationData.json';
 import loginData from '../testData/loginData.json';
 import profileData from '../testData/profileData.json';
 import accountGeneralInfoData from '../testData/accountGeneralInfoData.json';
+import socialLinksData from '../testData/socialLinksData.json';
+import brandingData from '../testData/brandingData.json';
+import issuerPortalData from '../testData/issuerPortalData.json';
 
 /**
  * Extends the base Playwright test with custom fixtures.
@@ -23,6 +29,9 @@ type Fixtures = {
   registrationPage: RegistrationPage;
   profileSettingsPage: ProfileSettingsPage;
   accountGeneralInfoPage: AccountGeneralInfoPage;
+  accountSocialLinksPage: AccountSocialLinksPage;
+  accountBrandingPage: AccountBrandingPage;
+  accountIssuerPortalPage: AccountIssuerPortalPage;
 };
 
 type WorkerFixtures = {
@@ -50,6 +59,21 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await use(accountGeneralInfoPage);
   },
 
+  accountSocialLinksPage: async ({ page }, use) => {
+    const accountSocialLinksPage = new AccountSocialLinksPage(page);
+    await use(accountSocialLinksPage);
+  },
+
+  accountBrandingPage: async ({ page }, use) => {
+    const accountBrandingPage = new AccountBrandingPage(page);
+    await use(accountBrandingPage);
+  },
+
+  accountIssuerPortalPage: async ({ page }, use) => {
+    const accountIssuerPortalPage = new AccountIssuerPortalPage(page);
+    await use(accountIssuerPortalPage);
+  },
+
   randomDataGenerator: [
     // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {
@@ -66,5 +90,8 @@ export {
   loginData,
   profileData,
   accountGeneralInfoData,
+  socialLinksData,
+  brandingData,
+  issuerPortalData,
   RandomDataGenerator,
 };
