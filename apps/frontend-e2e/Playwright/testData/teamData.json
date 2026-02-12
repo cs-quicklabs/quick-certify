@@ -1,0 +1,31 @@
+{
+  "formData": {
+    "firstName": "",
+    "lastName": "",
+    "invalidEmail": "fhewjfewe"
+  },
+
+  "expectedMessages": {
+    "updateSuccess": "User updated successfully",
+    "userAddSuccess": "User created successfully"
+  },
+
+  "emailType": {
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "blank": "Blank"
+  },
+
+  "userRoles": {
+    "admin": "Admin",
+    "designer": "Designer",
+    "manager": "Manager"
+  },
+
+  "httpCodes": {
+    "created": 201,
+    "unprocessableContent": 422,
+    "ok": 200,
+    "badRequest": 400
+  }
+}

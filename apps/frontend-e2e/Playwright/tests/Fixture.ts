@@ -6,6 +6,7 @@
 import { test as base, expect as baseExpect } from '@playwright/test';
 import { LoginPage } from '../pageobjects/LoginPage';
 import { RegistrationPage } from '../pageobjects/RegistrationPage';
+import { TeamPage } from '../pageobjects/TeamPage';
 import { RandomDataGenerator } from '../utils/RandomDataGenerator';
 import registrationData from '../testData/registrationData.json';
 import loginData from '../testData/loginData.json';
@@ -17,6 +18,7 @@ import loginData from '../testData/loginData.json';
 type Fixtures = {
   loginPage: LoginPage;
   registrationPage: RegistrationPage;
+  teamPage: TeamPage;
 };
 
 type WorkerFixtures = {
@@ -32,6 +34,11 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
   registrationPage: async ({ page }, use) => {
     const registrationPage = new RegistrationPage(page);
     await use(registrationPage);
+  },
+
+  teamPage: async ({ page }, use) => {
+    const teamPage = new TeamPage(page);
+    await use(teamPage);
   },
 
   randomDataGenerator: [
