@@ -78,7 +78,7 @@ export default function EditTeamMemberPage() {
       });
     }
     return editTeamMemberFormFields;
-  }, [filteredRoles]);
+  }, [filteredRoles, member?.status]);
 
   const formConfig: FormConfig<typeof editTeamMemberSchema> = {
     title: 'Edit Team Member',
