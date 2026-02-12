@@ -1,0 +1,21 @@
+{
+  "formData": {
+    "validFirstName": "John",
+    "validLastName": "Doe",
+    "shortFirstName": "A",
+    "firstNameWithNumbers": "John123",
+    "firstNameWithSpecialChars": "John@Doe",
+    "firstNameWithSpaces": "   ",
+    "validLastNameWithSpaces": "Van Der Berg",
+    "lastNameWithNumbers": "Doe123",
+    "lastNameWithSpecialChars": "Doe@Smith"
+  },
+  "expectedMessages": {
+    "successMessage": "Profile updated successfully",
+    "firstNameRequiredError": "Required",
+    "firstNameMinLengthError": "Name must be at least 2 characters",
+    "firstNameOnlyLettersError": "Name must only contain letters",
+    "firstNameNoSpacesOnlyError": "Name must contain at least one letter",
+    "lastNameOnlyLettersError": "Last Name must only contain letters"
+  }
+}

@@ -124,6 +124,13 @@ export class UserController {
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
     }
+    // Check if status is invited AND email is being updated to something new
+    if (dto.status === 'invited' && dto.email && dto.email !== existingUser.email) {
+      // Trigger the email service
+      await this.emailService.sendWelcomeEmail(dto.email, {
+        name: dto.first_name || existingUser.first_name,
+      });
+    }
 
     const updatedUser = await this.userService.update(existingUser.id, dto);
     return new SuccessResponse('User updated successfully', updatedUser);
@@ -179,7 +186,7 @@ export class UserController {
 
     // Prevent deleting yourself
     if (user.uuid === existingUser.uuid) {
-      throw new UnauthorizedException('Cannot delete your own account', null);
+      throw new UnauthorizedException('Cannot delete your own account');
     }
 
     await this.userService.hardDelete(existingUser.id);

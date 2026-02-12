@@ -11,11 +11,10 @@ export interface TableHeaderProps {
  * Provides consistent styling for table headers across the application
  * Matches design: https://github.com/cs-quicklabs/quicklabs-designs/blob/main/src/routes/quick-certify/settings/account/team/%2Bpage.svelte
  */
+
 export function TableHeader({ children, className = '' }: TableHeaderProps) {
   return (
-    <th
-      className={`text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400`}
-    >
+    <th className={`px-4 py-4 text-md font-semibold uppercase bg-gray-50 ${className}`}>
       {children}
     </th>
   );

@@ -1,0 +1,14 @@
+{
+  "formData": {
+    "validLogoImage": "test-assets/logo.png",
+    "validFaviconImage": "test-assets/favicon.png",
+    "invalidFileType": "test-assets/document.pdf",
+    "largeFile": "test-assets/large-image.png"
+  },
+  "expectedMessages": {
+    "logoSuccessMessage": "Logo updated successfully!",
+    "faviconSuccessMessage": "Favicon updated successfully!",
+    "invalidFileTypeError": "Invalid file type. Please upload a valid image.",
+    "fileSizeError": "File size must be less than"
+  }
+}
