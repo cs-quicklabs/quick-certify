@@ -61,19 +61,24 @@ export default function EditTeamMemberPage() {
           };
         }
         if (field.name === 'status') {
+          const isInvited = member?.status === 'invited';
+
           return {
             ...field,
-            disabled: member?.status === 'invited', // Disable if user is invited
-            options: [
-              { label: 'Invited', value: 'invited' }, // Ensure 'invited' is an option
-            ],
+            disabled: isInvited,
+            options: isInvited
+              ? [{ label: 'Invited', value: 'invited' }]
+              : [
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'archived' },
+                ],
           };
         }
         return field;
       });
     }
     return editTeamMemberFormFields;
-  }, [filteredRoles]);
+  }, [filteredRoles, member?.status]);
 
   const formConfig: FormConfig<typeof editTeamMemberSchema> = {
     title: 'Edit Team Member',
