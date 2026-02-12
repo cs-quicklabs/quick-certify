@@ -194,6 +194,9 @@ export interface EventFilters extends PaginationFilters {
   type?: string;
   level?: string;
   format?: string;
+  typeIds?: string;
+  levelIds?: string;
+  formatIds?: string;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
   search?: string;

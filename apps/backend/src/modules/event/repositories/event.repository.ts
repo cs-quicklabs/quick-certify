@@ -9,6 +9,12 @@ import { DesignEntity } from '@src/entities/design.entity';
 import { SkillEntity } from '@src/entities/skill.entity';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 
+export interface EventFindAllOptions extends FindAllOptions {
+  typeUuids?: string[];
+  levelUuids?: string[];
+  formatUuids?: string[];
+}
+
 /**
  * Default include configuration for Event queries
  * Used consistently across find operations to avoid duplication
@@ -76,7 +82,7 @@ export class EventRepository {
    */
   async findAll(
     organizationId: number,
-    options: FindAllOptions = {},
+    options: EventFindAllOptions = {},
   ): Promise<PaginatedResult<EventEntity>> {
     const {
       page = 1,
@@ -85,6 +91,9 @@ export class EventRepository {
       sortOrder = 'DESC',
       where = {},
       search,
+      typeUuids,
+      levelUuids,
+      formatUuids,
     } = options;
 
     const safeLimit = Math.min(Math.max(1, limit), 100);
@@ -102,9 +111,12 @@ export class EventRepository {
       queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
     }
 
+    // Build includes with optional UUID filters
+    const includes = this.buildIncludes({ typeUuids, levelUuids, formatUuids });
+
     const { count, rows } = await this.model.findAndCountAll({
       where: queryWhere,
-      include: DEFAULT_EVENT_INCLUDES,
+      include: includes,
       distinct: true,
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
@@ -209,6 +221,55 @@ export class EventRepository {
    */
   async findOne(options: FindOptions): Promise<EventEntity | null> {
     return this.model.findOne(options);
+  }
+
+  /**
+   * Build include configuration with optional UUID filters.
+   * When filter UUIDs are provided, the join becomes INNER (required: true)
+   * so only events matching those associations are returned.
+   */
+  private buildIncludes(filters: {
+    typeUuids?: string[];
+    levelUuids?: string[];
+    formatUuids?: string[];
+  }) {
+    return [
+      {
+        model: EventTypeEntity,
+        as: 'event_type',
+        where: filters.typeUuids?.length
+          ? { is_active: true, uuid: { [Op.in]: filters.typeUuids } }
+          : { is_active: true },
+        required: !!filters.typeUuids?.length,
+      },
+      {
+        model: EventLevelEntity,
+        as: 'event_level',
+        where: filters.levelUuids?.length
+          ? { is_active: true, uuid: { [Op.in]: filters.levelUuids } }
+          : { is_active: true },
+        required: !!filters.levelUuids?.length,
+      },
+      {
+        model: EventFormatEntity,
+        as: 'event_format',
+        where: filters.formatUuids?.length
+          ? { is_active: true, uuid: { [Op.in]: filters.formatUuids } }
+          : { is_active: true },
+        required: !!filters.formatUuids?.length,
+      },
+      {
+        model: DesignEntity,
+        as: 'design',
+        required: false,
+      },
+      {
+        model: SkillEntity,
+        as: 'skills',
+        required: false,
+        through: { attributes: [] },
+      },
+    ];
   }
 
   /**

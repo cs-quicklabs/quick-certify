@@ -63,10 +63,12 @@ export const EVENT_KEYS = {
 };
 
 // Event Type Hooks
-export function useEventTypes(filters?: { page?: number; limit?: number }) {
+export function useEventTypes(filters?: { page?: number; limit?: number; enabled?: boolean }) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
-    queryKey: EVENT_TYPE_KEYS.list(filters),
-    queryFn: () => eventService.getEventTypes(filters),
+    queryKey: EVENT_TYPE_KEYS.list(queryFilters),
+    queryFn: () => eventService.getEventTypes(queryFilters),
+    enabled,
   });
 }
 
@@ -131,10 +133,12 @@ export function useDeleteEventType() {
 }
 
 // Event Level Hooks
-export function useEventLevels(filters?: { page?: number; limit?: number }) {
+export function useEventLevels(filters?: { page?: number; limit?: number; enabled?: boolean }) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
-    queryKey: EVENT_LEVEL_KEYS.list(filters),
-    queryFn: () => eventService.getEventLevels(filters),
+    queryKey: EVENT_LEVEL_KEYS.list(queryFilters),
+    queryFn: () => eventService.getEventLevels(queryFilters),
+    enabled,
   });
 }
 
@@ -199,10 +203,12 @@ export function useDeleteEventLevel() {
 }
 
 // Event Format Hooks
-export function useEventFormats(filters?: { page?: number; limit?: number }) {
+export function useEventFormats(filters?: { page?: number; limit?: number; enabled?: boolean }) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
-    queryKey: EVENT_FORMAT_KEYS.list(filters),
-    queryFn: () => eventService.getEventFormats(filters),
+    queryKey: EVENT_FORMAT_KEYS.list(queryFilters),
+    queryFn: () => eventService.getEventFormats(queryFilters),
+    enabled,
   });
 }
 

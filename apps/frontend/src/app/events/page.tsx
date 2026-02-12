@@ -1,44 +1,107 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
-import { ListFilter, Loader2, X } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Loader2, X } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import { toast } from 'react-toastify';
 import { EventsTable } from '@/components/events/EventsTable';
-import { useEvents, useDeleteEvent } from '@/hooks/useEvents';
+import { MultiSelectFilter, FilterItem } from '@/components/events/MultiSelectFilter';
+import {
+  useEvents,
+  useDeleteEvent,
+  useEventTypes,
+  useEventLevels,
+  useEventFormats,
+} from '@/hooks/useEvents';
 import { Event } from '@/services';
+
+function toggleId(prev: string[], id: string): string[] {
+  return prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id];
+}
 
 export default function EventsPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(4);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  // Debounce search query (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
   const [selectedEventIds, setSelectedEventIds] = useState<string[]>([]);
+  const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
+  const [selectedLevelIds, setSelectedLevelIds] = useState<string[]>([]);
+  const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
 
-  // Fetch events from API (paginated)
+  // Lazy-load flag: once any filter dropdown opens, fetch all filter data concurrently
+  const [filterDataLoaded, setFilterDataLoaded] = useState(false);
+
+  const handleFilterDataLoad = useCallback(() => {
+    if (!filterDataLoaded) setFilterDataLoaded(true);
+  }, [filterDataLoaded]);
+
+  // Fetch type/level/format lists concurrently (enabled only after first dropdown open)
+  const { data: typesData, isLoading: isLoadingTypes } = useEventTypes({
+    page: 1,
+    limit: 100,
+    enabled: filterDataLoaded,
+  });
+  const { data: levelsData, isLoading: isLoadingLevels } = useEventLevels({
+    page: 1,
+    limit: 100,
+    enabled: filterDataLoaded,
+  });
+  const { data: formatsData, isLoading: isLoadingFormats } = useEventFormats({
+    page: 1,
+    limit: 100,
+    enabled: filterDataLoaded,
+  });
+
+  const typeItems: FilterItem[] = (typesData?.data ?? []).map((t) => ({
+    uuid: t.uuid,
+    name: t.name,
+  }));
+  const levelItems: FilterItem[] = (levelsData?.data ?? []).map((l) => ({
+    uuid: l.uuid,
+    name: l.name,
+  }));
+  const formatItems: FilterItem[] = (formatsData?.data ?? []).map((f) => ({
+    uuid: f.uuid,
+    name: f.name,
+  }));
+
+  // Fetch events from API (paginated, with server-side filters)
   const { data, isLoading, error } = useEvents({
     page,
     limit,
-    search: query || undefined,
+    search: debouncedQuery || undefined,
+    typeIds: selectedTypeIds.length > 0 ? selectedTypeIds.join(',') : undefined,
+    levelIds: selectedLevelIds.length > 0 ? selectedLevelIds.join(',') : undefined,
+    formatIds: selectedFormatIds.length > 0 ? selectedFormatIds.join(',') : undefined,
   });
 
-  // Fetch events for filter dropdown only when dropdown is opened (lazy load, then cached)
-  const [filterLoaded, setFilterLoaded] = useState(false);
-  const { data: allEventsData, isLoading: isLoadingAll } = useEvents({
+  // Fetch events for "Filter by Events" dropdown only when opened (lazy load, then cached)
+  const [eventFilterLoaded, setEventFilterLoaded] = useState(false);
+  const { data: allEventsData } = useEvents({
     page: 1,
     limit: 100,
-    enabled: isFilterOpen || filterLoaded,
+    enabled: isFilterOpen || eventFilterLoaded,
   });
 
-  // Once opened, keep the data cached
   useEffect(() => {
-    if (isFilterOpen && !filterLoaded) {
-      setFilterLoaded(true);
+    if (isFilterOpen && !eventFilterLoaded) {
+      setEventFilterLoaded(true);
     }
-  }, [isFilterOpen, filterLoaded]);
+  }, [isFilterOpen, eventFilterLoaded]);
 
   // Delete event mutation
   const deleteEventMutation = useDeleteEvent();
@@ -47,7 +110,7 @@ export default function EventsPage() {
   const allEvents = allEventsData?.data ?? [];
   const meta = data?.meta;
 
-  // Handle click outside to close filter dropdown
+  // Handle click outside to close event filter dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
@@ -64,20 +127,29 @@ export default function EventsPage() {
     };
   }, [isFilterOpen]);
 
-  // Handle filter checkbox change
-  const handleFilterChange = (eventUuid: string) => {
+  // Toggle handler for multi-select filter state
+  const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, id: string) => {
+    setter((prev) => toggleId(prev, id));
+    setPage(1);
+  };
+
+  // Handle event filter checkbox change
+  const handleEventFilterChange = (eventUuid: string) => {
     setSelectedEventIds((prev) => {
       if (prev.includes(eventUuid)) {
         return prev.filter((id) => id !== eventUuid);
       }
       return [...prev, eventUuid];
     });
-    setPage(1); // Reset to first page when filter changes
+    setPage(1);
   };
 
   // Clear all filters
   const clearFilters = () => {
     setSelectedEventIds([]);
+    setSelectedTypeIds([]);
+    setSelectedLevelIds([]);
+    setSelectedFormatIds([]);
     setPage(1);
   };
 
@@ -88,14 +160,13 @@ export default function EventsPage() {
       await deleteEventMutation.mutateAsync(uuid);
       toast.success('Event deleted successfully');
     } catch (error) {
-      // Error is handled by global handler, but we can add additional handling here
       toast.error(error instanceof Error ? error.message : 'Failed to delete event');
     } finally {
       setDeletingEventId(null);
     }
   };
 
-  // Client-side filter for selected event IDs only (search is handled server-side)
+  // Client-side filter for selected event IDs only (type/level/format are server-side)
   const filteredEvents =
     selectedEventIds.length > 0
       ? events.filter((e: Event) => selectedEventIds.includes(e.uuid))
@@ -106,7 +177,35 @@ export default function EventsPage() {
   const totalPages = meta?.totalPages ?? Math.max(1, Math.ceil(total / limit));
   const pageSafe = Math.min(Math.max(1, page), totalPages);
 
-  const hasActiveFilters = selectedEventIds.length > 0;
+  const hasActiveFilters =
+    selectedEventIds.length > 0 ||
+    selectedTypeIds.length > 0 ||
+    selectedLevelIds.length > 0 ||
+    selectedFormatIds.length > 0;
+
+  // Build active filter tags for type/level/format
+  const activeFilterTags = [
+    ...selectedEventIds.map((uuid) => ({
+      key: `event-${uuid}`,
+      label: allEvents.find((e: Event) => e.uuid === uuid)?.name || uuid,
+      onRemove: () => handleEventFilterChange(uuid),
+    })),
+    ...selectedTypeIds.map((uuid) => ({
+      key: `type-${uuid}`,
+      label: typeItems.find((t) => t.uuid === uuid)?.name || uuid,
+      onRemove: () => toggleFilter(setSelectedTypeIds, uuid),
+    })),
+    ...selectedLevelIds.map((uuid) => ({
+      key: `level-${uuid}`,
+      label: levelItems.find((l) => l.uuid === uuid)?.name || uuid,
+      onRemove: () => toggleFilter(setSelectedLevelIds, uuid),
+    })),
+    ...selectedFormatIds.map((uuid) => ({
+      key: `format-${uuid}`,
+      label: formatItems.find((f) => f.uuid === uuid)?.name || uuid,
+      onRemove: () => toggleFilter(setSelectedFormatIds, uuid),
+    })),
+  ];
 
   return (
     <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
@@ -125,85 +224,68 @@ export default function EventsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4 px-4 py-2 border-b border-gray-200">
-          {/* Filter by Events Dropdown */}
-          <div className="relative" ref={filterRef}>
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="cursor-pointer flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100"
-            >
-              <ListFilter size={16} strokeWidth={2} className="mb-0.5" />
-              Filter by Events
-              {hasActiveFilters && (
-                <span className="ml-1 bg-blue-900 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {selectedEventIds.length}
-                </span>
-              )}
-            </button>
+          {/* Type Filter */}
+          <MultiSelectFilter
+            label="Type"
+            items={typeItems}
+            selectedIds={selectedTypeIds}
+            onChange={(id) => toggleFilter(setSelectedTypeIds, id)}
+            onClear={() => {
+              setSelectedTypeIds([]);
+              setPage(1);
+            }}
+            isLoading={isLoadingTypes}
+            onOpen={handleFilterDataLoad}
+          />
 
-            {isFilterOpen && (
-              <div className="absolute z-10 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg p-3 max-h-80 overflow-y-auto">
-                <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
-                  <p className="text-xs font-medium text-gray-500">Select Events</p>
-                  {hasActiveFilters && (
-                    <button
-                      onClick={clearFilters}
-                      className="text-xs text-blue-600 hover:text-blue-900 flex items-center gap-1 cursor-pointer"
-                    >
-                      <X size={12} />
-                      Clear
-                    </button>
-                  )}
-                </div>
+          {/* Level Filter */}
+          <MultiSelectFilter
+            label="Level"
+            items={levelItems}
+            selectedIds={selectedLevelIds}
+            onChange={(id) => toggleFilter(setSelectedLevelIds, id)}
+            onClear={() => {
+              setSelectedLevelIds([]);
+              setPage(1);
+            }}
+            isLoading={isLoadingLevels}
+            onOpen={handleFilterDataLoad}
+          />
 
-                {isLoadingAll ? (
-                  <div className="py-4 text-center text-sm text-gray-500">
-                    <Loader2 size={16} className="animate-spin inline mr-2" />
-                    Loading events...
-                  </div>
-                ) : allEvents.length === 0 ? (
-                  <p className="py-4 text-center text-sm text-gray-500">No events found</p>
-                ) : (
-                  <div className="space-y-1">
-                    {allEvents.map((event: Event) => (
-                      <label
-                        key={event.uuid}
-                        className="flex items-center gap-2 py-2 px-1 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                          checked={selectedEventIds.includes(event.uuid)}
-                          onChange={() => handleFilterChange(event.uuid)}
-                        />
-                        <span className="truncate">{event.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          {/* Format Filter */}
+          <MultiSelectFilter
+            label="Format"
+            items={formatItems}
+            selectedIds={selectedFormatIds}
+            onChange={(id) => toggleFilter(setSelectedFormatIds, id)}
+            onClear={() => {
+              setSelectedFormatIds([]);
+              setPage(1);
+            }}
+            isLoading={isLoadingFormats}
+            onOpen={handleFilterDataLoad}
+          />
 
           {/* Active Filter Tags */}
           {hasActiveFilters && (
             <div className="flex flex-wrap items-center gap-2">
-              {selectedEventIds.map((uuid) => {
-                const event = allEvents.find((e: Event) => e.uuid === uuid);
-                return (
-                  <span
-                    key={uuid}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-800 border border-blue-200 rounded-full cursor-pointer"
-                  >
-                    {event?.name || uuid}
-                    <button
-                      onClick={() => handleFilterChange(uuid)}
-                      className="hover:text-blue-900 cursor-pointer"
-                    >
-                      <X size={12} />
-                    </button>
-                  </span>
-                );
-              })}
+              {activeFilterTags.map((tag) => (
+                <span
+                  key={tag.key}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-800 border border-blue-200 rounded-full cursor-pointer"
+                >
+                  {tag.label}
+                  <button onClick={tag.onRemove} className="hover:text-blue-900 cursor-pointer">
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+              <button
+                onClick={clearFilters}
+                className="text-xs text-gray-500 hover:text-gray-700 underline cursor-pointer"
+              >
+                Clear all
+              </button>
             </div>
           )}
 
@@ -211,10 +293,7 @@ export default function EventsPage() {
             <input
               type="text"
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by event or design name..."
               className=".form-input-field w-64 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-gray-300 focus:outline-none"
             />

@@ -5,10 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventEntity } from '@src/entities/event.entity';
-import { CreateEventDto, UpdateEventDto } from '../dtos';
-import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { CreateEventDto, UpdateEventDto, EventFilterDto } from '../dtos';
+import { PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
-import { EventRepository } from '../repositories/event.repository';
+import { EventRepository, EventFindAllOptions } from '../repositories/event.repository';
 import { EventSkillService } from './event-skill.service';
 import { EventReferenceValidator } from '../validators/event-reference.validator';
 
@@ -38,13 +38,20 @@ export class EventService {
    */
   async findAll(
     organizationUuid: string,
-    options: FindAllOptions = {},
+    filters: EventFilterDto = {},
   ): Promise<PaginatedResult<EventEntity>> {
     const organization = await this.getOrganization(organizationUuid);
 
     if (!organization) {
-      return this.emptyPaginatedResult(options.limit || 10);
+      return this.emptyPaginatedResult(filters.limit || 10);
     }
+
+    const options: EventFindAllOptions = {
+      ...filters,
+      typeUuids: this.parseUuidList(filters.typeIds),
+      levelUuids: this.parseUuidList(filters.levelIds),
+      formatUuids: this.parseUuidList(filters.formatIds),
+    };
 
     return this.eventRepository.findAll(organization.id, options);
   }
@@ -295,6 +302,14 @@ export class EventService {
       await transaction.rollback();
       throw error;
     }
+  }
+
+  private parseUuidList(value?: string): string[] | undefined {
+    if (!value?.trim()) return undefined;
+    return value
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
   }
 
   private emptyPaginatedResult(limit: number): PaginatedResult<EventEntity> {
