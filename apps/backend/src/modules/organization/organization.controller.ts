@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -26,12 +27,17 @@ import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
 import { Op } from 'sequelize';
+import { EmailService } from '@src/commons/services';
+import { ContactOrganizationDto } from './dtos/contact-organization.dto';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
 @Controller({ path: 'organizations', version: '1' })
 export class OrganizationController {
-  constructor(private readonly organizationService: OrganizationService) {}
+  constructor(
+    private readonly organizationService: OrganizationService,
+    private readonly emailService: EmailService,
+  ) {}
 
   @Get()
   @UseGuards(RolesGuard)
@@ -206,7 +212,11 @@ export class OrganizationController {
   }
 
   // PUBLIC ROUTES
-
+  /**
+   *
+   * @param slug -> organization slug
+   * @returns
+   */
   @Get('public/:slug')
   @ApiOperation({ summary: 'Get public organization data by UUID' })
   @ApiResponse({ status: 200, description: 'Organization found' })
@@ -217,5 +227,25 @@ export class OrganizationController {
       return new SuccessResponse('Organization not found', null);
     }
     return new SuccessResponse('Organization retrieved successfully', organization);
+  }
+
+  @Post('public/:slug/contact')
+  @ApiOperation({ summary: 'Email Organization - Contact Us' })
+  @ApiResponse({ status: 200, description: 'Email Sent to the issuer' })
+  @ApiResponse({ status: 500, description: 'Email could not be sent' })
+  async sendEmail(@Param('slug') slug: string, @Body() dto: ContactOrganizationDto) {
+    const organization = await this.organizationService.findBySlug(slug);
+    if (!organization?.support_email) return new NotFoundException('Email not found');
+    const emailSubject = `New Contact Form Submission - ${dto.name}`;
+    // const emailHtml
+    const mailOptions = {
+      text: dto.message,
+    };
+    const email = await this.emailService.sendEmail(
+      organization?.support_email,
+      emailSubject,
+      mailOptions,
+    );
+    return new SuccessResponse('Email sent successfully', email);
   }
 }
