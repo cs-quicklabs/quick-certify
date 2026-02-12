@@ -20,11 +20,13 @@ export interface DesignLayout {
 export type Design = {
   id: string;
   uuid: string;
+  organization_id: number;
   name: string;
   type: DesignType;
   url: string;
   layout: string;
   createdAt: string;
+  updatedAt: string;
 };
 
 export interface DesignFilters {

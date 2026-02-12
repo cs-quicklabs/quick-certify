@@ -67,7 +67,7 @@ function createApiClient(): AxiosInstance {
 
       // Handle network/CORS errors
       if (isNetworkError(error)) {
-        console.error('Network error - possible CORS issue or server unavailable:', error.message);
+        console.log('Network error - possible CORS issue or server unavailable:', error.message);
         const networkError: ApiError = {
           success: false,
           message:

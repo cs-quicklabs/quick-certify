@@ -42,13 +42,13 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 export const profileSettingsSchema = z.object({
   firstName: z
     .string()
-    .min(2, 'Name must be at least 2 characters')
-    .regex(/\S/, 'Name must not be only spaces')
-    .regex(/^[a-zA-Z\s]+$/, 'Name must only contain letters')
-    .regex(/[a-zA-Z]/, 'Name must contain at least one letter'),
+    .min(2, 'First Name must be at least 2 characters')
+    .regex(/\S/, 'First Name must not be only spaces')
+    .regex(/^[a-zA-Z\s]+$/, 'First Name must only contain letters')
+    .regex(/[a-zA-Z]/, 'First Name must contain at least one letter'),
   lastName: z
     .string()
-    .optional()
+    .min(2, 'Last Name must be at least 2 characters')
     .refine((val) => !val || /^[a-zA-Z\s]+$/.test(val), {
       message: 'Last Name must only contain letters',
     }),

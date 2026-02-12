@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { useOrganizations, useDeleteOrganization } from '@/hooks/useOrganizationAdmin';
 import { Organization } from '@/types';
+import { Pagination } from '@/components/ui/pagination';
 import { capitalizeFirst } from '@/utils/helpers';
 import { ConfirmationDialog } from '@/components';
 
@@ -202,30 +203,17 @@ export default function AdminOrganizationsPage() {
       </div>
 
       {/* Pagination */}
-      {meta.totalPages > 1 && (
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing {organizations.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{' '}
-            {Math.min(currentPage * pageSize, meta.total)} of {meta.total} results
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={!meta.hasPrevPage || isLoading}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(meta.totalPages, prev + 1))}
-              disabled={!meta.hasNextPage || isLoading}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="px-6 py-4 border-t border-gray-200">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={meta.totalPages}
+          onPageChange={setCurrentPage}
+          isLoading={isLoading}
+          totalCount={meta.total}
+          pageSize={pageSize}
+          variant="compact"
+        />
+      </div>
 
       {/* Delete Confirmation Modal */}
       <ConfirmationDialog

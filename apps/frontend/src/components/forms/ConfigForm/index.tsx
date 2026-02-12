@@ -16,12 +16,18 @@ interface ConfigFormProps<T extends z.ZodObject<z.ZodRawShape>> {
   config: FormConfig<T>;
   initialValues?: Partial<z.infer<T>>;
   isLoading?: boolean;
+  /** Optional ref to access the form element (for requestSubmit) */
+  formRef?: React.RefObject<HTMLFormElement | null>;
+  /** Optional children to render inside the form (for custom UI like tags/skills) */
+  children?: React.ReactNode;
 }
 
 export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   config,
   initialValues = {},
   isLoading = false,
+  formRef,
+  children,
 }: ConfigFormProps<T>) {
   // Helper to normalize select field values to strings
   const normalizeSelectValues = useCallback(
@@ -58,15 +64,20 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const didMountRef = useRef(false);
 
-  // Update form data when initialValues changes
+  // Update form data when initialValues changes - only on initial mount, not subsequent changes
   useEffect(() => {
-    if (initialValues && Object.keys(initialValues).length > 0) {
-      const sanitizedValues = normalizeSelectValues(initialValues);
-      setFormData(sanitizedValues);
-      initialFormDataRef.current = sanitizedValues;
+    if (!didMountRef.current) {
+      // Initial mount - set form data from initialValues
+      if (initialValues && Object.keys(initialValues).length > 0) {
+        const sanitizedValues = normalizeSelectValues(initialValues);
+        setFormData(sanitizedValues);
+        initialFormDataRef.current = sanitizedValues;
+      }
+      didMountRef.current = true;
     }
-  }, [initialValues, normalizeSelectValues]);
+  }, []); // Empty deps - only run on mount
 
   // Auto-hide success message
   useEffect(() => {
@@ -253,34 +264,60 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       )}
 
       <form
+        ref={formRef}
         onSubmit={handleSubmit}
         className={`w-full mt-6 ${
-          config.layout === 'grid' ? 'grid grid-cols-2 gap-4' : 'space-y-4'
+          config.layout === 'grid'
+            ? 'grid grid-cols-2 gap-4'
+            : config.layout === 'grid-3'
+              ? 'grid grid-cols-3 gap-4'
+              : 'space-y-4'
         }`}
       >
+        {/* Render each configured field */}
         {config.fields.map(renderField)}
 
-        <div className={config.layout === 'grid' ? 'col-span-2' : ''}>
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={isSubmitting || isLoading}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
-            </button>
-            {config.onCancel && (
-              <button
-                type="button"
-                onClick={config.onCancel}
-                disabled={isSubmitting || isLoading}
-                className="px-4 py-2 text-gray-700 text-sm font-medium hover:text-gray-900 transition-colors border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {config.cancelLabel || 'Cancel'}
-              </button>
-            )}
+        {/* Render any children inside the form (e.g., skills tag UI) */}
+        {children && (
+          <div
+            className={config.layout === 'grid' || config.layout === 'grid-3' ? 'col-span-3' : ''}
+          >
+            {children}
           </div>
-        </div>
+        )}
+
+        {/* Conditionally render submit area. If config.showSubmit === false, parent controls submit. */}
+        {config.showSubmit !== false && (
+          <div
+            className={
+              config.layout === 'grid'
+                ? 'col-span-2'
+                : config.layout === 'grid-3'
+                  ? 'col-span-3'
+                  : ''
+            }
+          >
+            <div className="flex items-center justify-end gap-3">
+              {config.onCancel && (
+                <button
+                  type="button"
+                  onClick={config.onCancel}
+                  disabled={isSubmitting || isLoading}
+                  className="btn-secondary"
+                >
+                  {config.cancelLabel || 'Cancel'}
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={isSubmitting || isLoading}
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? 'Saving...' : config.submitLabel || 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

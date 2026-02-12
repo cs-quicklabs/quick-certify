@@ -3,17 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { Header, Sidebar, Logo } from '@/components';
-import { eventSidebarItems } from '@/config/sidebar.config';
+import { Header, Logo } from '@/components';
 import { useAuthStore } from '@/store/auth.store';
 
-/**
- * Events Layout
- *
- * Contains the sidebar navigation for events pages.
- * Similar to account settings layout.
- * Protected layout for authenticated users.
- */
 export default function EventsLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isInitialized, isLoading } = useAuthStore();
@@ -46,13 +38,8 @@ export default function EventsLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <Header />
-      <main className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
-        <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
-          <aside className="px-2 py-6 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3">
-            <Sidebar items={eventSidebarItems} />
-          </aside>
-          <div className="max-w-xl pb-12 px-4 lg:col-span-6">{children}</div>
-        </div>
+      <main className="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5 min-h-screen">
+        <div className="px-4 mx-auto max-w-screen-2xl lg:px-8">{children}</div>
       </main>
     </>
   );

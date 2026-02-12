@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Model, ModelStatic, FindOptions, Op } from 'sequelize';
+import { Model, ModelStatic, FindOptions, Includeable, WhereOptions, Op } from 'sequelize';
 import { BaseCrudServiceInterface, FindAllOptions, PaginatedResult } from './interfaces';
 
 @Injectable()
@@ -34,24 +34,24 @@ export abstract class BaseCrudService<
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
 
-    const findOptionsWhere: Record<string, unknown> = {
+    const findOptionsWhere: WhereOptions<T> = {
       ...where,
-    };
+    } as WhereOptions<T>;
 
     // Only add soft delete filter if softDeleteField is configured
     if (this.softDeleteField) {
-      findOptionsWhere[this.softDeleteField] = null;
+      (findOptionsWhere as Record<string, unknown>)[this.softDeleteField] = null;
     }
 
-    const findOptions: FindOptions = {
+    const findOptions: FindOptions<T> = {
       where: findOptionsWhere,
-      order: [[sortBy, sortOrder]],
+      order: [[sortBy, sortOrder]] as unknown as [string, string],
       limit: safeLimit,
       offset,
     };
 
     if (include.length > 0) {
-      findOptions.include = include as any[];
+      findOptions.include = include as Includeable[];
     }
 
     if (attributes) {
@@ -75,9 +75,9 @@ export abstract class BaseCrudService<
     };
   }
 
-  async findOne(id: TId, options: FindOptions = {}): Promise<T | null> {
+  async findOne(id: TId, options: FindOptions<T> = {}): Promise<T | null> {
     const whereClause: Record<string, unknown> = {
-      id: id as any,
+      id: id as unknown as number,
       ...(options.where || {}),
     };
 
@@ -87,16 +87,16 @@ export abstract class BaseCrudService<
     }
 
     const entity = await this.model.findOne({
-      where: whereClause as any,
+      where: whereClause as WhereOptions<T>,
       ...options,
     });
 
     return entity;
   }
 
-  async findOneOrFail(id: TId, options: FindOptions = {}): Promise<T> {
+  async findOneOrFail(id: TId, options: FindOptions<T> = {}): Promise<T> {
     const whereClause: Record<string, unknown> = {
-      id: id as any,
+      id: id as unknown as number,
       ...(options.where || {}),
     };
 
@@ -106,7 +106,7 @@ export abstract class BaseCrudService<
     }
 
     const entity = await this.model.findOne({
-      where: whereClause as any,
+      where: whereClause as WhereOptions<T>,
       ...options,
     });
 
@@ -117,7 +117,7 @@ export abstract class BaseCrudService<
     return entity;
   }
 
-  async findByUuid(uuid: string, options: FindOptions = {}): Promise<T | null> {
+  async findByUuid(uuid: string, options: FindOptions<T> = {}): Promise<T | null> {
     const whereClause: Record<string, unknown> = {
       uuid,
       ...(options.where || {}),
@@ -129,14 +129,14 @@ export abstract class BaseCrudService<
     }
 
     const entity = await this.model.findOne({
-      where: whereClause as any,
+      where: whereClause as WhereOptions<T>,
       ...options,
     });
 
     return entity;
   }
 
-  async findByUuidOrFail(uuid: string, options: FindOptions = {}): Promise<T> {
+  async findByUuidOrFail(uuid: string, options: FindOptions<T> = {}): Promise<T> {
     const entity = await this.findByUuid(uuid, options);
 
     if (!entity) {
@@ -208,12 +208,12 @@ export abstract class BaseCrudService<
       );
     }
     const whereClause: Record<string, unknown> = {
-      id: id as any,
+      id: id as unknown as number,
       [this.softDeleteField]: { [Op.ne]: null },
     };
 
     const entity = await this.model.findOne({
-      where: whereClause as any,
+      where: whereClause as WhereOptions<T>,
     });
 
     if (!entity) {
@@ -226,24 +226,24 @@ export abstract class BaseCrudService<
   }
 
   async count(where: Record<string, unknown> = {}): Promise<number> {
-    const whereClause: Record<string, unknown> = {
+    const whereClause: WhereOptions<T> = {
       ...where,
-    };
+    } as WhereOptions<T>;
 
     // Only add soft delete filter if softDeleteField is configured
     if (this.softDeleteField) {
-      whereClause[this.softDeleteField] = null;
+      (whereClause as Record<string, unknown>)[this.softDeleteField] = null;
     }
 
     const result = await this.model.count({
-      where: whereClause as any,
+      where: whereClause,
     });
-    return typeof result === 'number' ? result : (result as any[]).length;
+    return typeof result === 'number' ? result : 0;
   }
 
   async exists(id: TId): Promise<boolean> {
     const whereClause: Record<string, unknown> = {
-      id: id as any,
+      id: id as unknown as number,
     };
 
     // Only add soft delete filter if softDeleteField is configured
@@ -252,9 +252,9 @@ export abstract class BaseCrudService<
     }
 
     const result = await this.model.count({
-      where: whereClause as any,
+      where: whereClause as WhereOptions<T>,
     });
-    const count = typeof result === 'number' ? result : (result as any[]).length;
+    const count = typeof result === 'number' ? result : 0;
     return count > 0;
   }
 
@@ -269,9 +269,9 @@ export abstract class BaseCrudService<
     }
 
     const result = await this.model.count({
-      where: whereClause as any,
+      where: whereClause as WhereOptions<T>,
     });
-    const count = typeof result === 'number' ? result : (result as any[]).length;
+    const count = typeof result === 'number' ? result : 0;
     return count > 0;
   }
 
@@ -285,14 +285,14 @@ export abstract class BaseCrudService<
       where: {
         ...options.where,
         organization_id: organizationId,
-      },
+      } as Record<string, unknown>,
     });
   }
 
   async findOneByOrganization(
     id: TId,
     organizationId: TId,
-    options: FindOptions = {},
+    options: FindOptions<T> = {},
   ): Promise<T | null> {
     return this.findOne(id, {
       ...options,
@@ -300,13 +300,13 @@ export abstract class BaseCrudService<
         ...options.where,
         organization_id: organizationId,
       },
-    });
+    } as unknown as FindOptions<T>);
   }
 
   async findOneByOrganizationOrFail(
     id: TId,
     organizationId: TId,
-    options: FindOptions = {},
+    options: FindOptions<T> = {},
   ): Promise<T> {
     const entity = await this.findOneByOrganization(id, organizationId, options);
 

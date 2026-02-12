@@ -1,6 +1,21 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength, Matches } from 'class-validator';
+import {
+  IsArray,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  Matches,
+  ValidateIf,
+} from 'class-validator';
 
+/**
+ * DTO for updating an existing event
+ *
+ * All fields are optional to support partial updates.
+ * Use this for both updating existing events and completing
+ * progressive event creation (Step 2).
+ */
 export class UpdateEventDto {
   @ApiPropertyOptional({
     example: 'JavaScript Fundamentals Workshop',
@@ -17,25 +32,68 @@ export class UpdateEventDto {
 
   @ApiPropertyOptional({
     example: 'abc123xyz789',
-    description: 'Event type ID (nanoid)',
+    description: 'Event type UUID (nanoid)',
   })
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsString({ message: 'Event type ID must be a string' })
-  eventTypeId?: string;
+  eventTypeId?: string | null;
 
   @ApiPropertyOptional({
     example: 'def456uvw012',
-    description: 'Event level ID (nanoid)',
+    description: 'Event level UUID (nanoid)',
   })
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsString({ message: 'Event level ID must be a string' })
-  eventLevelId?: string;
+  eventLevelId?: string | null;
 
   @ApiPropertyOptional({
     example: 'ghi789rst345',
-    description: 'Event format ID (nanoid)',
+    description: 'Event format UUID (nanoid)',
   })
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsString({ message: 'Event format ID must be a string' })
-  eventFormatId?: string;
+  eventFormatId?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'design123',
+    description: 'Design UUID (nanoid) to attach to this event',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString({ message: 'Design ID must be a string' })
+  designId?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'A comprehensive workshop covering JavaScript basics...',
+    description: 'Event description - supports rich text or plain text',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString({ message: 'Description must be a string' })
+  @MaxLength(5000, { message: 'Description must not exceed 5000 characters' })
+  description?: string | null;
+
+  @ApiPropertyOptional({
+    example: 'https://example.com/events/js-workshop',
+    description: 'External learning resources link',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString({ message: 'Learning link must be a string' })
+  @IsUrl({}, { message: 'Learning link must be a valid URL' })
+  @MaxLength(500, { message: 'Learning link must not exceed 500 characters' })
+  learningLink?: string | null;
+
+  @ApiPropertyOptional({
+    example: ['skill-uuid-1', 'skill-uuid-2'],
+    description: 'Array of skill UUIDs to associate with this event. Replaces existing skills.',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray({ message: 'Skills must be an array' })
+  @IsString({ each: true, message: 'Each skill ID must be a string' })
+  skillIds?: string[];
 }

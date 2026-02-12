@@ -1,9 +1,20 @@
 import { QueryInterface, DataTypes } from 'sequelize';
 
+/**
+ * Migration: Create design table
+ */
 module.exports = {
   async up(queryInterface: QueryInterface) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
+      // Check if table already exists
+      const tables = await queryInterface.showAllTables();
+      if (tables.includes('design')) {
+        console.log('⚠️ Design table already exists, skipping creation');
+        await transaction.commit();
+        return;
+      }
+
       await queryInterface.createTable(
         'design',
         {
@@ -66,7 +77,15 @@ module.exports = {
   },
 
   async down(queryInterface: QueryInterface) {
-    await queryInterface.dropTable('design');
-    console.log('✅ Design table dropped successfully');
+    const transaction = await queryInterface.sequelize.transaction();
+    try {
+      await queryInterface.dropTable('design', { transaction });
+      await transaction.commit();
+      console.log('✅ Design table dropped successfully');
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Rollback failed:', error);
+      throw error;
+    }
   },
 };

@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { FindOptions, Op, Transaction } from 'sequelize';
+import { FindOptions, Op, Sequelize, Transaction } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
@@ -511,6 +511,15 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         { first_name: { [Op.iLike]: `%${searchQuery}%` } },
         { last_name: { [Op.iLike]: `%${searchQuery}%` } },
         { email: { [Op.iLike]: `%${searchQuery}%` } },
+        Sequelize.where(
+          Sequelize.fn(
+            'CONCAT',
+            Sequelize.col('first_name'),
+            ' ',
+            Sequelize.fn('COALESCE', Sequelize.col('last_name'), ''),
+          ),
+          { [Op.iLike]: `%${searchQuery}%` },
+        ),
       ],
     };
 
