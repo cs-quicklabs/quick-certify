@@ -11,8 +11,12 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: [['line'], ['allure-playwright']],
+  workers: process.env.CI ? 1 : 1,
+  reporter: [
+    ['line'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['allure-playwright'],
+  ],
   timeout: 50000,
 
   // Global setup that logs in and saves auth.json if missing

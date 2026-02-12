@@ -74,5 +74,12 @@
     "issuerWebsite": "issuerWebsite",
     "password": "password",
     "confirmPassword": "confirmPassword"
+  },
+
+  "httpCodes": {
+    "conflict": 409,
+    "unprocessableContent": 422,
+    "ok": 200,
+    "badRequest": 400
   }
 }

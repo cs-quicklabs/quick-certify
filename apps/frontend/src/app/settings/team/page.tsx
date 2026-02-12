@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import type { TeamMember } from '@/services/api/team.service';
 import { capitalizeFirst, checkIfUserIsNonAdmin, filterAndSortRoles } from '@/utils/helpers';
+import { X } from 'lucide-react';
 
 /**
  * Team Listing Page
@@ -16,9 +17,11 @@ export default function TeamsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [roleFilter, setRoleFilter] = useState<string>('');
-  const [searchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: roles } = useRoles();
 
@@ -29,12 +32,26 @@ export default function TeamsPage() {
     }
   }, [user, router]);
 
+  // Debounce search query
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchQuery]);
+
   // Use backend filtering instead of client-side
   const { data, isLoading } = useTeamMembers({
     page: currentPage,
     limit: pageSize,
     role: roleFilter || undefined,
-    search: searchQuery || undefined,
+    search: debouncedSearch || undefined,
     sortBy: 'last_login_at',
     sortOrder: 'DESC',
   });
@@ -78,10 +95,6 @@ export default function TeamsPage() {
   };
 
   const handleRowClick = (member: TeamMember) => {
-    // Disable click for invited users
-    if (member.status === 'invited') {
-      return;
-    }
     // Navigate directly to edit page
     router.push(`/settings/team/${member.uuid || member.id}/edit`);
   };
@@ -100,12 +113,28 @@ export default function TeamsPage() {
               {totalCount !== 1 ? 's' : ''} or add a new one.
             </p>
           </div>
-          <div className="flex space-x-4">
-            <div className="flex space-x-2 items-center w-full">
-              <a type="button" href="/settings/team/add" className="btn-primary w-full">
-                Add new member
-              </a>
+          <div className="flex space-x-4 items-center">
+            <div className="relative">
+              <input
+                type="text"
+                className="block w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                placeholder="Search members..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-4 w-4 text-blue-900" />
+                </button>
+              )}
             </div>
+            <a type="button" href="/settings/team/add" className="btn-primary whitespace-nowrap">
+              Add new member
+            </a>
           </div>
         </div>
       </div>

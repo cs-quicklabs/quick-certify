@@ -45,13 +45,13 @@ export class UpdateUserDto {
   is_email_notifications_enabled?: boolean;
 
   @ApiPropertyOptional({
-    enum: ['active', 'inactive', 'archived'],
+    enum: ['active', 'inactive', 'archived', 'invited'],
     description: 'User status',
     example: 'active',
   })
-  @IsEnum(['active', 'inactive', 'archived'])
+  @IsEnum(['active', 'inactive', 'archived', 'invited'])
   @IsOptional()
-  status?: 'active' | 'inactive' | 'archived';
+  status?: 'active' | 'inactive' | 'archived' | 'invited';
 
   @ApiPropertyOptional({
     example: 'StrongP@ssw0rd!',

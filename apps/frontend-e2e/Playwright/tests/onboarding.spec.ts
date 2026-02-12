@@ -47,7 +47,6 @@ test.describe('Validate Registration Form', () => {
         password,
         password,
       );
-      await registrationPage.clickOnCreateNewUserBtn();
       await registrationPage.validateUserRegistration();
     });
 
@@ -209,7 +208,7 @@ test.describe('Validate Registration Form', () => {
   });
 
   test.describe('Email field validation Test', () => {
-    test.fixme('UR111_Verify: Existing Email validation', async ({ registrationPage }) => {
+    test('UR111_Verify: Existing Email validation', async ({ registrationPage }) => {
       console.log('Starting test: UR111_Verify: Existing Email validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
@@ -221,7 +220,10 @@ test.describe('Validate Registration Form', () => {
         password,
       );
       await registrationPage.clickOnCreateNewUserBtn();
-      await registrationPage.validateAlertMessages(registrationData.fieldErrors.email.exists);
+      await registrationPage.validateAlertMessages(
+        registrationData.fieldErrors.email.exists,
+        registrationData.httpCodes.conflict,
+      );
     });
 
     test('UR112_Verify: Invalid Email validation', async ({ registrationPage }) => {
@@ -261,7 +263,7 @@ test.describe('Validate Registration Form', () => {
   });
 
   test.describe('Issuer Name validation Test', () => {
-    test.fixme('UR114_Verify: Existing Issuer Name validation', async ({
+    test('UR114_Verify: Existing Issuer Name validation', async ({
       registrationPage,
       randomDataGenerator,
     }) => {
@@ -277,7 +279,10 @@ test.describe('Validate Registration Form', () => {
         password,
       );
       await registrationPage.clickOnCreateNewUserBtn();
-      await registrationPage.validateAlertMessages(registrationData.fieldErrors.issuerName.exists);
+      await registrationPage.validateAlertMessages(
+        registrationData.fieldErrors.issuerName.exists,
+        registrationData.httpCodes.conflict,
+      );
     });
 
     test('UR115_Verify: Less than 2 character validation', async ({ registrationPage }) => {
@@ -336,7 +341,7 @@ test.describe('Validate Registration Form', () => {
   });
 
   test.describe('Issuer URL validation Test', () => {
-    test.fixme('UR118_Verify: Existing Issuer URL validation', async ({
+    test('UR118_Verify: Existing Issuer URL validation', async ({
       registrationPage,
       randomDataGenerator,
     }) => {
@@ -355,6 +360,7 @@ test.describe('Validate Registration Form', () => {
       await registrationPage.clickOnCreateNewUserBtn();
       await registrationPage.validateAlertMessages(
         registrationData.fieldErrors.issuerWebsite.exists,
+        registrationData.httpCodes.conflict,
       );
     });
 
@@ -377,6 +383,7 @@ test.describe('Validate Registration Form', () => {
       await registrationPage.clickOnCreateNewUserBtn();
       await registrationPage.validateAlertMessages(
         registrationData.fieldErrors.issuerWebsite.invalidUrl,
+        registrationData.httpCodes.unprocessableContent,
       );
     });
 
@@ -471,7 +478,10 @@ test.describe('Validate Registration Form', () => {
         registrationData.passwordValues.alphaNumericalValue,
       );
       await registrationPage.clickOnCreateNewUserBtn();
-      await registrationPage.validateAlertMessages(registrationData.fieldErrors.password.noSpecial);
+      await registrationPage.validateAlertMessages(
+        registrationData.fieldErrors.password.noSpecial,
+        registrationData.httpCodes.unprocessableContent,
+      );
     });
 
     test('UR124_Verify: Numerical value validation', async ({

@@ -1,0 +1,26 @@
+{
+  "formData": {
+    "validName": "Test Organization",
+    "validDescription": "We are a test organization for e2e tests.",
+    "validSupportEmail": "support@testorg.com",
+    "validSlogan": "Quality First",
+    "validLinkedInId": "12345678",
+    "emptyName": "",
+    "nameOnlySpaces": "   ",
+    "nameTooLong": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "invalidSupportEmail": "not-an-email",
+    "invalidLinkedInId": "abc123",
+    "linkedinIdTooLong": "12345678901",
+    "descriptionTooLong": "X",
+    "sloganTooLong": "S"
+  },
+  "expectedMessages": {
+    "nameRequired": "Organization name is required",
+    "nameNotOnlySpaces": "Organization name must not be only spaces",
+    "nameMaxLength": "Organization name must not exceed 150 characters",
+    "supportEmailInvalid": "Please provide a valid email address",
+    "linkedInIdInvalid": "LinkedIn Company ID must be up to 10 digits and numeric only",
+    "descriptionMaxLength": "Description must not exceed 2000 characters",
+    "sloganMaxLength": "Slogan must not exceed 255 characters"
+  }
+}

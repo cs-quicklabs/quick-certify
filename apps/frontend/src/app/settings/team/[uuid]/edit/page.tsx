@@ -60,6 +60,15 @@ export default function EditTeamMemberPage() {
             })),
           };
         }
+        if (field.name === 'status') {
+          return {
+            ...field,
+            disabled: member?.status === 'invited', // Disable if user is invited
+            options: [
+              { label: 'Invited', value: 'invited' }, // Ensure 'invited' is an option
+            ],
+          };
+        }
         return field;
       });
     }
@@ -99,9 +108,12 @@ export default function EditTeamMemberPage() {
         first_name: member.first_name || '',
         last_name: member.last_name || '',
         email: member.email || '',
-        roleId: member.role_id || '', // Keep as string for form compatibility
-        // Map status: active -> active, everything else -> archived (inactive/archived/invited)
-        status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
+        roleId: member.role_id || '',
+        status: (() => {
+          if (member.status === 'active') return 'active';
+          if (member.status === 'invited') return 'invited';
+          return 'archived';
+        })() as 'active' | 'invited' | 'archived',
       }
     : undefined;
 

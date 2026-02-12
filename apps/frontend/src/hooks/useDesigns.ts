@@ -1,14 +1,16 @@
-import { DesignType, PaginatedResponse } from '@/types';
-import { designService } from '@/services';
+'use client';
+
+import { designService } from '@/services/api';
+import { DesignType, PaginatedResponse, Design } from '@/types';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { DesignFormData } from '@/schemas/design.schema';
-import { Design } from '@/types';
+import { showSuccessToast } from '@/lib/toast';
 
 type Params = {
   page: number;
   limit: number;
   search?: string;
-  type?: DesignType | undefined;
+  type?: DesignType;
 };
 
 export function useDesignList({ page, limit, search, type }: Params) {
@@ -61,7 +63,14 @@ export function useDesignList({ page, limit, search, type }: Params) {
 
   return {
     designs: query.data?.data ?? [],
-    meta: query.data?.meta ?? null,
+    meta: query.data?.meta ?? {
+      page: 1,
+      limit,
+      total: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+      totalPages: 0,
+    },
     loading: query.isLoading,
     error: query.error instanceof Error ? query.error.message : null,
     deleteDesign: deleteMutation.mutateAsync,
@@ -95,6 +104,7 @@ export function useCreateDesign(onSuccess?: () => void) {
       }),
 
     onSuccess: () => {
+      showSuccessToast('Design created successfully');
       queryClient.invalidateQueries({ queryKey: ['designs'] });
       onSuccess?.();
     },
@@ -122,6 +132,7 @@ export function useUpdateDesign() {
       queryClient.invalidateQueries({
         queryKey: ['design', variables.id],
       });
+      showSuccessToast('Design edited successfully');
     },
   });
 }
