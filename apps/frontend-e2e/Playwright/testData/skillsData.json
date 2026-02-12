@@ -1,0 +1,18 @@
+{
+  "formData": {
+    "validSkillName": "JavaScript",
+    "validSkillName2": "TypeScript",
+    "validSkillName3": "React",
+    "editedSkillName": "JavaScript ES6+",
+    "emptySkillName": "",
+    "whitespaceOnlySkillName": "   ",
+    "longSkillName": "Very Long Skill Name That Exceeds Normal Length"
+  },
+  "expectedMessages": {
+    "emptySkillNameError": "Skill name cannot be empty or only spaces",
+    "whitespaceOnlyError": "Skill name cannot be empty or only spaces",
+    "duplicateSkillError": "already exists",
+    "deleteConfirmationTitle": "Delete Skill?",
+    "deleteConfirmationMessage": "Are you sure you want to delete"
+  }
+}
