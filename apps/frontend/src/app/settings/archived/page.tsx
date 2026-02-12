@@ -244,11 +244,23 @@ export default function ArchivedMembersPage() {
       {/* Delete Dialog - Only for Super Admin */}
       <ConfirmationDialog
         isOpen={!!memberToDelete}
-        title="Permanently Delete Member"
-        message={`Are you sure you want to permanently delete ${memberToDelete?.first_name} ${memberToDelete?.last_name}? This action cannot be undone.`}
-        confirmLabel={isDeleting ? 'Deleting...' : 'Delete'}
+        title={
+          <span className="font-bold text-lg block">
+            Are you sure you want to delete this user?
+          </span>
+        }
+        message={
+          <div className="flex flex-col gap-1">
+            <p>
+              All the information regarding this user will be lost. If this user has created
+              content, it will be assigned to the super admin.
+            </p>
+          </div>
+        }
+        confirmLabel={isDeleting ? 'Deleting...' : 'Yes, Delete'}
         confirmVariant="danger"
-        cancelLabel="Cancel"
+        cancelLabel="No, Cancel"
+        className="max-w-md w-full rounded-sm"
         onConfirm={handleConfirmDelete}
         onCancel={() => setMemberToDelete(null)}
       />

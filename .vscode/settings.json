@@ -89,6 +89,9 @@
     "**/dist/**": true,
     "**/build/**": true,
     "**/.next/**": true
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml"
   }
 }
 
