@@ -35,7 +35,7 @@ async function fetchProfile(): Promise<ProfileSettingsData> {
   const user = response.data.data;
   return {
     firstName: user.firstName || '',
-    lastName: user.lastName ?? undefined,
+    lastName: user.lastName || '',
     email: user.email,
     avatarUrl: user.avatarUrl ?? undefined,
     organizationName: user.organizationName ?? undefined,
