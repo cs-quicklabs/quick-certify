@@ -3,7 +3,7 @@ import { FieldLabel } from '../FieldLabel';
 
 export function TextareaField({ field, value, error, onChange, isDisabled }: BaseFieldProps) {
   return (
-    <div>
+    <div className={field.className ?? ''}>
       <FieldLabel field={field} />
       <textarea
         id={field.name}

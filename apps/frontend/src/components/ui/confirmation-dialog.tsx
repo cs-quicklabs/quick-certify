@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface ConfirmationDialogProps {
   /**
@@ -67,9 +68,18 @@ export function ConfirmationDialog({
   onCancel,
   className = 'p-10 max-w-120 max-h-80 rounded-xs',
 }: ConfirmationDialogProps) {
-  if (!isOpen) return null;
+  // Track mounted state for SSR safety
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
+
+  // Use portal to render outside DOM hierarchy (fixes hydration issues when inside tables)
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
       onClick={onCancel}
@@ -145,6 +155,7 @@ export function ConfirmationDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

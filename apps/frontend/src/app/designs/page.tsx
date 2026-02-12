@@ -6,8 +6,8 @@ import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
 import { Design } from '@/types';
 import { useDesignList } from '@/hooks/useDesigns';
+import { Pagination } from '@/components/ui/pagination';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
-import Pagination from '@/components/ui/pagination';
 import { ConfirmationDialog } from '@/components';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
@@ -171,11 +171,13 @@ export default function DesignsPage() {
         onDelete={handleDeleteClick}
       />
 
-      <Pagination
-        currentPage={page}
-        totalPages={meta?.totalPages ?? 0}
-        onPageChangeAction={goToPage}
-      />
+      {/* Pagination */}
+      {meta && (
+        <div className="flex justify-end mt-6 px-4">
+          <Pagination currentPage={page} totalPages={meta.totalPages} onPageChange={goToPage} />
+        </div>
+      )}
+
       {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={isDialogOpen}

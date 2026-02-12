@@ -3,7 +3,7 @@ import { FieldLabel } from '../FieldLabel';
 
 export function SelectField({ field, value, error, onChange, isDisabled }: BaseFieldProps) {
   return (
-    <div className="relative">
+    <div className={field.className ?? 'relative'}>
       <FieldLabel field={field} />
       <div className="relative">
         <select

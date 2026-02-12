@@ -110,8 +110,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to console in development
-    console.error('ErrorBoundary caught an error:', error);
-    console.error('Error info:', errorInfo);
+    console.log('ErrorBoundary caught an error:', error);
+    console.log('Error info:', errorInfo);
 
     // Update state with error info
     this.setState({ errorInfo });
