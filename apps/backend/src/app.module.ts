@@ -1,13 +1,13 @@
+import * as path from 'path';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app/app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SequelizeModule, SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
 import databaseConfig from './database/config/database.config';
 import { authConfig, mailerConfig, smsConfig, appConfig } from './config';
 import storageConfig from './config/storage.config';
 import { AllConfigType } from './config/config.type';
-import * as path from 'path';
-import { SequelizeModule } from '@nestjs/sequelize';
 import { SequelizeConfigService } from './database/sequelize-config.service';
 import { MailerModule } from '@crownstack/mailer';
 // import { SmsModule } from '@crownstack/sms';
@@ -23,10 +23,11 @@ import { SkillModule } from './modules/skill';
 import { EventModule } from './modules/event';
 
 // Entities for guards
-import { SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
 import { SessionEntity, UserEntity } from './entities';
 import { ProfileModule } from './modules/profile/profile.module';
 import { DesignModule } from './modules/design/design.module';
+import { RecipientModule } from './modules/recipient/recipient.module';
+import { CredentialModule } from './modules/credential/credential.module';
 
 /**
  * Application Root Module
@@ -102,6 +103,8 @@ import { DesignModule } from './modules/design/design.module';
     SkillModule,
     EventModule,
     DesignModule,
+    RecipientModule,
+    CredentialModule,
   ],
   controllers: [AppController],
   providers: [

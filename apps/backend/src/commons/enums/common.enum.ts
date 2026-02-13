@@ -3,3 +3,8 @@ export enum UserTypeEnum {
   MANAGER = 'MANAGER',
   DESIGNER = 'DESIGNER',
 }
+
+export enum CredentialStatusEnum {
+  DRAFT = 'DRAFT',
+  ISSUED = 'ISSUED',
+}

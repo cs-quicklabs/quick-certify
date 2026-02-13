@@ -6,3 +6,4 @@ export * from './skill.service';
 export * from './event.service';
 export * from './organization-admin.service';
 export * from './design.service';
+export * from './credential.service';
