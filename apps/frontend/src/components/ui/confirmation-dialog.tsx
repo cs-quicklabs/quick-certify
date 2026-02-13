@@ -73,14 +73,16 @@ export function ConfirmationDialog({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
       onClick={onCancel}
+      data-testid="confirmation-dialog-overlay"
     >
-      <div className={`relative w-full ${className}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`relative w-full ${className}`} onClick={(e) => e.stopPropagation()} data-testid="confirmation-dialog">
         <div className="relative bg-neutral-primary-soft border border-default rounded-2xl shadow-lg p-2 md:p-4">
           {/* Close button */}
           <button
             type="button"
             onClick={onCancel}
             className="absolute top-2 right-2 text-body bg-transparent hover:bg-neutral-tertiary hover:text-heading rounded-full text-sm w-8 h-8 inline-flex justify-center items-center cursor-pointer"
+            data-testid="confirmation-dialog-close-button"
           >
             <svg
               className="w-3 h-3"
@@ -116,10 +118,10 @@ export function ConfirmationDialog({
               />
             </svg>
 
-            <h3 className=" text-lg font-bold text-gray-700 dark:text-gray-400">{title}</h3>
+            <h3 className=" text-lg font-bold text-gray-700 dark:text-gray-400" data-testid="confirmation-dialog-title">{title}</h3>
 
             {message && (
-              <p className="mb-6 text-xs text-slate-500 max-w-[90%] mx-auto">{message}</p>
+              <p className="mb-6 text-xs text-slate-500 max-w-[90%] mx-auto" data-testid="confirmation-dialog-message">{message}</p>
             )}
 
             {/* Actions */}
@@ -129,6 +131,7 @@ export function ConfirmationDialog({
                 onClick={onCancel}
                 disabled={isLoading}
                 className="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading focus:ring-4 focus:ring-neutral-tertiary shadow-xs font-medium rounded-sm text-sm px-4 py-2 focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="confirmation-dialog-cancel-button"
               >
                 {cancelLabel}
               </button>
@@ -138,6 +141,7 @@ export function ConfirmationDialog({
                 onClick={onConfirm}
                 disabled={isLoading}
                 className="text-white bg-danger hover:bg-danger-strong focus:ring-4 focus:ring-danger-medium shadow-xs font-medium text-sm px-4 py-2 focus:outline-none rounded-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="confirmation-dialog-confirm-button"
               >
                 {isLoading ? confirmLoadingLabel : confirmLabel}
               </button>

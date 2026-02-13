@@ -13,37 +13,18 @@ import { test, profileData, expect } from './Fixture';
  * - Success/Error messages
  */
 
-const userName = process.env.USER_EMAIL || 'divanshu@crownstack.com';
-const password = process.env.USER_PASS || 'Password@12';
-
 let profileSettingsPage;
 
-test.beforeEach(async ({ page, loginPage, profileSettingsPage: fixtureProfileSettingsPage }) => {
+test.beforeEach(async ({ page, profileSettingsPage: fixtureProfileSettingsPage }) => {
   profileSettingsPage = fixtureProfileSettingsPage;
 
-  // Navigate to profile settings page to check authentication status
+  // Start from dashboard (session is already authenticated via storageState)
+  await page.goto('/dashboard');
+  await page.waitForLoadState('networkidle');
+
+  // Navigate to profile settings page
   await page.goto('/settings/profile/general');
-
-  // Check if redirected to login (not authenticated)
-  const currentUrl = page.url();
-  if (currentUrl.includes('/login')) {
-    // Need to login
-    await loginPage.enterUserEmail(userName);
-    await loginPage.enterPassword(password);
-
-    // Click sign in and wait for navigation to dashboard or settings
-    await Promise.all([
-      loginPage.clickOnSigninBtn(),
-      page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-    ]);
-
-    // After login, navigate to profile settings page
-    await page.goto('/settings/profile/general');
-    await page.waitForLoadState('networkidle');
-  } else {
-    // Already authenticated, wait for profile settings page to load
-    await page.waitForLoadState('networkidle');
-  }
+  await page.waitForLoadState('networkidle');
 });
 
 test.describe('To validate the Profile Settings Functionality', () => {
@@ -286,8 +267,13 @@ test.describe('To validate the Profile Settings Functionality', () => {
     await profileSettingsPage.waitForFormReady();
 
     const email = await profileSettingsPage.getEmail();
-    expect(email).toBe(userName);
+    const userName = process.env.USER_EMAIL;
+    
+    if (userName) {
+      expect(email).toBe(userName);
+    }
     expect(email).toContain('@');
+    expect(email).toBeTruthy();
   });
 
   test('P114_To verify Save button is enabled when form is valid', async () => {

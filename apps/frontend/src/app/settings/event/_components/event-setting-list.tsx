@@ -40,6 +40,8 @@ export default function EventSettingList({
 }: EventSettingListProps) {
   const title = `${label}s`;
   const lowerLabel = label.toLowerCase();
+  // Create test ID prefix from label (e.g., "Event Type" -> "event-type", "Event Level" -> "event-level")
+  const testIdPrefix = lowerLabel.replace(/\s+/g, '-');
 
   const [newValue, setNewValue] = useState('');
   const [editingUuid, setEditingUuid] = useState<string | null>(null);
@@ -161,7 +163,7 @@ export default function EventSettingList({
     return (
       <>
         <div className="overflow-x-auto">
-          <table className="table w-full text-sm text-left rtl:text-right text-gray-500">
+          <table className="table w-full text-sm text-left rtl:text-right text-gray-500" data-testid={`${testIdPrefix}-table`}>
             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
               <tr>
                 <th className="px-6 py-3 w-full">{label.toUpperCase()}</th>
@@ -173,6 +175,7 @@ export default function EventSettingList({
                 <tr
                   key={item.uuid}
                   className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 border-b border-gray-200"
+                  data-testid={`${testIdPrefix}-row-${item.uuid}`}
                 >
                   {editingUuid === item.uuid ? (
                     <td className="p-2">
@@ -187,10 +190,11 @@ export default function EventSettingList({
                         }}
                         disabled={isUpdating}
                         autoFocus
+                        data-testid={`${testIdPrefix}-edit-input-${item.uuid}`}
                       />
                     </td>
                   ) : (
-                    <td className="px-6 py-4 form-text-normal">{item.name}</td>
+                    <td className="px-6 py-4 form-text-normal" data-testid={`${testIdPrefix}-name-${item.uuid}`}>{item.name}</td>
                   )}
                   {editingUuid === item.uuid ? (
                     <td className="p-2">
@@ -199,12 +203,14 @@ export default function EventSettingList({
                           onClick={handleSaveEdit}
                           className="btn-primary text-sm px-3 py-1.5"
                           disabled={isUpdating || !editingValue.trim()}
+                          data-testid={`${testIdPrefix}-save-button-${item.uuid}`}
                         >
                           {isUpdating ? 'Saving...' : 'Save'}
                         </button>
                         <button
                           onClick={handleCancelEdit}
                           className="btn-inline-blue text-sm whitespace-nowrap"
+                          data-testid={`${testIdPrefix}-cancel-button-${item.uuid}`}
                         >
                           Cancel
                         </button>
@@ -217,6 +223,7 @@ export default function EventSettingList({
                           onClick={() => handleEdit(item.uuid, item.name)}
                           className="btn-inline-blue"
                           disabled={deletingId !== null}
+                          data-testid={`${testIdPrefix}-edit-button-${item.uuid}`}
                         >
                           Edit
                         </button>
@@ -224,6 +231,7 @@ export default function EventSettingList({
                           onClick={() => setConfirmDialog({ isOpen: true, item })}
                           className="ml-2 btn-inline-red"
                           disabled={deletingId !== null}
+                          data-testid={`${testIdPrefix}-delete-button-${item.uuid}`}
                         >
                           {deletingId === item.uuid ? 'Deleting...' : 'Delete'}
                         </button>
@@ -258,8 +266,8 @@ export default function EventSettingList({
           <div className="max-w-xl pb-12 px-4 lg:col-span-6">
             <div className="space-y-6">
               <div>
-                <h1 className="form-title">{title}</h1>
-                <p className="form-subtitle">{subtitle}</p>
+                <h1 className="form-title" data-testid={`${testIdPrefix}-page-title`}>{title}</h1>
+                <p className="form-subtitle" data-testid={`${testIdPrefix}-page-subtitle`}>{subtitle}</p>
               </div>
 
               {successMessage && (
@@ -282,11 +290,13 @@ export default function EventSettingList({
                     className="form-input-field w-full"
                     placeholder={`New ${label}`}
                     disabled={isCreating}
+                    data-testid={`${testIdPrefix}-new-input`}
                   />
                   <button
                     onClick={handleAdd}
                     className="btn-primary"
                     disabled={isCreating || !newValue.trim()}
+                    data-testid={`${testIdPrefix}-add-button`}
                   >
                     {isCreating ? 'Saving...' : 'Save'}
                   </button>

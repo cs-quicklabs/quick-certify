@@ -14,30 +14,19 @@ import type { AccountGeneralInfoPage } from '../pageobjects/AccountGeneralInfoPa
  * - Save and validation messages
  */
 
-const userName = process.env.USER_EMAIL || 'divanshu@crownstack.com';
-const password = process.env.USER_PASS || 'Password@12';
-
 let accountGeneralInfoPage: AccountGeneralInfoPage;
 
 test.beforeEach(
-  async ({ page, loginPage, accountGeneralInfoPage: fixtureAccountGeneralInfoPage }) => {
+  async ({ page, accountGeneralInfoPage: fixtureAccountGeneralInfoPage }) => {
     accountGeneralInfoPage = fixtureAccountGeneralInfoPage;
 
-    await page.goto('/settings/account/general-information');
+    // Start from dashboard (session is already authenticated via storageState)
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login')) {
-      await loginPage.enterUserEmail(userName);
-      await loginPage.enterPassword(password);
-      await Promise.all([
-        loginPage.clickOnSigninBtn(),
-        page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-      ]);
-      await page.goto('/settings/account/general-information');
-      await page.waitForLoadState('networkidle');
-    } else {
-      await page.waitForLoadState('networkidle');
-    }
+    // Navigate to account general information page
+    await page.goto('/settings/account/general-information');
+    await page.waitForLoadState('networkidle');
   },
 );
 

@@ -1,0 +1,21 @@
+{
+  "formData": {
+    "validEventFormatName": "Online",
+    "validEventFormatName2": "In-Person",
+    "validEventFormatName3": "Hybrid",
+    "editedEventFormatName": "Online Updated",
+    "emptyEventFormatName": "",
+    "whitespaceOnlyEventFormatName": "   ",
+    "lowercaseEventFormatName": "online",
+    "uppercaseEventFormatName": "ONLINE",
+    "mixedCaseEventFormatName": "oNlInE"
+  },
+  "expectedMessages": {
+    "emptyEventFormatNameError": "cannot be empty",
+    "whitespaceOnlyError": "cannot be empty",
+    "duplicateEventFormatError": "already exists",
+    "duplicateEventFormatErrorFormat": "Event format '{name}' already exists",
+    "deleteConfirmationTitle": "Delete Event Format?",
+    "deleteConfirmationMessage": "Are you sure you want to delete"
+  }
+}

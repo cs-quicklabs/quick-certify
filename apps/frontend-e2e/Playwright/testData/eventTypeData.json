@@ -1,0 +1,21 @@
+{
+  "formData": {
+    "validEventTypeName": "Conference",
+    "validEventTypeName2": "Workshop",
+    "validEventTypeName3": "Seminar",
+    "editedEventTypeName": "Conference Updated",
+    "emptyEventTypeName": "",
+    "whitespaceOnlyEventTypeName": "   ",
+    "lowercaseEventTypeName": "conference",
+    "uppercaseEventTypeName": "CONFERENCE",
+    "mixedCaseEventTypeName": "cOnFeReNcE"
+  },
+  "expectedMessages": {
+    "emptyEventTypeNameError": "cannot be empty",
+    "whitespaceOnlyError": "cannot be empty",
+    "duplicateEventTypeError": "already exists",
+    "duplicateEventTypeErrorFormat": "Event type '{name}' already exists",
+    "deleteConfirmationTitle": "Delete Event Type?",
+    "deleteConfirmationMessage": "Are you sure you want to delete"
+  }
+}

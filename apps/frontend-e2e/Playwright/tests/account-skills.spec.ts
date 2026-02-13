@@ -20,35 +20,19 @@ let randomDataGenerator: RandomDataGenerator;
 test.beforeEach(
   async ({
     page,
-    loginPage,
     accountSkillsPage: fixtureAccountSkillsPage,
     randomDataGenerator: fixtureRandomDataGenerator,
   }) => {
     accountSkillsPage = fixtureAccountSkillsPage;
     randomDataGenerator = fixtureRandomDataGenerator;
 
-    const userName = process.env.USER_EMAIL;
-    const password = process.env.USER_PASS;
+    // Start from dashboard (session is already authenticated via storageState)
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    if (!userName || !password) {
-      throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
-    }
-
+    // Navigate to account skills page
     await page.goto('/settings/account/skills');
-
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login')) {
-      await loginPage.enterUserEmail(userName);
-      await loginPage.enterPassword(password);
-      await Promise.all([
-        loginPage.clickOnSigninBtn(),
-        page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-      ]);
-      await page.goto('/settings/account/skills');
-      await page.waitForLoadState('networkidle');
-    } else {
-      await page.waitForLoadState('networkidle');
-    }
+    await page.waitForLoadState('networkidle');
   },
 );
 

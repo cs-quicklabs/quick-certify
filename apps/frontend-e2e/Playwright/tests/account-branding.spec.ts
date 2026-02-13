@@ -71,15 +71,8 @@ function createTestImage(filePath: string, sizeKB: number = 50): void {
 
 let accountBrandingPage: AccountBrandingPage;
 
-test.beforeEach(async ({ page, loginPage, accountBrandingPage: fixtureAccountBrandingPage }) => {
+test.beforeEach(async ({ page, accountBrandingPage: fixtureAccountBrandingPage }) => {
   accountBrandingPage = fixtureAccountBrandingPage;
-
-  const userName = process.env.USER_EMAIL;
-  const password = process.env.USER_PASS;
-
-  if (!userName || !password) {
-    throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
-  }
 
   // Create test assets directory and images if they don't exist
   const testAssetsDir = path.join(__dirname, '..', 'test-assets');
@@ -97,21 +90,13 @@ test.beforeEach(async ({ page, loginPage, accountBrandingPage: fixtureAccountBra
     createTestImage(largeImagePath, 2048); // 2MB (exceeds 1MB limit)
   }
 
-  await page.goto('/settings/account/branding');
+  // Start from dashboard (session is already authenticated via storageState)
+  await page.goto('/dashboard');
+  await page.waitForLoadState('networkidle');
 
-  const currentUrl = page.url();
-  if (currentUrl.includes('/login')) {
-    await loginPage.enterUserEmail(userName);
-    await loginPage.enterPassword(password);
-    await Promise.all([
-      loginPage.clickOnSigninBtn(),
-      page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-    ]);
-    await page.goto('/settings/account/branding');
-    await page.waitForLoadState('networkidle');
-  } else {
-    await page.waitForLoadState('networkidle');
-  }
+  // Navigate to account branding page
+  await page.goto('/settings/account/branding');
+  await page.waitForLoadState('networkidle');
 });
 
 test.describe('Account Settings - Branding', () => {

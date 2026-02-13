@@ -31,6 +31,14 @@ async function globalSetup(config: FullConfig) {
   const loginPage = new LoginPage(page);
   await loginPage.login(email, password);
 
+  // Wait for navigation to dashboard after login
+  await page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 });
+  
+  // Navigate to dashboard to ensure session is established
+  await page.goto('/dashboard');
+  await page.waitForLoadState('networkidle');
+
+  // Save authentication state
   await context.storageState({ path: authFile });
   await browser.close();
 }

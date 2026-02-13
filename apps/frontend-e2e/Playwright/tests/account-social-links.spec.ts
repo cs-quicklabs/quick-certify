@@ -14,31 +14,16 @@ import type { AccountSocialLinksPage } from '../pageobjects/AccountSocialLinksPa
 let accountSocialLinksPage: AccountSocialLinksPage;
 
 test.beforeEach(
-  async ({ page, loginPage, accountSocialLinksPage: fixtureAccountSocialLinksPage }) => {
+  async ({ page, accountSocialLinksPage: fixtureAccountSocialLinksPage }) => {
     accountSocialLinksPage = fixtureAccountSocialLinksPage;
 
-    const userName = process.env.USER_EMAIL;
-    const password = process.env.USER_PASS;
+    // Start from dashboard (session is already authenticated via storageState)
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    if (!userName || !password) {
-      throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
-    }
-
+    // Navigate to account social links page
     await page.goto('/settings/account/social-links');
-
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login')) {
-      await loginPage.enterUserEmail(userName);
-      await loginPage.enterPassword(password);
-      await Promise.all([
-        loginPage.clickOnSigninBtn(),
-        page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-      ]);
-      await page.goto('/settings/account/social-links');
-      await page.waitForLoadState('networkidle');
-    } else {
-      await page.waitForLoadState('networkidle');
-    }
+    await page.waitForLoadState('networkidle');
   },
 );
 

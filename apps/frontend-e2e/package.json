@@ -23,7 +23,10 @@
     "e2e:headed": "playwright test --headed",
     "e2e:debug": "playwright test --debug",
     "execute:loginTests": "npx playwright test ./login.spec.ts",
-    "execute:onboardingTests": "npx playwright test ./onboarding.spec.ts --workers=1",
+    "execute:onboardingTests": "npx playwright test ./onboarding.spec.ts --workers=7",
+    "execute:eventTypeTests": "npx playwright test event-type.spec.ts",
+    "execute:eventLevelTests": "npx playwright test event-level.spec.ts",
+    "execute:eventFormatTests": "npx playwright test event-format.spec.ts",
     "generateResults": "allure serve allure-results"
   }
 }

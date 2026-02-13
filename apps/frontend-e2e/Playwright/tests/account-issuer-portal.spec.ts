@@ -70,15 +70,8 @@ function createTestImage(filePath: string, sizeKB: number = 50): void {
 let accountIssuerPortalPage: AccountIssuerPortalPage;
 
 test.beforeEach(
-  async ({ page, loginPage, accountIssuerPortalPage: fixtureAccountIssuerPortalPage }) => {
+  async ({ page, accountIssuerPortalPage: fixtureAccountIssuerPortalPage }) => {
     accountIssuerPortalPage = fixtureAccountIssuerPortalPage;
-
-    const userName = process.env.USER_EMAIL;
-    const password = process.env.USER_PASS;
-
-    if (!userName || !password) {
-      throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
-    }
 
     // Create test assets directory and images if they don't exist
     const testAssetsDir = path.join(__dirname, '..', 'test-assets');
@@ -92,21 +85,13 @@ test.beforeEach(
       createTestImage(largeBannerPath, 2048); // 2MB (exceeds 1MB limit)
     }
 
-    await page.goto('/settings/account/issuer-portal');
+    // Start from dashboard (session is already authenticated via storageState)
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login')) {
-      await loginPage.enterUserEmail(userName);
-      await loginPage.enterPassword(password);
-      await Promise.all([
-        loginPage.clickOnSigninBtn(),
-        page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
-      ]);
-      await page.goto('/settings/account/issuer-portal');
-      await page.waitForLoadState('networkidle');
-    } else {
-      await page.waitForLoadState('networkidle');
-    }
+    // Navigate to account issuer portal page
+    await page.goto('/settings/account/issuer-portal');
+    await page.waitForLoadState('networkidle');
   },
 );
 

@@ -12,6 +12,9 @@ import { AccountSocialLinksPage } from '../pageobjects/AccountSocialLinksPage';
 import { AccountBrandingPage } from '../pageobjects/AccountBrandingPage';
 import { AccountIssuerPortalPage } from '../pageobjects/AccountIssuerPortalPage';
 import { AccountSkillsPage } from '../pageobjects/AccountSkillsPage';
+import { EventTypePage } from '../pageobjects/EventTypePage';
+import { EventLevelPage } from '../pageobjects/EventLevelPage';
+import { EventFormatPage } from '../pageobjects/EventFormatPage';
 import { RandomDataGenerator } from '../utils/RandomDataGenerator';
 import registrationData from '../testData/registrationData.json';
 import loginData from '../testData/loginData.json';
@@ -21,6 +24,9 @@ import socialLinksData from '../testData/socialLinksData.json';
 import brandingData from '../testData/brandingData.json';
 import issuerPortalData from '../testData/issuerPortalData.json';
 import skillsData from '../testData/skillsData.json';
+import eventTypeData from '../testData/eventTypeData.json';
+import eventLevelData from '../testData/eventLevelData.json';
+import eventFormatData from '../testData/eventFormatData.json';
 
 /**
  * Extends the base Playwright test with custom fixtures.
@@ -35,6 +41,9 @@ type Fixtures = {
   accountBrandingPage: AccountBrandingPage;
   accountIssuerPortalPage: AccountIssuerPortalPage;
   accountSkillsPage: AccountSkillsPage;
+  eventTypePage: EventTypePage;
+  eventLevelPage: EventLevelPage;
+  eventFormatPage: EventFormatPage;
 };
 
 type WorkerFixtures = {
@@ -82,6 +91,21 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await use(accountSkillsPage);
   },
 
+  eventTypePage: async ({ page }, use) => {
+    const eventTypePage = new EventTypePage(page);
+    await use(eventTypePage);
+  },
+
+  eventLevelPage: async ({ page }, use) => {
+    const eventLevelPage = new EventLevelPage(page);
+    await use(eventLevelPage);
+  },
+
+  eventFormatPage: async ({ page }, use) => {
+    const eventFormatPage = new EventFormatPage(page);
+    await use(eventFormatPage);
+  },
+
   randomDataGenerator: [
     // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {
@@ -102,5 +126,8 @@ export {
   brandingData,
   issuerPortalData,
   skillsData,
+  eventTypeData,
+  eventLevelData,
+  eventFormatData,
   RandomDataGenerator,
 };

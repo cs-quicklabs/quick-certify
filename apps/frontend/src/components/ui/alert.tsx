@@ -47,11 +47,12 @@ export function Alert({ type, title, message, onClose, className }: AlertProps) 
     <div
       className={clsx('flex p-4 border-l-4 rounded-sm', styles.container, className)}
       role="alert"
+      data-testid={`alert-${type}`}
     >
       {/* <Icon className={clsx('flex-shrink-0 w-5 h-5', styles.icon)} /> */}
       <div className="ml-3 flex-1">
         {title && <h3 className={clsx('text-sm font-medium', styles.title)}>{title}</h3>}
-        <div className={clsx('text-sm', title && 'mt-1', styles.message)}>{message}</div>
+        <div className={clsx('text-sm', title && 'mt-1', styles.message)} data-testid={`alert-${type}-message`}>{message}</div>
       </div>
       {onClose && (
         <button
@@ -61,6 +62,7 @@ export function Alert({ type, title, message, onClose, className }: AlertProps) 
             styles.icon,
           )}
           onClick={onClose}
+          data-testid={`alert-${type}-close-button`}
         >
           <X className="w-4 h-4" />
         </button>

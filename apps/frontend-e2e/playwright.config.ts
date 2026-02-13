@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 1,
+  workers: process.env.CI ? 7 : 1,
   reporter: [
     ['line'],
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
@@ -21,6 +21,8 @@ export default defineConfig({
 
   // Global setup that logs in and saves auth.json if missing
   globalSetup: './global-setup.ts',
+  // Global teardown that navigates to dashboard after all tests
+  globalTeardown: './global-teardown.ts',
 
   use: {
     baseURL: process.env.BASE_URL,
@@ -30,24 +32,24 @@ export default defineConfig({
   },
 
   // Two projects:
-  // 1. Authenticated tests (all except Login.spec.ts)
-  // 2. Fresh session tests (only Login.spec.ts)
+  // 1. Authenticated tests (all except login.spec.ts and onboarding.spec.ts)
+  // 2. Fresh session tests (login.spec.ts and onboarding.spec.ts)
   projects: [
     {
       name: 'chromium-auth',
-      testIgnore: /.*Login\.spec\.ts/, // skip Login.spec.ts
+      testIgnore: [/.*login\.spec\.ts/, /.*onboarding\.spec\.ts/], // skip login and onboarding tests
       use: {
         ...devices['Desktop Chrome'],
-        storageState: path.resolve(__dirname, 'auth.json'), //  uses saved session
+        storageState: path.resolve(__dirname, 'auth.json'), // uses saved session
         headless: true,
       },
     },
     {
-      name: 'chromium-login',
-      testMatch: /.*Login\.spec\.ts/, // only run login tests
+      name: 'chromium-fresh',
+      testMatch: /.*(login|onboarding)\.spec\.ts/, // run login and onboarding tests
       use: {
         ...devices['Desktop Chrome'],
-        storageState: undefined, // Fresh session
+        storageState: undefined, // Fresh session - no authentication
         headless: true,
       },
     },

@@ -1,0 +1,21 @@
+{
+  "formData": {
+    "validEventLevelName": "Beginner",
+    "validEventLevelName2": "Intermediate",
+    "validEventLevelName3": "Advanced",
+    "editedEventLevelName": "Beginner Updated",
+    "emptyEventLevelName": "",
+    "whitespaceOnlyEventLevelName": "   ",
+    "lowercaseEventLevelName": "beginner",
+    "uppercaseEventLevelName": "BEGINNER",
+    "mixedCaseEventLevelName": "bEgInNeR"
+  },
+  "expectedMessages": {
+    "emptyEventLevelNameError": "cannot be empty",
+    "whitespaceOnlyError": "cannot be empty",
+    "duplicateEventLevelError": "already exists",
+    "duplicateEventLevelErrorFormat": "Event level '{name}' already exists",
+    "deleteConfirmationTitle": "Delete Event Level?",
+    "deleteConfirmationMessage": "Are you sure you want to delete"
+  }
+}
