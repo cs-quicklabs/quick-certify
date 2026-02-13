@@ -13,6 +13,14 @@ export interface CreateCredentialRequest {
   status?: 'draft' | 'issued';
 }
 
+export interface BatchCreateCredentialRequest {
+  eventId: string;
+  recipients: { name: string; email: string }[];
+  issuedDate?: string;
+  expirationDate?: string;
+  status?: 'draft' | 'issued';
+}
+
 export interface UpdateCredentialRequest {
   recipientName?: string;
   recipientEmail?: string;
@@ -38,6 +46,11 @@ export const credentialService = {
 
   async createCredential(data: CreateCredentialRequest): Promise<Credential> {
     const response = await apiClient.post<ApiResponse<Credential>>('/credentials', data);
+    return response.data.data;
+  },
+
+  async createBatchCredentials(data: BatchCreateCredentialRequest): Promise<Credential[]> {
+    const response = await apiClient.post<ApiResponse<Credential[]>>('/credentials/batch', data);
     return response.data.data;
   },
 

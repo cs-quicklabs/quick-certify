@@ -59,6 +59,7 @@ export const ROUTES = {
   // Feature routes
   EVENTS: '/events',
   CREDENTIALS: '/credentials',
+  CREDENTIALS_ISSUE: '/credentials/issue',
   DESIGNS: '/designs',
   EMAILS: '/emails',
   ANALYTICS: '/analytics',
