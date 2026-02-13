@@ -3,6 +3,7 @@ import {
   credentialService,
   CreateCredentialRequest,
   UpdateCredentialRequest,
+  BatchCreateCredentialRequest,
 } from '@/services/api/credential.service';
 import { CredentialFilters } from '@/types/credential.types';
 
@@ -46,6 +47,17 @@ export function useUpdateCredential() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: CREDENTIAL_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: CREDENTIAL_KEYS.detail(variables.id) });
+    },
+  });
+}
+
+export function useCreateBatchCredentials() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: BatchCreateCredentialRequest) =>
+      credentialService.createBatchCredentials(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CREDENTIAL_KEYS.lists() });
     },
   });
 }

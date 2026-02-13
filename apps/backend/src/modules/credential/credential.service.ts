@@ -8,7 +8,12 @@ import { EventEntity } from '@src/entities/event.entity';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { EventService } from '@src/modules/event/services/event.service';
 import { RecipientService } from '@src/modules/recipient/recipient.service';
-import { CreateCredentialDto, UpdateCredentialDto, CredentialFilterDto } from './dtos';
+import {
+  CreateCredentialDto,
+  UpdateCredentialDto,
+  CredentialFilterDto,
+  BatchCreateCredentialDto,
+} from './dtos';
 
 @Injectable()
 export class CredentialService {
@@ -198,6 +203,47 @@ export class CredentialService {
         { model: EventEntity, as: 'event', attributes: ['uuid', 'name'] },
       ],
     });
+  }
+
+  async createBatch(
+    organizationUuid: string,
+    dto: BatchCreateCredentialDto,
+  ): Promise<CredentialEntity[]> {
+    const organization = await this.requireOrganization(organizationUuid);
+
+    const event = await this.eventService.findByUuid(dto.eventId, organizationUuid);
+    if (!event) {
+      throw new BadRequestException(`Event with UUID ${dto.eventId} not found or inactive`);
+    }
+
+    const credentials: CredentialEntity[] = [];
+
+    for (const recipient of dto.recipients) {
+      const recipientEntity = await this.recipientService.findOrCreate(organizationUuid, {
+        name: recipient.name,
+        email: recipient.email,
+      });
+
+      const credential = await this.credentialModel.create({
+        organization_id: organization.id,
+        recipient_id: recipientEntity.id,
+        event_id: event.id,
+        issued_date: dto.issuedDate || new Date().toISOString().split('T')[0],
+        expiration_date: dto.expirationDate || null,
+        status: dto.status || 'issued',
+      });
+
+      const loaded = await credential.reload({
+        include: [
+          { model: RecipientEntity, as: 'recipient', attributes: ['uuid', 'name', 'email'] },
+          { model: EventEntity, as: 'event', attributes: ['uuid', 'name'] },
+        ],
+      });
+
+      credentials.push(loaded);
+    }
+
+    return credentials;
   }
 
   async deleteByUuid(uuid: string, organizationUuid: string): Promise<boolean> {

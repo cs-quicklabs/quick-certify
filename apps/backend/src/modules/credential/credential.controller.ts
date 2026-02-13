@@ -11,7 +11,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CredentialService } from './credential.service';
-import { CreateCredentialDto, UpdateCredentialDto, CredentialFilterDto } from './dtos';
+import {
+  CreateCredentialDto,
+  UpdateCredentialDto,
+  CredentialFilterDto,
+  BatchCreateCredentialDto,
+} from './dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
@@ -32,6 +37,14 @@ export class CredentialController {
   async create(@CurrentUser() user: CurrentUserType, @Body() dto: CreateCredentialDto) {
     const credential = await this.credentialService.create(user.organizationUuid, dto);
     return new SuccessResponse('Credential created successfully', credential);
+  }
+
+  @Post('batch')
+  @ApiOperation({ summary: 'Issue credentials to multiple recipients at once' })
+  @ApiResponse({ status: 201, description: 'Credentials created successfully' })
+  async createBatch(@CurrentUser() user: CurrentUserType, @Body() dto: BatchCreateCredentialDto) {
+    const credentials = await this.credentialService.createBatch(user.organizationUuid, dto);
+    return new SuccessResponse('Credentials issued successfully', credentials);
   }
 
   @Get()
