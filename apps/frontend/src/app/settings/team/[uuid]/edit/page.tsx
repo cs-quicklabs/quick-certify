@@ -60,11 +60,25 @@ export default function EditTeamMemberPage() {
             })),
           };
         }
+        if (field.name === 'status') {
+          const isInvited = member?.status === 'invited';
+
+          return {
+            ...field,
+            disabled: isInvited,
+            options: isInvited
+              ? [{ label: 'Invited', value: 'invited' }]
+              : [
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'archived' },
+                ],
+          };
+        }
         return field;
       });
     }
     return editTeamMemberFormFields;
-  }, [filteredRoles]);
+  }, [filteredRoles, member?.status]);
 
   const formConfig: FormConfig<typeof editTeamMemberSchema> = {
     title: 'Edit Team Member',
@@ -99,9 +113,12 @@ export default function EditTeamMemberPage() {
         first_name: member.first_name || '',
         last_name: member.last_name || '',
         email: member.email || '',
-        roleId: member.role_id || '', // Keep as string for form compatibility
-        // Map status: active -> active, everything else -> archived (inactive/archived/invited)
-        status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
+        roleId: member.role_id || '',
+        status: (() => {
+          if (member.status === 'active') return 'active';
+          if (member.status === 'invited') return 'invited';
+          return 'archived';
+        })() as 'active' | 'invited' | 'archived',
       }
     : undefined;
 

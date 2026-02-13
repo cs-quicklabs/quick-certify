@@ -4,27 +4,32 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { EventEntity } from '@src/entities/event.entity';
-import { EventTypeEntity } from '@src/entities/event-type.entity';
-import { EventLevelEntity } from '@src/entities/event-level.entity';
-import { EventFormatEntity } from '@src/entities/event-format.entity';
-import { CreateEventDto, UpdateEventDto } from '../dtos';
-import { EventTypeService } from './event-type.service';
-import { EventLevelService } from './event-level.service';
-import { EventFormatService } from './event-format.service';
+import { CreateEventDto, UpdateEventDto, EventFilterDto } from '../dtos';
+import { PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
+import { EventRepository, EventFindAllOptions } from '../repositories/event.repository';
+import { EventSkillService } from './event-skill.service';
+import { EventReferenceValidator } from '../validators/event-reference.validator';
 
+/**
+ * Event Service
+ *
+ * Handles event CRUD operations with support for progressive creation.
+ * Refactored to follow SOLID principles:
+ * - Single Responsibility: Only handles event business logic
+ * - Dependencies: Uses Repository, Validator, and SkillService
+ *
+ * Progressive Creation Pattern:
+ * - Step 1: Create event with minimal data (name + design)
+ * - Step 2: Update with additional details (type, level, format, description, skills)
+ */
 @Injectable()
 export class EventService {
   constructor(
-    @InjectModel(EventEntity)
-    private readonly eventModel: typeof EventEntity,
-    private readonly eventTypeService: EventTypeService,
-    private readonly eventLevelService: EventLevelService,
-    private readonly eventFormatService: EventFormatService,
+    private readonly eventRepository: EventRepository,
+    private readonly eventSkillService: EventSkillService,
+    private readonly referenceValidator: EventReferenceValidator,
     private readonly organizationService: OrganizationService,
   ) {}
 
@@ -33,340 +38,291 @@ export class EventService {
    */
   async findAll(
     organizationUuid: string,
-    options: FindAllOptions = {},
+    filters: EventFilterDto = {},
   ): Promise<PaginatedResult<EventEntity>> {
-    const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {} } = options;
+    const organization = await this.getOrganization(organizationUuid);
 
-    const organization = await this.organizationService.findByUuid(organizationUuid);
     if (!organization) {
-      return {
-        data: [],
-        meta: { total: 0, page: 1, limit, totalPages: 0, hasNextPage: false, hasPrevPage: false },
-      };
+      return this.emptyPaginatedResult(filters.limit || 10);
     }
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
-
-    const { count, rows } = await this.eventModel.findAndCountAll({
-      where: {
-        organization_id: organization.id,
-        is_active: true,
-        ...where,
-      },
-      include: [
-        {
-          model: EventTypeEntity,
-          as: 'event_type',
-          where: { is_active: true },
-          required: true,
-        },
-        {
-          model: EventLevelEntity,
-          as: 'event_level',
-          where: { is_active: true },
-          required: true,
-        },
-        {
-          model: EventFormatEntity,
-          as: 'event_format',
-          where: { is_active: true },
-          required: true,
-        },
-      ],
-      order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
-    });
-
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
+    const options: EventFindAllOptions = {
+      ...filters,
+      typeUuids: this.parseUuidList(filters.typeIds),
+      levelUuids: this.parseUuidList(filters.levelIds),
+      formatUuids: this.parseUuidList(filters.formatIds),
     };
+
+    return this.eventRepository.findAll(organization.id, options);
   }
 
   /**
    * Find one event by UUID within organization
    */
   async findByUuid(uuid: string, organizationUuid: string): Promise<EventEntity | null> {
-    const organization = await this.organizationService.findByUuid(organizationUuid);
-    if (!organization) {
-      return null;
-    }
+    const organization = await this.getOrganization(organizationUuid);
+    if (!organization) return null;
 
-    return this.eventModel.findOne({
-      where: {
-        uuid,
-        organization_id: organization.id,
-        is_active: true,
-      },
-      include: [
-        {
-          model: EventTypeEntity,
-          as: 'event_type',
-          where: { is_active: true },
-          required: false,
-        },
-        {
-          model: EventLevelEntity,
-          as: 'event_level',
-          where: { is_active: true },
-          required: false,
-        },
-        {
-          model: EventFormatEntity,
-          as: 'event_format',
-          where: { is_active: true },
-          required: false,
-        },
-      ],
-    });
+    return this.eventRepository.findByUuid(uuid, organization.id);
   }
 
   /**
-   * Create a new event for an organization
+   * Create a new event
+   * Supports restoring soft-deleted events with the same name
    */
   async create(organizationUuid: string, dto: CreateEventDto): Promise<EventEntity> {
     const organization = await this.requireOrganization(organizationUuid);
     const normalizedName = dto.name.trim();
 
-    // Check for duplicate event name within the same organization
-    const existingEvent = await this.eventModel.findOne({
-      where: {
-        organization_id: organization.id,
-        name: { [Op.iLike]: normalizedName },
-      },
+    // Validate required design
+    if (!dto.designId) {
+      throw new BadRequestException('Design ID is required');
+    }
+
+    // Validate references
+    const refs = await this.referenceValidator.validateOptional(organizationUuid, {
+      eventTypeId: dto.eventTypeId,
+      eventLevelId: dto.eventLevelId,
+      eventFormatId: dto.eventFormatId,
+      designId: dto.designId,
     });
 
-    // Validate referenced master records
-    const { eventType, eventLevel, eventFormat } = await this.validateEventReferences(
-      organizationUuid,
-      dto,
-    );
+    // Check for existing event
+    const existingEvent = await this.eventRepository.findByName(normalizedName, organization.id);
 
     if (existingEvent) {
-      return this.handleExistingEvent(
-        existingEvent,
-        normalizedName,
-        eventType,
-        eventLevel,
-        eventFormat,
+      return this.restoreOrThrow(existingEvent, normalizedName, dto, refs, organizationUuid);
+    }
+
+    // Use transaction to ensure atomicity of event + skill creation
+    const sequelize = this.eventRepository.getSequelize();
+    const transaction = await sequelize.transaction();
+
+    try {
+      const event = await this.eventRepository.create(
+        {
+          organization_id: organization.id,
+          name: normalizedName,
+          description: dto.description ?? null,
+          learning_link: dto.learningLink ?? null,
+          event_type_id: refs.eventType!.id,
+          event_level_id: refs.eventLevel!.id,
+          event_format_id: refs.eventFormat!.id,
+          design_id: refs.design?.id ?? null,
+          is_active: true,
+        },
+        transaction,
       );
-    }
 
-    return this.eventModel.create({
-      organization_id: organization.id,
-      name: normalizedName,
-      event_type_id: eventType.id,
-      event_level_id: eventLevel.id,
-      event_format_id: eventFormat.id,
-      is_active: true,
-    });
+      // Associate skills if provided
+      if (dto.skillIds?.length) {
+        await this.eventSkillService.addSkills(event, dto.skillIds, organizationUuid, transaction);
+      }
+
+      await transaction.commit();
+      return this.eventRepository.reload(event);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**
-   * Handle existing event - restore if soft-deleted, throw if active
-   */
-  private async handleExistingEvent(
-    existingEvent: EventEntity,
-    normalizedName: string,
-    eventType: EventTypeEntity,
-    eventLevel: EventLevelEntity,
-    eventFormat: EventFormatEntity,
-  ): Promise<EventEntity> {
-    if (existingEvent.is_active) {
-      throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
-    }
-
-    // Restore soft-deleted event with new values
-    await existingEvent.update({
-      event_type_id: eventType.id,
-      event_level_id: eventLevel.id,
-      event_format_id: eventFormat.id,
-      is_active: true,
-    });
-
-    return existingEvent.reload({
-      include: [
-        { model: EventTypeEntity, as: 'event_type' },
-        { model: EventLevelEntity, as: 'event_level' },
-        { model: EventFormatEntity, as: 'event_format' },
-      ],
-    });
-  }
-
-  /**
-   * Update an event by UUID within organization
+   * Update an event by UUID
+   * Supports partial updates
    */
   async updateByUuid(
     uuid: string,
     organizationUuid: string,
     dto: UpdateEventDto,
   ): Promise<EventEntity> {
-    const event = await this.findByUuidOrFail(uuid, organizationUuid);
-
-    const organization = await this.requireOrganization(organizationUuid);
+    const event = await this.requireEvent(uuid, organizationUuid);
 
     const updateData: Partial<EventEntity> = {};
 
+    // Handle name update with duplicate check
     if (dto.name !== undefined) {
-      const normalizedName = dto.name.trim();
-
-      // Check for duplicate name (excluding current event)
-      const existingEvent = await this.eventModel.findOne({
-        where: {
-          organization_id: organization.id,
-          name: { [Op.iLike]: normalizedName },
-          id: { [Op.ne]: event.id },
-        },
-      });
-
-      if (existingEvent) {
-        throw new ConflictException(
-          `Event "${normalizedName}" already exists in this organization`,
-        );
-      }
-
-      updateData.name = normalizedName;
+      updateData.name = await this.validateNameUpdate(dto.name, event.organization_id, event.id);
     }
 
-    // Validate referenced UUIDs if provided and convert to IDs
+    // Handle simple field updates
+    if (dto.description !== undefined) {
+      updateData.description = dto.description ?? null;
+    }
+
+    if (dto.learningLink !== undefined) {
+      updateData.learning_link = dto.learningLink ?? null;
+    }
+
+    // Handle reference updates
     if (dto.eventTypeId !== undefined) {
-      const eventType = await this.eventTypeService.findByUuid(dto.eventTypeId, organizationUuid);
-      if (!eventType) {
-        throw new BadRequestException(
-          `Event type with UUID ${dto.eventTypeId} not found or inactive`,
-        );
-      }
-      updateData.event_type_id = eventType.id;
+      const eventType = await this.referenceValidator.validateEventType(
+        dto.eventTypeId,
+        organizationUuid,
+      );
+      updateData.event_type_id = eventType?.id ?? null;
     }
 
     if (dto.eventLevelId !== undefined) {
-      const eventLevel = await this.eventLevelService.findByUuid(
+      const eventLevel = await this.referenceValidator.validateEventLevel(
         dto.eventLevelId,
         organizationUuid,
       );
-      if (!eventLevel) {
-        throw new BadRequestException(
-          `Event level with UUID ${dto.eventLevelId} not found or inactive`,
-        );
-      }
-      updateData.event_level_id = eventLevel.id;
+      updateData.event_level_id = eventLevel?.id ?? null;
     }
 
     if (dto.eventFormatId !== undefined) {
-      const eventFormat = await this.eventFormatService.findByUuid(
+      const eventFormat = await this.referenceValidator.validateEventFormat(
         dto.eventFormatId,
         organizationUuid,
       );
-      if (!eventFormat) {
-        throw new BadRequestException(
-          `Event format with UUID ${dto.eventFormatId} not found or inactive`,
-        );
-      }
-      updateData.event_format_id = eventFormat.id;
+      updateData.event_format_id = eventFormat?.id ?? null;
     }
 
-    await event.update(updateData);
+    if (dto.designId !== undefined) {
+      const design = await this.referenceValidator.validateDesign(dto.designId);
+      updateData.design_id = design?.id ?? null;
+    }
 
-    return event.reload({
-      include: [
-        { model: EventTypeEntity, as: 'event_type' },
-        { model: EventLevelEntity, as: 'event_level' },
-        { model: EventFormatEntity, as: 'event_format' },
-      ],
-    });
+    // Use transaction for atomicity across event update + skill sync
+    const sequelize = this.eventRepository.getSequelize();
+    const transaction = await sequelize.transaction();
+
+    try {
+      await this.eventRepository.update(event, updateData, transaction);
+
+      // Handle skills update if provided
+      if (dto.skillIds !== undefined) {
+        await this.eventSkillService.syncSkills(event, dto.skillIds, organizationUuid, transaction);
+      }
+
+      await transaction.commit();
+      return this.eventRepository.reload(event);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**
-   * Soft delete an event by UUID within organization
+   * Soft delete an event
    */
   async deleteByUuid(uuid: string, organizationUuid: string): Promise<boolean> {
-    const event = await this.findByUuidOrFail(uuid, organizationUuid);
-    await event.update({ is_active: false });
+    const event = await this.requireEvent(uuid, organizationUuid);
+    await this.eventRepository.softDelete(event);
     return true;
-  }
-
-  /**
-   * Search events within organization
-   */
-  async searchEvents(
-    organizationUuid: string,
-    searchQuery: string,
-    options: FindAllOptions = {},
-  ): Promise<PaginatedResult<EventEntity>> {
-    const searchCondition = {
-      name: { [Op.iLike]: `%${searchQuery}%` },
-    };
-
-    return this.findAll(organizationUuid, {
-      ...options,
-      where: {
-        ...options.where,
-        ...searchCondition,
-      },
-    });
   }
 
   // Private helper methods
 
-  private async findByUuidOrFail(uuid: string, organizationUuid: string): Promise<EventEntity> {
-    const event = await this.findByUuid(uuid, organizationUuid);
-    if (!event) {
-      throw new NotFoundException('Event not found');
-    }
-    return event;
+  private async getOrganization(uuid: string) {
+    return this.organizationService.findByUuid(uuid);
   }
 
   private async requireOrganization(uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    return organization;
+    const org = await this.getOrganization(uuid);
+    if (!org) throw new NotFoundException('Organization not found');
+    return org;
   }
 
-  private async validateEventReferences(
+  private async requireEvent(uuid: string, organizationUuid: string): Promise<EventEntity> {
+    const event = await this.findByUuid(uuid, organizationUuid);
+    if (!event) throw new NotFoundException('Event not found');
+    return event;
+  }
+
+  private async validateNameUpdate(
+    name: string,
+    organizationId: number,
+    excludeId: number,
+  ): Promise<string> {
+    const normalizedName = name.trim();
+
+    const existing = await this.eventRepository.findByName(
+      normalizedName,
+      organizationId,
+      excludeId,
+      true, // Only check active events for name conflicts
+    );
+
+    if (existing) {
+      throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
+    }
+
+    return normalizedName;
+  }
+
+  private async restoreOrThrow(
+    existingEvent: EventEntity,
+    normalizedName: string,
+    dto: CreateEventDto,
+    refs: {
+      eventType?: { id: number };
+      eventLevel?: { id: number };
+      eventFormat?: { id: number };
+      design?: { id: number };
+    },
     organizationUuid: string,
-    dto: CreateEventDto | UpdateEventDto,
-  ): Promise<{
-    eventType: EventTypeEntity;
-    eventLevel: EventLevelEntity;
-    eventFormat: EventFormatEntity;
-  }> {
-    const createDto = dto as CreateEventDto;
-    const [eventType, eventLevel, eventFormat] = await Promise.all([
-      this.eventTypeService.findByUuid(createDto.eventTypeId, organizationUuid),
-      this.eventLevelService.findByUuid(createDto.eventLevelId, organizationUuid),
-      this.eventFormatService.findByUuid(createDto.eventFormatId, organizationUuid),
-    ]);
-
-    if (!eventType) {
-      throw new BadRequestException(
-        `Event type with UUID ${createDto.eventTypeId} not found or inactive`,
-      );
-    }
-    if (!eventLevel) {
-      throw new BadRequestException(
-        `Event level with UUID ${createDto.eventLevelId} not found or inactive`,
-      );
-    }
-    if (!eventFormat) {
-      throw new BadRequestException(
-        `Event format with UUID ${createDto.eventFormatId} not found or inactive`,
-      );
+  ): Promise<EventEntity> {
+    if (existingEvent.is_active) {
+      throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
     }
 
-    return { eventType, eventLevel, eventFormat };
+    // Use transaction to ensure atomicity of restore + skill association
+    const sequelize = this.eventRepository.getSequelize();
+    const transaction = await sequelize.transaction();
+
+    try {
+      const updateData: Partial<EventEntity> = {
+        is_active: true,
+      };
+
+      if (dto.description !== undefined) updateData.description = dto.description;
+      if (dto.learningLink !== undefined) updateData.learning_link = dto.learningLink;
+      if (refs.eventType) updateData.event_type_id = refs.eventType.id;
+      if (refs.eventLevel) updateData.event_level_id = refs.eventLevel.id;
+      if (refs.eventFormat) updateData.event_format_id = refs.eventFormat.id;
+      if (refs.design) updateData.design_id = refs.design.id;
+
+      await this.eventRepository.update(existingEvent, updateData, transaction);
+
+      // Associate skills if provided
+      if (dto.skillIds?.length) {
+        await this.eventSkillService.addSkills(
+          existingEvent,
+          dto.skillIds,
+          organizationUuid,
+          transaction,
+        );
+      }
+
+      await transaction.commit();
+      return this.eventRepository.reload(existingEvent);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  private parseUuidList(value?: string): string[] | undefined {
+    if (!value?.trim()) return undefined;
+    return value
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+  }
+
+  private emptyPaginatedResult(limit: number): PaginatedResult<EventEntity> {
+    return {
+      data: [],
+      meta: {
+        total: 0,
+        page: 1,
+        limit,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+      },
+    };
   }
 }

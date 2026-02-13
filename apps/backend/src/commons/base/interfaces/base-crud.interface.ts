@@ -23,6 +23,7 @@ export interface FindAllOptions extends PaginationOptions {
   where?: Record<string, unknown>;
   include?: unknown[];
   attributes?: string[];
+  search?: string;
 }
 
 export interface BaseCrudServiceInterface<T extends Model, CreateDto, UpdateDto> {

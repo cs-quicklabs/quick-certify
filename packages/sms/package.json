@@ -35,7 +35,11 @@
     "crownstack"
   ],
   "nx": {
-    "name": "sms"
+    "name": "sms",
+    "targets": {
+      "format": {},
+      "format:check": {}
+    }
   },
   "dependencies": {
     "@nestjs/common": "^11.1.13",

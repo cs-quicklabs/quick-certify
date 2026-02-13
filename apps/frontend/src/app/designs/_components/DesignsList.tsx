@@ -8,12 +8,12 @@ type Filter = 'All' | 'Certificate' | 'Badge';
 
 type Props = {
   designs: Design[];
-  meta: PaginatedResponse<Design>['meta'];
+  meta?: PaginatedResponse<Design>['meta'] | null;
   search: string;
   filter: Filter;
   onSearchChange: (v: string) => void;
   onFilterChange: (v: Filter) => void;
-  onDelete: (id: string) => void;
+  onDelete: (design: Design) => void;
 };
 
 export default function DesignsList({
@@ -111,7 +111,7 @@ export default function DesignsList({
 
       {/* List */}
       {designs.map((design) => (
-        <DesignCard key={design.uuid} design={design} onDelete={() => onDelete(design.uuid)} />
+        <DesignCard key={design.uuid} design={design} onDelete={() => onDelete(design)} />
       ))}
     </>
   );

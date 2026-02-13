@@ -11,8 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { EventService } from '../services/event.service';
-import { CreateEventDto, UpdateEventDto } from '../dtos';
-import { PaginationDto } from '@src/commons/base/dtos';
+import { CreateEventDto, UpdateEventDto, EventFilterDto } from '../dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
@@ -23,7 +22,7 @@ import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interface
 @ApiBearerAuth()
 @Controller({ path: 'events', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.DESIGNER, Role.MANAGER)
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
@@ -48,10 +47,15 @@ export class EventController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
-    const result = pagination.search
-      ? await this.eventService.searchEvents(user.organizationUuid, pagination.search, pagination)
-      : await this.eventService.findAll(user.organizationUuid, pagination);
+  @ApiQuery({ name: 'typeIds', required: false, description: 'Comma-separated event type UUIDs' })
+  @ApiQuery({ name: 'levelIds', required: false, description: 'Comma-separated event level UUIDs' })
+  @ApiQuery({
+    name: 'formatIds',
+    required: false,
+    description: 'Comma-separated event format UUIDs',
+  })
+  async findAll(@CurrentUser() user: CurrentUserType, @Query() filters: EventFilterDto) {
+    const result = await this.eventService.findAll(user.organizationUuid, filters);
     return new SuccessResponse('Events retrieved successfully', result);
   }
 

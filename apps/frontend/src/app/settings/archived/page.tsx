@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTeamMembers, useRestoreUser, usePermanentlyDeleteTeamMember } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { ConfirmationDialog } from '@/components';
+import { Pagination } from '@/components/ui/pagination';
 import type { TeamMember } from '@/services/api/team.service';
 import { toast } from 'react-toastify';
 import { X } from 'lucide-react';
@@ -205,30 +206,16 @@ export default function ArchivedMembersPage() {
       {/* List */}
       <div className="border-separate mt-6 w-full">{renderList()}</div>
 
-      {/* Pagination (Simple) */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1 || isLoading}
-              className="px-3 py-1 text-sm text-gray-600 border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages || isLoading}
-              className="px-3 py-1 text-sm text-gray-600 border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Pagination */}
+      <div className="pt-4 border-t border-gray-200">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          isLoading={isLoading}
+          variant="compact"
+        />
+      </div>
 
       {/* Restore Dialog */}
       <ConfirmationDialog
@@ -244,11 +231,23 @@ export default function ArchivedMembersPage() {
       {/* Delete Dialog - Only for Super Admin */}
       <ConfirmationDialog
         isOpen={!!memberToDelete}
-        title="Permanently Delete Member"
-        message={`Are you sure you want to permanently delete ${memberToDelete?.first_name} ${memberToDelete?.last_name}? This action cannot be undone.`}
-        confirmLabel={isDeleting ? 'Deleting...' : 'Delete'}
+        title={
+          <span className="font-bold text-lg block">
+            Are you sure you want to delete this user?
+          </span>
+        }
+        message={
+          <div className="flex flex-col gap-1">
+            <p>
+              All the information regarding this user will be lost. If this user has created
+              content, it will be assigned to the super admin.
+            </p>
+          </div>
+        }
+        confirmLabel={isDeleting ? 'Deleting...' : 'Yes, Delete'}
         confirmVariant="danger"
-        cancelLabel="Cancel"
+        cancelLabel="No, Cancel"
+        className="max-w-md w-full rounded-sm"
         onConfirm={handleConfirmDelete}
         onCancel={() => setMemberToDelete(null)}
       />

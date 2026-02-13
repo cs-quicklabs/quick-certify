@@ -5,7 +5,11 @@
   "nx": {
     "implicitDependencies": [
       "frontend"
-    ]
+    ],
+    "targets": {
+      "format": {},
+      "format:check": {}
+    }
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
@@ -19,7 +23,7 @@
     "e2e:headed": "playwright test --headed",
     "e2e:debug": "playwright test --debug",
     "execute:loginTests": "npx playwright test ./login.spec.ts",
-    "execute:onboardingTests": "npx playwright test ./onboarding.spec.ts",
+    "execute:onboardingTests": "npx playwright test ./onboarding.spec.ts --workers=1",
     "generateResults": "allure serve allure-results"
   }
 }

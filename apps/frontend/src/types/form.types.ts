@@ -30,6 +30,8 @@ export interface FormConfig<T extends z.ZodObject<z.ZodRawShape>> {
   fields: FormFieldConfig[];
   schema: T;
   submitLabel?: string;
+  /** Hide automatic submit UI - useful when controlling submit externally */
+  showSubmit?: boolean;
   onSubmit: (data: z.infer<T>) => Promise<void> | void;
   /**
    * Optional callback called after successful image upload
@@ -43,9 +45,9 @@ export interface FormConfig<T extends z.ZodObject<z.ZodRawShape>> {
    */
   onImageDelete?: (fieldName: string) => Promise<void> | void;
   /**
-   * Optional layout type - 'vertical' (default) or 'grid' for two-column layout
+  /** Optional layout type - 'vertical' (default), 'grid' for two-column layout, or 'grid-3' for three-column layout
    */
-  layout?: 'vertical' | 'grid';
+  layout?: 'vertical' | 'grid' | 'grid-3';
   /**
    * Optional cancel button configuration
    */

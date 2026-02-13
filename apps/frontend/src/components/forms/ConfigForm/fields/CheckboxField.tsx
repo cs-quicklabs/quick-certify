@@ -3,7 +3,7 @@ import { InfoTooltip } from '@/components/ui';
 
 export function CheckboxField({ field, value, error, onChange, isDisabled }: BaseFieldProps) {
   return (
-    <div className="flex mt-6">
+    <div className={`${field.className ?? ''} flex mt-6`}>
       <div className="flex items-center h-5">
         <input
           id={field.name}

@@ -23,7 +23,7 @@ import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interface
 @ApiBearerAuth()
 @Controller({ path: 'event-types', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.DESIGNER, Role.MANAGER)
 export class EventTypeController {
   constructor(private readonly eventTypeService: EventTypeService) {}
 
