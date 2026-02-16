@@ -20,6 +20,7 @@ test.beforeEach(async ({ loginPage: fixtureLoginPage, teamPage: TeamPage }) => {
   loginPage = fixtureLoginPage;
   teamPage = TeamPage;
   await loginPage.openUrl();
+  await teamPage.clickOnProfileOption();
 });
 
 test.describe('To validate the team management functionalities', () => {
@@ -27,7 +28,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM101_To verify the functionality of Team Member Adding with valid data',
     );
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     await teamPage.clickOnAddNewMemberBtn();
     await teamPage.enterMemberDetails(
@@ -48,7 +48,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM102_To verify the functionality of Team Member Adding after entering existing email id',
     );
-    await teamPage.clickOnProfileOption();
     const { email: existingEmail } = await teamPage.fetchAddedUser();
     await teamPage.clickOnAddNewMemberBtn();
     await teamPage.enterMemberDetails(
@@ -69,7 +68,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM103_To verify the functionality of Team Member Adding after entering invalid email',
     );
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     await teamPage.clickOnAddNewMemberBtn();
     await teamPage.enterMemberDetails(
@@ -87,7 +85,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM104_To verify the functionality of Team Member Adding after leaving role dropdown unselected',
     );
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     await teamPage.clickOnAddNewMemberBtn();
     await teamPage.enterFirstName('Add', teamData.formData.firstName);
@@ -99,7 +96,6 @@ test.describe('To validate the team management functionalities', () => {
 
   test('TM105_To verify the functionality of Team Member Details Editing', async ({}) => {
     console.log('Starting test: TM105_To verify the functionality of Team Member Details Editing');
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     await teamPage.openAddedMember();
     await teamPage.enterFirstName('Edit', teamData.formData.updatedFirstName);
@@ -114,7 +110,6 @@ test.describe('To validate the team management functionalities', () => {
 
   test('TM106_To verify the functionality of Team Member DeActivating', async ({}) => {
     console.log('Starting test: TM106_To verify the functionality of Team Member DeActivating');
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.openActiveMember();
@@ -136,7 +131,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM107_To verify the search functionality of Team Member with user name',
     );
-    await teamPage.clickOnProfileOption();
     const { fullName: addedName } = await teamPage.fetchAddedUser();
     await teamPage.enterSearchCriteria(addedName);
     await teamPage.validateUserSearching(teamData.searchType.name, addedName);
@@ -146,7 +140,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM108_To verify the search functionality of Team Member with user email',
     );
-    await teamPage.clickOnProfileOption();
     const { email: addedEmail } = await teamPage.fetchAddedUser();
     await teamPage.enterSearchCriteria(addedEmail);
     await teamPage.validateUserSearching(teamData.searchType.email, addedEmail);
@@ -156,7 +149,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM109_To verify the filter functionality of Team Member with Admin Role',
     );
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.validateUserFilter(teamData.filterType.admin, teamData.filterType.admin);
@@ -172,7 +164,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM110_To verify the filter functionality of Team Member with Designer Role',
     );
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.validateUserFilter(teamData.filterType.designer, teamData.filterType.designer);
@@ -188,7 +179,6 @@ test.describe('To validate the team management functionalities', () => {
     console.log(
       'Starting test: TM111_To verify the filter functionality of Team Member with Manager Role',
     );
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.validateUserFilter(teamData.filterType.manager, teamData.filterType.manager);
@@ -202,7 +192,6 @@ test.describe('To validate the team management functionalities', () => {
 
   test('TM112_To verify the Archived user search functionality', async ({}) => {
     console.log('Starting test: TM112_To verify the Archived user search functionality');
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnArchivedOption();
     const searchName = await teamPage.validateArchivedRecords();
     await teamPage.enterArchivedUserSearchCriteria(searchName);
@@ -211,7 +200,6 @@ test.describe('To validate the team management functionalities', () => {
 
   test('TM113_To verify the Archived user Activation', async ({}) => {
     console.log('Starting test: TM113_To verify the Archived user Activation');
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnArchivedOption();
     await teamPage.validateArchivedRecords();
     await teamPage.clickOnActivateBtn();
@@ -224,7 +212,6 @@ test.describe('To validate the team management functionalities', () => {
 
   test('TM114_To verify the user Permanent Deletion', async ({}) => {
     console.log('Starting test: TM114_To verify the user Permanent Deletion');
-    await teamPage.clickOnProfileOption();
     await teamPage.clickOnArchivedOption();
     await teamPage.validateArchivedRecords();
     await teamPage.clickOnDeleteBtn();
