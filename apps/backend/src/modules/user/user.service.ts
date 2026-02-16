@@ -20,7 +20,6 @@ import { Role } from '../role/enums';
 import { RoleService } from '../role/role.service';
 import { OrganizationService } from '../organization/organization.service';
 import { AuthProvider } from '@src/commons/constants';
-import { originAgentCluster } from 'helmet';
 
 /**
  * Extended FindAllOptions for User Service
