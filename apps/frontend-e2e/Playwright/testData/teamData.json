@@ -1,0 +1,53 @@
+{
+  "formData": {
+    "firstName": "Test",
+    "lastName": "User",
+    "invalidEmail": "wdeqwfeew@df",
+    "updatedFirstName": "Updated",
+    "updatedLastName": "User",
+    "activeStatus": "Active",
+    "inActiveStatus": "Inactive"
+  },
+
+  "expectedMessages": {
+    "updateSuccess": "User updated successfully",
+    "userAddSuccess": "Team member added successfully",
+    "existingEmail": "Email already registered",
+    "invalidEmail": "Invalid email address",
+    "blankRole": "Role is required",
+    "restoreSuccess": "User restored successfully",
+    "deleteSuccess": "User permanently deleted"
+  },
+
+  "emailType": {
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "blank": "Blank",
+    "existing": "Existing"
+  },
+
+  "userRoles": {
+    "admin": "Admin",
+    "designer": "Designer",
+    "manager": "Manager"
+  },
+
+  "searchType": {
+    "name": "userName",
+    "email": "email"
+  },
+
+  "filterType": {
+    "admin": "Admin",
+    "manager": "Manager",
+    "designer": "Designer"
+  },
+
+  "httpCodes": {
+    "created": 201,
+    "unprocessableContent": 422,
+    "ok": 200,
+    "badRequest": 400,
+    "conflict": 409
+  }
+}
