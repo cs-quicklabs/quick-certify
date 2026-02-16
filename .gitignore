@@ -50,3 +50,7 @@ test-output
 
 # Environment variables
 .env
+
+# Test results
+/test-results
+/test-results/**/*
