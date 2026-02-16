@@ -1,7 +1,6 @@
 import { showSuccessToast } from '@/lib/toast';
 import { publicService } from '@/services/api/public.service';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { success } from 'zod';
 
 export function usePublicOrganization(slug?: string) {
   return useQuery({
@@ -33,8 +32,46 @@ export function usePublicSendEmail(slug: string) {
       showSuccessToast('Message sent successfully');
     },
     onError: (error: Error) => {
-      // Optional: Add error handling
       console.error('Failed to send email:', error);
     },
+  });
+}
+
+export function usePublicGetRecentIssuedCredentials(
+  slug: string,
+  options?: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'ASC' | 'DESC';
+    enabled?: boolean;
+  },
+) {
+  const {
+    page = 1,
+    limit = 3,
+    sortBy = 'created_at',
+    sortOrder = 'DESC',
+    enabled = true,
+  } = options || {};
+
+  return useQuery({
+    queryKey: ['public-recent-credentials', slug, page, limit, sortBy, sortOrder],
+    queryFn: async () => {
+      if (!slug) throw new Error('Missing organization slug');
+
+      const response = await publicService.getRecentlyIssuedCredentials(slug, {
+        page: 1,
+        limit: 3,
+        sortBy: 'created_at',
+        sortOrder: 'DESC',
+      });
+
+      return response;
+    },
+    enabled: !!slug && enabled,
+    staleTime: 30_000, // 30 seconds - credentials update less frequently
+    retry: 2,
+    refetchOnWindowFocus: false,
   });
 }

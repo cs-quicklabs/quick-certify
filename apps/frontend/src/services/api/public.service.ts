@@ -19,4 +19,14 @@ export const publicService = {
     const response = await apiClient.post(`/organizations/public/${slug}/contact`, data);
     return response.data;
   },
+
+  async getRecentlyIssuedCredentials(
+    slug: string,
+    filter: { page: number; limit: number; sortBy: string; sortOrder: string },
+  ) {
+    const response = await apiClient.get(
+      `/credentials/public/${slug}?page=${filter.page}&limit=${filter.limit}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`,
+    );
+    return response.data.data;
+  },
 };

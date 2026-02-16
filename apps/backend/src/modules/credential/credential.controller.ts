@@ -94,4 +94,20 @@ export class CredentialController {
     await this.credentialService.deleteByUuid(uuid, user.organizationUuid);
     return new SuccessResponse('Credential deleted successfully', { deleted: true });
   }
+
+  //Public routes
+  // @Public()
+  @Get('public/:slug')
+  @ApiOperation({ summary: 'Get all credentials for current organization' })
+  @ApiResponse({ status: 200, description: 'Credentials list' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'eventId', required: false })
+  async findAllPublic(@Param('slug') slug: string, @Query() filters: CredentialFilterDto) {
+    const result = await this.credentialService.findAll(slug, filters);
+    return new SuccessResponse('Credentials retrieved successfully', result);
+  }
 }

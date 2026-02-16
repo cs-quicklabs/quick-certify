@@ -1,10 +1,15 @@
 'use client';
 
-import { usePublicOrganization, usePublicSendEmail } from '@/hooks/usePublic';
+import {
+  usePublicGetRecentIssuedCredentials,
+  usePublicOrganization,
+  usePublicSendEmail,
+} from '@/hooks/usePublic';
 import { LinkedIn, X } from '@/utils/icons';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Credential } from '@/types';
 
 export default function PublicCompanyPage() {
   const params = useParams();
@@ -12,7 +17,18 @@ export default function PublicCompanyPage() {
 
   const { data, isLoading, error } = usePublicOrganization(slug);
   const sendEmailMutation = usePublicSendEmail(slug);
+  const {
+    data: recentCredentials,
+    isLoading: isLoadingCredentials,
+    error: credentialsError,
+  } = usePublicGetRecentIssuedCredentials(slug, {
+    page: 1,
+    limit: 3,
+    sortBy: 'created_at',
+    sortOrder: 'DESC',
+  });
 
+  console.log(recentCredentials);
   const [formStatus, setFormStatus] = useState<{
     type: 'idle' | 'loading' | 'success' | 'error';
     message?: string;
@@ -209,45 +225,50 @@ export default function PublicCompanyPage() {
         </div>
 
         {/* Right Column */}
+        {/* Right Column */}
         <div className="flex flex-1 flex-col gap-6">
           {/* Recent Certificates */}
           <div>
             <h4 className="mb-3 text-lg font-semibold text-gray-800">Recent Certificates Issued</h4>
 
-            <ul className="divide-y divide-gray-100 rounded-sm border border-gray-200 bg-white">
-              {[
-                {
-                  title: 'Certificate of Excellence',
-                  date: '25 Jun 2024',
-                  issuedTo: 'Ankit Jain',
-                },
-                {
-                  title: 'Top Performer Badge',
-                  date: '18 Jun 2024',
-                  issuedTo: 'Riya Shah',
-                },
-                {
-                  title: 'Course Completion Certificate',
-                  date: '04 Jun 2024',
-                  issuedTo: 'Rahul Kumar',
-                },
-              ].map((item) => (
-                <li key={item.title} className="flex gap-3 p-4">
-                  <Image
-                    src="/credential/image_720.png"
-                    alt="Certificate thumbnail"
-                    width={80}
-                    height={56}
-                    className="h-14 w-20 rounded-sm border object-cover shadow-md"
-                  />
-                  <div>
-                    <div className="font-medium text-gray-900">{item.title}</div>
-                    <div className="text-xs text-gray-500">{item.date}</div>
-                    <div className="mt-1 text-xs text-gray-500">Issued to {item.issuedTo}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {isLoadingCredentials ? (
+              <div className="rounded-sm border border-gray-200 bg-white p-8">
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700"></div>
+                </div>
+              </div>
+            ) : credentialsError ? (
+              <div className="rounded-sm border border-gray-200 bg-white p-4">
+                <p className="text-sm text-red-600">Failed to load recent certificates</p>
+              </div>
+            ) : recentCredentials?.data && recentCredentials.data.length > 0 ? (
+              <ul className="divide-y divide-gray-100 rounded-sm border border-gray-200 bg-white">
+                {recentCredentials.data.map((credential: Credential) => (
+                  <li key={credential.uuid} className="flex gap-3 p-4">
+                    <Image
+                      src={credential.certificate_url || '/credential/image_720.png'}
+                      alt="Certificate thumbnail"
+                      width={80}
+                      height={56}
+                      className="h-14 w-20 rounded-sm border object-cover shadow-md"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {credential.event?.name || 'Certificate'}
+                      </div>
+                      <div className="text-xs text-gray-500">{credential.issued_date}</div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        Issued to {credential.recipient?.name || 'Recipient'}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="rounded-sm border border-gray-200 bg-white p-8">
+                <p className="text-center text-sm text-gray-500">No certificates issued yet</p>
+              </div>
+            )}
           </div>
 
           {/* Contact Form */}
@@ -273,9 +294,9 @@ export default function PublicCompanyPage() {
                 placeholder="Your Name"
                 value={formState.name}
                 onChange={handleInputChange}
-                className="rounded-sm border border-gray-300 px-3 py-2 text-sm"
+                className="rounded-sm border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
-                disabled={formStatus.type == 'loading'}
+                disabled={formStatus.type === 'loading'}
               />
               <input
                 type="email"
@@ -283,7 +304,7 @@ export default function PublicCompanyPage() {
                 placeholder="Your Email"
                 value={formState.email}
                 onChange={handleInputChange}
-                className="rounded-sm border border-gray-300 px-3 py-2 text-sm"
+                className="rounded-sm border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
                 disabled={formStatus.type === 'loading'}
               />
@@ -295,12 +316,12 @@ export default function PublicCompanyPage() {
                 onChange={handleInputChange}
                 required
                 disabled={formStatus.type === 'loading'}
-                className="resize-none rounded-sm border border-gray-300 px-3 py-2 text-sm"
+                className="resize-none rounded-sm border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <button
                 type="submit"
                 disabled={formStatus.type === 'loading'}
-                className="mt-1 rounded-sm bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="mt-1 rounded-sm bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {formStatus.type === 'loading' ? 'Sending...' : 'Send Message'}
               </button>

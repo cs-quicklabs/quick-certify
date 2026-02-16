@@ -26,7 +26,7 @@ export class CredentialService {
   ) {}
 
   async findAll(
-    organizationUuid: string,
+    organizationIdentifier: string, // Can be either UUID or slug
     filters: CredentialFilterDto,
   ): Promise<PaginatedResult<CredentialEntity>> {
     const {
@@ -37,8 +37,9 @@ export class CredentialService {
       search,
       eventId,
     } = filters;
+    //  find organization by UUID or slug
+    const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
 
-    const organization = await this.organizationService.findByUuid(organizationUuid);
     if (!organization) {
       return {
         data: [],
@@ -56,7 +57,7 @@ export class CredentialService {
 
     // Filter by event
     if (eventId) {
-      const event = await this.eventService.findByUuid(eventId, organizationUuid);
+      const event = await this.eventService.findByUuid(eventId, organization.uuid);
       if (event) {
         whereClause.event_id = event.id;
       }
