@@ -22,7 +22,7 @@ import {
 } from './dtos';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Disabled, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Disabled, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
@@ -218,6 +218,7 @@ export class OrganizationController {
    * @returns
    */
   @Get('public/:slug')
+  @Public()
   @ApiOperation({ summary: 'Get public organization data by UUID' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
@@ -230,14 +231,14 @@ export class OrganizationController {
   }
 
   @Post('public/:slug/contact')
+  @Public()
   @ApiOperation({ summary: 'Email Organization - Contact Us' })
   @ApiResponse({ status: 200, description: 'Email Sent to the issuer' })
   @ApiResponse({ status: 500, description: 'Email could not be sent' })
   async sendEmail(@Param('slug') slug: string, @Body() dto: ContactOrganizationDto) {
     const organization = await this.organizationService.findBySlug(slug);
     if (!organization?.support_email) return new NotFoundException('Email not found');
-    const emailSubject = `New Contact Form Submission - ${dto.name}`;
-    // const emailHtml
+    const emailSubject = `New Contact Form Submission - ${dto.name} ${dto.email}`;
     const mailOptions = {
       text: dto.message,
     };

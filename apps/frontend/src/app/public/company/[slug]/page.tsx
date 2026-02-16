@@ -1,15 +1,69 @@
 'use client';
 
-import { usePublicOrganization } from '@/hooks/usePublic';
+import { usePublicOrganization, usePublicSendEmail } from '@/hooks/usePublic';
 import { LinkedIn, X } from '@/utils/icons';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function PublicCompanyPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const { data, isLoading, error } = usePublicOrganization(slug); // Changed from uuid to slug
+  const { data, isLoading, error } = usePublicOrganization(slug);
+  const sendEmailMutation = usePublicSendEmail(slug);
+
+  const [formStatus, setFormStatus] = useState<{
+    type: 'idle' | 'loading' | 'success' | 'error';
+    message?: string;
+  }>({ type: 'idle' });
+
+  const [formState, setFormState] = useState({
+    name: '',
+    email: '',
+    message: '',
+  });
+  // Sync mutation state with formStatus
+  useEffect(() => {
+    if (sendEmailMutation.isPending) {
+      setFormStatus({ type: 'loading' });
+    } else if (sendEmailMutation.isSuccess) {
+      setFormStatus({
+        type: 'success',
+        message: 'Message sent successfully! We will get back to you soon.',
+      });
+      // Reset form
+      setFormState({ name: '', email: '', message: '' });
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setFormStatus({ type: 'idle' });
+        sendEmailMutation.reset();
+      }, 5000);
+    } else if (sendEmailMutation.isError) {
+      setFormStatus({
+        type: 'error',
+        message:
+          sendEmailMutation.error instanceof Error
+            ? sendEmailMutation.error.message
+            : 'Failed to send message',
+      });
+    }
+  }, [
+    sendEmailMutation.isPending,
+    sendEmailMutation.isSuccess,
+    sendEmailMutation.isError,
+    sendEmailMutation.error,
+  ]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormState((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sendEmailMutation.mutate(formState);
+  };
 
   if (isLoading) {
     return (
@@ -99,6 +153,7 @@ export default function PublicCompanyPage() {
                 <a
                   href={organization.website}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:underline"
                 >
                   {organization.website.replace(/^https?:\/\//, '')}
@@ -129,8 +184,7 @@ export default function PublicCompanyPage() {
                   href={organization.linkedin_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5
-                text-sm text-blue-600 hover:underline"
+                  className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
                 >
                   <LinkedIn className="w-4 h-4" />{' '}
                   {organization.linkedin_url.replace(/^https?:\/\/(www\.)?/, '')}
@@ -144,8 +198,7 @@ export default function PublicCompanyPage() {
                   href={organization.twitter_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5
-                text-sm text-blue-600 hover:underline"
+                  className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
                 >
                   <X className="w-4 h-4" />{' '}
                   {organization.twitter_url.replace(/^https?:\/\/(www\.)?/, '')}
@@ -200,29 +253,56 @@ export default function PublicCompanyPage() {
           {/* Contact Form */}
           <div className="rounded border border-gray-200 bg-white p-4">
             <h4 className="mb-4 font-semibold text-gray-800">Contact {organization.name}</h4>
-            <form className="flex flex-col gap-3">
+
+            {formStatus.type === 'success' && (
+              <div className="mb-4 rounded-sm bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+                {formStatus.message}
+              </div>
+            )}
+
+            {formStatus.type === 'error' && (
+              <div className="mb-4 rounded-sm bg-red-50 border border-red-200 p-3 text-sm text-red-800">
+                {formStatus.message}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <input
                 type="text"
+                name="name"
                 placeholder="Your Name"
+                value={formState.name}
+                onChange={handleInputChange}
                 className="rounded-sm border border-gray-300 px-3 py-2 text-sm"
                 required
+                disabled={formStatus.type == 'loading'}
               />
               <input
                 type="email"
+                name="email"
                 placeholder="Your Email"
+                value={formState.email}
+                onChange={handleInputChange}
                 className="rounded-sm border border-gray-300 px-3 py-2 text-sm"
                 required
+                disabled={formStatus.type === 'loading'}
               />
               <textarea
+                name="message"
                 placeholder="Write your message..."
                 rows={4}
+                value={formState.message}
+                onChange={handleInputChange}
+                required
+                disabled={formStatus.type === 'loading'}
                 className="resize-none rounded-sm border border-gray-300 px-3 py-2 text-sm"
               />
               <button
                 type="submit"
+                disabled={formStatus.type === 'loading'}
                 className="mt-1 rounded-sm bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
-                Send Message
+                {formStatus.type === 'loading' ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>

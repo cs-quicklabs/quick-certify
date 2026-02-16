@@ -14,4 +14,9 @@ export const publicService = {
     );
     return response.data.data;
   },
+
+  async sendContactEmail(slug: string, data: { name: string; email: string; message: string }) {
+    const response = await apiClient.post(`/organizations/public/${slug}/contact`, data);
+    return response.data;
+  },
 };
