@@ -20,6 +20,7 @@ import { Role } from '../role/enums';
 import { RoleService } from '../role/role.service';
 import { OrganizationService } from '../organization/organization.service';
 import { AuthProvider } from '@src/commons/constants';
+import { originAgentCluster } from 'helmet';
 
 /**
  * Extended FindAllOptions for User Service
@@ -274,11 +275,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   override async update(
     id: number,
     dto: UpdateUserDto,
+    currentUser?: CurrentUser,
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
+    const isEmailChanged = dto.email !== user.email;
 
     // If status is being changed to archived, handle it as soft delete
     if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
@@ -368,8 +371,41 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         await this.logoutUserFromAllDevices(user.uuid, options?.transaction);
       }
     }
+    // Send invitation email if status is invited and email is changed
+    if (isEmailChanged) this.sendInvitationEmailIfNeeded(user, dto, currentUser);
 
     return this.findOne(id) as Promise<UserEntity>;
+  }
+
+  /**
+   * Sends an invitation email if the user status is being set to 'invited'
+   */
+  private async sendInvitationEmailIfNeeded(
+    user: UserEntity,
+    dto: UpdateUserDto,
+    currentUser?: CurrentUser,
+  ): Promise<void> {
+    if (dto.status === 'invited' && dto.email) {
+      const organisation = await this.organizationService.findOne(user.organization_id);
+      if (!organisation || !organisation.is_active) {
+        throw new NotFoundException('Organization not found or inactive');
+      }
+      const inviterName = currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
+        : 'Administrator';
+      const inviteLink = `${
+        process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+      }/auth/invitation?token=${user.uuid}`;
+
+      this.mailService
+        .sendInvitationEmail(user.email, {
+          name: user.first_name,
+          inviterName,
+          organizationName: organisation.name,
+          inviteLink,
+        })
+        .catch(console.error);
+    }
   }
 
   override async softDelete(id: number): Promise<boolean> {
