@@ -86,5 +86,6 @@ export class LoginPage {
     await this.enterUserEmail(email);
     await this.enterPassword(password);
     await this.clickOnSigninBtn();
+    await this.page.waitForURL('**/dashboard');
   }
 }

@@ -12,6 +12,7 @@ import { AccountSocialLinksPage } from '../pageobjects/AccountSocialLinksPage';
 import { AccountBrandingPage } from '../pageobjects/AccountBrandingPage';
 import { AccountIssuerPortalPage } from '../pageobjects/AccountIssuerPortalPage';
 import { AccountSkillsPage } from '../pageobjects/AccountSkillsPage';
+import { TeamPage } from '../pageobjects/TeamPage';
 import { RandomDataGenerator } from '../utils/RandomDataGenerator';
 import registrationData from '../testData/registrationData.json';
 import loginData from '../testData/loginData.json';
@@ -21,6 +22,7 @@ import socialLinksData from '../testData/socialLinksData.json';
 import brandingData from '../testData/brandingData.json';
 import issuerPortalData from '../testData/issuerPortalData.json';
 import skillsData from '../testData/skillsData.json';
+import teamData from '../testData/teamData.json';
 
 /**
  * Extends the base Playwright test with custom fixtures.
@@ -35,6 +37,7 @@ type Fixtures = {
   accountBrandingPage: AccountBrandingPage;
   accountIssuerPortalPage: AccountIssuerPortalPage;
   accountSkillsPage: AccountSkillsPage;
+  teamPage: TeamPage;
 };
 
 type WorkerFixtures = {
@@ -82,6 +85,11 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     await use(accountSkillsPage);
   },
 
+  teamPage: async ({ page }, use) => {
+    const teamPage = new TeamPage(page);
+    await use(teamPage);
+  },
+
   randomDataGenerator: [
     // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {
@@ -102,5 +110,6 @@ export {
   brandingData,
   issuerPortalData,
   skillsData,
+  teamData,
   RandomDataGenerator,
 };
