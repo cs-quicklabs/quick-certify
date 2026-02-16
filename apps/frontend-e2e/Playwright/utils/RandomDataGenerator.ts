@@ -1,11 +1,3 @@
-/* This file will be use to generate the random test data
-* Currently Generating Below Test Data :
-* Random Email
-* Random Name
-
-
-*/
-
 export class RandomDataGenerator {
   generateRandomEmail(): string {
     const random4Digit = Math.floor(1000 + Math.random() * 9000);
