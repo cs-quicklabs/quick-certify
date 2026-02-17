@@ -3,52 +3,89 @@
 import Link from 'next/link';
 import EventCard from '@/app/public/_components/eventCard';
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useEventsPublic } from '@/hooks/useEvents';
+import { useState, useCallback, useEffect } from 'react';
+import { Event as EventPublic } from '@/types';
+import { Pagination, PaginationInfo } from '@/components/ui/pagination';
+
+type SortOrder = 'ASC' | 'DESC';
+type SortBy = 'created_at' | 'name';
+
+const SORT_OPTIONS: { label: string; sortBy: SortBy; sortOrder: SortOrder }[] = [
+  { label: 'Newest First', sortBy: 'created_at', sortOrder: 'DESC' },
+  { label: 'Oldest First', sortBy: 'created_at', sortOrder: 'ASC' },
+  { label: 'Name A-Z', sortBy: 'name', sortOrder: 'ASC' },
+  { label: 'Name Z-A', sortBy: 'name', sortOrder: 'DESC' },
+];
+
+const PAGE_SIZE = 10;
 
 export default function EventPage() {
-  const events = [
-    {
-      id: '1',
-      imageUrl: '/credential/image_720.png',
-      title: 'Understanding Clean Coding Practices',
-      createdOn: 'June 12, 2024',
-      href: '/quick-certify/public/event/1',
-    },
-    {
-      id: '2',
-      imageUrl: '/credential/image_720.png',
-      title: 'Advanced React Patterns',
-      createdOn: 'May 25, 2024',
-      href: '/quick-certify/public/event/2',
-    },
-    {
-      id: '3',
-      imageUrl: '/credential/image_720.png',
-      title: 'Node + Nest API Deep Dive',
-      createdOn: 'May 03, 2024',
-      href: '/quick-certify/public/event/3',
-    },
-  ];
+  const params = useParams();
+  const slug = params?.slug as string;
+
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<SortBy>('created_at');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  const activeSortLabel =
+    SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.sortOrder === sortOrder)?.label ?? 'Sort By';
+
+  // Debounce search input — fires API only 400ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const { data, isLoading, error } = useEventsPublic(slug, {
+    page,
+    limit: PAGE_SIZE,
+    search: debouncedSearch,
+    sortBy,
+    sortOrder,
+  });
+
+  // Then type the events array explicitly
+  const events = (data?.data ?? []) as unknown as EventPublic[];
+  const meta = data?.meta;
+
+  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  }, []);
+
+  const handleSort = useCallback((option: (typeof SORT_OPTIONS)[number]) => {
+    setSortBy(option.sortBy);
+    setSortOrder(option.sortOrder);
+    setPage(1);
+    setShowSortDropdown(false);
+  }, []);
 
   return (
     <div className="bg-gray-50 p-4 min-h-screen">
       {/* Header / Breadcrumb */}
       <div className="max-w-7xl mx-auto p-4 rounded-sm border border-gray-200 bg-white">
-        {/* Mobile Back */}
         <nav className="sm:hidden" aria-label="Back">
           <Link
-            href="/quick-certify/public/company"
+            href={`/public/company/${slug}`}
             className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
           >
             ← Back
           </Link>
         </nav>
 
-        {/* Desktop Breadcrumb */}
         <nav className="hidden sm:flex" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
               <Link
-                href="/quick-certify/public/company"
+                href={`/public/company/${slug}`}
                 className="text-sm font-medium text-gray-500 hover:text-gray-700 hover:underline"
               >
                 Issuer Profile
@@ -56,12 +93,7 @@ export default function EventPage() {
             </li>
             <li className="text-gray-400">›</li>
             <li>
-              <Link
-                href="/quick-certify/public/event"
-                className="text-sm font-medium text-gray-500 hover:text-gray-700 hover:underline"
-              >
-                Events
-              </Link>
+              <span className="text-sm font-medium text-gray-900">Events</span>
             </li>
           </ol>
         </nav>
@@ -83,51 +115,100 @@ export default function EventPage() {
             <input
               type="text"
               placeholder="Search event by name"
+              value={search}
+              onChange={handleSearch}
               className="block w-full pl-9 pr-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
-          {/* Sort By Button */}
-          <button
-            type="button"
-            className="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300"
-          >
-            <SlidersHorizontal className="h-4 w-4 text-gray-400" />
-            Sort By
-            <ChevronDown className="h-4 w-4 text-gray-500" />
-          </button>
+          {/* Sort By Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowSortDropdown((prev) => !prev)}
+              className="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            >
+              <SlidersHorizontal className="h-4 w-4 text-gray-400" />
+              {activeSortLabel}
+              <ChevronDown
+                className={`h-4 w-4 text-gray-500 transition-transform ${
+                  showSortDropdown ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {showSortDropdown && (
+              <div className="absolute right-0 z-10 mt-1 w-44 rounded-sm border border-gray-200 bg-white shadow-md">
+                {SORT_OPTIONS.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => handleSort(option)}
+                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                      option.sortBy === sortBy && option.sortOrder === sortOrder
+                        ? 'text-primary-700 font-medium bg-primary-50'
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Events Grid */}
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {events.map((ev) => (
-            <EventCard
-              key={ev.id}
-              id={ev.id}
-              imageUrl={ev.imageUrl}
-              title={ev.title}
-              createdOn={ev.createdOn}
-              href={ev.href}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="mt-4 flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700" />
+          </div>
+        ) : error ? (
+          <div className="mt-4 py-16 text-center">
+            <p className="text-sm text-red-600">Failed to load events. Please try again.</p>
+          </div>
+        ) : events.length === 0 ? (
+          <div className="mt-4 py-16 text-center">
+            <p className="text-sm text-gray-500">
+              {search ? `No events found for "${search}"` : 'No events available yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {events.map((event) => (
+              <EventCard
+                key={event.uuid}
+                id={event.uuid}
+                imageUrl={event.design?.url ?? '/credential/image_720.png'}
+                title={event.name}
+                createdOn={new Date(event.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+                href={`/public/company/${slug}/events/${event.uuid}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="max-w-7xl mx-auto mt-8 bg-white border border-gray-200 rounded-sm p-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <span className="text-sm text-gray-500">
-            Showing <strong>1–{events.length}</strong> of <strong>1000</strong>
-          </span>
-
-          <div className="inline-flex rounded-md border border-gray-300 overflow-hidden">
-            <button className="px-3 py-2 text-sm hover:bg-gray-100">Previous</button>
-            <button className="px-3 py-2 text-sm bg-blue-50 text-blue-600">1</button>
-            <button className="px-3 py-2 text-sm hover:bg-gray-100">2</button>
-            <button className="px-3 py-2 text-sm hover:bg-gray-100">Next</button>
+      {meta && meta.totalPages > 1 && (
+        <div className="max-w-7xl mx-auto mt-4 bg-white border border-gray-200 rounded-sm p-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <PaginationInfo currentPage={meta.page} pageSize={meta.limit} totalCount={meta.total} />
+            <Pagination
+              currentPage={meta.page}
+              totalPages={meta.totalPages}
+              onPageChange={setPage}
+              isLoading={isLoading}
+              totalCount={meta.total}
+              pageSize={meta.limit}
+            />
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

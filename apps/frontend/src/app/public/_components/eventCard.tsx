@@ -13,7 +13,7 @@ export default function EventCard({ id, imageUrl, title, createdOn, href }: Even
   return (
     <Link href={href} key={id}>
       <div className="bg-white border min-h-67.5 border-gray-200 rounded-sm shadow-sm flex flex-col h-full">
-        <img src={imageUrl} alt={title} className="rounded-t-sm w-full object-cover" />
+        <img src={imageUrl} alt={title} className="rounded-t-sm max-h-67.5 w-full object-cover" />
 
         {/* BODY */}
         <div className="p-4 flex min-h-34 flex-col justify-between flex-1">
