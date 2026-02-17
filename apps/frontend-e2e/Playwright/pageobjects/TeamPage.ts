@@ -188,10 +188,6 @@ export class TeamPage {
     const firstUser = users[0];
     const fullName = firstUser?.full_name ?? null;
     const email = firstUser?.email ?? null;
-
-    console.log('Full name:', fullName);
-    console.log('Email:', email);
-
     return { fullName, email };
   }
 
