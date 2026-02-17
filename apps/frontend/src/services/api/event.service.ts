@@ -10,6 +10,7 @@ import { apiClient, ApiResponse, ApiError } from './api-client';
 import { buildUrl } from '@/lib/query-params';
 import { AxiosError } from 'axios';
 import {
+  Event,
   PaginationFilters,
   EventType,
   EventFilters,

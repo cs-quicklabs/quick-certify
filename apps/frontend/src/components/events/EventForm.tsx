@@ -24,7 +24,7 @@ import { Design } from '@/types';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import { getApiErrorMessage } from '@/lib/api-error';
-import { Event } from '@/services';
+import { Event } from '@/types';
 
 // Maximum number of items to fetch for dropdown lists
 const DROPDOWN_PAGE_SIZE = 100;

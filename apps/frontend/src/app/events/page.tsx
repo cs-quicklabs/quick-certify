@@ -14,7 +14,7 @@ import {
   useEventLevels,
   useEventFormats,
 } from '@/hooks/useEvents';
-import { Event } from '@/services';
+import { Event } from '@/types';
 
 function toggleId(prev: string[], id: string): string[] {
   return prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id];

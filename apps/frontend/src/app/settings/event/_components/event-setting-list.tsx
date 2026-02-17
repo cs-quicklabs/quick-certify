@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Header, Sidebar, ConfirmationDialog, Alert } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import { getApiErrorMessage } from '@/lib/api-error';
-import type { IBaseEvent } from '@/services/api/event.service';
+import type { IBaseEvent } from '@/types';
 
 interface EventSettingListProps {
   /** Singular display name, e.g. "Event Type". Page title is derived as "{label}s". */
