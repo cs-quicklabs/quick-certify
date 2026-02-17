@@ -11,16 +11,21 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: [['line'], ['allure-playwright']],
+  workers: process.env.CI ? 1 : 4,
+  reporter: [
+    ['line'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['allure-playwright'],
+  ],
   timeout: 50000,
 
   // Global setup that logs in and saves auth.json if missing
-  globalSetup: './global-setup.ts',
+  globalSetup: path.resolve(__dirname, 'global-setup.ts'),
 
   use: {
     baseURL: process.env.BASE_URL,
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
     trace: 'on-first-retry',
   },
 
@@ -30,7 +35,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-auth',
-      testIgnore: /.*Login\.spec\.ts/, // skip Login.spec.ts
+      testIgnore: [/.*Login\.spec\.ts/, /.*onboarding\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         storageState: path.resolve(__dirname, 'auth.json'), //  uses saved session

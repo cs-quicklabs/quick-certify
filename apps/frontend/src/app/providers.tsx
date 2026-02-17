@@ -1,15 +1,14 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-// import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useCrossTabLogout } from '@/hooks/useCrossTabLogout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// import { env } from '@/config';
+import { createQueryClient } from '@/lib/query-client';
 
 /**
  * Auth Initializer
@@ -34,26 +33,29 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
 
 /**
  * App Providers
- * Wraps the app with necessary providers
+ * Wraps the app with necessary providers including React Query with global error handling.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60 * 1000, // 1 minute
-            refetchOnWindowFocus: false,
-          },
-        },
-      }),
-  );
+  // Create query client once per app lifecycle
+  // Using useState with a factory function ensures it's only created once
+  const [queryClient] = useState(() => createQueryClient());
 
   const content = (
     <QueryClientProvider client={queryClient}>
       <AuthInitializer>{children}</AuthInitializer>
       <ReactQueryDevtools initialIsOpen={false} />
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </QueryClientProvider>
   );
 

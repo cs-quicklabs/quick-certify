@@ -5,11 +5,15 @@
   "nx": {
     "implicitDependencies": [
       "frontend"
-    ]
+    ],
+    "targets": {
+      "format": {},
+      "format:check": {}
+    }
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.0",
-    "@types/node": "^25.1.0",
+    "@playwright/test": "^1.58.1",
+    "@types/node": "^25.2.0",
     "allure": "^3.0.1",
     "allure-playwright": "^3.4.5"
   },
@@ -18,7 +22,6 @@
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:debug": "playwright test --debug",
-    "execute:loginTests": "npx playwright test ./login.spec.ts",
     "generateResults": "allure serve allure-results"
   }
 }

@@ -9,6 +9,7 @@ import { useTeamMember, useUpdateTeamMember, useRoles } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { FormConfig } from '@/types/form.types';
 import { toast } from 'react-toastify';
+import { checkIfUserIsNonAdmin } from '@/utils';
 
 /**
  * Edit Team Member Page
@@ -22,7 +23,7 @@ export default function EditTeamMemberPage() {
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -32,7 +33,7 @@ export default function EditTeamMemberPage() {
   const { data: roles, isLoading: rolesLoading } = useRoles();
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 
@@ -59,11 +60,25 @@ export default function EditTeamMemberPage() {
             })),
           };
         }
+        if (field.name === 'status') {
+          const isInvited = member?.status === 'invited';
+
+          return {
+            ...field,
+            disabled: isInvited,
+            options: isInvited
+              ? [{ label: 'Invited', value: 'invited' }]
+              : [
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'archived' },
+                ],
+          };
+        }
         return field;
       });
     }
     return editTeamMemberFormFields;
-  }, [filteredRoles]);
+  }, [filteredRoles, member?.status]);
 
   const formConfig: FormConfig<typeof editTeamMemberSchema> = {
     title: 'Edit Team Member',
@@ -98,9 +113,12 @@ export default function EditTeamMemberPage() {
         first_name: member.first_name || '',
         last_name: member.last_name || '',
         email: member.email || '',
-        roleId: member.role_id || '', // Keep as string for form compatibility
-        // Map status: active -> active, everything else -> archived (inactive/archived/invited)
-        status: (member.status === 'active' ? 'active' : 'archived') as 'active' | 'archived',
+        roleId: member.role_id || '',
+        status: (() => {
+          if (member.status === 'active') return 'active';
+          if (member.status === 'invited') return 'invited';
+          return 'archived';
+        })() as 'active' | 'invited' | 'archived',
       }
     : undefined;
 

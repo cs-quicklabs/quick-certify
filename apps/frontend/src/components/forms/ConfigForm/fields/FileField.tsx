@@ -98,7 +98,7 @@ export function FileField({
   const displayError = localError || uploadError || error;
 
   return (
-    <div className="sm:col-span-2">
+    <div className={`${field.className ?? 'sm:col-span-2'}`}>
       <FieldLabel field={field} />
       <div className="items-center w-full">
         {/* Image with hover edit icon */}

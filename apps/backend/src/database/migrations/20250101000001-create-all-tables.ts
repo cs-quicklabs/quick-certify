@@ -665,6 +665,7 @@ module.exports = {
       });
 
       // 10. Create event table (depends on event_type, event_level, event_format)
+      // 10. Create event table (depends on event_type, event_level, event_format)
       await queryInterface.createTable(
         'event',
         {
@@ -683,9 +684,20 @@ module.exports = {
             type: DataTypes.STRING(255),
             allowNull: false,
           },
+
+          description: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+          },
+
+          learning_link: {
+            type: DataTypes.STRING(500),
+            allowNull: true,
+          },
+
           event_type_id: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true, // ✅ nullable now
             references: {
               model: 'event_type',
               key: 'id',
@@ -693,9 +705,10 @@ module.exports = {
             onUpdate: 'CASCADE',
             onDelete: 'RESTRICT',
           },
+
           event_level_id: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true, // ✅ nullable now
             references: {
               model: 'event_level',
               key: 'id',
@@ -703,9 +716,10 @@ module.exports = {
             onUpdate: 'CASCADE',
             onDelete: 'RESTRICT',
           },
+
           event_format_id: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true, // ✅ nullable now
             references: {
               model: 'event_format',
               key: 'id',
@@ -713,16 +727,19 @@ module.exports = {
             onUpdate: 'CASCADE',
             onDelete: 'RESTRICT',
           },
+
           is_active: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true,
           },
+
           created_at: {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW,
           },
+
           updated_at: {
             type: DataTypes.DATE,
             allowNull: false,
@@ -732,6 +749,7 @@ module.exports = {
         { transaction },
       );
 
+      // Indexes
       await queryInterface.addIndex('event', ['event_type_id'], {
         name: 'IDX_EVENT_TYPE_ID',
         transaction,

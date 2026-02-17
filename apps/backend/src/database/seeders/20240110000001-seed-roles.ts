@@ -4,7 +4,7 @@ import { generateNanoid } from '../../commons/utils/nanoid.util';
 /**
  * Seeder: Seed initial roles
  *
- * Creates the default system roles: super_admin, admin, manager, designer
+ * Creates the default system roles: system_admin, super_admin, admin, manager, designer
  */
 module.exports = {
   async up(queryInterface: QueryInterface) {
@@ -13,13 +13,14 @@ module.exports = {
     try {
       // Check if roles already exist
       const [existingRoles] = await queryInterface.sequelize.query(
-        `SELECT role FROM "role" WHERE role IN ('super_admin', 'admin', 'manager', 'designer')`,
+        `SELECT role FROM "role" WHERE role IN ('system_admin', 'super_admin', 'admin', 'manager', 'designer')`,
         { transaction },
       );
 
       const existingRoleNames = (existingRoles as { role: string }[]).map((r) => r.role);
 
       const roles = [
+        { uuid: generateNanoid(), role: 'system_admin' },
         { uuid: generateNanoid(), role: 'super_admin' },
         { uuid: generateNanoid(), role: 'admin' },
         { uuid: generateNanoid(), role: 'manager' },
@@ -60,7 +61,7 @@ module.exports = {
 
     try {
       await queryInterface.sequelize.query(
-        `DELETE FROM "role" WHERE role IN ('super_admin', 'admin', 'manager', 'designer')`,
+        `DELETE FROM "role" WHERE role IN ('system_admin', 'super_admin', 'admin', 'manager', 'designer')`,
         { transaction },
       );
 

@@ -1,0 +1,16 @@
+{
+  "formData": {
+    "validLinkedinUrl": "https://linkedin.com/company/quick-certify",
+    "validFacebookUrl": "https://facebook.com/quickcertify",
+    "validTwitterUrl": "https://twitter.com/quickcertify",
+    "validWebsiteUrl": "https://www.quickcertify.example",
+
+    "invalidLinkedinWrongDomain": "https://example.com/company/quick-certify",
+    "invalidWebsiteMissingProtocol": "www.quickcertify.example"
+  },
+  "expectedMessages": {
+    "successMessage": "Changes saved successfully!",
+    "linkedinInvalidUrl": "Please provide a valid LinkedIn URL (e.g., https://linkedin.com/company/your-company)",
+    "websiteInvalidUrlFormat": "Please provide a valid website URL (must start with http:// or https://)"
+  }
+}

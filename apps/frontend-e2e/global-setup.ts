@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import { chromium, FullConfig } from '@playwright/test';
 import { LoginPage } from './Playwright/pageobjects/LoginPage';
@@ -24,7 +23,7 @@ async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch({ headless: true });
 
   const context = await browser.newContext({
-    baseURL, // ✅ CRITICAL
+    baseURL,
   });
 
   const page = await context.newPage();

@@ -92,12 +92,19 @@ export class EmailService {
     subject: string,
     templateName: string,
     context: Record<string, unknown>,
+    attachments?: Array<{
+      filename: string;
+      content?: string | Buffer;
+      path?: string;
+      contentType?: string;
+    }>,
   ): Promise<MailResponse> {
     const html = this.renderTemplate(templateName, context);
     return this.mailerService.sendMail({
       to,
       subject,
       html,
+      attachments,
     });
   }
 

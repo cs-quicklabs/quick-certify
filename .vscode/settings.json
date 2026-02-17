@@ -5,14 +5,14 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  
+
   // File associations
   "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
   "[javascript]": {
@@ -52,14 +52,14 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
-  
+
   // EditorConfig support
   "editorconfig.generateAuto": false,
-  
+
   // TypeScript
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  
+
   // File exclusions
   "files.exclude": {
     "**/.git": true,
@@ -67,7 +67,7 @@
     "**/node_modules": false,
     "**/.nx": true
   },
-  
+
   // Search exclusions
   "search.exclude": {
     "**/node_modules": true,
@@ -79,7 +79,7 @@
     "**/package-lock.json": true,
     "**/yarn.lock": true
   },
-  
+
   // File watcher exclusions
   "files.watcherExclude": {
     "**/.git/objects/**": true,
@@ -89,6 +89,9 @@
     "**/dist/**": true,
     "**/build/**": true,
     "**/.next/**": true
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml"
   }
 }
 

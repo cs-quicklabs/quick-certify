@@ -2,14 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSkills, useCreateSkill, useDeleteSkill } from '@/hooks/useSkills';
+import { useSkills, useCreateSkill, useDeleteSkill, SKILL_KEYS } from '@/hooks/useSkills';
 import { useAuthStore } from '@/store/auth.store';
 import { Alert, ConfirmationDialog } from '@/components';
 import type { Skill } from '@/services/api/skill.service';
 import { skillService } from '@/services';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useQueryClient } from '@tanstack/react-query';
-import { SKILL_KEYS } from '@/hooks/useSkills';
+import {
+  checkIfUserIsAdmin,
+  checkIfUserIsNonAdmin,
+  checkIfUserIsSuperAdmin,
+  checkIfUserIsSystemAdmin,
+} from '@/utils';
+import { Table, TableColumn } from '@/components/ui'; // adjust path
 
 /**
  * Skills Page
@@ -34,9 +40,84 @@ export default function SkillsPage() {
   const createSkillMutation = useCreateSkill();
   const deleteSkillMutation = useDeleteSkill();
 
+  const columns: TableColumn<Skill>[] = [
+    {
+      key: 'name',
+      header: 'SKILL',
+      className: 'px-6 py-4 w-full',
+      render: (skill) => {
+        if (editingSkill?.uuid === skill.uuid) {
+          return (
+            <input
+              type="text"
+              value={editSkillName}
+              onChange={(e) => {
+                setEditSkillName(e.target.value);
+                setError(null);
+              }}
+              className="form-input-field font-bold w-full"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleEditSave(skill.uuid);
+                } else if (e.key === 'Escape') {
+                  handleEditCancel();
+                }
+              }}
+              disabled={isUpdating}
+              autoFocus
+            />
+          );
+        }
+
+        return <span className="form-text-normal">{skill.name}</span>;
+      },
+    },
+    {
+      key: 'action',
+      header: 'ACTION',
+      className: 'px-6 py-4 text-right whitespace-nowrap',
+      render: (skill) => {
+        if (!isAuthorized) {
+          return <span className="text-gray-400">—</span>;
+        }
+
+        if (editingSkill?.uuid === skill.uuid) {
+          return (
+            <button
+              onClick={() => handleEditSave(skill.uuid)}
+              className="btn-primary text-sm px-3 py-1.5"
+              disabled={isUpdating || !editSkillName.trim()}
+            >
+              {isUpdating ? 'Saving...' : 'Save'}
+            </button>
+          );
+        }
+
+        return (
+          <div className="flex items-center justify-end gap-4">
+            <button
+              onClick={() => handleEditStart(skill)}
+              className="btn-inline-blue text-sm whitespace-nowrap"
+              disabled={deletingId !== null}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(skill)}
+              className="btn-inline-red text-sm whitespace-nowrap"
+              disabled={deletingId !== null}
+            >
+              {deletingId === skill.uuid ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        );
+      },
+    },
+  ];
+
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -61,7 +142,7 @@ export default function SkillsPage() {
   }, [queryError]);
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 
@@ -141,7 +222,9 @@ export default function SkillsPage() {
     }
   };
 
-  const isAuthorized = user && (user.role === 'admin' || user.role === 'super_admin');
+  const isAuthorized =
+    user &&
+    (checkIfUserIsAdmin(user) || checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user));
 
   return (
     <div className="space-y-6">
@@ -202,85 +285,14 @@ export default function SkillsPage() {
         {isLoading ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
         ) : queryError && showQueryError ? null : skills.length === 0 ? null : (
-          <div className="overflow-x-auto">
-            <table className="table w-full text-sm text-left text-gray-500">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 w-full">SKILL</th>
-                  <th className="px-6 py-4">ACTION</th>
-                </tr>
-              </thead>
-              <tbody className="table-body">
-                {skills.map((skill, index) => (
-                  <tr
-                    key={skill.uuid}
-                    className="odd:bg-white even:bg-gray-50 border-b border-gray-200"
-                  >
-                    {editingSkill?.uuid === skill.uuid ? (
-                      <td className="p-2">
-                        <input
-                          type="text"
-                          value={editSkillName}
-                          onChange={(e) => {
-                            setEditSkillName(e.target.value);
-                            setError(null);
-                          }}
-                          className="form-input-field font-bold w-full"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleEditSave(skill.uuid);
-                            } else if (e.key === 'Escape') {
-                              handleEditCancel();
-                            }
-                          }}
-                          disabled={isUpdating}
-                          autoFocus
-                        />
-                      </td>
-                    ) : (
-                      <td className="px-6 py-4">
-                        <span className="form-text-normal">{skill.name}</span>
-                      </td>
-                    )}
-                    {!isAuthorized ? (
-                      <td className="px-6 py-4">
-                        <span className="text-gray-400">—</span>
-                      </td>
-                    ) : editingSkill?.uuid === skill.uuid ? (
-                      <td>
-                        <button
-                          onClick={() => handleEditSave(skill.uuid)}
-                          className="btn-primary text-sm px-3 py-1.5 ml-2"
-                          disabled={isUpdating || !editSkillName.trim()}
-                        >
-                          {isUpdating ? 'Saving...' : 'Save'}
-                        </button>
-                      </td>
-                    ) : (
-                      <td className="px-6 py-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-4">
-                          <button
-                            onClick={() => handleEditStart(skill)}
-                            className="btn-inline-blue text-sm whitespace-nowrap"
-                            disabled={deletingId !== null}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(skill)}
-                            className="btn-inline-red text-sm whitespace-nowrap"
-                            disabled={deletingId !== null}
-                          >
-                            {deletingId === skill.uuid ? 'Deleting...' : 'Delete'}
-                          </button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table
+            columns={columns}
+            data={skills}
+            isLoading={isLoading}
+            scrollable
+            maxHeight="400px"
+            rowClassName="odd:bg-white even:bg-gray-50"
+          />
         )}
       </div>
 

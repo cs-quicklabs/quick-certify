@@ -26,8 +26,8 @@ export interface TokenPayloadInput {
   userUuid: string;
   userId: number;
   email: string;
-  organizationId: number;
-  organizationUuid: string;
+  organizationId: number | null;
+  organizationUuid: string | null;
   roleUuid: string;
   roleId: number;
   role: string;

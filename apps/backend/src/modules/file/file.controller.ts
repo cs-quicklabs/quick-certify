@@ -37,7 +37,7 @@ type MulterFile = {
 /**
  * Categories that require admin privileges
  */
-const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner'];
+const ADMIN_ONLY_CATEGORIES: UploadCategory[] = ['logo', 'favicon', 'banner', 'design'];
 
 /**
  * File Controller
@@ -89,7 +89,7 @@ export class FileController {
       throw new BadRequestException('Category is required');
     }
 
-    const validCategories: UploadCategory[] = ['logo', 'favicon', 'banner', 'avatar'];
+    const validCategories: UploadCategory[] = ['logo', 'favicon', 'banner', 'avatar', 'design'];
     if (!validCategories.includes(category)) {
       throw new BadRequestException(
         `Invalid category. Must be one of: ${validCategories.join(', ')}`,
@@ -98,7 +98,10 @@ export class FileController {
 
     // Check authorization: admin-only categories require admin/super_admin role
     if (ADMIN_ONLY_CATEGORIES.includes(category)) {
-      const isAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+      const isAdmin =
+        user.role === Role.ADMIN ||
+        user.role === Role.SUPER_ADMIN ||
+        user.role === Role.SYSTEM_ADMIN;
       if (!isAdmin) {
         throw new ForbiddenException(
           `Access denied. Only Admin/Super Admin can upload ${category} files.`,

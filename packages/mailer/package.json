@@ -36,10 +36,14 @@
     "crownstack"
   ],
   "nx": {
-    "name": "mailer"
+    "name": "mailer",
+    "targets": {
+      "format": {},
+      "format:check": {}
+    }
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^11.1.13",
     "@nestjs/config": "^4.0.2",
     "nodemailer": "^7.0.13"
   },
@@ -47,7 +51,7 @@
     "@types/nodemailer": "^7.0.9"
   },
   "peerDependencies": {
-    "@nestjs/common": "^11.0.0",
+    "@nestjs/common": "^11.1.13",
     "@nestjs/config": "^4.0.2"
   },
   "engines": {

@@ -51,9 +51,15 @@ export const ROUTES = {
     TEAM: '/settings/team',
   },
 
+  // Admin routes (system_admin only)
+  ADMIN: {
+    ORGANIZATIONS: '/admin/organizations',
+  },
+
   // Feature routes
   EVENTS: '/events',
   CREDENTIALS: '/credentials',
+  CREDENTIALS_ISSUE: '/credentials/issue',
   DESIGNS: '/designs',
   EMAILS: '/emails',
   ANALYTICS: '/analytics',
@@ -62,6 +68,12 @@ export const ROUTES = {
   // Public routes
   PUBLIC: {
     HOME: '/',
+    CREDENTIAL: '/public/credential',
+    COMPANY: '/public/company',
+    EVENT: '/public/event',
+    RECIPIENTS: '/public/recipients',
+    VERIFY: '/public/verify',
+    RETRIEVE: '/public/retrieve',
   },
 } as const;
 
@@ -75,4 +87,5 @@ export const createRoute = {
   teamMember: (id: string) => `/settings/team/${id}` as const,
   resetPasswordWithToken: (token: string) => `/reset-password?token=${token}` as const,
   invitationWithToken: (token: string) => `/invitation?token=${token}` as const,
+  publicCredential: (uuid: string) => `/public/credential/${uuid}` as const,
 } as const;

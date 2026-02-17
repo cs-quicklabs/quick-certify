@@ -6,3 +6,4 @@ export * from './update-event-type.dto';
 export * from './update-event-level.dto';
 export * from './update-event-format.dto';
 export * from './update-event.dto';
+export * from './event-filter.dto';

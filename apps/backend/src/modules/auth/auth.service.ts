@@ -226,7 +226,7 @@ export class AuthService implements IAuthService {
       userId: user.id,
       email: user.email,
       organizationId: user.organization_id,
-      organizationUuid: user.organization.uuid,
+      organizationUuid: user.organization?.uuid || null,
       roleId: user.role_id,
       roleUuid: user.role.uuid,
       role: user.role?.role || '',
@@ -257,6 +257,12 @@ export class AuthService implements IAuthService {
 
     if (!user) {
       return { success: true, message: 'If the email exists, a reset link has been sent' };
+    }
+
+    if (user.auth_provider !== AuthProvider.Email) {
+      throw new BadRequestException(
+        'This account was linked to Google Sign-In, so password reset isn’t available. Please sign in with Google authentication or unlink your Google account to create a password.',
+      );
     }
 
     // Validate user status (extracted to avoid duplication)
@@ -712,11 +718,12 @@ export class AuthService implements IAuthService {
 
     // Load organization and role to get their UUIDs for JWT payload
     const [organization, role] = await Promise.all([
-      this.organizationService.findOne(user.organization_id),
+      user.organization_id ? this.organizationService.findOne(user.organization_id) : null,
       this.roleService.findOne(user.role_id),
     ]);
 
-    if (!organization) {
+    // Organization is required for non-system_admin users
+    if (!organization && role?.role !== 'system_admin') {
       throw new NotFoundException('Organization not found');
     }
     if (!role) {
@@ -727,8 +734,8 @@ export class AuthService implements IAuthService {
       userUuid: user.uuid,
       userId: user.id,
       email: user.email,
-      organizationId: organization.id,
-      organizationUuid: organization.uuid,
+      organizationId: organization?.id || null,
+      organizationUuid: organization?.uuid || null,
       roleId: role.id,
       roleUuid: role.uuid,
       role: role.role || '',

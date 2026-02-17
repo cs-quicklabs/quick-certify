@@ -1,0 +1,14 @@
+{
+  "formData": {
+    "validBannerImage": "test-assets/banner.png",
+    "invalidFileType": "test-assets/document.pdf",
+    "largeFile": "test-assets/large-banner.png"
+  },
+  "expectedMessages": {
+    "bannerSuccessMessage": "Banner updated successfully!",
+    "portalEnabledSuccessMessage": "Portal settings updated successfully!",
+    "portalDisabledSuccessMessage": "Portal settings updated successfully!",
+    "invalidFileTypeError": "Invalid file type. Please upload a valid image.",
+    "fileSizeError": "File size must be less than"
+  }
+}

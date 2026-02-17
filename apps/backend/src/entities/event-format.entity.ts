@@ -1,11 +1,7 @@
-import { Column, DataType, Index, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
+import { OrganizationEntity } from './organization.entity';
 
-/**
- * Event Format Entity
- *
- * Represents the format of an event (e.g., Online, In-Person, Hybrid)
- */
 @Table({
   tableName: 'event_format',
   underscored: true,
@@ -15,7 +11,20 @@ export class EventFormatEntity extends BaseEntity {
   @Index({ name: 'IDX_EVENT_FORMAT_UUID', unique: true })
   declare uuid: string;
 
-  @Index({ name: 'IDX_EVENT_FORMAT_NAME', unique: true })
+  // Organization relationship (multi-tenant)
+  @ForeignKey(() => OrganizationEntity)
+  @Index({ name: 'IDX_EVENT_FORMAT_ORGANIZATION_ID' })
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    field: 'organization_id',
+  })
+  declare organization_id: number;
+
+  @BelongsTo(() => OrganizationEntity)
+  declare organization: OrganizationEntity;
+
+  // Composite unique index on (organization_id, name) - defined in migration
   @Column({
     type: DataType.STRING(150),
     allowNull: false,

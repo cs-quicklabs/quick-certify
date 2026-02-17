@@ -8,6 +8,8 @@ import { addTeamMemberSchema, AddTeamMemberFormData } from '@/schemas/team.schem
 import { useCreateTeamMember, useRoles } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import { FormConfig } from '@/types/form.types';
+import { checkIfUserIsNonAdmin } from '@/utils';
+import { showSuccessToast } from '@/lib/toast';
 
 /**
  * Add Team Member Page
@@ -19,7 +21,7 @@ export default function AddTeamMemberPage() {
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    if (user && checkIfUserIsNonAdmin(user)) {
       router.push('/dashboard');
     }
   }, [user, router]);
@@ -28,7 +30,7 @@ export default function AddTeamMemberPage() {
   const { data: roles, isLoading: rolesLoading } = useRoles();
 
   // Don't render if user is not authorized
-  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+  if (user && checkIfUserIsNonAdmin(user)) {
     return null;
   }
 
@@ -82,6 +84,7 @@ export default function AddTeamMemberPage() {
         roleId: parseInt(data.roleId), // Convert string to number for API
         organizationId: user.organizationId,
       });
+      showSuccessToast('Team member added successfully');
       router.push('/settings/team');
     },
   };
@@ -89,7 +92,16 @@ export default function AddTeamMemberPage() {
   return (
     <div className="flex mt-8 justify-center">
       <div className="w-full max-w-2xl">
-        <ConfigForm config={formConfig} isLoading={rolesLoading} />
+        <ConfigForm
+          config={formConfig}
+          initialValues={{
+            firstName: '',
+            lastName: '',
+            email: '',
+            roleId: '',
+          }}
+          isLoading={rolesLoading}
+        />
       </div>
     </div>
   );

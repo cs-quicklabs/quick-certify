@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { FindOptions, Op, Transaction } from 'sequelize';
+import { FindOptions, Op, Sequelize, Transaction } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
@@ -155,7 +155,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
     // Validate email uniqueness globally (across all organizations)
-    await this.validateEmailUniqueness(dto.email);
+    await this.validateEmailUniqueness(dto.email, undefined, currentUser?.organizationId);
 
     // Validate organization
     // Handle both UUID (from currentUser) and ID (from dto)
@@ -274,11 +274,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   override async update(
     id: number,
     dto: UpdateUserDto,
+    currentUser?: CurrentUser,
     options?: { transaction?: Transaction },
   ): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
+    const isEmailChanged = dto.email !== user.email;
 
     // If status is being changed to archived, handle it as soft delete
     if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
@@ -368,8 +370,41 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         await this.logoutUserFromAllDevices(user.uuid, options?.transaction);
       }
     }
+    // Send invitation email if status is invited and email is changed
+    if (isEmailChanged) this.sendInvitationEmailIfNeeded(user, dto, currentUser);
 
     return this.findOne(id) as Promise<UserEntity>;
+  }
+
+  /**
+   * Sends an invitation email if the user status is being set to 'invited'
+   */
+  private async sendInvitationEmailIfNeeded(
+    user: UserEntity,
+    dto: UpdateUserDto,
+    currentUser?: CurrentUser,
+  ): Promise<void> {
+    if (dto.status === 'invited' && dto.email) {
+      const organisation = await this.organizationService.findOne(user.organization_id);
+      if (!organisation || !organisation.is_active) {
+        throw new NotFoundException('Organization not found or inactive');
+      }
+      const inviterName = currentUser
+        ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
+        : 'Administrator';
+      const inviteLink = `${
+        process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
+      }/auth/invitation?token=${user.uuid}`;
+
+      this.mailService
+        .sendInvitationEmail(user.email, {
+          name: user.first_name,
+          inviterName,
+          organizationName: organisation.name,
+          inviteLink,
+        })
+        .catch(console.error);
+    }
   }
 
   override async softDelete(id: number): Promise<boolean> {
@@ -385,11 +420,12 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    * Only callable for users with archived status
    */
   async hardDelete(id: number): Promise<boolean> {
-    const user = await this.findOneOrThrow(id);
+    const user = await this.userModel.findOne({
+      where: { id, status: 'archived' },
+    });
 
-    // Ensure user is archived before permanent deletion
-    if (user.status !== 'archived') {
-      throw new BadRequestException('Only archived users can be permanently deleted');
+    if (!user) {
+      throw new NotFoundException('Archived user not found');
     }
 
     // Logout user from all devices before deletion
@@ -490,7 +526,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       return null;
     }
 
-    return this.userModel.findOne({
+    return await this.userModel.findOne({
       where: { uuid, organization_id: organization.id },
       include: [
         { model: RoleEntity, attributes: ['id', 'uuid', 'role'] },
@@ -510,6 +546,15 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         { first_name: { [Op.iLike]: `%${searchQuery}%` } },
         { last_name: { [Op.iLike]: `%${searchQuery}%` } },
         { email: { [Op.iLike]: `%${searchQuery}%` } },
+        Sequelize.where(
+          Sequelize.fn(
+            'CONCAT',
+            Sequelize.col('first_name'),
+            ' ',
+            Sequelize.fn('COALESCE', Sequelize.col('last_name'), ''),
+          ),
+          { [Op.iLike]: `%${searchQuery}%` },
+        ),
       ],
     };
 
@@ -582,7 +627,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return user;
   }
 
-  private async validateEmailUniqueness(email: string, excludeId?: number): Promise<void> {
+  private async validateEmailUniqueness(
+    email: string,
+    excludeId?: number,
+    organization_id?: number,
+  ): Promise<void> {
     // Email must be unique globally across all organizations (including archived users)
     const whereClause: Record<string, unknown> = {
       email: email.toLowerCase(),
@@ -593,6 +642,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     const existingUser = await this.userModel.findOne({ where: whereClause });
+
+    if (existingUser && organization_id && existingUser.organization_id !== organization_id) {
+      throw new ConflictException('Email already registered in another organization');
+    }
 
     if (existingUser) {
       throw new ConflictException('Email already registered');
