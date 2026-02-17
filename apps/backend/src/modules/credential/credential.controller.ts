@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -23,6 +24,7 @@ import { CurrentUser, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -144,7 +146,14 @@ export class CredentialController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'eventId', required: false })
-  async findAllPublic(@Param('slug') slug: string, @Query() filters: CredentialFilterDto) {
+  async findAllPublic(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Query() filters: CredentialFilterDto,
+  ) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    if (isUuid) {
+      throw new NotFoundException('Organization not found');
+    }
     const result = await this.credentialService.findAll(slug, filters);
     return new SuccessResponse('Credentials retrieved successfully', result);
   }
