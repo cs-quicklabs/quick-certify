@@ -1,4 +1,5 @@
 import PublicHeader from '@/app/public/_components/header';
+import PublicFooter from '../../_components/footer';
 
 export default async function CompanyLayout({
   children,
@@ -12,6 +13,7 @@ export default async function CompanyLayout({
     <>
       <PublicHeader slug={slug} />
       {children}
+      <PublicFooter />
     </>
   );
 }

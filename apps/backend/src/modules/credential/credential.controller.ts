@@ -128,9 +128,14 @@ export class CredentialController {
     return new SuccessResponse('Credential deleted successfully', { deleted: true });
   }
 
-  //Public routes
-  // @Public()
-  @Get('public/:slug')
+  /**
+   *  Fetches all credentials issued by an issuer based on its slug.
+   * @param slug - organization slug
+   * @param filters
+   * @returns
+   */
+  @Public()
+  @Get('public/org/:slug')
   @ApiOperation({ summary: 'Get all credentials for current organization' })
   @ApiResponse({ status: 200, description: 'Credentials list' })
   @ApiQuery({ name: 'page', required: false })

@@ -25,7 +25,7 @@ export const publicService = {
     filter: { page: number; limit: number; sortBy: string; sortOrder: string },
   ) {
     const response = await apiClient.get(
-      `/credentials/public/${slug}?page=${filter.page}&limit=${filter.limit}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`,
+      `/credentials/public/org/${slug}?page=${filter.page}&limit=${filter.limit}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`,
     );
     return response.data.data;
   },
