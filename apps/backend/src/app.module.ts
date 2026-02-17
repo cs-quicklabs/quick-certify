@@ -1,6 +1,7 @@
 import * as path from 'path';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app/app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule, SequelizeModule as SequelizeFeatureModule } from '@nestjs/sequelize';
@@ -92,6 +93,9 @@ import { CredentialModule } from './modules/credential/credential.module';
     //   },
     //   inject: [ConfigService],
     // }),
+
+    // Background job scheduling (database-based queue for batch processing)
+    ScheduleModule.forRoot(),
 
     // Feature Modules
     AuthModule,

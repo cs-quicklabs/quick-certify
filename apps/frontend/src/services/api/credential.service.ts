@@ -1,5 +1,12 @@
 import { PaginatedResponse } from '@/types';
-import { Credential, CredentialFilters } from '@/types/credential.types';
+import {
+  Credential,
+  CredentialStatus,
+  CredentialFilters,
+  BatchResult,
+  BatchStatus,
+  PublicCredential,
+} from '@/types/credential.types';
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
 
@@ -10,15 +17,15 @@ export interface CreateCredentialRequest {
   issuedDate?: string;
   expirationDate?: string;
   certificateUrl?: string;
-  status?: 'draft' | 'issued';
+  status?: CredentialStatus.DRAFT | CredentialStatus.ISSUED;
 }
 
 export interface BatchCreateCredentialRequest {
   eventId: string;
+  idempotencyKey: string;
   recipients: { name: string; email: string }[];
   issuedDate?: string;
   expirationDate?: string;
-  status?: 'draft' | 'issued';
 }
 
 export interface UpdateCredentialRequest {
@@ -28,7 +35,15 @@ export interface UpdateCredentialRequest {
   issuedDate?: string;
   expirationDate?: string;
   certificateUrl?: string;
-  status?: 'draft' | 'issued';
+  status?: CredentialStatus.DRAFT | CredentialStatus.ISSUED;
+}
+
+export interface PreviewCredentialRequest {
+  eventId: string;
+  recipientName: string;
+  recipientEmail: string;
+  issuedDate?: string;
+  expirationDate?: string;
 }
 
 export const credentialService = {
@@ -49,8 +64,23 @@ export const credentialService = {
     return response.data.data;
   },
 
-  async createBatchCredentials(data: BatchCreateCredentialRequest): Promise<Credential[]> {
-    const response = await apiClient.post<ApiResponse<Credential[]>>('/credentials/batch', data);
+  async createBatchCredentials(data: BatchCreateCredentialRequest): Promise<BatchResult> {
+    const response = await apiClient.post<ApiResponse<BatchResult>>('/credentials/batch', data);
+    return response.data.data;
+  },
+
+  async getBatchStatus(batchUuid: string): Promise<BatchStatus> {
+    const response = await apiClient.get<ApiResponse<BatchStatus>>(
+      `/credentials/batch/${batchUuid}/status`,
+    );
+    return response.data.data;
+  },
+
+  async generatePreview(data: PreviewCredentialRequest): Promise<{ previewUrl: string }> {
+    const response = await apiClient.post<ApiResponse<{ previewUrl: string }>>(
+      '/credentials/preview',
+      data,
+    );
     return response.data.data;
   },
 
@@ -59,9 +89,23 @@ export const credentialService = {
     return response.data.data;
   },
 
+  async resendCredential(id: string): Promise<{ sent: boolean }> {
+    const response = await apiClient.post<ApiResponse<{ sent: boolean }>>(
+      `/credentials/${id}/resend`,
+    );
+    return response.data.data;
+  },
+
   async deleteCredential(id: string): Promise<{ deleted: boolean }> {
     const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(
       `/credentials/${id}`,
+    );
+    return response.data.data;
+  },
+
+  async getPublicCredential(uuid: string): Promise<PublicCredential> {
+    const response = await apiClient.get<ApiResponse<PublicCredential>>(
+      `/credentials/public/${uuid}`,
     );
     return response.data.data;
   },

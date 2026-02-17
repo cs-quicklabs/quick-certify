@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
+import { CredentialStatusEnum } from '@src/commons/enums';
 
 export class CreateCredentialDto {
   @ApiProperty({ example: 'John Doe', description: 'Recipient name', maxLength: 200 })
@@ -20,12 +29,18 @@ export class CreateCredentialDto {
 
   @ApiPropertyOptional({ example: '2025-06-12', description: 'Issued date (YYYY-MM-DD)' })
   @IsOptional()
-  @IsString()
+  @IsDateString(
+    {},
+    { message: 'Issued date must be a valid ISO 8601 date string (e.g. YYYY-MM-DD)' },
+  )
   issuedDate?: string;
 
   @ApiPropertyOptional({ example: '2026-06-12', description: 'Expiration date (YYYY-MM-DD)' })
   @IsOptional()
-  @IsString()
+  @IsDateString(
+    {},
+    { message: 'Expiration date must be a valid ISO 8601 date string (e.g. YYYY-MM-DD)' },
+  )
   expirationDate?: string;
 
   @ApiPropertyOptional({ example: 'https://...', description: 'Unique certificate URL' })
@@ -34,8 +49,11 @@ export class CreateCredentialDto {
   @MaxLength(2048)
   certificateUrl?: string;
 
-  @ApiPropertyOptional({ enum: ['draft', 'issued'], default: 'draft' })
+  @ApiPropertyOptional({
+    enum: [CredentialStatusEnum.DRAFT, CredentialStatusEnum.ISSUED],
+    default: CredentialStatusEnum.DRAFT,
+  })
   @IsOptional()
-  @IsEnum(['draft', 'issued'])
-  status?: 'draft' | 'issued';
+  @IsEnum(CredentialStatusEnum, { message: 'Status must be DRAFT or ISSUED' })
+  status?: CredentialStatusEnum.DRAFT | CredentialStatusEnum.ISSUED;
 }

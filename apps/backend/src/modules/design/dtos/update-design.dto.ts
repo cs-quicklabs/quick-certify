@@ -1,8 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Design } from '@src/modules/design/enums';
 import { Transform } from 'class-transformer';
 import { capitalizeFirst } from '@src/commons/utils';
+import type { DesignLayout } from '../interfaces';
 
 export class UpdateDesignDto {
   @ApiProperty({
@@ -28,4 +29,8 @@ export class UpdateDesignDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEnum(Design, { message: 'Design Type must be a valid Design' })
   designType?: Design;
+
+  @ApiPropertyOptional({ description: 'Design layout with placeholder positions' })
+  @IsOptional()
+  layout?: DesignLayout;
 }

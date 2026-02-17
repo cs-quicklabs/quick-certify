@@ -6,6 +6,40 @@ import { useCredentials } from '@/hooks/useCredentials';
 import { useEvents } from '@/hooks/useEvents';
 import { Pagination } from '@/components/ui/pagination';
 import { ROUTES, createRoute } from '@/config/routes';
+import { CredentialStatus } from '@/types/credential.types';
+
+const STATUS_CONFIG: Record<
+  CredentialStatus,
+  { label: string; dotColor: string; textColor: string }
+> = {
+  [CredentialStatus.ISSUED]: {
+    label: 'Issued',
+    dotColor: 'bg-green-500',
+    textColor: 'text-green-700',
+  },
+  [CredentialStatus.PENDING]: {
+    label: 'Pending',
+    dotColor: 'bg-yellow-400',
+    textColor: 'text-yellow-700',
+  },
+  [CredentialStatus.PROCESSING]: {
+    label: 'Processing',
+    dotColor: 'bg-blue-500',
+    textColor: 'text-blue-700',
+  },
+  [CredentialStatus.FAILED]: { label: 'Failed', dotColor: 'bg-red-500', textColor: 'text-red-700' },
+  [CredentialStatus.DRAFT]: { label: 'Draft', dotColor: 'bg-gray-400', textColor: 'text-gray-500' },
+};
+
+function CredentialStatusBadge({ status }: { status: CredentialStatus }) {
+  const config = STATUS_CONFIG[status];
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-sm ${config.textColor}`}>
+      <span className={`w-2 h-2 rounded-full ${config.dotColor}`} />
+      {config.label}
+    </span>
+  );
+}
 
 const ITEMS_PER_PAGE = 10;
 
@@ -236,14 +270,7 @@ export default function CredentialsPage() {
                     </td>
                     <td className="px-6 py-2 text-gray-900">{formatDate(item.issued_date)}</td>
                     <td className="px-6 py-2">
-                      {item.status === 'issued' ? (
-                        <span className="inline-flex items-center gap-1.5 text-sm text-green-700">
-                          <span className="w-2 h-2 rounded-full bg-green-500" />
-                          Issued
-                        </span>
-                      ) : (
-                        <span className="text-gray-500">--</span>
-                      )}
+                      <CredentialStatusBadge status={item.status} />
                     </td>
                     <td className="px-6 py-2">
                       <a
@@ -282,16 +309,7 @@ export default function CredentialsPage() {
                   <span className="font-semibold text-sm text-gray-900 dark:text-white">
                     {item.recipient?.name}
                   </span>
-                  <div className="flex items-center text-xs">
-                    {item.status === 'issued' ? (
-                      <>
-                        <div className="w-2 h-2 mr-1.5 bg-green-500 rounded-full" />
-                        <span className="text-gray-500">Issued</span>
-                      </>
-                    ) : (
-                      <span className="text-gray-500">Draft</span>
-                    )}
-                  </div>
+                  <CredentialStatusBadge status={item.status} />
                 </div>
                 <p className="text-xs text-gray-500 mb-2">{item.recipient?.email}</p>
                 <div className="flex items-center gap-4 text-xs text-gray-500">
@@ -309,11 +327,9 @@ export default function CredentialsPage() {
                   </span>
                   <span>{formatDate(item.issued_date)}</span>
                   <a
-                    href={createRoute.credentialDetail(item.uuid)}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      router.push(createRoute.credentialDetail(item.uuid));
-                    }}
+                    href={createRoute.publicCredential(item.uuid)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="ml-auto text-blue-600 hover:underline"
                   >
                     View

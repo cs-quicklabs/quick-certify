@@ -1,7 +1,7 @@
 'use client';
 
 import { designService } from '@/services/api';
-import { DesignType, PaginatedResponse, Design } from '@/types';
+import { DesignType, DesignLayout, PaginatedResponse, Design } from '@/types';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { DesignFormData } from '@/schemas/design.schema';
 import { showSuccessToast } from '@/lib/toast';
@@ -96,11 +96,12 @@ export function useCreateDesign(onSuccess?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: DesignFormData) =>
+    mutationFn: (data: DesignFormData & { layout?: DesignLayout }) =>
       designService.createDesign({
         name: data.name,
         designType: data.type,
         designUrl: data.url,
+        layout: data.layout,
       }),
 
     onSuccess: () => {
@@ -120,11 +121,13 @@ export function useUpdateDesign() {
       name: string;
       designType: 'certificate' | 'badge';
       designUrl: string;
+      layout?: DesignLayout;
     }) =>
       designService.updateDesign(data.id, {
         name: data.name,
         designType: data.designType,
         designUrl: data.designUrl,
+        layout: data.layout,
       }),
 
     onSuccess: (_data, variables) => {

@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { RecipientEntity } from '@src/entities/recipient.entity';
 import { OrganizationService } from '@src/modules/organization/organization.service';
@@ -73,7 +73,11 @@ export class RecipientService {
    * Find or create a recipient by email within an organization.
    * If exists, update name if different. Returns the recipient.
    */
-  async findOrCreate(organizationUuid: string, dto: CreateRecipientDto): Promise<RecipientEntity> {
+  async findOrCreate(
+    organizationUuid: string,
+    dto: CreateRecipientDto,
+    options?: { transaction?: Transaction },
+  ): Promise<RecipientEntity> {
     const organization = await this.requireOrganization(organizationUuid);
     const normalizedEmail = dto.email.trim().toLowerCase();
     const normalizedName = dto.name.trim();
@@ -83,21 +87,25 @@ export class RecipientService {
         organization_id: organization.id,
         email: { [Op.iLike]: normalizedEmail },
       },
+      transaction: options?.transaction,
     });
 
     if (existing) {
       // Update name if it changed
       if (existing.name !== normalizedName) {
-        await existing.update({ name: normalizedName });
+        await existing.update({ name: normalizedName }, { transaction: options?.transaction });
       }
       return existing;
     }
 
-    return this.recipientModel.create({
-      organization_id: organization.id,
-      name: normalizedName,
-      email: normalizedEmail,
-    });
+    return this.recipientModel.create(
+      {
+        organization_id: organization.id,
+        name: normalizedName,
+        email: normalizedEmail,
+      },
+      { transaction: options?.transaction },
+    );
   }
 
   async create(organizationUuid: string, dto: CreateRecipientDto): Promise<RecipientEntity> {
