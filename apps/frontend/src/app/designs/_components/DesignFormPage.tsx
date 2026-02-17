@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import DesignForm from './DesignForm';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useCreateDesign, useDesignById, useUpdateDesign } from '@/hooks/useDesigns';
-import { DesignType } from '@/types';
+import { DesignType, DesignLayout } from '@/types';
 import { useRouter } from 'next/navigation';
 
 export function DesignFormPage({
@@ -27,9 +27,12 @@ export function DesignFormPage({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const [layout, setLayout] = useState<DesignLayout | null>(null);
+  const [initialLayout, setInitialLayout] = useState<DesignLayout | null>(null);
   const [initialName, setInitialName] = useState('');
   const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
   const [imageChanged, setImageChanged] = useState(false);
+  const [layoutChanged, setLayoutChanged] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const {
@@ -45,17 +48,25 @@ export function DesignFormPage({
     if (isEdit && design) {
       setName(design.name);
       setImageUrl(design.url);
+      setLayout(design.layout ?? null);
+      setInitialLayout(design.layout ?? null);
 
       setInitialName(design.name);
       setInitialImageUrl(design.url);
     }
   }, [isEdit, design]);
 
-  const isEditDirty = name !== initialName || imageChanged || imageUrl !== initialImageUrl;
+  const isEditDirty =
+    name !== initialName || imageChanged || imageUrl !== initialImageUrl || layoutChanged;
 
   const isCreateDirty = Boolean(name.trim()) && Boolean(imageUrl || selectedFile);
 
   const isDirty = isEdit ? isEditDirty : isCreateDirty;
+
+  const handleLayoutChange = (newLayout: DesignLayout) => {
+    setLayout(newLayout);
+    setLayoutChanged(true);
+  };
 
   const handleImageSelect = (file: File) => {
     setSelectedFile(file);
@@ -75,12 +86,14 @@ export function DesignFormPage({
           name,
           designType,
           designUrl: resolvedImageUrl,
+          layout: layout ?? undefined,
         });
       } else {
         await createDesign.mutateAsync({
           name,
           type: designType,
           url: resolvedImageUrl,
+          layout: layout ?? undefined,
         });
       }
 
@@ -122,10 +135,12 @@ export function DesignFormPage({
             name={name}
             onNameChangeAction={setName}
             imageUrl={imageUrl ?? undefined}
+            initialLayout={initialLayout}
             isUploading={isUploading}
             uploadError={uploadError}
             isSaveDisabled={!isDirty || isUploading}
             onImageSelectAction={handleImageSelect}
+            onLayoutChangeAction={handleLayoutChange}
             onSubmitAction={handleSubmit}
           />
         </div>

@@ -9,11 +9,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { IS_PUBLIC_KEY, IS_DISABLED_KEY } from '../decorators';
 import { CurrentUser } from '../interfaces';
 import { TokenService, SessionService } from '../services';
 import { UserEntity, OrganizationEntity, RoleEntity } from '@src/entities';
 import { UserService } from '../../user/user.service';
+import { GuardHelper } from './guard-helpers';
+
 /**
  * JWT Auth Guard
  *
@@ -36,15 +37,15 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Check if route is marked as public
-    if (this.isPublicRoute(context)) {
-      return true;
-    }
-
-    if (this.isDisabledRoute(context)) {
+    if (GuardHelper.isDisabledRoute(this.reflector, context)) {
       throw new ForbiddenException(
         'This route is disabled. Please contact support if you need access.',
       );
+    }
+
+    // Check if route is marked as public
+    if (GuardHelper.isPublicRoute(this.reflector, context)) {
+      return true;
     }
 
     const request = context.switchToHttp().getRequest<Request>();
@@ -77,21 +78,6 @@ export class JwtAuthGuard implements CanActivate {
     this.attachUserToRequest(request, user, session.hash);
 
     return true;
-  }
-
-  private isPublicRoute(context: ExecutionContext): boolean {
-    return this.checkForRoute(context, IS_PUBLIC_KEY);
-  }
-
-  private isDisabledRoute(context: ExecutionContext): boolean {
-    return this.checkForRoute(context, IS_DISABLED_KEY);
-  }
-
-  private checkForRoute(context: ExecutionContext, type: string) {
-    return this.reflector.getAllAndOverride<boolean>(type, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {

@@ -1,23 +1,105 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas, FabricImage, IText } from 'fabric';
-import { DesignLayout } from '@/types';
+import { DesignLayout, PlaceholderKey } from '@/types';
+import { PlaceholderToolbar } from './PlaceholderToolbar';
+import { PLACEHOLDER_VARIABLES, type PlaceholderVariable } from '@/config/placeholder-variables';
 
 const CANVAS_WIDTH = 1100;
 const CANVAS_HEIGHT = 800;
 
+/** Extends Fabric IText with custom placeholder metadata */
+interface PlaceholderIText extends IText {
+  placeholderKey?: PlaceholderKey;
+  placeholderId?: string;
+}
+
 type Props = {
   backgroundUrl: string;
+  initialLayout?: DesignLayout | null;
   onLayoutChangeAction?: (layout: DesignLayout) => void;
 };
 
-export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
+export function DesignEditor({ backgroundUrl, initialLayout, onLayoutChangeAction }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
+  const layoutLoadedRef = useRef(false);
+  const [insertedKeys, setInsertedKeys] = useState<PlaceholderKey[]>([]);
+
+  // Use refs so async callbacks (FabricImage.fromURL, canvas events) never go stale
+  const onLayoutChangeRef = useRef(onLayoutChangeAction);
+  onLayoutChangeRef.current = onLayoutChangeAction;
+
+  const initialLayoutRef = useRef(initialLayout);
+  initialLayoutRef.current = initialLayout;
+
+  const bgReadyRef = useRef(false);
+
+  const emitLayout = useCallback(() => {
+    if (canvasRef.current) {
+      onLayoutChangeRef.current?.(extractLayout(canvasRef.current));
+    }
+  }, []);
+
+  const handleInsertVariable = useCallback(
+    (variable: PlaceholderVariable) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const text = new IText(variable.template, {
+        left: CANVAS_WIDTH / 2,
+        top: CANVAS_HEIGHT / 2,
+        originX: 'center',
+        originY: 'center',
+        fontSize: 36,
+        fontFamily: 'Times New Roman',
+        fill: '#000',
+        fontWeight: 'normal',
+        editable: false,
+        selectable: true,
+        hasControls: true,
+        lockScalingFlip: true,
+      });
+
+      // Store placeholder metadata as custom properties
+      (text as PlaceholderIText).placeholderKey = variable.key;
+      (text as PlaceholderIText).placeholderId = crypto.randomUUID();
+
+      canvas.add(text);
+      canvas.setActiveObject(text);
+      canvas.renderAll();
+
+      setInsertedKeys((prev) => [...prev, variable.key]);
+      emitLayout();
+    },
+    [emitLayout],
+  );
+
+  const handleRemoveVariable = useCallback(
+    (key: PlaceholderKey) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const obj = canvas.getObjects().find((o) => (o as PlaceholderIText).placeholderKey === key);
+
+      if (obj) {
+        canvas.remove(obj);
+        canvas.renderAll();
+      }
+
+      setInsertedKeys((prev) => prev.filter((k) => k !== key));
+      emitLayout();
+    },
+    [emitLayout],
+  );
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    // Reset refs so layout can load on the correct canvas instance
+    layoutLoadedRef.current = false;
+    bgReadyRef.current = false;
 
     // Cleanup
     containerRef.current.innerHTML = '';
@@ -36,6 +118,9 @@ export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
 
     // Background image
     FabricImage.fromURL(backgroundUrl).then((img) => {
+      // Guard: skip if this canvas was disposed (React Strict Mode double-invoke)
+      if (canvasRef.current !== canvas) return;
+
       const iw = img.width ?? CANVAS_WIDTH;
       const ih = img.height ?? CANVAS_HEIGHT;
       const scale = Math.min(CANVAS_WIDTH / iw, CANVAS_HEIGHT / ih);
@@ -52,51 +137,49 @@ export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
 
       canvas.backgroundImage = img;
       canvas.requestRenderAll();
+
+      // Load existing layout (for edit mode) after background is ready
+      const layoutToLoad = initialLayoutRef.current;
+      if (layoutToLoad && !layoutLoadedRef.current) {
+        layoutLoadedRef.current = true;
+        loadLayout(canvas, layoutToLoad);
+        setInsertedKeys(layoutToLoad.placeholders.map((p) => p.key));
+      }
+
+      // Mark background as ready so the layout effect can load if data arrives later
+      bgReadyRef.current = true;
     });
 
-    // Editable name
-    const text = new IText('[recipient.name]', {
-      left: CANVAS_WIDTH / 2,
-      top: CANVAS_HEIGHT / 2,
-      originX: 'center',
-      originY: 'center',
-      fontSize: 42,
-      fontFamily: 'Times New Roman',
-      fill: '#000',
-      fontWeight: 'normal',
-      editable: true,
-      selectable: true,
-      hasControls: true,
-      lockScalingFlip: true,
-    });
-    text.on('selected', () => {
-      text.set({
-        fill: '#111',
-      });
-      canvas.renderAll();
-    });
+    // Listen for object modifications
+    canvas.on('object:modified', emitLayout);
+    canvas.on('object:moving', emitLayout);
 
-    canvas.add(text);
-    canvas.setActiveObject(text);
-    canvas.on('object:modified', () => {
-      onLayoutChangeAction?.(extractLayout(canvas));
-    });
-
-    canvas.on('text:changed', () => {
-      onLayoutChangeAction?.(extractLayout(canvas));
-    });
+    // Handle delete key to remove placeholders
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const active = canvas.getActiveObject();
+        if (active && (active as PlaceholderIText).placeholderKey) {
+          const key = (active as PlaceholderIText).placeholderKey!;
+          canvas.remove(active);
+          canvas.renderAll();
+          setInsertedKeys((prev) => prev.filter((k) => k !== key));
+          emitLayout();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
 
     // Resize observer → adapt to parent
     const resize = () => {
       if (!containerRef.current) return;
 
       const parentWidth = containerRef.current.clientWidth;
-      const scale = parentWidth / CANVAS_WIDTH;
+      const zoomScale = parentWidth / CANVAS_WIDTH;
 
-      canvas.setZoom(scale);
+      canvas.setZoom(zoomScale);
       canvas.setDimensions({
-        width: CANVAS_WIDTH * scale,
-        height: CANVAS_HEIGHT * scale,
+        width: CANVAS_WIDTH * zoomScale,
+        height: CANVAS_HEIGHT * zoomScale,
       });
       canvas.renderAll();
     };
@@ -106,34 +189,98 @@ export function DesignEditor({ backgroundUrl, onLayoutChangeAction }: Props) {
 
     return () => {
       window.removeEventListener('resize', resize);
+      document.removeEventListener('keydown', handleKeyDown);
       canvas.dispose();
       canvasRef.current = null;
     };
-  }, [backgroundUrl]);
+  }, [backgroundUrl, emitLayout]);
 
-  return <div ref={containerRef} className="w-full aspect-11/8 bg-white overflow-hidden" />;
+  // Handle late-arriving initialLayout (when API data loads after background image)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !initialLayout || layoutLoadedRef.current || !bgReadyRef.current) return;
+
+    layoutLoadedRef.current = true;
+    loadLayout(canvas, initialLayout);
+    setInsertedKeys(initialLayout.placeholders.map((p) => p.key));
+  }, [initialLayout]);
+
+  return (
+    <div className="space-y-2">
+      <PlaceholderToolbar
+        insertedKeys={insertedKeys}
+        onInsertVariable={handleInsertVariable}
+        onRemoveVariable={handleRemoveVariable}
+      />
+      <div ref={containerRef} className="w-full aspect-11/8 bg-white border rounded-sm" />
+    </div>
+  );
+}
+
+function loadLayout(canvas: Canvas, layout: DesignLayout): void {
+  for (const ph of layout.placeholders) {
+    // Find the display template for this key
+    const variable = PLACEHOLDER_VARIABLES.find((v) => v.key === ph.key);
+    const displayText = variable?.template ?? ph.text;
+
+    const text = new IText(displayText, {
+      left: ph.x,
+      top: ph.y,
+      originX: 'center',
+      originY: 'center',
+      fontSize: ph.fontSize,
+      fontFamily: ph.fontFamily,
+      fill: ph.color,
+      fontWeight: ph.fontWeight ?? 'normal',
+      fontStyle: (ph.fontStyle as 'italic' | 'normal') ?? 'normal',
+      textAlign: ph.align ?? 'center',
+      scaleX: ph.scaleX ?? 1,
+      scaleY: ph.scaleY ?? 1,
+      editable: false,
+      selectable: true,
+      hasControls: true,
+      lockScalingFlip: true,
+    });
+
+    (text as PlaceholderIText).placeholderKey = ph.key;
+    (text as PlaceholderIText).placeholderId = ph.id;
+
+    canvas.add(text);
+  }
+  canvas.renderAll();
 }
 
 export function extractLayout(canvas: Canvas): DesignLayout {
   const placeholders = canvas
     .getObjects()
-    .filter((obj) => obj.type === 'i-text')
+    .filter((obj) => obj.type === 'i-text' && (obj as PlaceholderIText).placeholderKey)
     .map((obj) => {
-      const text = obj as IText;
+      const text = obj as PlaceholderIText;
+      const key = text.placeholderKey!;
+      const id = text.placeholderId ?? crypto.randomUUID();
 
       return {
-        id: 'recipient_name',
-        key: 'recipient.name' as const,
+        id,
         type: 'text' as const,
+        key,
         text: text.text ?? '',
         x: text.left ?? 0,
         y: text.top ?? 0,
-        fontSize: text.fontSize ?? 40,
+        fontSize: text.fontSize ?? 36,
         fontFamily: text.fontFamily ?? 'Times New Roman',
+        fontWeight: text.fontWeight as string | undefined,
+        fontStyle: text.fontStyle as string | undefined,
         color: String(text.fill),
-        align: 'center' as const,
+        align: (text.textAlign as 'left' | 'center' | 'right') ?? 'center',
+        scaleX: text.scaleX ?? 1,
+        scaleY: text.scaleY ?? 1,
       };
     });
 
-  return { placeholders };
+  return {
+    version: 2,
+    canvasWidth: CANVAS_WIDTH,
+    canvasHeight: CANVAS_HEIGHT,
+    placeholders,
+  };
 }

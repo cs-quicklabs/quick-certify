@@ -18,11 +18,13 @@ type Props = {
   onNameChangeAction: (v: string) => void;
 
   imageUrl?: string;
+  initialLayout?: DesignLayout | null;
   isUploading?: boolean;
   uploadError?: string | null;
   isSaveDisabled: boolean;
 
   onImageSelectAction: (file: File) => void;
+  onLayoutChangeAction: (layout: DesignLayout) => void;
   onSubmitAction: (data: { name: string }) => void;
 };
 
@@ -34,14 +36,15 @@ export default function DesignForm({
   name,
   onNameChangeAction,
   imageUrl,
+  initialLayout,
   isUploading = false,
   uploadError,
   isSaveDisabled,
   onImageSelectAction,
+  onLayoutChangeAction,
   onSubmitAction,
 }: Props) {
   const [error, setError] = useState<string | null>(null);
-  const [, setLayout] = useState<DesignLayout | null>(null);
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -139,34 +142,24 @@ export default function DesignForm({
         </p>
       </div>
 
-      {/* Dropzone */}
-      <div className="w-full">
-        <label
-          htmlFor="design-upload"
-          onDragOver={handleDragOver}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`
-      relative block w-full
-      rounded-sm
-      border-2 border-dashed border-gray-300
-      bg-gray-50
-      overflow-hidden
-      ${
-        preview
-          ? designType === 'certificate'
-            ? 'aspect-11/8'
-            : 'mx-auto w-64 aspect-square'
-          : 'h-40'
-      }
-      ${preview ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'}
-        ${isDragging ? 'border-blue-500 bg-blue-50' : ''}
-    `}
-          onClick={(e) => preview && e.preventDefault()}
-        >
-          {/* EMPTY STATE */}
-          {!preview && (
+      {/* Dropzone (only shown when no preview) */}
+      {!preview && (
+        <div className="w-full">
+          <label
+            htmlFor="design-upload"
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`
+              relative block w-full h-40
+              rounded-sm
+              border-2 border-dashed border-gray-300
+              bg-gray-50
+              cursor-pointer hover:bg-gray-100
+              ${isDragging ? 'border-blue-500 bg-blue-50' : ''}
+            `}
+          >
             <div className="flex h-full flex-col items-center justify-center text-gray-400">
               <UploadCloud className="mb-3 h-12 w-12 stroke-[1.5]" />
 
@@ -178,31 +171,43 @@ export default function DesignForm({
                 {designType === 'certificate' ? 'A4 size image (1108×800)' : '440×400 image'}
               </p>
             </div>
-          )}
+          </label>
+          <input
+            id="design-upload"
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+        </div>
+      )}
 
-          {/* PREVIEW STATE */}
-          {preview && (
-            <div className="relative h-full w-full bg-white border rounded-sm overflow-hidden">
-              <DesignEditor backgroundUrl={preview} onLayoutChangeAction={setLayout} />
-            </div>
-          )}
+      {/* Design Editor (shown when preview exists, outside of dropzone) */}
+      {preview && (
+        <div className="relative w-full">
+          <DesignEditor
+            backgroundUrl={preview}
+            initialLayout={initialLayout}
+            onLayoutChangeAction={onLayoutChangeAction}
+          />
 
-          {/* LOADING OVERLAY */}
           {isUploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70">
               <span className="text-sm font-medium">Saving design…</span>
             </div>
           )}
-        </label>
-        <input
-          id="design-upload"
-          ref={fileInputRef}
-          type="file"
-          hidden
-          accept="image/*"
-          onChange={handleFileChange}
-        />
-      </div>
+
+          <input
+            id="design-upload"
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+        </div>
+      )}
 
       {(error || uploadError) && (
         <p className="text-sm font-medium text-red-600">{error || uploadError}</p>

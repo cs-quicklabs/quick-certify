@@ -1,29 +1,65 @@
 /**
+ * Placeholder key types that map to data source fields.
+ * Used in design templates to define which dynamic value replaces the placeholder.
+ */
+export type PlaceholderKey =
+  | 'recipient.name'
+  | 'recipient.email'
+  | 'credential.id'
+  | 'credential.issue_date'
+  | 'credential.expiration_date'
+  | 'event.name';
+
+/**
+ * Represents a single text placeholder element in a design template.
+ */
+export interface DesignLayoutPlaceholder {
+  /** Unique identifier for the placeholder (e.g., "ph_abc123") */
+  id: string;
+  /** The type of placeholder element */
+  type: 'text';
+  /** Semantic key that maps to a data source field */
+  key: PlaceholderKey;
+  /** Display/template text (e.g., "{{name}}") */
+  text: string;
+  /** Horizontal position in pixels */
+  x: number;
+  /** Vertical position in pixels */
+  y: number;
+  /** Font size in pixels */
+  fontSize: number;
+  /** Font family name (e.g., "Times New Roman") */
+  fontFamily: string;
+  /** Optional font weight (e.g., "bold", "normal") */
+  fontWeight?: string;
+  /** Optional font style (e.g., "italic", "normal") */
+  fontStyle?: string;
+  /** Text color in hex format (e.g., "#000") */
+  color: string;
+  /** Optional text alignment */
+  align?: 'left' | 'center' | 'right';
+  /** Optional maximum width for text wrapping/truncation */
+  maxWidth?: number;
+  /** Horizontal scale factor from Fabric.js */
+  scaleX?: number;
+  /** Vertical scale factor from Fabric.js */
+  scaleY?: number;
+}
+
+/**
  * Represents the layout configuration for a design template with text placeholders.
- *
- * @interface DesignLayout
- *
- * @property {Array<Object>} placeholders - Array of placeholder objects that define text elements in the design
- * @property {string} placeholders[].id - Unique identifier for the placeholder (e.g., "recipient_name", "recipient_email")
- * @property {'text'} placeholders[].type - The type of placeholder element
- * @property {'recipient.name' | 'recipient.email'} placeholders[].key - Semantic key that maps to data source fields
- * @property {string} placeholders[].text - Default or template text to display (e.g., "[recipient.name]")
- * @property {number} placeholders[].x - Horizontal position in pixels
- * @property {number} placeholders[].y - Vertical position in pixels
- * @property {number} placeholders[].fontSize - Font size in pixels
- * @property {string} placeholders[].fontFamily - Font family name (e.g., "Times New Roman")
- * @property {string} [placeholders[].fontWeight] - Optional font weight (e.g., "bold", "normal")
- * @property {string} placeholders[].color - Text color in hex format (e.g., "#000")
- * @property {'left' | 'center' | 'right'} [placeholders[].align] - Optional text alignment
  *
  * @example
  * const layout: DesignLayout = {
+ *   version: 2,
+ *   canvasWidth: 1100,
+ *   canvasHeight: 800,
  *   placeholders: [
  *     {
- *       id: "recipient_name",
+ *       id: "ph_abc123",
  *       type: "text",
  *       key: "recipient.name",
- *       text: "[recipient.name]",
+ *       text: "{{name}}",
  *       x: 550,
  *       y: 420,
  *       fontSize: 42,
@@ -34,19 +70,13 @@
  *   ]
  * };
  */
-
 export interface DesignLayout {
-  placeholders: Array<{
-    id: string;
-    type: 'text';
-    key: 'recipient.name' | 'recipient.email';
-    text: string;
-    x: number;
-    y: number;
-    fontSize: number;
-    fontFamily: string;
-    fontWeight?: string;
-    color: string;
-    align?: 'left' | 'center' | 'right';
-  }>;
+  /** Schema version for backward compatibility */
+  version: 2;
+  /** Canvas width in pixels */
+  canvasWidth: number;
+  /** Canvas height in pixels */
+  canvasHeight: number;
+  /** Array of placeholder elements */
+  placeholders: DesignLayoutPlaceholder[];
 }

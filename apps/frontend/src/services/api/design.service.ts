@@ -3,7 +3,7 @@
  */
 
 import { apiClient, ApiResponse } from './api-client';
-import { DesignType, Design, DesignFilters } from '@/types/design.types';
+import { DesignType, DesignLayout, Design, DesignFilters } from '@/types/design.types';
 import { PaginatedResponse } from '@/types';
 import { buildUrl } from '@/lib/query-params';
 
@@ -27,6 +27,7 @@ export const designService = {
     name: string;
     designType: DesignType;
     designUrl: string;
+    layout?: DesignLayout;
   }): Promise<{ success: boolean; message: string }> {
     const response = await apiClient.post<ApiResponse<{ success: boolean; message: string }>>(
       '/designs',
@@ -44,6 +45,7 @@ export const designService = {
       name: string;
       designType: 'certificate' | 'badge';
       designUrl: string;
+      layout?: DesignLayout;
     },
   ): Promise<{ success: boolean; message: string }> {
     const response = await apiClient.patch<ApiResponse<{ success: boolean; message: string }>>(
