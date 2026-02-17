@@ -14,10 +14,11 @@ import { RecipientService } from './recipient.service';
 import { CreateRecipientDto, UpdateRecipientDto } from './dtos';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
 
 @ApiTags('Recipients')
 @ApiBearerAuth()
@@ -96,5 +97,40 @@ export class RecipientController {
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     await this.recipientService.deleteByUuid(uuid, user.organizationUuid);
     return new SuccessResponse('Recipient deleted successfully', { deleted: true });
+  }
+
+  @Public()
+  @Get('/public/org/:slug')
+  @ApiOperation({ summary: 'Get all recipients for current organization' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  async findAllRecipientPublic(
+    @Param('slug', SlugOnlyPipe)
+    slug: string,
+    @Query()
+    pagination: PaginationDto,
+  ) {
+    const options = pagination.search
+      ? {
+          ...pagination,
+          where: {
+            [Symbol.for('sequelize.or') as unknown as string]: [
+              {
+                name: {
+                  [Symbol.for('sequelize.iLike') as unknown as string]: `%${pagination.search}%`,
+                },
+              },
+              {
+                email: {
+                  [Symbol.for('sequelize.iLike') as unknown as string]: `%${pagination.search}%`,
+                },
+              },
+            ],
+          },
+        }
+      : pagination;
+    const result = await this.recipientService.findAll(slug, options);
+    return new SuccessResponse('Recipients retrieved successfully', result);
   }
 }

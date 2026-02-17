@@ -1,11 +1,12 @@
+import { apiClient, ApiResponse } from './api-client';
+import { buildUrl } from '@/lib/query-params';
+import { Organization, Recipient, PaginatedResponse } from '@/types';
+import { BaseSearchFilters } from '@/lib/query-params';
+
 /**
  * Public Service - Api Client for Public Apis - Issuer Details, Events, Recipients
  *
  */
-
-import { apiClient, ApiResponse } from './api-client';
-import { buildUrl } from '@/lib/query-params';
-import { Organization } from '@/types';
 
 export const publicService = {
   async getPublicOrganization(slug: string): Promise<Organization> {
@@ -22,10 +23,20 @@ export const publicService = {
 
   async getRecentlyIssuedCredentials(
     slug: string,
-    filter: { page: number; limit: number; sortBy: string; sortOrder: string },
+    filter: { page: 1; limit: 3; sortBy: 'created_at'; sortOrder: 'DESC' },
   ) {
     const response = await apiClient.get(
-      `/credentials/public/org/${slug}?page=${filter.page}&limit=${filter.limit}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`,
+      `/credentials/public/${slug}?page=${filter.page}&limit=${filter.limit}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`,
+    );
+    return response.data;
+  },
+
+  async getRecipientPublic(
+    slug: string,
+    filters?: BaseSearchFilters,
+  ): Promise<PaginatedResponse<Recipient>> {
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<Recipient>>>(
+      buildUrl(`/recipients/public/org/${slug}`, filters),
     );
     return response.data.data;
   },

@@ -102,6 +102,7 @@ export interface BasePaginationFilters {
   limit?: number;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
+  [key: string]: unknown;
 }
 
 /**

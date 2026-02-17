@@ -1,19 +1,15 @@
 import { showSuccessToast } from '@/lib/toast';
 import { publicService } from '@/services/api/public.service';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { BaseSearchFilters } from '@/lib/query-params';
 
 export function usePublicOrganization(slug?: string) {
   return useQuery({
     queryKey: ['public-organization', slug],
     queryFn: async () => {
       if (!slug) throw new Error('Missing organization slug');
-
       const response = await publicService.getPublicOrganization(slug);
-
-      if (!response) {
-        throw new Error('Organization not found');
-      }
-
+      if (!response) throw new Error('Organization not found');
       return response;
     },
     enabled: !!slug,
@@ -59,18 +55,35 @@ export function usePublicGetRecentIssuedCredentials(
     queryKey: ['public-recent-credentials', slug, page, limit, sortBy, sortOrder],
     queryFn: async () => {
       if (!slug) throw new Error('Missing organization slug');
-
       const response = await publicService.getRecentlyIssuedCredentials(slug, {
         page: 1,
         limit: 3,
         sortBy: 'created_at',
         sortOrder: 'DESC',
       });
-
       return response;
     },
     enabled: !!slug && enabled,
-    staleTime: 30_000, // 30 seconds - credentials update less frequently
+    staleTime: 30_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePublicRecipients(
+  slug: string,
+  filters?: BaseSearchFilters & { enabled?: boolean },
+) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
+
+  return useQuery({
+    queryKey: ['public-recipients', slug, queryFilters],
+    queryFn: async () => {
+      if (!slug) throw new Error('Missing organization slug');
+      return await publicService.getRecipientPublic(slug, queryFilters);
+    },
+    enabled: !!slug && enabled,
+    staleTime: 30_000,
     retry: 2,
     refetchOnWindowFocus: false,
   });

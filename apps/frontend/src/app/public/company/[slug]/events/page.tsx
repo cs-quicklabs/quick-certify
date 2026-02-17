@@ -1,13 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import EventCard from '@/app/public/_components/eventCard';
-import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEventsPublic } from '@/hooks/useEvents';
 import { useState, useCallback, useEffect } from 'react';
 import { Event as EventPublic } from '@/types';
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
+import { PublicBreadcrumb } from '@/app/public/_components/publicBreadcrumb';
+import { SearchSortBar, SortOption } from '@/app/public/_components/searchSortBar';
 
 type SortOrder = 'ASC' | 'DESC';
 type SortBy = 'created_at' | 'name';
@@ -35,13 +35,12 @@ export default function EventPage() {
   const activeSortLabel =
     SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.sortOrder === sortOrder)?.label ?? 'Sort By';
 
-  // Debounce search input — fires API only 400ms after user stops typing
+  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
       setPage(1);
     }, 400);
-
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -53,7 +52,6 @@ export default function EventPage() {
     sortOrder,
   });
 
-  // Then type the events array explicitly
   const events = (data?.data ?? []) as unknown as EventPublic[];
   const meta = data?.meta;
 
@@ -61,102 +59,35 @@ export default function EventPage() {
     setSearch(e.target.value);
   }, []);
 
-  const handleSort = useCallback((option: (typeof SORT_OPTIONS)[number]) => {
-    setSortBy(option.sortBy);
+  const handleSort = useCallback((option: SortOption) => {
+    setSortBy(option.sortBy as SortBy); // ← cast here
     setSortOrder(option.sortOrder);
     setPage(1);
     setShowSortDropdown(false);
   }, []);
-
   return (
     <div className="bg-gray-50 p-4 min-h-screen">
-      {/* Header / Breadcrumb */}
-      <div className="max-w-7xl mx-auto p-4 rounded-sm border border-gray-200 bg-white">
-        <nav className="sm:hidden" aria-label="Back">
-          <Link
-            href={`/public/company/${slug}`}
-            className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
-          >
-            ← Back
-          </Link>
-        </nav>
-
-        <nav className="hidden sm:flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2">
-            <li>
-              <Link
-                href={`/public/company/${slug}`}
-                className="text-sm font-medium text-gray-500 hover:text-gray-700 hover:underline"
-              >
-                Issuer Profile
-              </Link>
-            </li>
-            <li className="text-gray-400">›</li>
-            <li>
-              <span className="text-sm font-medium text-gray-900">Events</span>
-            </li>
-          </ol>
-        </nav>
-
-        <div className="mt-2">
-          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Events</h2>
-        </div>
-      </div>
+      {/* Breadcrumb */}
+      <PublicBreadcrumb
+        items={[{ label: 'Issuer Profile', href: `/public/company/${slug}` }, { label: 'Events' }]}
+        title="Events"
+      />
 
       {/* Search, Sort & Events Grid */}
       <div className="max-w-7xl mx-auto mt-4 p-4 rounded-sm border border-gray-200 bg-white">
         {/* Search & Sort Bar */}
-        <div className="flex items-center gap-4">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="w-4 h-4 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search event by name"
-              value={search}
-              onChange={handleSearch}
-              className="block w-full pl-9 pr-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-            />
-          </div>
-
-          {/* Sort By Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowSortDropdown((prev) => !prev)}
-              className="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300"
-            >
-              <SlidersHorizontal className="h-4 w-4 text-gray-400" />
-              {activeSortLabel}
-              <ChevronDown
-                className={`h-4 w-4 text-gray-500 transition-transform ${
-                  showSortDropdown ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {showSortDropdown && (
-              <div className="absolute right-0 z-10 mt-1 w-44 rounded-sm border border-gray-200 bg-white shadow-md">
-                {SORT_OPTIONS.map((option) => (
-                  <button
-                    key={option.label}
-                    type="button"
-                    onClick={() => handleSort(option)}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
-                      option.sortBy === sortBy && option.sortOrder === sortOrder
-                        ? 'text-primary-700 font-medium bg-primary-50'
-                        : 'text-gray-700'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <SearchSortBar
+          search={search}
+          onSearchChange={handleSearch}
+          searchPlaceholder="Search event by name"
+          sortOptions={SORT_OPTIONS}
+          activeSortLabel={activeSortLabel}
+          showSortDropdown={showSortDropdown}
+          onSortToggle={() => setShowSortDropdown((prev) => !prev)}
+          onSortSelect={handleSort}
+          activeSortBy={sortBy}
+          activeSortOrder={sortOrder}
+        />
 
         {/* Events Grid */}
         {isLoading ? (
