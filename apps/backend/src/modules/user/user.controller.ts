@@ -124,15 +124,7 @@ export class UserController {
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
     }
-    // Check if status is invited AND email is being updated to something new
-    if (dto.status === 'invited' && dto.email && dto.email !== existingUser.email) {
-      // Trigger the email service
-      await this.emailService.sendWelcomeEmail(dto.email, {
-        name: dto.first_name || existingUser.first_name,
-      });
-    }
-
-    const updatedUser = await this.userService.update(existingUser.id, dto);
+    const updatedUser = await this.userService.update(existingUser.id, dto, user);
     return new SuccessResponse('User updated successfully', updatedUser);
   }
 
