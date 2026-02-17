@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Calendar,
@@ -14,6 +14,7 @@ import {
   Pencil,
   X,
   Trash2,
+  Send,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
@@ -21,10 +22,13 @@ import {
   useCreateBatchCredentials,
   useUpdateCredential,
   useDeleteCredential,
+  usePreviewCertificate,
+  useResendCredential,
 } from '@/hooks/useCredentials';
 import { ROUTES } from '@/config/routes';
+import { showSuccessToast } from '@/lib/toast';
 import type { IssueFormData } from '@/app/(dashboard)/credentials/issue/page';
-import type { Credential } from '@/types/credential.types';
+import { CredentialStatus, type Credential } from '@/types/credential.types';
 
 /* ───── Props ───── */
 
@@ -63,10 +67,10 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
   const [activeTab, setActiveTab] = useState<TabKey>('credential');
   const [selectedRecipientIndex, setSelectedRecipientIndex] = useState(0);
   const [recipientDropdownOpen, setRecipientDropdownOpen] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
 
   const batchCreate = useCreateBatchCredentials();
-  const batchDraft = useCreateBatchCredentials();
+  const previewMutation = usePreviewCertificate();
+  const [previewCache, setPreviewCache] = useState<Record<number, string>>({});
 
   const selectedRecipient = formData.recipients[selectedRecipientIndex];
 
@@ -96,33 +100,64 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
     }));
   }, [setFormData]);
 
-  const handleCopyLink = useCallback(() => {
-    const publicUrl = `${window.location.origin}/verify/${selectedRecipient?.id ?? 'preview'}`;
-    navigator.clipboard.writeText(publicUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  }, [selectedRecipient]);
-
   const buildPayload = useCallback(
-    (status: 'issued' | 'draft') => ({
+    () => ({
       eventId: formData.eventId,
       recipients: formData.recipients.map((r) => ({ name: r.name, email: r.email })),
       issuedDate: formData.issuedDate,
       expirationDate: formData.noExpiration ? undefined : formData.expirationDate || undefined,
-      status,
     }),
     [formData],
   );
 
   const handleIssueCredentials = useCallback(async () => {
-    await batchCreate.mutateAsync(buildPayload('issued'));
+    await batchCreate.mutateAsync(buildPayload());
+    showSuccessToast('Credentials are being issued. You can track progress in the list.');
     router.push(ROUTES.CREDENTIALS);
   }, [batchCreate, buildPayload, router]);
 
-  const handleSaveAsDraft = useCallback(async () => {
-    await batchDraft.mutateAsync(buildPayload('draft'));
-    router.push(ROUTES.CREDENTIALS);
-  }, [batchDraft, buildPayload, router]);
+  const handleGeneratePreview = useCallback(async () => {
+    if (previewCache[selectedRecipientIndex]) return;
+    const result = await previewMutation.mutateAsync({
+      eventId: formData.eventId,
+      recipientName: selectedRecipient?.name ?? '',
+      recipientEmail: selectedRecipient?.email ?? '',
+      issuedDate: formData.issuedDate,
+      expirationDate: formData.noExpiration ? undefined : formData.expirationDate || undefined,
+    });
+    setPreviewCache((prev) => ({ ...prev, [selectedRecipientIndex]: result.previewUrl }));
+  }, [formData, selectedRecipient, selectedRecipientIndex, previewCache, previewMutation]);
+
+  // Auto-generate preview on mount and when recipient changes
+  const prevRecipientIndexRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (
+      prevRecipientIndexRef.current !== selectedRecipientIndex &&
+      !previewCache[selectedRecipientIndex] &&
+      !previewMutation.isPending &&
+      selectedRecipient?.name &&
+      selectedRecipient?.email
+    ) {
+      prevRecipientIndexRef.current = selectedRecipientIndex;
+      previewMutation
+        .mutateAsync({
+          eventId: formData.eventId,
+          recipientName: selectedRecipient.name,
+          recipientEmail: selectedRecipient.email,
+          issuedDate: formData.issuedDate,
+          expirationDate: formData.noExpiration ? undefined : formData.expirationDate || undefined,
+        })
+        .then((result) => {
+          setPreviewCache((prev) => ({ ...prev, [selectedRecipientIndex]: result.previewUrl }));
+        })
+        .catch(() => {
+          // Reset so user can retry
+          prevRecipientIndexRef.current = null;
+        });
+    }
+  }, [selectedRecipientIndex, previewCache, previewMutation, selectedRecipient, formData]);
+
+  const cachedPreviewUrl = previewCache[selectedRecipientIndex];
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -148,9 +183,11 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
         previewExpirationDate={
           formData.noExpiration ? 'No Expiration' : formatDate(formData.expirationDate)
         }
-        publicLinkId={selectedRecipient?.id ?? 'preview'}
-        onCopyLink={handleCopyLink}
-        copiedLink={copiedLink}
+        hidePublicLink
+        /* Certificate preview */
+        certificatePreviewUrl={cachedPreviewUrl}
+        onGeneratePreview={handleGeneratePreview}
+        isGeneratingPreview={previewMutation.isPending}
         /* Recipient dropdown */
         recipients={formData.recipients}
         selectedRecipientIndex={selectedRecipientIndex}
@@ -171,21 +208,10 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
           Back
         </Button>
         <Button
-          variant="outline"
-          onClick={handleSaveAsDraft}
-          isLoading={batchDraft.isPending}
-          disabled={batchDraft.isPending || batchCreate.isPending}
-          fullWidth
-          className="sm:w-auto"
-          leftIcon={<Save className="h-4 w-4" />}
-        >
-          Save as Draft
-        </Button>
-        <Button
           variant="primary"
           onClick={handleIssueCredentials}
           isLoading={batchCreate.isPending}
-          disabled={batchCreate.isPending || batchDraft.isPending}
+          disabled={batchCreate.isPending}
           fullWidth
           className="sm:w-auto"
         >
@@ -204,7 +230,6 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
 function DetailView({ credential }: DetailMode) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('credential');
-  const [copiedLink, setCopiedLink] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -219,15 +244,53 @@ function DetailView({ credential }: DetailMode) {
 
   const updateCredential = useUpdateCredential();
   const deleteCredential = useDeleteCredential();
+  const resendCredential = useResendCredential();
+  const previewMutation = usePreviewCertificate();
+  const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null);
 
-  const isDraft = credential.status === 'draft';
+  const isDraft = credential.status === CredentialStatus.DRAFT;
+  const isIssued = credential.status === CredentialStatus.ISSUED;
+  const isFailed = credential.status === CredentialStatus.FAILED;
 
-  const handleCopyLink = useCallback(() => {
-    const publicUrl = `${window.location.origin}/verify/${credential.uuid}`;
-    navigator.clipboard.writeText(publicUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  }, [credential.uuid]);
+  // Auto-generate preview for failed credentials that have no certificate_url
+  const previewRequestedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      !isFailed ||
+      credential.certificate_url ||
+      !credential.event?.uuid ||
+      !credential.recipient?.name
+    ) {
+      return;
+    }
+
+    if (previewRequestedFor.current === credential.uuid) {
+      return;
+    }
+
+    previewRequestedFor.current = credential.uuid;
+
+    let cancelled = false;
+    previewMutation
+      .mutateAsync({
+        eventId: credential.event.uuid,
+        recipientName: credential.recipient.name,
+        recipientEmail: credential.recipient.email,
+        issuedDate: credential.issued_date?.split('T')[0],
+        expirationDate: credential.expiration_date?.split('T')[0],
+      })
+      .then((result) => {
+        if (!cancelled) setFailedPreviewUrl(result.previewUrl);
+      })
+      .catch(() => {
+        if (!cancelled) previewRequestedFor.current = null;
+      });
+
+    return () => {
+      cancelled = true;
+      previewRequestedFor.current = null;
+    };
+  }, [isFailed, credential, previewMutation]);
 
   const handleCancelEdit = useCallback(() => {
     setEditName(credential.recipient?.name ?? '');
@@ -260,7 +323,7 @@ function DetailView({ credential }: DetailMode) {
   const handleIssue = useCallback(async () => {
     await updateCredential.mutateAsync({
       id: credential.uuid,
-      status: 'issued',
+      status: CredentialStatus.ISSUED,
     });
   }, [updateCredential, credential.uuid]);
 
@@ -286,15 +349,22 @@ function DetailView({ credential }: DetailMode) {
         summaryTitle="Details"
         summaryHeaderRight={
           <div className="flex items-center gap-2">
-            {isDraft ? (
+            {isDraft && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Draft
               </span>
-            ) : (
+            )}
+            {isIssued && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 Issued
+              </span>
+            )}
+            {isFailed && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                Failed
               </span>
             )}
             {!isEditing && (
@@ -381,9 +451,9 @@ function DetailView({ credential }: DetailMode) {
         previewExpirationDate={
           displayNoExpiration ? 'No Expiration' : formatDate(displayExpirationDate)
         }
-        publicLinkId={credential.uuid}
-        onCopyLink={handleCopyLink}
-        copiedLink={copiedLink}
+        hidePublicLink
+        certificatePreviewUrl={credential.certificate_url ?? failedPreviewUrl ?? undefined}
+        isGeneratingPreview={previewMutation.isPending}
         isDraft={isDraft}
       />
 
@@ -421,6 +491,19 @@ function DetailView({ credential }: DetailMode) {
           >
             Back to List
           </Button>
+          {(isIssued || isFailed) && (
+            <Button
+              variant="outline"
+              onClick={() => resendCredential.mutate(credential.uuid)}
+              isLoading={resendCredential.isPending}
+              disabled={resendCredential.isPending}
+              leftIcon={<Send className="h-4 w-4" />}
+              fullWidth
+              className="sm:w-auto"
+            >
+              {isFailed ? 'Retry & Send' : 'Resend Credential'}
+            </Button>
+          )}
           {isDraft && (
             <Button
               variant="primary"
@@ -480,10 +563,15 @@ interface CredentialLayoutProps {
   previewEventName: string;
   previewIssuedDate: string;
   previewExpirationDate: string;
-  publicLinkId: string;
-  onCopyLink: () => void;
-  copiedLink: boolean;
+  publicLinkId?: string;
+  onCopyLink?: () => void;
+  copiedLink?: boolean;
   isDraft?: boolean;
+  hidePublicLink?: boolean;
+  // Certificate preview (real template-based)
+  certificatePreviewUrl?: string;
+  onGeneratePreview?: () => void;
+  isGeneratingPreview?: boolean;
   // Recipient dropdown (issue mode)
   recipients?: RecipientOption[];
   selectedRecipientIndex?: number;
@@ -518,11 +606,15 @@ function CredentialLayout({
   onCopyLink,
   copiedLink,
   isDraft,
+  certificatePreviewUrl,
+  onGeneratePreview,
+  isGeneratingPreview,
   recipients,
   selectedRecipientIndex,
   recipientDropdownOpen,
   onRecipientDropdownToggle,
   onSelectRecipient,
+  hidePublicLink,
 }: CredentialLayoutProps) {
   const hasRecipientDropdown =
     recipients && recipients.length > 0 && onRecipientDropdownToggle && onSelectRecipient;
@@ -675,17 +767,19 @@ function CredentialLayout({
               >
                 Credential View
               </button>
-              <button
-                type="button"
-                onClick={() => onTabChange('public-link')}
-                className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
-                  activeTab === 'public-link'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Public Link
-              </button>
+              {!hidePublicLink && (
+                <button
+                  type="button"
+                  onClick={() => onTabChange('public-link')}
+                  className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
+                    activeTab === 'public-link'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Public Link
+                </button>
+              )}
             </div>
 
             {/* Recipient Dropdown (issue mode only) */}
@@ -730,23 +824,62 @@ function CredentialLayout({
           {/* Tab Content */}
           <div className="p-4 sm:p-6">
             {activeTab === 'credential' && (
-              <CredentialPreview
-                recipientName={previewName}
-                recipientEmail={previewEmail}
-                eventName={previewEventName}
-                issuedDate={previewIssuedDate}
-                expirationDate={previewExpirationDate}
-                isDraft={isDraft}
-              />
+              <>
+                {certificatePreviewUrl ? (
+                  <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                    <img
+                      src={certificatePreviewUrl}
+                      alt="Certificate preview"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                ) : isGeneratingPreview ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                    <p className="text-sm">Generating certificate preview...</p>
+                  </div>
+                ) : onGeneratePreview ? (
+                  <div className="space-y-4">
+                    <CredentialPreview
+                      recipientName={previewName}
+                      recipientEmail={previewEmail}
+                      eventName={previewEventName}
+                      issuedDate={previewIssuedDate}
+                      expirationDate={previewExpirationDate}
+                      isDraft={isDraft}
+                    />
+                    <div className="text-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onGeneratePreview}
+                        isLoading={isGeneratingPreview}
+                        disabled={isGeneratingPreview}
+                      >
+                        {isGeneratingPreview ? 'Generating...' : 'Generate Certificate Preview'}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <CredentialPreview
+                    recipientName={previewName}
+                    recipientEmail={previewEmail}
+                    eventName={previewEventName}
+                    issuedDate={previewIssuedDate}
+                    expirationDate={previewExpirationDate}
+                    isDraft={isDraft}
+                  />
+                )}
+              </>
             )}
 
-            {activeTab === 'public-link' && (
+            {!hidePublicLink && activeTab === 'public-link' && publicLinkId && onCopyLink && (
               <PublicLinkPreview
                 recipientName={previewName}
                 eventName={previewEventName}
                 linkId={publicLinkId}
                 onCopy={onCopyLink}
-                copied={copiedLink}
+                copied={copiedLink ?? false}
                 isDraft={isDraft}
               />
             )}

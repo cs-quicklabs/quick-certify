@@ -4,14 +4,17 @@ import {
   CreateCredentialRequest,
   UpdateCredentialRequest,
   BatchCreateCredentialRequest,
+  PreviewCredentialRequest,
 } from '@/services/api/credential.service';
-import { CredentialFilters } from '@/types/credential.types';
+import { BatchStatusEnum, CredentialFilters } from '@/types/credential.types';
 
 export const CREDENTIAL_KEYS = {
   all: ['credentials'] as const,
   lists: () => [...CREDENTIAL_KEYS.all, 'list'] as const,
   list: (filters?: CredentialFilters) => [...CREDENTIAL_KEYS.lists(), { filters }] as const,
   detail: (id: string) => [...CREDENTIAL_KEYS.all, 'detail', id] as const,
+  publicDetail: (uuid: string) => [...CREDENTIAL_KEYS.all, 'public', uuid] as const,
+  batchStatus: (uuid: string) => [...CREDENTIAL_KEYS.all, 'batch', uuid] as const,
 };
 
 export function useCredentials(filters?: CredentialFilters) {
@@ -54,9 +57,48 @@ export function useUpdateCredential() {
 export function useCreateBatchCredentials() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: BatchCreateCredentialRequest) =>
-      credentialService.createBatchCredentials(data),
+    mutationFn: (data: Omit<BatchCreateCredentialRequest, 'idempotencyKey'>) =>
+      credentialService.createBatchCredentials({
+        ...data,
+        idempotencyKey: crypto.randomUUID(),
+      }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CREDENTIAL_KEYS.lists() });
+    },
+  });
+}
+
+/**
+ * Poll batch status every 3s while status is PENDING or PROCESSING.
+ * Stops polling on terminal status (COMPLETED, PARTIAL_FAILURE, FAILED).
+ */
+export function useBatchStatus(batchUuid: string | null) {
+  return useQuery({
+    queryKey: CREDENTIAL_KEYS.batchStatus(batchUuid ?? ''),
+    queryFn: () => credentialService.getBatchStatus(batchUuid!),
+    enabled: !!batchUuid,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (!status || status === BatchStatusEnum.PENDING || status === BatchStatusEnum.PROCESSING) {
+        return 3000;
+      }
+      return false;
+    },
+  });
+}
+
+export function usePreviewCertificate() {
+  return useMutation({
+    mutationFn: (data: PreviewCredentialRequest) => credentialService.generatePreview(data),
+  });
+}
+
+export function useResendCredential() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => credentialService.resendCredential(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: CREDENTIAL_KEYS.detail(id) });
       queryClient.invalidateQueries({ queryKey: CREDENTIAL_KEYS.lists() });
     },
   });
