@@ -25,9 +25,7 @@ export const publicService = {
     slug: string,
     filter: { page: 1; limit: 3; sortBy: 'created_at'; sortOrder: 'DESC' },
   ) {
-    const response = await apiClient.get(
-      `/credentials/public/${slug}?page=${filter.page}&limit=${filter.limit}&sortBy=${filter.sortBy}&sortOrder=${filter.sortOrder}`,
-    );
+    const response = await apiClient.get(buildUrl(`/credentials/public/org/${slug}`, filter));
     return response.data;
   },
 

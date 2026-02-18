@@ -150,10 +150,6 @@ export class CredentialController {
     @Param('slug', SlugOnlyPipe) slug: string,
     @Query() filters: CredentialFilterDto,
   ) {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-    if (isUuid) {
-      throw new NotFoundException('Organization not found');
-    }
     const result = await this.credentialService.findAll(slug, filters);
     return new SuccessResponse('Credentials retrieved successfully', result);
   }
