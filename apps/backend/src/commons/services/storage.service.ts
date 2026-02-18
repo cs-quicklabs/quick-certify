@@ -18,6 +18,7 @@ export const ALLOWED_FILE_TYPES = {
   banner: ['image/png', 'image/jpeg', 'image/jpg'],
   avatar: ['image/png', 'image/jpeg', 'image/jpg'],
   design: ['image/png', 'image/jpeg', 'image/jpg'],
+  certificate: ['image/png', 'application/pdf'],
 } as const;
 
 /**
@@ -28,7 +29,8 @@ export const MAX_FILE_SIZES = {
   favicon: 10 * 1024 * 1024, // 10MB
   banner: 10 * 1024 * 1024, // 10MB
   avatar: 10 * 1024 * 1024, // 10MB
-  design: 1 * 1024 * 1024, // 1MB
+  design: 10 * 1024 * 1024, // 10MB
+  certificate: 10 * 1024 * 1024, // 10MB
 } as const;
 
 export type UploadCategory = keyof typeof ALLOWED_FILE_TYPES;
@@ -331,6 +333,7 @@ export class StorageService {
       'image/x-icon': '.ico',
       'image/gif': '.gif',
       'image/webp': '.webp',
+      'application/pdf': '.pdf',
     };
 
     return typeToExt[contentType] || '.bin';

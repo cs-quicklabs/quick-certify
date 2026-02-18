@@ -3,6 +3,7 @@ import { BaseEntity } from './base.entity';
 import { OrganizationEntity } from './organization.entity';
 import { RecipientEntity } from './recipient.entity';
 import { EventEntity } from './event.entity';
+import { CredentialIssueBatchEntity } from './credential-issue-batch.entity';
 import { CredentialStatusEnum } from '@src/commons/enums';
 
 @Table({
@@ -71,9 +72,28 @@ export class CredentialEntity extends BaseEntity {
   declare certificate_url: string | null;
 
   @Column({
+    type: DataType.STRING(2048),
+    allowNull: true,
+    field: 'certificate_pdf_url',
+  })
+  declare certificate_pdf_url: string | null;
+
+  @Column({
     type: DataType.STRING(20),
     allowNull: false,
     defaultValue: CredentialStatusEnum.DRAFT,
   })
   declare status: CredentialStatusEnum;
+
+  @ForeignKey(() => CredentialIssueBatchEntity)
+  @Index({ name: 'IDX_CREDENTIAL_BATCH_ID' })
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    field: 'batch_id',
+  })
+  declare batch_id: number | null;
+
+  @BelongsTo(() => CredentialIssueBatchEntity)
+  declare batch: CredentialIssueBatchEntity | null;
 }

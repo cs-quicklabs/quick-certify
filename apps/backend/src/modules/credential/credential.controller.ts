@@ -16,9 +16,10 @@ import {
   UpdateCredentialDto,
   CredentialFilterDto,
   BatchCreateCredentialDto,
+  PreviewCredentialDto,
 } from './dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
@@ -40,11 +41,27 @@ export class CredentialController {
   }
 
   @Post('batch')
-  @ApiOperation({ summary: 'Issue credentials to multiple recipients at once' })
-  @ApiResponse({ status: 201, description: 'Credentials created successfully' })
+  @ApiOperation({ summary: 'Queue credentials for batch issuance' })
+  @ApiResponse({ status: 201, description: 'Batch queued successfully' })
   async createBatch(@CurrentUser() user: CurrentUserType, @Body() dto: BatchCreateCredentialDto) {
-    const credentials = await this.credentialService.createBatch(user.organizationUuid, dto);
-    return new SuccessResponse('Credentials issued successfully', credentials);
+    const result = await this.credentialService.createBatch(user.organizationUuid, user.id, dto);
+    return new SuccessResponse('Batch queued for processing', result);
+  }
+
+  @Get('batch/:uuid/status')
+  @ApiOperation({ summary: 'Get batch processing status' })
+  @ApiResponse({ status: 200, description: 'Batch status retrieved' })
+  async getBatchStatus(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const status = await this.credentialService.getBatchStatus(uuid, user.organizationUuid);
+    return new SuccessResponse('Batch status retrieved', status);
+  }
+
+  @Post('preview')
+  @ApiOperation({ summary: 'Generate a certificate preview' })
+  @ApiResponse({ status: 201, description: 'Preview generated' })
+  async preview(@CurrentUser() user: CurrentUserType, @Body() dto: PreviewCredentialDto) {
+    const result = await this.credentialService.generatePreview(user.organizationUuid, dto);
+    return new SuccessResponse('Preview generated', result);
   }
 
   @Get()
@@ -61,15 +78,22 @@ export class CredentialController {
     return new SuccessResponse('Credentials retrieved successfully', result);
   }
 
+  @Public()
+  @Get('public/:uuid')
+  @ApiOperation({ summary: 'Get public credential by UUID (no auth required)' })
+  @ApiResponse({ status: 200, description: 'Public credential found' })
+  @ApiResponse({ status: 404, description: 'Credential not found' })
+  async findPublic(@Param('uuid') uuid: string) {
+    const credential = await this.credentialService.findPublicByUuid(uuid);
+    return new SuccessResponse('Credential retrieved successfully', credential);
+  }
+
   @Get(':uuid')
   @ApiOperation({ summary: 'Get credential by UUID' })
   @ApiResponse({ status: 200, description: 'Credential found' })
   @ApiResponse({ status: 404, description: 'Credential not found' })
   async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
-    const credential = await this.credentialService.findByUuid(uuid, user.organizationUuid);
-    if (!credential) {
-      return new SuccessResponse('Credential not found', null);
-    }
+    const credential = await this.credentialService.findByUuidOrFail(uuid, user.organizationUuid);
     return new SuccessResponse('Credential retrieved successfully', credential);
   }
 
@@ -84,6 +108,15 @@ export class CredentialController {
   ) {
     const credential = await this.credentialService.updateByUuid(uuid, user.organizationUuid, dto);
     return new SuccessResponse('Credential updated successfully', credential);
+  }
+
+  @Post(':uuid/resend')
+  @ApiOperation({ summary: 'Resend credential email to recipient' })
+  @ApiResponse({ status: 200, description: 'Credential email resent' })
+  @ApiResponse({ status: 400, description: 'Credential not eligible for resend' })
+  async resend(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+    const result = await this.credentialService.resend(uuid, user.organizationUuid);
+    return new SuccessResponse('Credential email resent successfully', result);
   }
 
   @Delete(':uuid')

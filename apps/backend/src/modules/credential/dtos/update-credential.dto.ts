@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { CredentialStatusEnum } from '@src/commons/enums';
 
 export class UpdateCredentialDto {
   @ApiPropertyOptional({ example: 'John Doe', description: 'Recipient name', maxLength: 200 })
@@ -34,8 +35,8 @@ export class UpdateCredentialDto {
   @MaxLength(500)
   certificateUrl?: string;
 
-  @ApiPropertyOptional({ enum: ['draft', 'issued'] })
+  @ApiPropertyOptional({ enum: [CredentialStatusEnum.DRAFT, CredentialStatusEnum.ISSUED] })
   @IsOptional()
-  @IsEnum(['draft', 'issued'])
-  status?: 'draft' | 'issued';
+  @IsEnum(CredentialStatusEnum, { message: 'Status must be DRAFT or ISSUED' })
+  status?: CredentialStatusEnum.DRAFT | CredentialStatusEnum.ISSUED;
 }

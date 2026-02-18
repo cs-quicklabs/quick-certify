@@ -1,6 +1,8 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { CurrentUser } from '../interfaces';
 import { Role } from '@src/modules/role/enums';
+import { GuardHelper } from './guard-helpers';
+import { Reflector } from '@nestjs/core';
 
 /**
  * Guard to ensure users can only access resources within their organization (multi-tenant)
@@ -9,7 +11,14 @@ import { Role } from '@src/modules/role/enums';
  */
 @Injectable()
 export class OrganizationGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
   canActivate(context: ExecutionContext): boolean {
+    // Check if route is marked as public
+    if (GuardHelper.isPublicRoute(this.reflector, context)) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     const user: CurrentUser = request.user;
 

@@ -72,6 +72,7 @@ export class DesignService extends BaseCrudService<
       type: dto.designType,
       organization_id: currentUser.organizationId,
       url: dto.designUrl,
+      layout: dto.layout ?? null,
     });
   }
 
@@ -90,6 +91,10 @@ export class DesignService extends BaseCrudService<
 
     if (dto.designType !== undefined) {
       updateData.type = dto.designType;
+    }
+
+    if (dto.layout !== undefined) {
+      updateData.layout = dto.layout;
     }
 
     await design.update(updateData);

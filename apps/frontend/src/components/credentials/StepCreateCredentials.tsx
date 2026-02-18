@@ -37,6 +37,13 @@ export function StepCreateCredentials({
     e.name.toLowerCase().includes(eventSearch.toLowerCase()),
   );
 
+  // if from redirect- prefill
+  useEffect(() => {
+    setEventId(initialData.eventId);
+    setEventName(initialData.eventName);
+    setRecipients(initialData.recipients);
+  }, [initialData.eventId, initialData.eventName, initialData.recipients]);
+
   // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
