@@ -1,4 +1,3 @@
-// src/commons/pipes/slug-only.pipe.ts
 import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
 
 const NANOID_LENGTH = 21;

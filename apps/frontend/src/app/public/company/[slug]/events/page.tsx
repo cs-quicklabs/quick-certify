@@ -21,6 +21,26 @@ const SORT_OPTIONS: { label: string; sortBy: SortBy; sortOrder: SortOrder }[] = 
 
 const PAGE_SIZE = 10;
 
+// Skeleton loader
+function EventGridSkeleton() {
+  return (
+    <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-sm border border-gray-200 bg-white overflow-hidden animate-pulse"
+        >
+          <div className="h-40 bg-gray-200" />
+          <div className="p-4 space-y-3">
+            <div className="h-5 bg-gray-200 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function EventPage() {
   const params = useParams();
   const slug = params?.slug as string;
@@ -35,7 +55,6 @@ export default function EventPage() {
   const activeSortLabel =
     SORT_OPTIONS.find((o) => o.sortBy === sortBy && o.sortOrder === sortOrder)?.label ?? 'Sort By';
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -60,22 +79,20 @@ export default function EventPage() {
   }, []);
 
   const handleSort = useCallback((option: SortOption) => {
-    setSortBy(option.sortBy as SortBy); // ← cast here
+    setSortBy(option.sortBy as SortBy);
     setSortOrder(option.sortOrder);
     setPage(1);
     setShowSortDropdown(false);
   }, []);
+
   return (
     <div className="bg-gray-50 p-4 min-h-screen">
-      {/* Breadcrumb */}
       <PublicBreadcrumb
         items={[{ label: 'Issuer Profile', href: `/public/company/${slug}` }, { label: 'Events' }]}
         title="Events"
       />
 
-      {/* Search, Sort & Events Grid */}
       <div className="max-w-7xl mx-auto mt-4 p-4 rounded-sm border border-gray-200 bg-white">
-        {/* Search & Sort Bar */}
         <SearchSortBar
           search={search}
           onSearchChange={handleSearch}
@@ -89,11 +106,8 @@ export default function EventPage() {
           activeSortOrder={sortOrder}
         />
 
-        {/* Events Grid */}
         {isLoading ? (
-          <div className="mt-4 flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-700" />
-          </div>
+          <EventGridSkeleton />
         ) : error ? (
           <div className="mt-4 py-16 text-center">
             <p className="text-sm text-red-600">Failed to load events. Please try again.</p>
@@ -124,7 +138,6 @@ export default function EventPage() {
         )}
       </div>
 
-      {/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div className="max-w-7xl mx-auto mt-4 bg-white border border-gray-200 rounded-sm p-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

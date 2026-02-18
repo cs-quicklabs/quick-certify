@@ -17,6 +17,25 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 12;
 
+function RecipientGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-3 rounded-sm border border-gray-300 bg-white px-4 py-3 animate-pulse"
+        >
+          <div className="h-10 w-10 rounded-full bg-gray-200 shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-2/3" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PublicRecipientsPage() {
   const params = useParams();
   const slug = params?.slug as string;
@@ -72,7 +91,6 @@ export default function PublicRecipientsPage() {
         ]}
         title="Recipients"
       />
-
       {/* Search & Sort */}
       <div className="max-w-7xl mx-auto mt-4 p-4 rounded-sm border border-gray-200 bg-white">
         <SearchSortBar
@@ -88,19 +106,21 @@ export default function PublicRecipientsPage() {
           activeSortOrder={sortOrder}
         />
       </div>
-
       {/* Recipients Grid */}
       <div className="max-w-7xl mx-auto mt-6">
-        <RecipientGrid
-          recipients={recipients}
-          isLoading={isLoading}
-          error={error}
-          search={search}
-          slug={slug}
-        />
+        {isLoading ? (
+          <RecipientGridSkeleton />
+        ) : (
+          <RecipientGrid
+            recipients={recipients}
+            isLoading={isLoading}
+            error={error}
+            search={search}
+            slug={slug}
+          />
+        )}
       </div>
-
-      {/* Pagination */}
+      ;{/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div className="max-w-7xl mx-auto mt-6 bg-white border border-gray-200 rounded-sm p-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
