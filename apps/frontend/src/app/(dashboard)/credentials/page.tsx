@@ -142,7 +142,7 @@ export default function CredentialsPage() {
             </p>
           </div>
           <button
-            onClick={() => router.push(`${ROUTES.CREDENTIALS}/issue`)}
+            onClick={() => router.push(`${ROUTES.CREDENTIALS_ISSUE}`)}
             className="btn-primary"
           >
             Issue Credential

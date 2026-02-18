@@ -28,7 +28,7 @@ import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interface
 @ApiBearerAuth()
 @Controller({ path: 'credentials', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.DESIGNER, Role.MANAGER)
 export class CredentialController {
   constructor(private readonly credentialService: CredentialService) {}
 
