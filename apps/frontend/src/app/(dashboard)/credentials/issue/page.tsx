@@ -50,14 +50,10 @@ export default function IssueCredentialPage() {
     }
   }, [event]);
   useEffect(() => {
-    if (!isLoading && !eventId) {
+    if (eventId && isError && isLoading) {
       router.push('/credentials');
     }
-
-    if (isError) {
-      router.push('/credentials');
-    }
-  }, [isLoading, isError, eventId, router]);
+  }, [eventId, isError, router]);
 
   const completedSteps = activeStep > 0 ? [0] : [];
 
