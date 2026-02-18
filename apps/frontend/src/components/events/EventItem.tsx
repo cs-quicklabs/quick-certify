@@ -46,6 +46,11 @@ export const EventItem = ({
     setIsConfirmOpen(false);
   };
 
+  const handleIssueCredential = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/credentials/issue?eventId=${uuid}`);
+  };
+
   return (
     <>
       <tr
@@ -86,10 +91,7 @@ export const EventItem = ({
         <td className="px-4 py-1 text-right">
           <div className="flex justify-end gap-2">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // TODO: Implement issue credential
-              }}
+              onClick={handleIssueCredential}
               className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
             >
               <Plus size={16} strokeWidth={1.7} /> <span>Issue Credential</span>
