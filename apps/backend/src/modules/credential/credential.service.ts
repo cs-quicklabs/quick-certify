@@ -30,7 +30,7 @@ export class CredentialService {
 
   private readonly defaultIncludes = [
     { model: RecipientEntity, as: 'recipient' as const, attributes: ['uuid', 'name', 'email'] },
-    { model: EventEntity, as: 'event' as const, attributes: ['uuid', 'name'] },
+    { model: EventEntity, as: 'event' as const, attributes: ['uuid', 'name', 'design_id'] },
   ];
 
   constructor(
@@ -197,9 +197,66 @@ export class CredentialService {
     if (dto.issuedDate !== undefined) updateData.issued_date = dto.issuedDate;
     if (dto.expirationDate !== undefined) updateData.expiration_date = dto.expirationDate;
     if (dto.certificateUrl !== undefined) updateData.certificate_url = dto.certificateUrl;
-    if (dto.status !== undefined) updateData.status = dto.status;
+    // If issuing credential → generate certificate + send email
+    if (dto.status === CredentialStatusEnum.ISSUED) {
+      return this.issueSingleCredential(credential, organizationUuid);
+    }
+
+    if (dto.status !== undefined) {
+      updateData.status = dto.status;
+    }
 
     await credential.update(updateData);
+
+    return credential.reload({ include: this.defaultIncludes });
+  }
+
+  private async issueSingleCredential(
+    credential: CredentialEntity,
+    organizationUuid: string,
+  ): Promise<CredentialEntity> {
+    const organization = await this.requireOrganization(organizationUuid);
+
+    const event = credential.event;
+    if (!event?.design_id) {
+      throw new BadRequestException('Event has no design template assigned');
+    }
+
+    const design = await this.designService.findOne(event.design_id);
+    if (!design?.url || !design?.layout) {
+      throw new BadRequestException('Event has no design template with layout');
+    }
+
+    // Mark as PROCESSING
+    await credential.update({ status: CredentialStatusEnum.PROCESSING });
+
+    const result = await this.certificateGenerationService.generateCertificate(
+      design.url,
+      design.layout,
+      {
+        recipientName: credential.recipient?.name ?? '',
+        recipientEmail: credential.recipient?.email ?? '',
+        credentialUuid: credential.uuid,
+        issuedDate: credential.issued_date,
+        expirationDate: credential.expiration_date,
+        eventName: event.name,
+      },
+      organization.uuid,
+    );
+
+    await credential.update({
+      certificate_url: result.imageUrl,
+      certificate_pdf_url: result.pdfUrl,
+      status: CredentialStatusEnum.ISSUED,
+    });
+
+    await this.credentialEmailService.sendCredentialIssuedEmail({
+      credentialUuid: credential.uuid,
+      recipientEmail: credential.recipient?.email ?? '',
+      recipientName: credential.recipient?.name ?? 'Participant',
+      eventName: event.name,
+      pdfUrl: result.pdfUrl,
+    });
 
     return credential.reload({ include: this.defaultIncludes });
   }
@@ -272,7 +329,11 @@ export class CredentialService {
             event_id: event.id,
             issued_date: dto.issuedDate || new Date().toISOString().split('T')[0],
             expiration_date: dto.expirationDate || null,
-            status: CredentialStatusEnum.PENDING,
+            status:
+              dto.status === CredentialStatusEnum.DRAFT
+                ? CredentialStatusEnum.DRAFT
+                : CredentialStatusEnum.PENDING,
+
             batch_id: batch.id,
           },
           { transaction },

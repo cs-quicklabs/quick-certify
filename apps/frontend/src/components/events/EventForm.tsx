@@ -23,8 +23,8 @@ import { useDesignList } from '@/hooks/useDesigns';
 import { Design } from '@/types';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
-import { getApiErrorMessage } from '@/lib/api-error';
 import { Event } from '@/services';
+import { showSuccessToast } from '@/lib/toast';
 
 // Maximum number of items to fetch for dropdown lists
 const DROPDOWN_PAGE_SIZE = 100;
@@ -315,52 +315,42 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
    */
   const handleStep1Submit = useCallback(
     async (formData: Step1FormData) => {
-      setIsUpdating(true);
+      // Store form data for persistence
+      setStep1Data(formData);
 
-      try {
-        // Store form data for persistence
-        setStep1Data(formData);
+      if (isEditMode && eventUuid) {
+        // Edit mode: update existing event (supports null to clear optional fields)
+        await updateEvent.mutateAsync({
+          name: step0CoreData.name,
+          designId: step0FormData.designUuid || null,
+          eventTypeId: formData.typeId || null,
+          eventLevelId: formData.levelId || null,
+          eventFormatId: formData.formatId || null,
+          description: formData.description || null,
+          learningLink: formData.learningLink || null,
+          skillIds: selectedSkillIds,
+        });
 
-        if (isEditMode && eventUuid) {
-          // Edit mode: update existing event (supports null to clear optional fields)
-          await updateEvent.mutateAsync({
-            name: step0CoreData.name,
-            designId: step0FormData.designUuid || null,
-            eventTypeId: formData.typeId || null,
-            eventLevelId: formData.levelId || null,
-            eventFormatId: formData.formatId || null,
-            description: formData.description || null,
-            learningLink: formData.learningLink || null,
-            skillIds: selectedSkillIds,
-          });
-          toast.success('Event updated successfully!');
-        } else {
-          // Create mode: create event with all data from both steps
-          await createEvent.mutateAsync({
-            name: step0CoreData.name,
-            designId: step0FormData.designUuid || '',
-            eventTypeId: formData.typeId || '',
-            eventLevelId: formData.levelId || '',
-            eventFormatId: formData.formatId || '',
-            description: formData.description || undefined,
-            learningLink: formData.learningLink || undefined,
-            skillIds: selectedSkillIds,
-          });
-          toast.success('Event created successfully!');
-        }
-
-        // Mark Step 1 as completed
-        markStepCompleted(1);
-        router.push('/events');
-      } catch (error) {
-        const message = getApiErrorMessage(
-          error,
-          isEditMode ? 'Failed to update event' : 'Failed to create event',
-        );
-        toast.error(message);
-      } finally {
+        showSuccessToast('Event updated successfully');
+      } else {
+        // Create mode: create event with all data from both steps
+        await createEvent.mutateAsync({
+          name: step0CoreData.name,
+          designId: step0FormData.designUuid || '',
+          eventTypeId: formData.typeId || '',
+          eventLevelId: formData.levelId || '',
+          eventFormatId: formData.formatId || '',
+          description: formData.description || undefined,
+          learningLink: formData.learningLink || undefined,
+          skillIds: selectedSkillIds,
+        });
         setIsUpdating(false);
+        showSuccessToast('Event created successfully');
       }
+
+      // Mark Step 1 as completed
+      markStepCompleted(1);
+      router.push('/events');
     },
     [
       eventUuid,
