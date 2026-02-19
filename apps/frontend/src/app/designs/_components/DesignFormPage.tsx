@@ -83,14 +83,14 @@ export function DesignFormPage({
       if (isEdit && id) {
         await updateDesign.mutateAsync({
           id,
-          name,
+          name: name,
           designType,
           designUrl: resolvedImageUrl,
           layout: layout ?? undefined,
         });
       } else {
         await createDesign.mutateAsync({
-          name,
+          name: name,
           type: designType,
           url: resolvedImageUrl,
           layout: layout ?? undefined,

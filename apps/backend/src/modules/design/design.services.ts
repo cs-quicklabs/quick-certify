@@ -5,7 +5,7 @@ import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/b
 import { DesignEntity } from '@src/entities';
 import { UpdateDesignDto } from './dtos/update-design.dto';
 import { CreateDesignDto } from './dtos/create-design.dto';
-import { capitalizeFirst } from '@src/commons/utils';
+import { toTitleCase } from '@src/commons/utils';
 import { CurrentUser } from '../auth/interfaces';
 
 @Injectable()
@@ -68,7 +68,7 @@ export class DesignService extends BaseCrudService<
 
   async createWithUser(currentUser: CurrentUser, dto: CreateDesignDto): Promise<DesignEntity> {
     return this.designModel.create({
-      name: capitalizeFirst(dto.name),
+      name: toTitleCase(dto.name),
       type: dto.designType,
       organization_id: currentUser.organizationId,
       url: dto.designUrl,
@@ -82,7 +82,7 @@ export class DesignService extends BaseCrudService<
     const updateData: Partial<DesignEntity> = {};
 
     if (dto.name !== undefined) {
-      updateData.name = capitalizeFirst(dto.name);
+      updateData.name = toTitleCase(dto.name);
     }
 
     if (dto.designUrl !== undefined && dto.designUrl !== '') {

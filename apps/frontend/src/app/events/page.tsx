@@ -3,10 +3,14 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Loader2, X } from 'lucide-react';
-import { Pagination } from '@/components/ui/pagination';
+import {
+  Pagination,
+  ModulePermissionError,
+  EventsTable,
+  MultiSelectFilter,
+  FilterItem,
+} from '@/components/';
 import { toast } from 'react-toastify';
-import { EventsTable } from '@/components/events/EventsTable';
-import { MultiSelectFilter, FilterItem } from '@/components/events/MultiSelectFilter';
 import {
   useEvents,
   useDeleteEvent,
@@ -206,6 +210,9 @@ export default function EventsPage() {
       onRemove: () => toggleFilter(setSelectedFormatIds, uuid),
     })),
   ];
+  if (error) {
+    return <ModulePermissionError />;
+  }
 
   return (
     <div className="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">

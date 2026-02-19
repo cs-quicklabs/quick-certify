@@ -15,6 +15,25 @@ export function capitalizeFirst(str: string | null | undefined): string {
 }
 
 /**
+ * Capitalize first letter of each word of a string (if its all caps- keep it )
+ * @param value input string
+ * @returns
+ */
+export function toTitleCase(value: string): string {
+  return value
+    .split(' ')
+    .map((word) => {
+      if (!word) return word;
+
+      // If word is fully uppercase already, keep it
+      if (word === word.toUpperCase()) return word;
+
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
+/**
  * Extract and normalize domain from a URL
  * Removes protocol, www prefix, paths, and query strings
  * @param url - Full URL string
