@@ -10,8 +10,10 @@ import {
   ValidateNested,
   ArrayMinSize,
   ArrayMaxSize,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { CredentialStatusEnum } from '@src/commons/enums';
 
 export class BatchRecipientDto {
   @ApiProperty({ example: 'John Doe', description: 'Recipient name', maxLength: 200 })
@@ -61,4 +63,15 @@ export class BatchCreateCredentialDto {
     { message: 'Expiration date must be a valid ISO 8601 date string (e.g. YYYY-MM-DD)' },
   )
   expirationDate?: string;
+
+  @ApiPropertyOptional({
+    enum: CredentialStatusEnum,
+    example: CredentialStatusEnum.DRAFT,
+    description: 'Credential status',
+  })
+  @IsOptional()
+  @IsEnum(CredentialStatusEnum, {
+    message: `Status must be one of: ${Object.values(CredentialStatusEnum).join(', ')}`,
+  })
+  status?: CredentialStatusEnum;
 }

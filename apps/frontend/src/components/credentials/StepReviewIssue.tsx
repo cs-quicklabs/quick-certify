@@ -101,18 +101,28 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
   }, [setFormData]);
 
   const buildPayload = useCallback(
-    () => ({
+    (status: CredentialStatus) => ({
       eventId: formData.eventId,
-      recipients: formData.recipients.map((r) => ({ name: r.name, email: r.email })),
+      recipients: formData.recipients.map((r) => ({
+        name: r.name,
+        email: r.email,
+      })),
       issuedDate: formData.issuedDate,
       expirationDate: formData.noExpiration ? undefined : formData.expirationDate || undefined,
+      status,
     }),
     [formData],
   );
 
+  const handleSaveDraft = useCallback(async () => {
+    await batchCreate.mutateAsync(buildPayload(CredentialStatus.DRAFT));
+    showSuccessToast('Credentials saved as draft.');
+    router.push(ROUTES.CREDENTIALS);
+  }, [batchCreate, buildPayload, router]);
+
   const handleIssueCredentials = useCallback(async () => {
-    await batchCreate.mutateAsync(buildPayload());
-    showSuccessToast('Credentials are being issued. You can track progress in the list.');
+    await batchCreate.mutateAsync(buildPayload(CredentialStatus.ISSUED));
+    showSuccessToast('Credentials are being issued.');
     router.push(ROUTES.CREDENTIALS);
   }, [batchCreate, buildPayload, router]);
 
@@ -204,14 +214,29 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
         <Button variant="outline" onClick={onCancel} fullWidth className="sm:w-auto">
           Cancel
         </Button>
+
         <Button variant="outline" onClick={onBack} fullWidth className="sm:w-auto">
           Back
         </Button>
+
+        <Button
+          variant="outline"
+          onClick={handleSaveDraft}
+          isLoading={batchCreate.isPending}
+          disabled={batchCreate.isPending}
+          leftIcon={<Save className="h-4 w-4" />}
+          fullWidth
+          className="sm:w-auto"
+        >
+          Save as Draft
+        </Button>
+
         <Button
           variant="primary"
           onClick={handleIssueCredentials}
           isLoading={batchCreate.isPending}
           disabled={batchCreate.isPending}
+          leftIcon={<Send className="h-4 w-4" />}
           fullWidth
           className="sm:w-auto"
         >

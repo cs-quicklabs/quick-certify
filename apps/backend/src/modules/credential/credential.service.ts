@@ -272,7 +272,11 @@ export class CredentialService {
             event_id: event.id,
             issued_date: dto.issuedDate || new Date().toISOString().split('T')[0],
             expiration_date: dto.expirationDate || null,
-            status: CredentialStatusEnum.PENDING,
+            status:
+              dto.status === CredentialStatusEnum.DRAFT
+                ? CredentialStatusEnum.DRAFT
+                : CredentialStatusEnum.PENDING,
+
             batch_id: batch.id,
           },
           { transaction },
