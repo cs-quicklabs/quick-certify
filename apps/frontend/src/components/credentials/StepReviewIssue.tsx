@@ -279,43 +279,44 @@ function DetailView({ credential }: DetailMode) {
 
   // Auto-generate preview for failed credentials that have no certificate_url
   const previewRequestedFor = useRef<string | null>(null);
+  const eventId = credential.event?.uuid;
+  const recipientName = credential.recipient?.name;
+  const recipientEmail = credential.recipient?.email;
+  const issuedDate = credential.issued_date?.split('T')[0];
+  const expirationDate = credential.expiration_date?.split('T')[0];
+  const certificateUrl = credential.certificate_url;
+  const credentialId = credential.uuid;
+
   useEffect(() => {
-    if (
-      !isFailed ||
-      credential.certificate_url ||
-      !credential.event?.uuid ||
-      !credential.recipient?.name
-    ) {
-      return;
-    }
+    if (!eventId || !recipientName || !recipientEmail || certificateUrl) return;
 
-    if (previewRequestedFor.current === credential.uuid) {
-      return;
-    }
+    if (previewRequestedFor.current === credentialId) return;
 
-    previewRequestedFor.current = credential.uuid;
+    previewRequestedFor.current = credentialId;
 
-    let cancelled = false;
     previewMutation
       .mutateAsync({
-        eventId: credential.event.uuid,
-        recipientName: credential.recipient.name,
-        recipientEmail: credential.recipient.email,
-        issuedDate: credential.issued_date?.split('T')[0],
-        expirationDate: credential.expiration_date?.split('T')[0],
+        eventId,
+        recipientName,
+        recipientEmail,
+        issuedDate,
+        expirationDate,
       })
       .then((result) => {
-        if (!cancelled) setFailedPreviewUrl(result.previewUrl);
+        setFailedPreviewUrl(result.previewUrl);
       })
       .catch(() => {
-        if (!cancelled) previewRequestedFor.current = null;
+        previewRequestedFor.current = null; // allow retry only if failed
       });
-
-    return () => {
-      cancelled = true;
-      previewRequestedFor.current = null;
-    };
-  }, [isFailed, credential, previewMutation]);
+  }, [
+    eventId,
+    recipientName,
+    recipientEmail,
+    issuedDate,
+    expirationDate,
+    certificateUrl,
+    credentialId,
+  ]);
 
   const handleCancelEdit = useCallback(() => {
     setEditName(credential.recipient?.name ?? '');
