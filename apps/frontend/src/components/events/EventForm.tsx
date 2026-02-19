@@ -21,7 +21,6 @@ import { SkillSelector } from '@/components/events/SkillSelector';
 import { Eye, Images, Plus, SquarePen, Trash, Loader2 } from 'lucide-react';
 import { useDesignList } from '@/hooks/useDesigns';
 import { Design } from '@/types';
-import Link from 'next/link';
 import { toast } from 'react-toastify';
 import { Event } from '@/services';
 import { showSuccessToast } from '@/lib/toast';
@@ -60,8 +59,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const isEditMode = mode === 'edit';
 
   // Loading states
-  const [isUpdating, setIsUpdating] = useState(false);
   const [isFormReady, setIsFormReady] = useState(!isEditMode);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Step 0 data storage (core data for stepper validation)
   const [step0CoreData, setStep0CoreData] = useState<Step0Data>({ name: '' });
@@ -344,7 +343,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           learningLink: formData.learningLink || undefined,
           skillIds: selectedSkillIds,
         });
-        setIsUpdating(false);
         showSuccessToast('Event created successfully');
       }
 
@@ -464,7 +462,12 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       },
     ] as FormFieldConfig[],
     schema: step1Schema,
-    submitLabel: isUpdating ? 'Saving...' : isEditMode ? 'Update Event' : 'Save Event',
+    submitLabel:
+      createEvent.isPending || updateEvent.isPending
+        ? 'Saving...'
+        : isEditMode
+          ? 'Update Event'
+          : 'Save Event',
     onSubmit: handleStep1Submit,
     onCancel: () => router.push('/events'),
     // Show checkmark when step is complete
@@ -501,11 +504,15 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           {currentStep === 0 && (
             <div className="max-w-xl pb-12 px-4 lg:col-span-6">
               <ConfigForm
-                key={eventUuid ?? 'create'}
                 config={{ ...step0Config, showSubmit: false }}
                 initialValues={step0FormData}
                 formRef={step0FormRef}
                 isLoading={false}
+                onChange={(values) => {
+                  const name = (values.name as string) || '';
+                  setStep0CoreData((prev) => (prev.name === name ? prev : { ...prev, name }));
+                  setStep0FormData((prev) => (prev.name === name ? prev : { ...prev, name }));
+                }}
               />
 
               {/* Design Selection */}
@@ -534,13 +541,14 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                         </span>
                       </div>
                       <div className="w-full mt-auto flex justify-between">
-                        <Link
-                          href={`/designs/preview/${step0FormData.designUuid}`}
+                        <button
+                          type="button"
+                          onClick={() => setIsPreviewOpen(true)}
                           className="flex items-center text-blue-600 hover:text-blue-800"
                         >
                           <Eye size={16} strokeWidth={1} />
                           <span className="text-xs font-medium ml-1">Preview</span>
-                        </Link>
+                        </button>
                         <div className="flex items-center gap-2">
                           <SquarePen
                             size={16}
@@ -602,7 +610,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                 key={eventUuid ?? 'create'}
                 config={step1Config}
                 initialValues={step1Data}
-                isLoading={isUpdating || isLoadingDropdowns}
+                isLoading={createEvent.isPending || updateEvent.isPending || isLoadingDropdowns}
               >
                 <SkillSelector
                   skills={skills}
@@ -622,6 +630,35 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
             onClose={() => setIsDesignModalOpen(false)}
             onSelect={handleDesignSelect}
           />
+
+          {/* Design Preview Modal */}
+          {isPreviewOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+              onClick={() => setIsPreviewOpen(false)}
+            >
+              <div
+                className="relative bg-white rounded-lg shadow-xl p-6 max-w-3xl w-full mx-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center"
+                >
+                  ✕
+                </button>
+                <h3 className="text-lg font-semibold mb-4">{step0FormData.designTitle}</h3>
+                <div className="flex items-center justify-center bg-gray-50 rounded-lg p-6 min-h-64">
+                  <img
+                    src={step0FormData.design}
+                    alt={step0FormData.designTitle}
+                    className="max-h-[60vh] object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>
