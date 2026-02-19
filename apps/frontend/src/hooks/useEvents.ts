@@ -272,7 +272,6 @@ export function useDeleteEventFormat() {
   });
 }
 
-// Event Hooks
 export function useEvents(filters?: EventFilters & { enabled?: boolean }) {
   const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
