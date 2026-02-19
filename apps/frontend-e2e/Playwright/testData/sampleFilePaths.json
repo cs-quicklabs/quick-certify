@@ -1,0 +1,10 @@
+{
+  "banner": "test-assets/banner.png",
+  "pdfDocument": "test-assets/document.pdf",
+  "favicon": "test-assets/favicon.png",
+  "largeBanner": "test-assets/large-banner.png",
+  "largeImage": "test-assets/large-image.png",
+  "logo": "test-assets/logo.png",
+  "logoFileType": "logo",
+  "faviconFileType": "favicon"
+}

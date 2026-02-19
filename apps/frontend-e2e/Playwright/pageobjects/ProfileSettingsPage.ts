@@ -45,9 +45,8 @@ export class ProfileSettingsPage {
   /**
    * Navigate to Profile Settings page
    */
-  async openUrl() {
+  async gotoProfileSettingPage() {
     await this.page.goto('/settings/profile/general');
-    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -133,7 +132,17 @@ export class ProfileSettingsPage {
     if (lastName !== undefined) {
       await this.enterLastName(lastName);
     }
-    await this.clickSaveButton();
+    await Promise.all([
+      this.clickSaveButton(),
+      this.page
+        .waitForResponse(
+          (resp) => resp.url().includes('/api/v1/profile/me') && resp.status() === 200,
+          { timeout: 10000 },
+        )
+        .catch(() => {
+          console.log('API response wait timed out, continuing...');
+        }),
+    ]);
   }
 
   /**

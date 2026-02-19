@@ -39,7 +39,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: path.resolve(__dirname, 'auth.json'), //  uses saved session
-        headless: true,
       },
     },
     {
@@ -48,7 +47,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: undefined, // Fresh session
-        headless: true,
       },
     },
   ],

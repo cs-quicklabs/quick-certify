@@ -14,6 +14,7 @@ import { AccountIssuerPortalPage } from '../pageobjects/AccountIssuerPortalPage'
 import { AccountSkillsPage } from '../pageobjects/AccountSkillsPage';
 import { TeamPage } from '../pageobjects/TeamPage';
 import { RandomDataGenerator } from '../utils/RandomDataGenerator';
+import sampleFilePaths from '../testData/sampleFilePaths.json';
 import registrationData from '../testData/registrationData.json';
 import loginData from '../testData/loginData.json';
 import profileData from '../testData/profileData.json';
@@ -112,4 +113,10 @@ export {
   skillsData,
   teamData,
   RandomDataGenerator,
+  sampleFilePaths,
+  AccountBrandingPage,
+  AccountGeneralInfoPage,
+  AccountIssuerPortalPage,
+  AccountSkillsPage,
+  AccountSocialLinksPage,
 };

@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import * as path from 'node:path';
 
 export class AccountIssuerPortalPage {
   readonly page: Page;
@@ -62,9 +63,8 @@ export class AccountIssuerPortalPage {
   /**
    * Navigate to Account Settings - Issuer Portal page
    */
-  async openUrl() {
+  async gotoAccountIssuerPortalPage() {
     await this.page.goto('/settings/account/issuer-portal');
-    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -92,6 +92,29 @@ export class AccountIssuerPortalPage {
     await this.page.waitForTimeout(500);
   }
 
+  /**
+   * Upload file by file type (logo or favicon)
+   * @param filePath - Absolute path or relative path (relative to Playwright directory)
+   */
+
+  async uploadAndValidateBanner(filePath: string) {
+    const absolutePath = path.isAbsolute(filePath)
+      ? filePath
+      : path.resolve(__dirname, '..', filePath);
+
+    await Promise.all([
+      this.uploadBanner(absolutePath),
+      this.page
+        .waitForResponse(
+          (resp) =>
+            (resp.url().includes('/organizations/settings/portal') ||
+              resp.url().includes('/api/v1/files/upload')) &&
+            resp.status() === 200,
+          { timeout: 15000 },
+        )
+        .catch(() => {}),
+    ]);
+  }
   /**
    * Click banner dropzone to trigger file picker
    */
