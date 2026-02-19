@@ -6,7 +6,6 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { useCreateDesign, useDesignById, useUpdateDesign } from '@/hooks/useDesigns';
 import { DesignType, DesignLayout } from '@/types';
 import { useRouter } from 'next/navigation';
-import { toTitleCase } from '@/lib/design';
 
 export function DesignFormPage({
   mode,
@@ -84,14 +83,14 @@ export function DesignFormPage({
       if (isEdit && id) {
         await updateDesign.mutateAsync({
           id,
-          name: toTitleCase(name),
+          name: name,
           designType,
           designUrl: resolvedImageUrl,
           layout: layout ?? undefined,
         });
       } else {
         await createDesign.mutateAsync({
-          name: toTitleCase(name),
+          name: name,
           type: designType,
           url: resolvedImageUrl,
           layout: layout ?? undefined,
