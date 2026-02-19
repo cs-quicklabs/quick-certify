@@ -751,6 +751,7 @@ function CredentialLayout({
                       value={expirationDate}
                       onChange={(e) => onExpirationDateChange(e.target.value)}
                       disabled={noExpiration}
+                      min={issuedDate || new Date().toISOString().split('T')[0]}
                       className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
                     />
                     <label className="flex items-center gap-2 cursor-pointer select-none">
