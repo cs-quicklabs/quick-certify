@@ -59,18 +59,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const isEditMode = mode === 'edit';
 
   // Loading states
-  const [isUpdating, setIsUpdating] = useState(false);
   const [isFormReady, setIsFormReady] = useState(!isEditMode);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-  useEffect(() => {
-    const saved = sessionStorage.getItem('eventDraft');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Only restore if we don't already have a name filled in
-      setStep0FormData((prev) => (prev.name ? prev : parsed));
-    }
-  }, []);
 
   // Step 0 data storage (core data for stepper validation)
   const [step0CoreData, setStep0CoreData] = useState<Step0Data>({ name: '' });
@@ -155,17 +145,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     isInitializedRef.current = false;
     setIsFormReady(!isEditMode);
   }, [mode, eventUuid, isEditMode]);
-
-  useEffect(() => {
-    sessionStorage.setItem('eventDraft', JSON.stringify(step0FormData));
-  }, [step0FormData]);
-
-  useEffect(() => {
-    const saved = sessionStorage.getItem('eventDraft');
-    if (saved) {
-      setStep0FormData(JSON.parse(saved));
-    }
-  }, []);
 
   // Initialize form data when event data is loaded (edit mode)
   useEffect(() => {
@@ -364,7 +343,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           learningLink: formData.learningLink || undefined,
           skillIds: selectedSkillIds,
         });
-        setIsUpdating(false);
         showSuccessToast('Event created successfully');
       }
 
@@ -484,7 +462,12 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       },
     ] as FormFieldConfig[],
     schema: step1Schema,
-    submitLabel: isUpdating ? 'Saving...' : isEditMode ? 'Update Event' : 'Save Event',
+    submitLabel:
+      createEvent.isPending || updateEvent.isPending
+        ? 'Saving...'
+        : isEditMode
+          ? 'Update Event'
+          : 'Save Event',
     onSubmit: handleStep1Submit,
     onCancel: () => router.push('/events'),
     // Show checkmark when step is complete
@@ -627,7 +610,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                 key={eventUuid ?? 'create'}
                 config={step1Config}
                 initialValues={step1Data}
-                isLoading={isUpdating || isLoadingDropdowns}
+                isLoading={createEvent.isPending || updateEvent.isPending || isLoadingDropdowns}
               >
                 <SkillSelector
                   skills={skills}
@@ -640,7 +623,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
             </main>
           )}
 
-          {/* Design Selector Modal */}
           {/* Design Selector Modal */}
           <DesignSelectorModal
             isOpen={isDesignModalOpen}
