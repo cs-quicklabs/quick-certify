@@ -107,8 +107,14 @@ export class EventRepository {
     };
 
     // Apply search filter at database level
+    // if (search?.trim()) {
+    //   queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
+    // }
     if (search?.trim()) {
-      queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
+      queryWhere[Op.or as unknown as string] = [
+        { name: { [Op.iLike]: `%${search.trim()}%` } },
+        { '$design.name$': { [Op.iLike]: `%${search.trim()}%` } },
+      ];
     }
 
     // Build includes with optional UUID filters
@@ -118,6 +124,7 @@ export class EventRepository {
       where: queryWhere,
       include: includes,
       distinct: true,
+      subQuery: false,
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,

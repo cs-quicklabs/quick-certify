@@ -69,7 +69,13 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const [step0FormData, setStep0FormData] = useState<Step0FormData>({ name: '' });
 
   // Step 1 data storage
-  const [step1Data, setStep1Data] = useState<Step1FormData>({});
+  const [step1Data, setStep1Data] = useState<Step1FormData>({
+    description: '',
+    learningLink: '',
+    levelId: '',
+    formatId: '',
+    typeId: '',
+  });
 
   // Skills state - stores selected skill UUIDs
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
