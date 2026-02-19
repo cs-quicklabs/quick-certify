@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type FieldType = 'text' | 'email' | 'password' | 'checkbox' | 'select' | 'textarea' | 'file';
+export type FieldType = 'text' | 'email' | 'password' | 'number' | 'checkbox' | 'select' | 'textarea' | 'file';
 
 export interface FieldOption {
   label: string;
@@ -22,9 +22,11 @@ export interface FormFieldConfig {
   className?: string;
   defaultValue?: string; // Default value for the field
   icon?: string; // Icon to display next to the label
+  /** Conditionally show/hide field based on current form data */
+  visibleWhen?: (formData: Record<string, unknown>) => boolean;
 }
 
-export interface FormConfig<T extends z.ZodObject<z.ZodRawShape>> {
+export interface FormConfig<T extends z.ZodType> {
   title: string;
   subtitle?: string;
   fields: FormFieldConfig[];

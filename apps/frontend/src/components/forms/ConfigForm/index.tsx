@@ -12,7 +12,7 @@ import { CheckboxField } from './fields/CheckboxField';
 import { SelectField } from './fields/SelectField';
 import { FileField } from './fields/FileField';
 
-interface ConfigFormProps<T extends z.ZodObject<z.ZodRawShape>> {
+interface ConfigFormProps<T extends z.ZodType> {
   config: FormConfig<T>;
   initialValues?: Partial<z.infer<T>>;
   isLoading?: boolean;
@@ -22,7 +22,7 @@ interface ConfigFormProps<T extends z.ZodObject<z.ZodRawShape>> {
   children?: React.ReactNode;
 }
 
-export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
+export function ConfigForm<T extends z.ZodType>({
   config,
   initialValues = {},
   isLoading = false,
@@ -170,6 +170,11 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   };
 
   const renderField = (field: FormFieldConfig) => {
+    // Skip rendering if visibleWhen returns false
+    if (field.visibleWhen && !field.visibleWhen(formData)) {
+      return null;
+    }
+
     const value = formData[field.name];
     const error = errors[field.name];
     const isDisabled = field.disabled || isSubmitting || isLoading;
@@ -178,6 +183,7 @@ export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
       case 'text':
       case 'email':
       case 'password':
+      case 'number':
         return (
           <InputField
             key={field.name}
