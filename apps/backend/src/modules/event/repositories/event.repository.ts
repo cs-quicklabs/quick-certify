@@ -124,7 +124,6 @@ export class EventRepository {
       where: queryWhere,
       include: includes,
       distinct: true,
-      subQuery: false,
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,

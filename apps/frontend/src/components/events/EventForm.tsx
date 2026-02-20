@@ -304,8 +304,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
       // Validate that design is selected (required)
       if (!step0FormData.designUuid) {
-        toast.error('Please select a design');
-        return;
+        throw new Error('Please select a design'); // ← tells ConfigForm it failed
       }
 
       // In both create and edit mode, just navigate to Step 1
