@@ -26,7 +26,7 @@ function toggleId(prev: string[], id: string): string[] {
 
 export default function EventsPage() {
   const [page, setPage] = useState(1);
-  const [limit] = useState(4);
+  const [limit] = useState(6);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -91,6 +91,7 @@ export default function EventsPage() {
     typeIds: selectedTypeIds.length > 0 ? selectedTypeIds.join(',') : undefined,
     levelIds: selectedLevelIds.length > 0 ? selectedLevelIds.join(',') : undefined,
     formatIds: selectedFormatIds.length > 0 ? selectedFormatIds.join(',') : undefined,
+    eventIds: selectedEventIds.length > 0 ? selectedEventIds.join(',') : undefined,
   });
 
   // Fetch events for "Filter by Events" dropdown only when opened (lazy load, then cached)
@@ -171,14 +172,15 @@ export default function EventsPage() {
   };
 
   // Client-side filter for selected event IDs only (type/level/format are server-side)
-  const filteredEvents =
-    selectedEventIds.length > 0
-      ? events.filter((e: Event) => selectedEventIds.includes(e.uuid))
-      : events;
+  // const filteredEvents =
+  //   selectedEventIds.length > 0
+  //     ? events.filter((e: Event) => selectedEventIds.includes(e.uuid))
+  //     : events;
+  const filteredEvents = events;
 
   // Pagination from API meta
-  const total = meta?.total ?? filteredEvents.length;
-  const totalPages = meta?.totalPages ?? Math.max(1, Math.ceil(total / limit));
+  const total = meta?.total ?? 0;
+  const totalPages = meta?.totalPages ?? 1;
   const pageSafe = Math.min(Math.max(1, page), totalPages);
 
   const hasActiveFilters =
