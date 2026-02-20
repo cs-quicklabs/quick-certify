@@ -20,10 +20,10 @@ interface ConfigFormProps<T extends z.ZodObject<z.ZodRawShape>> {
   children?: React.ReactNode;
   onChange?: (values: Record<string, unknown>) => void;
 }
-
+const emptyObject = {};
 export function ConfigForm<T extends z.ZodObject<z.ZodRawShape>>({
   config,
-  initialValues = {},
+  initialValues = emptyObject,
   isLoading = false,
   formRef,
   children,
