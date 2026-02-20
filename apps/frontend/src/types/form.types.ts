@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
-export type FieldType = 'text' | 'email' | 'password' | 'number' | 'checkbox' | 'select' | 'textarea' | 'file';
+export type FieldType =
+  | 'text'
+  | 'email'
+  | 'password'
+  | 'number'
+  | 'checkbox'
+  | 'select'
+  | 'textarea'
+  | 'file';
 
 export interface FieldOption {
   label: string;

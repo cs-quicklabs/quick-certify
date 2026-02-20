@@ -439,7 +439,10 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     })
     .refine(
       (data) => {
-        if (data.durationType && (data.durationValue === undefined || data.durationValue === null)) {
+        if (
+          data.durationType &&
+          (data.durationValue === undefined || data.durationValue === null)
+        ) {
           return false;
         }
         return true;
