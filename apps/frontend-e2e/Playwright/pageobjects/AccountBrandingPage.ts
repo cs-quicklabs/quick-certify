@@ -98,10 +98,6 @@ export class AccountBrandingPage {
     await expect(this.locator_pageSubtitle).toBeVisible();
   }
 
-  /**
-   * Upload logo image
-   * @param filePath - Absolute path or relative path (relative to Playwright directory)
-   */
   async uploadLogo(filePath: string) {
     // Resolve relative paths to absolute paths
     // __dirname in compiled JS points to Playwright/pageobjects/, so '..' goes to Playwright/
@@ -125,33 +121,19 @@ export class AccountBrandingPage {
     await this.page.waitForTimeout(500);
   }
 
-  /**
-   * Upload favicon image
-   * @param filePath - Absolute path or relative path (relative to Playwright directory)
-   */
   async uploadFavicon(filePath: string) {
-    // Resolve relative paths to absolute paths
     const absolutePath = path.isAbsolute(filePath)
       ? filePath
       : path.resolve(__dirname, '..', filePath);
-
-    // Wait for file input to be available
     await this.locator_faviconFileInput.waitFor({ state: 'attached', timeout: 5000 });
     await this.locator_faviconFileInput.setInputFiles(absolutePath);
-    // Wait for upload to start
     await this.page.waitForTimeout(500);
   }
 
-  /**
-   * Click logo dropzone to trigger file picker
-   */
   async clickLogoDropzone() {
     await this.locator_logoDropzone.click();
   }
 
-  /**
-   * Click favicon dropzone to trigger file picker
-   */
   async clickFaviconDropzone() {
     await this.locator_faviconDropzone.click();
   }
@@ -236,7 +218,7 @@ export class AccountBrandingPage {
   /**
    * Wait for upload to complete (check for success message or image display)
    */
-  async waitForUploadComplete(timeout: number = 15000) {
+  async waitForUploadComplete(timeout = 15000) {
     // Wait for either success message or image to appear
     await Promise.race([
       this.locator_alertToast.first().waitFor({ state: 'visible', timeout }),
@@ -253,7 +235,7 @@ export class AccountBrandingPage {
    * @param filePath - Absolute path or relative path (relative to Playwright directory)
    * @param waitForApiResponse - Optional: wait for API response (default: false)
    */
-  async uploadFile(fileType: string, filePath: string, waitForApiResponse: boolean = false) {
+  async uploadFile(fileType: string, filePath: string, waitForApiResponse = false) {
     const fileTypeMap: Record<string, Locator> = {
       logo: this.locator_logoFileInput,
       favicon: this.locator_faviconFileInput,

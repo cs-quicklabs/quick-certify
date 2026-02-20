@@ -43,7 +43,7 @@ export default defineConfig({
     },
     {
       name: 'chromium-login',
-      testMatch: /.*Login\.spec\.ts/, // only run login tests
+      testMatch: /.*login\.spec\.ts/, // only run login tests
       use: {
         ...devices['Desktop Chrome'],
         storageState: undefined, // Fresh session
