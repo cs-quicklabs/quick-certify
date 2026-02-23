@@ -157,12 +157,13 @@ export default function CredentialsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 px-4 py-2">
+        <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-200">
           {/* Event Filter Dropdown */}
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="cursor-pointer flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 capitalize"
+              style={{ minWidth: 140 }}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -176,7 +177,7 @@ export default function CredentialsPage() {
             </button>
 
             {isFilterOpen && (
-              <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+              <div className="absolute z-10 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow p-3">
                 <p className="text-xs font-medium text-gray-500 mb-2">Select Events</p>
                 <button
                   onClick={() => handleEventFilter('')}
@@ -208,7 +209,8 @@ export default function CredentialsPage() {
               placeholder="Search by name, email..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-3xs px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-gray-300 focus:outline-none"
+              className="w-48 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-gray-300 focus:outline-none"
+              style={{ minWidth: 180 }}
             />
           </div>
         </div>
