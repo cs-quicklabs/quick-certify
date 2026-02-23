@@ -138,13 +138,13 @@ export default function CredentialsPage() {
   }
 
   return (
-    <div className="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div>
+      <div className="bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between min-w-34 px-4 py-2 border-b border-gray-200">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Credential</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-lg font-semibold text-gray-900">Credential</h1>
+            <p className="text-sm text-gray-500">
               {meta?.total ?? 0} credential{(meta?.total ?? 0) !== 1 ? 's' : ''}
             </p>
           </div>
@@ -157,7 +157,7 @@ export default function CredentialsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
           {/* Event Filter Dropdown */}
           <div className="relative" ref={filterRef}>
             <button
@@ -221,15 +221,15 @@ export default function CredentialsPage() {
               placeholder="Search by name..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-56 px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
+              className="w-56 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
             />
           </div>
         </div>
 
         {/* Desktop Table */}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-600 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-md text-gray-600 bg-gray-50 border-b border-gray-200">
               <tr>
                 <th scope="col" className="px-6 py-3 font-medium">
                   Name
@@ -272,7 +272,7 @@ export default function CredentialsPage() {
                     key={item.uuid}
                     className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <td className="px-6 py-3 font-medium text-gray-900 dark:text-white">
+                    <td className="px-6 py-3  text-gray-900 dark:text-white">
                       {item.recipient?.name}
                     </td>
                     <td className="px-6 py-3 text-gray-500">{item.recipient?.email}</td>
@@ -280,7 +280,7 @@ export default function CredentialsPage() {
                       {item.event ? (
                         <button
                           onClick={() => router.push(createRoute.eventDetail(item.event!.uuid))}
-                          className="text-gray-900 dark:text-white font-medium hover:text-blue-600 hover:underline cursor-pointer"
+                          className="text-gray-900 dark:text-white  hover:text-blue-600 hover:underline cursor-pointer"
                         >
                           {item.event.name}
                         </button>
@@ -361,15 +361,17 @@ export default function CredentialsPage() {
             ))
           )}
         </div>
-        {/* Pagination */}
-        {meta && meta.totalPages > 1 && (
+      </div>
+      {/* Pagination  */}
+      {meta && meta.totalPages > 1 && (
+        <div className="flex justify-end mt-6 px-4">
           <Pagination
             currentPage={meta.page}
             totalPages={meta.totalPages}
             onPageChange={handlePageChange}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

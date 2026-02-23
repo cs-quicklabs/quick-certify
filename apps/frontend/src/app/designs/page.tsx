@@ -6,9 +6,8 @@ import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
 import { Design } from '@/types';
 import { useDesignList } from '@/hooks/useDesigns';
-import { Pagination } from '@/components/ui/pagination';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
-import { ConfirmationDialog, ModulePermissionError } from '@/components';
+import { ConfirmationDialog, ModulePermissionError, Pagination } from '@/components';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const SEARCH_DEBOUNCE_MS = 1000;
