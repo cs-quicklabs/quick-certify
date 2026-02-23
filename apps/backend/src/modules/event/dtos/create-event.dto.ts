@@ -1,13 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
   MaxLength,
   Matches,
+  Min,
 } from 'class-validator';
+import { DurationType } from '@src/commons/constants/constants';
 
 /**
  * DTO for creating a new event
@@ -79,6 +83,24 @@ export class CreateEventDto {
   @IsUrl({}, { message: 'Learning link must be a valid URL' })
   @MaxLength(500, { message: 'Learning link must not exceed 500 characters' })
   learningLink?: string;
+
+  @ApiPropertyOptional({
+    example: 'week',
+    description: 'Duration type (day, week, month)',
+    enum: DurationType,
+  })
+  @IsOptional()
+  @IsEnum(DurationType, { message: 'Duration type must be day, week, or month' })
+  durationType?: DurationType;
+
+  @ApiPropertyOptional({
+    example: 4,
+    description: 'Duration value',
+  })
+  @IsOptional()
+  @IsInt({ message: 'Duration value must be an integer' })
+  @Min(0, { message: 'Duration value must be 0 or greater' })
+  durationValue?: number;
 
   @ApiPropertyOptional({
     example: ['skill-uuid-1', 'skill-uuid-2'],
