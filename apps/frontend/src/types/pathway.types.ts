@@ -11,6 +11,12 @@ export interface PathwayEvent {
     order: number;
     is_final: boolean;
   };
+  design?: {
+    uuid: string;
+    name: string;
+    url: string;
+    type: string;
+  } | null;
 }
 
 export interface PathwayParticipant {

@@ -143,10 +143,13 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
   const statusConfig = STATUS_BADGE[pathway.status] ?? STATUS_BADGE[PathwayStatus.DRAFT];
   const credentials = pathway.events ?? [];
 
+  const finalEvent = credentials.find((c) => c.pathway_event?.is_final);
   const finalCredential = {
-    name: `${pathway.name} Certification`,
-    description: `This certification validates mastery across all credentials in the ${pathway.name} pathway.`,
-    image: '',
+    name: finalEvent?.name ?? `${pathway.name} Certification`,
+    description: finalEvent
+      ? `Complete all required credentials to earn the ${finalEvent.name} certification.`
+      : `This certification validates mastery across all credentials in the ${pathway.name} pathway.`,
+    image: finalEvent?.design?.url ?? '',
   };
 
   return (
@@ -156,7 +159,15 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
         <div className="px-4 mx-auto max-w-screen-2xl lg:px-8 pt-4">
           <div className="rounded-sm border border-gray-200 bg-white overflow-hidden">
             <div className="relative">
-              <div className="h-32 w-full bg-gradient-to-r from-gray-200 to-gray-300 lg:h-48" />
+              {pathway.banner_url ? (
+                <img
+                  src={pathway.banner_url}
+                  alt={`${pathway.name} banner`}
+                  className="h-32 w-full object-cover lg:h-48"
+                />
+              ) : (
+                <div className="h-32 w-full bg-gradient-to-r from-gray-200 to-gray-300 lg:h-48" />
+              )}
             </div>
 
             {/* Title block */}
@@ -412,12 +423,20 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                         className="cursor-pointer w-full text-left px-4 py-3 flex items-center gap-3 sm:gap-4 hover:bg-gray-50"
                         onClick={() => toggleAccordion(index)}
                       >
-                        {/* Placeholder thumbnail */}
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-sm bg-gray-200 shrink-0 border border-gray-100 flex items-center justify-center">
-                          <span className="text-xs font-medium text-gray-500">
-                            {index + 1}
-                          </span>
-                        </div>
+                        {/* Credential thumbnail */}
+                        {credential.design?.url ? (
+                          <img
+                            src={credential.design.url}
+                            alt={credential.name}
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-sm shrink-0 border border-gray-100 object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-sm bg-gray-200 shrink-0 border border-gray-100 flex items-center justify-center">
+                            <span className="text-xs font-medium text-gray-500">
+                              {index + 1}
+                            </span>
+                          </div>
+                        )}
 
                         {/* Name & Summary */}
                         <div className="flex-1 min-w-0">
@@ -451,24 +470,32 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                       {expandedIndex === index && (
                         <div className="border-t border-gray-200 px-4 py-4 bg-gray-50/50">
                           <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="w-full sm:w-32 h-24 rounded-sm bg-gray-200 border border-gray-100 flex items-center justify-center shrink-0">
-                              <svg
-                                className="w-8 h-8 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V5.25a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v14.25a1.5 1.5 0 001.5 1.5z"
-                                />
-                              </svg>
-                            </div>
+                            {credential.design?.url ? (
+                              <img
+                                src={credential.design.url}
+                                alt={credential.name}
+                                className="w-full sm:w-32 h-24 rounded-sm border border-gray-100 object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="w-full sm:w-32 h-24 rounded-sm bg-gray-200 border border-gray-100 flex items-center justify-center shrink-0">
+                                <svg
+                                  className="w-8 h-8 text-gray-400"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V5.25a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v14.25a1.5 1.5 0 001.5 1.5z"
+                                  />
+                                </svg>
+                              </div>
+                            )}
                             <div className="flex-1">
                               <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                                {credential.name} - Credential details will be available when backend is connected.
+                                {credential.name}
                               </p>
                               <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
                                 <span className="flex items-center gap-1">

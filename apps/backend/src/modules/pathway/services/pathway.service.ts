@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { PathwayEntity } from '@src/entities/pathway.entity';
 import { EventEntity } from '@src/entities/event.entity';
+import { DesignEntity } from '@src/entities/design.entity';
 import { RecipientEntity } from '@src/entities/recipient.entity';
 import { PathwayEventEntity } from '@src/entities/pathway-event.entity';
 import { PathwayParticipantEntity } from '@src/entities/pathway-participant.entity';
@@ -21,6 +22,7 @@ const DEFAULT_PATHWAY_INCLUDES = [
     as: 'events',
     required: false,
     through: { attributes: ['order', 'is_final'], as: 'pathway_event' },
+    include: [{ model: DesignEntity, as: 'design', required: false }],
   },
   {
     model: RecipientEntity,
