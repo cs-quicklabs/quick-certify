@@ -109,6 +109,8 @@ export class EventService {
           event_level_id: refs.eventLevel!.id,
           event_format_id: refs.eventFormat!.id,
           design_id: refs.design?.id ?? null,
+          duration_type: dto.durationType ?? null,
+          duration_value: dto.durationValue ?? null,
           is_active: true,
         },
         transaction,
@@ -152,6 +154,14 @@ export class EventService {
 
     if (dto.learningLink !== undefined) {
       updateData.learning_link = dto.learningLink ?? null;
+    }
+
+    if (dto.durationType !== undefined) {
+      updateData.duration_type = dto.durationType ?? null;
+    }
+
+    if (dto.durationValue !== undefined) {
+      updateData.duration_value = dto.durationValue ?? null;
     }
 
     // Handle reference updates
@@ -279,6 +289,8 @@ export class EventService {
 
       if (dto.description !== undefined) updateData.description = dto.description;
       if (dto.learningLink !== undefined) updateData.learning_link = dto.learningLink;
+      if (dto.durationType !== undefined) updateData.duration_type = dto.durationType;
+      if (dto.durationValue !== undefined) updateData.duration_value = dto.durationValue;
       if (refs.eventType) updateData.event_type_id = refs.eventType.id;
       if (refs.eventLevel) updateData.event_level_id = refs.eventLevel.id;
       if (refs.eventFormat) updateData.event_format_id = refs.eventFormat.id;
