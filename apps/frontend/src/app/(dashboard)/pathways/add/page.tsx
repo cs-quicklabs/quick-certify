@@ -98,7 +98,7 @@ export default function AddPathwayPage() {
         },
       );
     },
-    [name, selectedCredentials, createPathway, router],
+    [name, description, duration, bannerUrl, selectedCredentials, createPathway, router],
   );
 
   return (

@@ -10,10 +10,12 @@ import {
   PathwayParticipantEntity,
   EventEntity,
   RecipientEntity,
+  CredentialEntity,
 } from '@src/entities';
 import { AuthModule } from '../auth';
 import { OrganizationModule } from '../organization';
 import { RecipientModule } from '../recipient/recipient.module';
+import { EmailService } from '@src/commons/services';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { RecipientModule } from '../recipient/recipient.module';
       PathwayParticipantEntity,
       EventEntity,
       RecipientEntity,
+      CredentialEntity,
     ]),
     AuthModule,
     OrganizationModule,
@@ -33,6 +36,7 @@ import { RecipientModule } from '../recipient/recipient.module';
     PathwayService,
     PathwayEventService,
     PathwayParticipantService,
+    EmailService,
   ],
   exports: [
     PathwayService,

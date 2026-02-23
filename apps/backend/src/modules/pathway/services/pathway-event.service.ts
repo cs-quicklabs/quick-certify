@@ -67,12 +67,18 @@ export class PathwayEventService {
 
     const uuidToId = new Map(events.map((e) => [e.uuid, e.id]));
 
-    const associations = eventItems.map((item, index) => ({
-      pathway_id: pathway.id,
-      event_id: uuidToId.get(item.eventId)!,
-      order: index + 1,
-      is_final: item.isFinal ?? false,
-    }));
+    const associations = eventItems.map((item, index) => {
+      const eventId = uuidToId.get(item.eventId);
+      if (eventId === undefined) {
+        throw new BadRequestException(`Event not found: ${item.eventId}`);
+      }
+      return {
+        pathway_id: pathway.id,
+        event_id: eventId,
+        order: index + 1,
+        is_final: item.isFinal ?? false,
+      };
+    });
 
     await this.pathwayEventModel.bulkCreate(associations, {
       fields: ['pathway_id', 'event_id', 'order', 'is_final'],

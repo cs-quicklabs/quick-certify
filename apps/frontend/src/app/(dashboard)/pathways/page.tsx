@@ -113,7 +113,7 @@ export default function PathwaysPage() {
                   className="w-full sm:w-2xs px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-gray-300 focus:outline-none"
                 />
                 <button
-                  onClick={() => router.push(`${ROUTES.PATHWAYS}/add`)}
+                  onClick={() => router.push(ROUTES.PATHWAYS_ADD)}
                   className="btn-primary whitespace-nowrap text-center"
                 >
                   Create Pathway

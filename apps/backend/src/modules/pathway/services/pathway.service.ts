@@ -50,6 +50,8 @@ export class PathwayService {
 
     const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', search } = filters;
 
+    const allowedSortColumns = ['created_at', 'name', 'status'];
+    const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : 'created_at';
     const safeLimit = Math.min(Math.max(1, limit), 100);
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
@@ -71,7 +73,7 @@ export class PathwayService {
       where: queryWhere,
       include: DEFAULT_PATHWAY_INCLUDES,
       distinct: true,
-      order: [[sortBy, sortOrder]],
+      order: [[safeSortBy, sortOrder]],
       limit: safeLimit,
       offset,
     });

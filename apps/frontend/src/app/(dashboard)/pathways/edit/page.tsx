@@ -125,7 +125,7 @@ export default function EditPathwayPage() {
         },
       );
     },
-    [name, pathwayId, selectedCredentials, updatePathway, router],
+    [name, description, duration, bannerUrl, pathwayId, selectedCredentials, updatePathway, router],
   );
 
   if (isLoading) {

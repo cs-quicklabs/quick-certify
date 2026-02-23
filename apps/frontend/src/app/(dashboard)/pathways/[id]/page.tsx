@@ -14,32 +14,35 @@ interface PathwayDetailPageProps {
 
 const STATUS_BADGE: Record<
   PathwayStatus,
-  { dot: string; bg: string; text: string; label: string }
+  { dot: string; bg: string; text: string; border: string; label: string }
 > = {
   [PathwayStatus.ACTIVE]: {
     dot: 'bg-green-500',
     bg: 'bg-green-100',
     text: 'text-green-800',
+    border: 'border-green-200',
     label: 'Active',
   },
   [PathwayStatus.DRAFT]: {
     dot: 'bg-yellow-400',
     bg: 'bg-yellow-100',
     text: 'text-yellow-800',
+    border: 'border-yellow-200',
     label: 'Draft',
   },
   [PathwayStatus.ARCHIVED]: {
     dot: 'bg-gray-400',
     bg: 'bg-gray-100',
     text: 'text-gray-800',
+    border: 'border-gray-200',
     label: 'Archived',
   },
 };
 
-const PARTICIPANT_STATUS_STYLE: Record<string, string> = {
-  completed: 'bg-green-100 text-green-800',
-  in_progress: 'bg-blue-100 text-blue-800',
-  invited: 'bg-yellow-100 text-yellow-800',
+const PARTICIPANT_STATUS: Record<string, { style: string; label: string }> = {
+  completed: { style: 'bg-green-100 text-green-800', label: 'Completed' },
+  in_progress: { style: 'bg-blue-100 text-blue-800', label: 'In Progress' },
+  invited: { style: 'bg-yellow-100 text-yellow-800', label: 'Invited' },
 };
 
 export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
@@ -169,7 +172,7 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                   <div className="flex flex-wrap items-center gap-3 mt-3">
                     {/* Status badge */}
                     <span
-                      className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm ${statusConfig.bg} ${statusConfig.text} border border-green-200`}
+                      className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm ${statusConfig.bg} ${statusConfig.text} border ${statusConfig.border}`}
                     >
                       <div className={`w-2 h-2 mr-1.5 ${statusConfig.dot} rounded-full`} />
                       {statusConfig.label}
@@ -610,11 +613,11 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                           <td className="px-4 py-2.5 text-gray-500">{participant.recipient.email}</td>
                           <td className="px-4 py-2.5">
                             <span
-                              className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm capitalize ${
-                                PARTICIPANT_STATUS_STYLE[participant.status] ?? 'bg-gray-100 text-gray-800'
+                              className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm ${
+                                PARTICIPANT_STATUS[participant.status]?.style ?? 'bg-gray-100 text-gray-800'
                               }`}
                             >
-                              {participant.status}
+                              {PARTICIPANT_STATUS[participant.status]?.label ?? participant.status}
                             </span>
                           </td>
                           <td className="px-4 py-2.5">
@@ -643,11 +646,11 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                           {participant.recipient.name}
                         </span>
                         <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded-sm capitalize ${
-                            PARTICIPANT_STATUS_STYLE[participant.status] ?? 'bg-gray-100 text-gray-800'
+                          className={`text-xs font-medium px-2 py-0.5 rounded-sm ${
+                            PARTICIPANT_STATUS[participant.status]?.style ?? 'bg-gray-100 text-gray-800'
                           }`}
                         >
-                          {participant.status}
+                          {PARTICIPANT_STATUS[participant.status]?.label ?? participant.status}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500">{participant.recipient.email}</p>

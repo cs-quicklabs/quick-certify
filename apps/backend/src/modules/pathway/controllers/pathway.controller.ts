@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -12,7 +13,12 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PathwayService } from '../services/pathway.service';
 import { PathwayParticipantService } from '../services/pathway-participant.service';
-import { CreatePathwayDto, UpdatePathwayDto, AddParticipantDto } from '../dtos';
+import {
+  CreatePathwayDto,
+  UpdatePathwayDto,
+  AddParticipantDto,
+  UpdateParticipantStatusDto,
+} from '../dtos';
 import { Role } from '../../role/enums';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
@@ -63,7 +69,7 @@ export class PathwayController {
   async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
     if (!pathway) {
-      return new SuccessResponse('Pathway not found', null);
+      throw new NotFoundException('Pathway not found');
     }
     return new SuccessResponse('Pathway retrieved successfully', pathway);
   }
@@ -117,7 +123,7 @@ export class PathwayController {
   ) {
     const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
     if (!pathway) {
-      return new SuccessResponse('Pathway not found', null);
+      throw new NotFoundException('Pathway not found');
     }
 
     const result = await this.pathwayParticipantService.getParticipants(pathway.id, {
@@ -142,7 +148,7 @@ export class PathwayController {
   ) {
     const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
     if (!pathway) {
-      return new SuccessResponse('Pathway not found', null);
+      throw new NotFoundException('Pathway not found');
     }
 
     const participant = await this.pathwayParticipantService.addParticipant(
@@ -162,17 +168,17 @@ export class PathwayController {
     @CurrentUser() user: CurrentUserType,
     @Param('uuid') uuid: string,
     @Param('recipientUuid') recipientUuid: string,
-    @Body('status') status: string,
+    @Body() dto: UpdateParticipantStatusDto,
   ) {
     const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
     if (!pathway) {
-      return new SuccessResponse('Pathway not found', null);
+      throw new NotFoundException('Pathway not found');
     }
 
     const participant = await this.pathwayParticipantService.updateStatus(
       pathway.id,
       recipientUuid,
-      status,
+      dto.status,
       user.organizationUuid,
     );
     return new SuccessResponse('Participant status updated successfully', participant);

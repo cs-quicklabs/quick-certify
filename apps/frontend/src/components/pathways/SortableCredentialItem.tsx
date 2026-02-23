@@ -2,12 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
-interface SelectedCredential {
-  uuid: string;
-  name: string;
-  isFinal: boolean;
-}
+import { type SelectedCredential } from './SortableCredentialList';
 
 interface SortableCredentialItemProps {
   credential: SelectedCredential;
