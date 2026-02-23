@@ -14,6 +14,9 @@ import { RoleEntity } from '@src/entities/role.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { PasswordService, SessionService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
+import { AuditLogService } from '../audit/audit-service.entity';
+import { AuditAction } from '../audit/audit-action.action';
+import { AuditContext } from '../audit/interfaces/audit.context.interface';
 import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
@@ -57,6 +60,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     private readonly passwordService: PasswordService,
     private readonly mailService: EmailService,
     private readonly sessionService: SessionService,
+    private readonly auditLogService: AuditLogService,
   ) {
     super();
   }
@@ -152,7 +156,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       google_id?: string;
     },
     currentUser?: CurrentUser,
-    options?: { transaction?: Transaction },
+    options?: { transaction?: Transaction; auditContext?: AuditContext },
   ): Promise<UserEntity> {
     // Validate email uniqueness globally (across all organizations)
     await this.validateEmailUniqueness(dto.email, undefined, currentUser?.organizationId);
@@ -268,6 +272,22 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         .catch(console.error);
     }
 
+    // Audit: user.created
+    if (options?.auditContext) {
+      await this.auditLogService.log({
+        action: AuditAction.USER_CREATED,
+        target_user_id: userWithRelations.id,
+        context: options.auditContext,
+        new_value: {
+          first_name: userWithRelations.first_name,
+          last_name: userWithRelations.last_name,
+          email: userWithRelations.email,
+          organization_id: userWithRelations.organization_id,
+          role_id: userWithRelations.role_id,
+          status: userWithRelations.status,
+        },
+      });
+    }
     return userWithRelations;
   }
 
@@ -275,9 +295,17 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     id: number,
     dto: UpdateUserDto,
     currentUser?: CurrentUser,
-    options?: { transaction?: Transaction },
+    options?: { transaction?: Transaction; auditContext?: AuditContext },
   ): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
+    const previousValue = {
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      organization_id: user.organization_id,
+      role_id: user.role_id,
+      status: user.status,
+    };
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
     const isEmailChanged = dto.email !== user.email;
@@ -373,7 +401,25 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Send invitation email if status is invited and email is changed
     if (isEmailChanged) this.sendInvitationEmailIfNeeded(user, dto, currentUser);
 
-    return this.findOne(id) as Promise<UserEntity>;
+    const updatedUser = (await this.findOne(id)) as UserEntity;
+    // Audit: user.updated
+    if (options?.auditContext) {
+      await this.auditLogService.log({
+        action: AuditAction.USER_UPDATED,
+        target_user_id: updatedUser.id,
+        context: options.auditContext,
+        previous_value: previousValue,
+        new_value: {
+          first_name: updatedUser.first_name,
+          last_name: updatedUser.last_name,
+          email: updatedUser.email,
+          organization_id: updatedUser.organization_id,
+          role_id: updatedUser.role_id,
+          status: updatedUser.status,
+        },
+      });
+    }
+    return updatedUser;
   }
 
   /**
@@ -407,11 +453,22 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  override async softDelete(id: number): Promise<boolean> {
+  override async softDelete(id: number, auditContext?: AuditContext): Promise<boolean> {
     const user = await this.findOneOrThrow(id);
+    const previousStatus = user.status;
     await user.update({ status: 'archived' });
     // Logout user from all devices when deactivated
     await this.logoutUserFromAllDevices(user.uuid);
+    // Audit: user.archived
+    if (auditContext) {
+      await this.auditLogService.log({
+        action: AuditAction.USER_ARCHIVED,
+        target_user_id: user.id,
+        context: auditContext,
+        previous_value: { status: previousStatus },
+        new_value: { status: 'archived' },
+      });
+    }
     return true;
   }
 

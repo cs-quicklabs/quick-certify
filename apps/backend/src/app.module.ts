@@ -22,6 +22,7 @@ import { RoleModule } from './modules/role';
 import { FileModule } from './modules/file';
 import { SkillModule } from './modules/skill';
 import { EventModule } from './modules/event';
+import { AuditModule } from './modules/audit/audit.module';
 
 // Entities for guards
 import { SessionEntity, UserEntity } from './entities';
@@ -109,6 +110,7 @@ import { CredentialModule } from './modules/credential/credential.module';
     DesignModule,
     RecipientModule,
     CredentialModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [
