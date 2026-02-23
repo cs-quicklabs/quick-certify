@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op, Order, Transaction } from 'sequelize';
 import { PathwayParticipantEntity } from '@src/entities/pathway-participant.entity';
 import { RecipientEntity } from '@src/entities/recipient.entity';
 import { PathwayEntity } from '@src/entities/pathway.entity';
@@ -60,9 +60,9 @@ export class PathwayParticipantService {
    */
   async getParticipants(
     pathwayId: number,
-    options: { page?: number; limit?: number; search?: string } = {},
+    options: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string } = {},
   ): Promise<PaginatedResult<PathwayParticipantEntity>> {
-    const { page = 1, limit = 10, search } = options;
+    const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = options;
 
     const safeLimit = Math.min(Math.max(1, limit), 100);
     const safePage = Math.max(1, page);
@@ -76,18 +76,28 @@ export class PathwayParticipantService {
       ];
     }
 
+    // Build order clause
+    const safeSortOrder = sortOrder === 'ASC' ? 'ASC' : 'DESC';
+    const order: Order = [];
+
+    if (sortBy === 'name') {
+      order.push([{ model: RecipientEntity, as: 'recipient' }, 'name', safeSortOrder]);
+    } else {
+      order.push(['created_at', safeSortOrder]);
+    }
+
     const { count, rows } = await this.pathwayParticipantModel.findAndCountAll({
       where: { pathway_id: pathwayId },
       include: [
         {
           model: RecipientEntity,
           as: 'recipient',
-          where: Object.keys(includeWhere).length > 0 ? includeWhere : undefined,
+          where: search?.trim() ? includeWhere : undefined,
           required: !!search?.trim(),
         },
       ],
       distinct: true,
-      order: [['created_at', 'DESC']],
+      order,
       limit: safeLimit,
       offset,
     });

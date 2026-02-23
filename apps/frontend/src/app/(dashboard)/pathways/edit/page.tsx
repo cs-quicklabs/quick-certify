@@ -22,6 +22,7 @@ export default function EditPathwayPage() {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [duration, setDuration] = useState('');
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -44,6 +45,7 @@ export default function EditPathwayPage() {
     if (pathway && !isInitialized) {
       setName(pathway.name || '');
       setDescription(pathway.description || '');
+      setDuration(pathway.duration || '');
       setBannerUrl(pathway.banner_url || null);
       const sortedEvents = [...(pathway.events ?? [])].sort(
         (a, b) => (a.pathway_event?.order ?? 0) - (b.pathway_event?.order ?? 0),
@@ -107,6 +109,7 @@ export default function EditPathwayPage() {
           id: pathwayId,
           name: name.trim(),
           description: description.trim() || undefined,
+          duration: duration.trim() || undefined,
           bannerUrl: bannerUrl || undefined,
           status,
           events: selectedCredentials.map((c) => ({
@@ -202,6 +205,24 @@ export default function EditPathwayPage() {
               />
               <p className="form-input-description">
                 Briefly explain the purpose and goals of this pathway.
+              </p>
+            </div>
+
+            {/* Duration */}
+            <div className="mb-6">
+              <label htmlFor="pathway-duration" className="form-input-label">
+                Duration
+              </label>
+              <input
+                id="pathway-duration"
+                type="text"
+                className="form-input-field w-full"
+                placeholder="e.g. 6 months, 12 weeks"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+              />
+              <p className="form-input-description">
+                Estimated time to complete this pathway.
               </p>
             </div>
 

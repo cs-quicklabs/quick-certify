@@ -108,6 +108,8 @@ export class PathwayController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   async getParticipants(
     @CurrentUser() user: CurrentUserType,
     @Param('uuid') uuid: string,
@@ -122,6 +124,8 @@ export class PathwayController {
       page: pagination.page,
       limit: pagination.limit,
       search: pagination.search,
+      sortBy: pagination.sortBy,
+      sortOrder: pagination.sortOrder,
     });
     return new SuccessResponse('Participants retrieved successfully', result);
   }

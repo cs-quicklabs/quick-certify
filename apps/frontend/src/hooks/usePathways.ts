@@ -68,7 +68,7 @@ export function useDeletePathway() {
 
 export function usePathwayParticipants(
   pathwayUuid: string,
-  filters?: { page?: number; limit?: number; search?: string },
+  filters?: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string },
 ) {
   return useQuery({
     queryKey: PATHWAY_KEYS.participantList(pathwayUuid, filters),

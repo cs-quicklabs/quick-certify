@@ -55,8 +55,11 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
   const [participantName, setParticipantName] = useState('');
   const [participantEmail, setParticipantEmail] = useState('');
   const [participantPage, setParticipantPage] = useState(1);
+  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'az' | 'za'>('newest');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   // Debounce participant search
   useEffect(() => {
@@ -70,10 +73,19 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
     };
   }, [searchInput]);
 
+  const sortParams = {
+    az: { sortBy: 'name', sortOrder: 'ASC' },
+    za: { sortBy: 'name', sortOrder: 'DESC' },
+    newest: { sortBy: 'created_at', sortOrder: 'DESC' },
+    oldest: { sortBy: 'created_at', sortOrder: 'ASC' },
+  }[sortOption];
+
   const { data: participantsData } = usePathwayParticipants(id, {
     page: participantPage,
     limit: 10,
     search: debouncedSearch || undefined,
+    sortBy: sortParams.sortBy,
+    sortOrder: sortParams.sortOrder,
   });
   const addParticipant = useAddParticipant();
 
@@ -83,6 +95,17 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
   const toggleAccordion = (index: number) => {
     setExpandedIndex(expandedIndex === index ? -1 : index);
   };
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setShowSortDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   // Close modal on backdrop click
   useEffect(() => {
@@ -309,7 +332,7 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
 
       {/* Tabs Section */}
       <div className="px-4 mx-auto max-w-screen-2xl lg:px-8 mb-8">
-        <div className="bg-white shadow-md rounded-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white shadow-md rounded-sm border border-gray-200">
           {/* Tab Headers */}
           <div className="border-b border-gray-200">
             <ul className="flex -mb-px">
@@ -495,6 +518,54 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                   />
+
+                  {/* Sort Dropdown */}
+                  <div className="relative" ref={sortRef}>
+                    <button
+                      type="button"
+                      className="btn-secondary flex items-center gap-1.5 whitespace-nowrap"
+                      onClick={() => setShowSortDropdown((v) => !v)}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5-4.5L16.5 16.5m0 0L12 12m4.5 4.5V3" />
+                      </svg>
+                      Sort
+                    </button>
+                    {showSortDropdown && (
+                      <div className="absolute right-0 z-10 mt-1 w-40 bg-white border border-gray-200 rounded-sm shadow-lg dark:bg-gray-700 dark:border-gray-600">
+                        <ul className="py-1 text-sm text-gray-700 dark:text-gray-200">
+                          {([
+                            { value: 'az', label: 'A-Z' },
+                            { value: 'za', label: 'Z-A' },
+                            { value: 'newest', label: 'Newest' },
+                            { value: 'oldest', label: 'Oldest' },
+                          ] as const).map((opt) => (
+                            <li key={opt.value}>
+                              <button
+                                type="button"
+                                className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center justify-between ${
+                                  sortOption === opt.value ? 'font-medium text-primary-600 bg-primary-50 dark:bg-gray-600' : ''
+                                }`}
+                                onClick={() => {
+                                  setSortOption(opt.value);
+                                  setParticipantPage(1);
+                                  setShowSortDropdown(false);
+                                }}
+                              >
+                                {opt.label}
+                                {sortOption === opt.value && (
+                                  <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                  </svg>
+                                )}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     className="btn-primary whitespace-nowrap"
                     onClick={() => setShowModal(true)}

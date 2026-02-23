@@ -61,7 +61,7 @@ export const pathwayService = {
 
   async getParticipants(
     pathwayUuid: string,
-    filters?: { page?: number; limit?: number; search?: string },
+    filters?: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string },
   ): Promise<PaginatedResponse<PathwayParticipant>> {
     const response = await apiClient.get<ApiResponse<PaginatedResponse<PathwayParticipant>>>(
       buildUrl(`/pathways/${pathwayUuid}/participants`, filters),
