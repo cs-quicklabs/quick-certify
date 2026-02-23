@@ -35,6 +35,7 @@ export default function PathwaysPage() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
   const currentStatus = searchParams.get('status') || PathwayStatus.ACTIVE;
+  const isShowAll = currentStatus === 'all';
 
   const [searchInput, setSearchInput] = useState(currentSearch);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -43,7 +44,7 @@ export default function PathwaysPage() {
     page: currentPage,
     limit: ITEMS_PER_PAGE,
     search: currentSearch || undefined,
-    status: currentStatus || undefined,
+    status: isShowAll ? undefined : currentStatus,
   });
 
   const pathways = pathwaysData?.data ?? [];
@@ -85,7 +86,7 @@ export default function PathwaysPage() {
   };
 
   const handleStatusFilter = (status: string) => {
-    updateParams({ status, page: '' });
+    updateParams({ status, page: '1' });
   };
 
   return (
@@ -138,7 +139,7 @@ export default function PathwaysPage() {
                     id={filter.id}
                     type="radio"
                     name="show-only"
-                    checked={currentStatus === filter.value}
+                    checked={!isShowAll && currentStatus === filter.value}
                     onChange={() => handleStatusFilter(filter.value)}
                     className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
                   />
@@ -152,8 +153,12 @@ export default function PathwaysPage() {
               ))}
               <button
                 type="button"
-                onClick={() => handleStatusFilter('')}
-                className="underline mt-3 mr-4 font-medium text-blue-600 dark:text-blue-500 hover:underline text-sm cursor-pointer"
+                onClick={() => handleStatusFilter('all')}
+                className={`mt-3 mr-4 font-medium text-sm cursor-pointer ${
+                  isShowAll
+                    ? 'text-primary-700 underline'
+                    : 'text-blue-600 dark:text-blue-500 hover:underline'
+                }`}
               >
                 Show All
               </button>
@@ -213,7 +218,7 @@ export default function PathwaysPage() {
                       </th>
                       <td className="px-4 py-2">
                         <div className="flex flex-wrap gap-1">
-                          {pathway.credentials
+                          {pathway.events
                             .slice(0, MAX_VISIBLE_CREDENTIALS)
                             .map((credential) => (
                               <span
@@ -223,27 +228,27 @@ export default function PathwaysPage() {
                                 {credential.name}
                               </span>
                             ))}
-                          {pathway.credentials.length > MAX_VISIBLE_CREDENTIALS && (
+                          {pathway.events.length > MAX_VISIBLE_CREDENTIALS && (
                             <span
                               className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 cursor-default"
-                              title={pathway.credentials
+                              title={pathway.events
                                 .slice(MAX_VISIBLE_CREDENTIALS)
                                 .map((c) => c.name)
                                 .join(', ')}
                             >
-                              +{pathway.credentials.length - MAX_VISIBLE_CREDENTIALS}
+                              +{pathway.events.length - MAX_VISIBLE_CREDENTIALS}
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-4 py-2 form-text-normal">
-                        {pathway.participants || '-'}
+                        {pathway.participants?.length || '-'}
                       </td>
                       <td className="px-4 py-2 form-text-normal">{pathway.duration || '-'}</td>
                       <td className="px-4 py-2 form-text-normal">
                         <div className="flex items-center">
                           <div
-                            className={`w-3 h-3 mr-2 ${STATUS_DOT[pathway.status]} border rounded-full`}
+                            className={`w-3 h-3 mr-2 ${STATUS_DOT[pathway.status]} rounded-full`}
                           />
                           {STATUS_LABEL[pathway.status]}
                         </div>
@@ -283,7 +288,7 @@ export default function PathwaysPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1 mb-2">
-                    {pathway.credentials
+                    {pathway.events
                       .slice(0, MAX_VISIBLE_CREDENTIALS)
                       .map((credential) => (
                         <span
@@ -293,14 +298,14 @@ export default function PathwaysPage() {
                           {credential.name}
                         </span>
                       ))}
-                    {pathway.credentials.length > MAX_VISIBLE_CREDENTIALS && (
+                    {pathway.events.length > MAX_VISIBLE_CREDENTIALS && (
                       <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                        +{pathway.credentials.length - MAX_VISIBLE_CREDENTIALS}
+                        +{pathway.events.length - MAX_VISIBLE_CREDENTIALS}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <span>{pathway.participants || '-'} participants</span>
+                    <span>{pathway.participants?.length ?? 0} participants</span>
                     <span>{pathway.duration || '- Durations'}</span>
                   </div>
                 </button>

@@ -2,9 +2,11 @@
 
 import { use, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePathway } from '@/hooks/usePathways';
+import { usePathway, usePathwayParticipants, useAddParticipant } from '@/hooks/usePathways';
 import { Pagination } from '@/components/ui/pagination';
+import { createRoute } from '@/config/routes';
 import { PathwayStatus } from '@/types/pathway.types';
+import { showSuccessToast } from '@/lib/toast';
 
 interface PathwayDetailPageProps {
   params: Promise<{ id: string }>;
@@ -35,9 +37,9 @@ const STATUS_BADGE: Record<
 };
 
 const PARTICIPANT_STATUS_STYLE: Record<string, string> = {
-  Completed: 'bg-green-100 text-green-800',
-  'In Progress': 'bg-blue-100 text-blue-800',
-  Invited: 'bg-yellow-100 text-yellow-800',
+  completed: 'bg-green-100 text-green-800',
+  in_progress: 'bg-blue-100 text-blue-800',
+  invited: 'bg-yellow-100 text-yellow-800',
 };
 
 export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
@@ -48,8 +50,35 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
   const [activeTab, setActiveTab] = useState<'credentials' | 'participants'>('credentials');
   const [expandedIndex, setExpandedIndex] = useState(-1);
   const [showModal, setShowModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [participantName, setParticipantName] = useState('');
+  const [participantEmail, setParticipantEmail] = useState('');
+  const [participantPage, setParticipantPage] = useState(1);
   const modalRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce participant search
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setParticipantPage(1);
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchInput]);
+
+  const { data: participantsData } = usePathwayParticipants(id, {
+    page: participantPage,
+    limit: 10,
+    search: debouncedSearch || undefined,
+  });
+  const addParticipant = useAddParticipant();
+
+  const participants = participantsData?.data ?? [];
+  const participantsMeta = participantsData?.meta;
 
   const toggleAccordion = (index: number) => {
     setExpandedIndex(expandedIndex === index ? -1 : index);
@@ -86,27 +115,13 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
   }
 
   const statusConfig = STATUS_BADGE[pathway.status] ?? STATUS_BADGE[PathwayStatus.DRAFT];
-  const credentials = pathway.credentials ?? [];
+  const credentials = pathway.events ?? [];
 
-  // TODO: Replace with real data from API when backend is ready
   const finalCredential = {
     name: `${pathway.name} Certification`,
     description: `This certification validates mastery across all credentials in the ${pathway.name} pathway.`,
     image: '',
   };
-
-  const participants: {
-    id: number;
-    name: string;
-    email: string;
-    status: string;
-  }[] = [];
-
-  const filteredParticipants = participants.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.email.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
   return (
     <main>
@@ -126,7 +141,7 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                     {pathway.name}
                   </h1>
                   <p className="text-gray-500 text-sm mt-1">
-                    {(pathway as Record<string, unknown>).description as string || ''}
+                    {pathway.description || ''}
                   </p>
                   <div className="flex flex-wrap items-center gap-3 mt-3">
                     {/* Status badge */}
@@ -172,7 +187,7 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                           d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
                         />
                       </svg>
-                      {pathway.participants} participants
+                      {pathway.participants?.length ?? 0} participants
                     </span>
 
                     {/* Credentials count */}
@@ -195,7 +210,7 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                   </div>
                 </div>
                 <button
-                  onClick={() => router.push(`/pathways/edit?id=${id}`)}
+                  onClick={() => router.push(createRoute.pathwayEdit(id))}
                   className="btn-secondary shrink-0 flex items-center"
                 >
                   <svg
@@ -328,7 +343,7 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                         : 'bg-gray-100 text-gray-500'
                     }`}
                   >
-                    {participants.length}
+                    {participantsMeta?.total ?? 0}
                   </span>
                 </button>
               </li>
@@ -470,15 +485,15 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div>
                   <h3 className="form-title">Participants</h3>
-                  <p className="form-subtitle">{participants.length} total participants</p>
+                  <p className="form-subtitle">{participantsMeta?.total ?? 0} total participants</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
                     placeholder="Search by name or email..."
                     className="form-input-field w-full sm:w-56"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                   />
                   <button
                     className="btn-primary whitespace-nowrap"
@@ -509,24 +524,22 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredParticipants.length === 0 ? (
+                    {participants.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
-                          {participants.length === 0
-                            ? 'No participants yet.'
-                            : 'No participants found matching your search.'}
+                          No participants yet.
                         </td>
                       </tr>
                     ) : (
-                      filteredParticipants.map((participant) => (
+                      participants.map((participant) => (
                         <tr key={participant.id} className="hover:bg-gray-50">
                           <td className="px-4 py-2.5">
-                            <span className="font-medium text-gray-900">{participant.name}</span>
+                            <span className="font-medium text-gray-900">{participant.recipient.name}</span>
                           </td>
-                          <td className="px-4 py-2.5 text-gray-500">{participant.email}</td>
+                          <td className="px-4 py-2.5 text-gray-500">{participant.recipient.email}</td>
                           <td className="px-4 py-2.5">
                             <span
-                              className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm ${
+                              className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm capitalize ${
                                 PARTICIPANT_STATUS_STYLE[participant.status] ?? 'bg-gray-100 text-gray-800'
                               }`}
                             >
@@ -547,32 +560,41 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
 
               {/* Mobile Card Layout */}
               <div className="sm:hidden divide-y divide-gray-200 border border-gray-200 rounded-sm overflow-hidden">
-                {filteredParticipants.length === 0 ? (
+                {participants.length === 0 ? (
                   <div className="px-4 py-8 text-center text-sm text-gray-500">
-                    {participants.length === 0
-                      ? 'No participants yet.'
-                      : 'No participants found matching your search.'}
+                    No participants yet.
                   </div>
                 ) : (
-                  filteredParticipants.map((participant) => (
+                  participants.map((participant) => (
                     <div key={participant.id} className="px-4 py-3 bg-white hover:bg-gray-50">
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-medium text-sm text-gray-900">
-                          {participant.name}
+                          {participant.recipient.name}
                         </span>
                         <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded-sm ${
+                          className={`text-xs font-medium px-2 py-0.5 rounded-sm capitalize ${
                             PARTICIPANT_STATUS_STYLE[participant.status] ?? 'bg-gray-100 text-gray-800'
                           }`}
                         >
                           {participant.status}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500">{participant.email}</p>
+                      <p className="text-xs text-gray-500">{participant.recipient.email}</p>
                     </div>
                   ))
                 )}
               </div>
+
+              {/* Participant Pagination */}
+              {participantsMeta && participantsMeta.totalPages > 1 && (
+                <div className="mt-4">
+                  <Pagination
+                    currentPage={participantsMeta.page}
+                    totalPages={participantsMeta.totalPages}
+                    onPageChange={setParticipantPage}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -611,8 +633,22 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
               className="p-4 space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
-                // TODO: call API when backend is ready
-                setShowModal(false);
+                if (!participantName.trim() || !participantEmail.trim()) return;
+                addParticipant.mutate(
+                  {
+                    pathwayUuid: id,
+                    name: participantName.trim(),
+                    email: participantEmail.trim(),
+                  },
+                  {
+                    onSuccess: () => {
+                      showSuccessToast('Participant added successfully');
+                      setParticipantName('');
+                      setParticipantEmail('');
+                      setShowModal(false);
+                    },
+                  },
+                );
               }}
             >
               <div>
@@ -625,6 +661,8 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                   required
                   className="form-input-field w-full"
                   placeholder="Enter full name"
+                  value={participantName}
+                  onChange={(e) => setParticipantName(e.target.value)}
                 />
               </div>
 
@@ -638,6 +676,8 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
                   required
                   className="form-input-field w-full"
                   placeholder="name@company.com"
+                  value={participantEmail}
+                  onChange={(e) => setParticipantEmail(e.target.value)}
                 />
                 <p className="form-input-description">
                   An invitation will be sent to this email address.
@@ -646,8 +686,12 @@ export default function PathwayDetailPage({ params }: PathwayDetailPageProps) {
 
               {/* Modal Actions */}
               <div className="flex items-center justify-between pt-2">
-                <button type="submit" className="btn-primary">
-                  Send Invite
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={addParticipant.isPending}
+                >
+                  {addParticipant.isPending ? 'Adding...' : 'Send Invite'}
                 </button>
                 <button
                   type="button"

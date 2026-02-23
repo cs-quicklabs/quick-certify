@@ -1,20 +1,34 @@
 import { PaginatedResponse } from '@/types';
-import { Pathway, PathwayFilters } from '@/types/pathway.types';
+import { Pathway, PathwayFilters, PathwayParticipant } from '@/types/pathway.types';
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
 
+export interface PathwayEventInput {
+  eventId: string;
+  isFinal?: boolean;
+}
+
 export interface CreatePathwayRequest {
   name: string;
+  description?: string;
+  bannerUrl?: string;
   duration?: string;
   status?: string;
-  credentialIds?: string[];
+  events?: PathwayEventInput[];
 }
 
 export interface UpdatePathwayRequest {
   name?: string;
-  duration?: string;
+  description?: string | null;
+  bannerUrl?: string | null;
+  duration?: string | null;
   status?: string;
-  credentialIds?: string[];
+  events?: PathwayEventInput[];
+}
+
+export interface AddParticipantRequest {
+  name: string;
+  email: string;
 }
 
 export const pathwayService = {
@@ -42,6 +56,24 @@ export const pathwayService = {
 
   async deletePathway(id: string): Promise<{ deleted: boolean }> {
     const response = await apiClient.delete<ApiResponse<{ deleted: boolean }>>(`/pathways/${id}`);
+    return response.data.data;
+  },
+
+  async getParticipants(
+    pathwayUuid: string,
+    filters?: { page?: number; limit?: number; search?: string },
+  ): Promise<PaginatedResponse<PathwayParticipant>> {
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<PathwayParticipant>>>(
+      buildUrl(`/pathways/${pathwayUuid}/participants`, filters),
+    );
+    return response.data.data;
+  },
+
+  async addParticipant(pathwayUuid: string, data: AddParticipantRequest): Promise<PathwayParticipant> {
+    const response = await apiClient.post<ApiResponse<PathwayParticipant>>(
+      `/pathways/${pathwayUuid}/participants`,
+      data,
+    );
     return response.data.data;
   },
 };

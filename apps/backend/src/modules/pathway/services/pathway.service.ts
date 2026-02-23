@@ -20,7 +20,7 @@ const DEFAULT_PATHWAY_INCLUDES = [
     model: EventEntity,
     as: 'events',
     required: false,
-    through: { attributes: ['order'], as: 'pathway_event' },
+    through: { attributes: ['order', 'is_final'], as: 'pathway_event' },
   },
   {
     model: RecipientEntity,
@@ -142,10 +142,10 @@ export class PathwayService {
         { transaction },
       );
 
-      if (dto.eventIds?.length) {
+      if (dto.events?.length) {
         await this.pathwayEventService.syncEvents(
           pathway,
-          dto.eventIds,
+          dto.events,
           organization.id,
           transaction,
         );
@@ -196,10 +196,10 @@ export class PathwayService {
     try {
       await pathway.update(updateData, { transaction });
 
-      if (dto.eventIds !== undefined) {
+      if (dto.events !== undefined) {
         await this.pathwayEventService.syncEvents(
           pathway,
-          dto.eventIds,
+          dto.events,
           organization.id,
           transaction,
         );
@@ -254,10 +254,10 @@ export class PathwayService {
 
       await existing.update(updateData, { transaction });
 
-      if (dto.eventIds?.length) {
+      if (dto.events?.length) {
         await this.pathwayEventService.syncEvents(
           existing,
-          dto.eventIds,
+          dto.events,
           organizationId,
           transaction,
         );

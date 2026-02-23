@@ -88,6 +88,7 @@ export const createRoute = {
   credentialDetail: (id: string) => `/credentials/${id}` as const,
   teamMember: (id: string) => `/settings/team/${id}` as const,
   pathwayDetail: (id: string) => `/pathways/${id}` as const,
+  pathwayEdit: (id: string) => `/pathways/edit?id=${id}` as const,
   resetPasswordWithToken: (token: string) => `/reset-password?token=${token}` as const,
   invitationWithToken: (token: string) => `/invitation?token=${token}` as const,
   publicCredential: (uuid: string) => `/public/credential/${uuid}` as const,

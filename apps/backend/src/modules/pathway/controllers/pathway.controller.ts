@@ -39,15 +39,19 @@ export class PathwayController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'status', required: false })
-  async findAll(@CurrentUser() user: CurrentUserType, @Query() pagination: PaginationDto) {
+  @ApiQuery({ name: 'status', required: false, enum: ['active', 'draft', 'archived'] })
+  async findAll(
+    @CurrentUser() user: CurrentUserType,
+    @Query() pagination: PaginationDto,
+    @Query('status') status?: string,
+  ) {
     const result = await this.pathwayService.findAll(user.organizationUuid, {
       page: pagination.page,
       limit: pagination.limit,
       sortBy: pagination.sortBy,
       sortOrder: pagination.sortOrder,
       search: pagination.search,
-      status: pagination.status,
+      status,
     });
     return new SuccessResponse('Pathways retrieved successfully', result);
   }

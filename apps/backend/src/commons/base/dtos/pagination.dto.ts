@@ -9,6 +9,7 @@ export enum SortOrder {
 
 export enum statusEnum {
   Active = 'active',
+  Draft = 'draft',
   Archived = 'archived',
 }
 

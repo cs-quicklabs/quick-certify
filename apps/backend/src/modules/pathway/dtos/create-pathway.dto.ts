@@ -7,7 +7,10 @@ import {
   IsUrl,
   MaxLength,
   Matches,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { PathwayEventItemDto } from './pathway-event-item.dto';
 
 export class CreatePathwayDto {
   @ApiProperty({
@@ -63,12 +66,13 @@ export class CreatePathwayDto {
   status?: string;
 
   @ApiPropertyOptional({
-    example: ['event-uuid-1', 'event-uuid-2'],
-    description: 'Array of event UUIDs to associate with this pathway (order preserved)',
-    type: [String],
+    example: [{ eventId: 'event-uuid-1', isFinal: false }, { eventId: 'event-uuid-2', isFinal: true }],
+    description: 'Array of events with order (from array index) and isFinal flag',
+    type: [PathwayEventItemDto],
   })
   @IsOptional()
-  @IsArray({ message: 'Event IDs must be an array' })
-  @IsString({ each: true, message: 'Each event ID must be a string' })
-  eventIds?: string[];
+  @IsArray({ message: 'Events must be an array' })
+  @ValidateNested({ each: true })
+  @Type(() => PathwayEventItemDto)
+  events?: PathwayEventItemDto[];
 }

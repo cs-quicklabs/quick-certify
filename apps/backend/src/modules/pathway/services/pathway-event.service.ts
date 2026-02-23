@@ -5,6 +5,11 @@ import { PathwayEventEntity } from '@src/entities/pathway-event.entity';
 import { EventEntity } from '@src/entities/event.entity';
 import { PathwayEntity } from '@src/entities/pathway.entity';
 
+export interface EventSyncItem {
+  eventId: string;
+  isFinal?: boolean;
+}
+
 @Injectable()
 export class PathwayEventService {
   constructor(
@@ -15,33 +20,35 @@ export class PathwayEventService {
   ) {}
 
   /**
-   * Sync events for a pathway (removes existing and adds new with order)
+   * Sync events for a pathway (removes existing and adds new with order + isFinal)
    */
   async syncEvents(
     pathway: PathwayEntity,
-    eventUuids: string[],
+    eventItems: EventSyncItem[],
     organizationId: number,
     transaction?: Transaction,
   ): Promise<void> {
     await this.clearEvents(pathway.id, transaction);
 
-    if (eventUuids.length === 0) {
+    if (eventItems.length === 0) {
       return;
     }
 
-    await this.addEvents(pathway, eventUuids, organizationId, transaction);
+    await this.addEvents(pathway, eventItems, organizationId, transaction);
   }
 
   /**
-   * Add events to a pathway with order preserved from array index
+   * Add events to a pathway with order and isFinal preserved from array
    */
   async addEvents(
     pathway: PathwayEntity,
-    eventUuids: string[],
+    eventItems: EventSyncItem[],
     organizationId: number,
     transaction?: Transaction,
   ): Promise<void> {
-    if (!eventUuids || eventUuids.length === 0) return;
+    if (!eventItems || eventItems.length === 0) return;
+
+    const eventUuids = eventItems.map((e) => e.eventId);
 
     const events = await this.eventModel.findAll({
       where: {
@@ -58,17 +65,17 @@ export class PathwayEventService {
       throw new BadRequestException(`Events not found or inactive: ${missingUuids.join(', ')}`);
     }
 
-    // Map UUIDs to IDs preserving order from the input array
     const uuidToId = new Map(events.map((e) => [e.uuid, e.id]));
 
-    const associations = eventUuids.map((uuid, index) => ({
+    const associations = eventItems.map((item, index) => ({
       pathway_id: pathway.id,
-      event_id: uuidToId.get(uuid)!,
+      event_id: uuidToId.get(item.eventId)!,
       order: index + 1,
+      is_final: item.isFinal ?? false,
     }));
 
     await this.pathwayEventModel.bulkCreate(associations, {
-      fields: ['pathway_id', 'event_id', 'order'],
+      fields: ['pathway_id', 'event_id', 'order', 'is_final'],
       ...(transaction && { transaction }),
     });
   }

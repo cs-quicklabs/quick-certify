@@ -4,13 +4,39 @@ export enum PathwayStatus {
   ARCHIVED = 'archived',
 }
 
+export interface PathwayEvent {
+  uuid: string;
+  name: string;
+  pathway_event?: {
+    order: number;
+    is_final: boolean;
+  };
+}
+
+export interface PathwayParticipant {
+  id: number;
+  pathway_id: number;
+  recipient_id: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  recipient: {
+    uuid: string;
+    name: string;
+    email: string;
+  };
+}
+
 export interface Pathway {
   uuid: string;
   name: string;
-  credentials: { uuid: string; name: string }[];
-  participants: number;
-  duration: string;
+  description: string | null;
+  banner_url: string | null;
+  duration: string | null;
   status: PathwayStatus;
+  is_active: boolean;
+  events: PathwayEvent[];
+  participants: { uuid: string; name: string; email: string }[];
   createdAt: string;
   updatedAt: string;
 }

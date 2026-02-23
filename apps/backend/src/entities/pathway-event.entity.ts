@@ -46,6 +46,14 @@ export class PathwayEventEntity extends Model {
   declare order: number | null;
 
   @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'is_final',
+  })
+  declare is_final: boolean;
+
+  @Column({
     type: DataType.DATE,
     allowNull: false,
     field: 'created_at',

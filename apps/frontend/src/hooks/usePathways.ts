@@ -3,6 +3,7 @@ import {
   pathwayService,
   CreatePathwayRequest,
   UpdatePathwayRequest,
+  AddParticipantRequest,
 } from '@/services';
 import { PathwayFilters } from '@/types';
 
@@ -11,6 +12,9 @@ export const PATHWAY_KEYS = {
   lists: () => [...PATHWAY_KEYS.all, 'list'] as const,
   list: (filters?: PathwayFilters) => [...PATHWAY_KEYS.lists(), { filters }] as const,
   detail: (id: string) => [...PATHWAY_KEYS.all, 'detail', id] as const,
+  participants: (id: string) => [...PATHWAY_KEYS.all, 'participants', id] as const,
+  participantList: (id: string, filters?: Record<string, unknown>) =>
+    [...PATHWAY_KEYS.participants(id), { filters }] as const,
 };
 
 export function usePathways(filters?: PathwayFilters & { enabled?: boolean }) {
@@ -58,6 +62,29 @@ export function useDeletePathway() {
     mutationFn: (id: string) => pathwayService.deletePathway(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PATHWAY_KEYS.lists() });
+    },
+  });
+}
+
+export function usePathwayParticipants(
+  pathwayUuid: string,
+  filters?: { page?: number; limit?: number; search?: string },
+) {
+  return useQuery({
+    queryKey: PATHWAY_KEYS.participantList(pathwayUuid, filters),
+    queryFn: () => pathwayService.getParticipants(pathwayUuid, filters),
+    enabled: !!pathwayUuid,
+  });
+}
+
+export function useAddParticipant() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ pathwayUuid, ...data }: { pathwayUuid: string } & AddParticipantRequest) =>
+      pathwayService.addParticipant(pathwayUuid, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: PATHWAY_KEYS.participants(variables.pathwayUuid) });
+      queryClient.invalidateQueries({ queryKey: PATHWAY_KEYS.detail(variables.pathwayUuid) });
     },
   });
 }
