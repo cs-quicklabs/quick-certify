@@ -57,10 +57,14 @@ export default function AddPathwayPage() {
 
   const toggleFinal = (index: number) => {
     setSelectedCredentials((prev) => {
-      const updated = prev.map((c, i) =>
-        i === index ? { ...c, isFinal: !c.isFinal } : c,
-      );
+      const wasFinal = prev[index].isFinal;
+      // Clear all finals, then toggle the clicked one
+      const updated = prev.map((c, i) => ({
+        ...c,
+        isFinal: i === index ? !wasFinal : false,
+      }));
       const item = updated[index];
+      // If newly marked as final, move to bottom
       if (item.isFinal) {
         const withoutItem = updated.filter((_, i) => i !== index);
         return [...withoutItem, item];
