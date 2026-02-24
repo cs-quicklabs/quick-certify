@@ -92,6 +92,8 @@ export interface CreateEventRequest {
   learningLink?: string;
   /** Skill UUIDs to associate with the event (optional) */
   skillIds?: string[];
+  durationType?: string | null;
+  durationValue?: number | null;
 }
 
 /**
@@ -110,6 +112,8 @@ export interface UpdateEventRequest {
   learningLink?: string | null;
   /** Skill UUIDs to associate with the event (optional, empty array clears all skills) */
   skillIds?: string[];
+  durationType?: string | null;
+  durationValue?: number | null;
 }
 
 export interface PaginationFilters {
