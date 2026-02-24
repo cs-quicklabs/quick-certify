@@ -309,9 +309,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
     const isEmailChanged = dto.email !== user.email;
+    let auditAction: AuditAction = AuditAction.USER_UPDATED;
 
     // If status is being changed to archived, handle it as soft delete
     if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
+      auditAction = AuditAction.USER_ARCHIVED;
       // Update status to archived (soft delete)
       await user.update(
         { status: 'archived' },
@@ -319,6 +321,21 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       );
       // Logout user from all devices when archived
       await this.logoutUserFromAllDevices(user.uuid, options?.transaction);
+
+      // Audit: user.archived
+      if (options?.auditContext) {
+        await this.auditLogService.log({
+          action: auditAction,
+          target_user_id: user.id,
+          context: options.auditContext,
+          previous_value: previousValue,
+          new_value: {
+            ...previousValue,
+            status: 'archived',
+          },
+        });
+      }
+
       // Return the archived user (need to find it without the archived filter)
       return this.userModel.findOne({
         where: { id },
@@ -329,6 +346,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         attributes: { exclude: ['password_hash'] },
         ...(options?.transaction && { transaction: options.transaction }),
       }) as Promise<UserEntity>;
+    }
+
+    // Determine specific audit action if status or role changed
+    if (dto.status && dto.status !== previousStatus) {
+      auditAction = AuditAction.USER_STATUS_CHANGED;
+    } else if (dto.roleId && dto.roleId !== previousRoleId) {
+      auditAction = AuditAction.USER_ROLE_CHANGED;
     }
 
     // Validate email if changing
@@ -405,7 +429,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Audit: user.updated
     if (options?.auditContext) {
       await this.auditLogService.log({
-        action: AuditAction.USER_UPDATED,
+        action: auditAction,
         target_user_id: updatedUser.id,
         context: options.auditContext,
         previous_value: previousValue,
@@ -493,7 +517,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return true;
   }
 
-  override async restore(id: number): Promise<UserEntity> {
+  override async restore(id: number, auditContext?: AuditContext): Promise<UserEntity> {
     const user = await this.userModel.findOne({
       where: { id, status: 'archived' },
     });
@@ -503,6 +527,17 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     await user.update({ status: 'active' });
+
+    // Audit: user.restored
+    if (auditContext) {
+      await this.auditLogService.log({
+        action: AuditAction.USER_RESTORED,
+        target_user_id: user.id,
+        context: auditContext,
+        previous_value: { status: 'archived' },
+        new_value: { status: 'active' },
+      });
+    }
     return this.findOne(id) as Promise<UserEntity>;
   }
 

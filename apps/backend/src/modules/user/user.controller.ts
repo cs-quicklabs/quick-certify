@@ -243,7 +243,11 @@ export class UserController {
   @ApiOperation({ summary: 'Restore deleted user (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User restored successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async restore(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+  async restore(
+    @CurrentUser() user: CurrentUserType,
+    @Param('uuid') uuid: string,
+    @Req() req: Request,
+  ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
       user.organizationUuid,
@@ -251,7 +255,8 @@ export class UserController {
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
     }
-    const restoredUser = await this.userService.restore(existingUser.id);
+    const auditContext = buildAuditContext(req);
+    const restoredUser = await this.userService.restore(existingUser.id, auditContext);
     return new SuccessResponse('User restored successfully', restoredUser);
   }
 }
