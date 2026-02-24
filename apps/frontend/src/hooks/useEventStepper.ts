@@ -17,6 +17,8 @@ export interface Step1Data {
   typeId?: string;
   levelId?: string;
   formatId?: string;
+  durationType?: string;
+  durationValue?: number;
 }
 
 /**
