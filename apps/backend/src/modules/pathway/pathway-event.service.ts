@@ -1,7 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
-import { PathwayEventEntity, EventEntity, PathwayEntity } from '@src/entities';
+import { PathwayEventEntity, PathwayEntity } from '@src/entities';
+import { EventService } from '@src/modules/event/services/event.service';
 
 export interface EventSyncItem {
   eventId: string;
@@ -13,8 +14,7 @@ export class PathwayEventService {
   constructor(
     @InjectModel(PathwayEventEntity)
     private readonly pathwayEventModel: typeof PathwayEventEntity,
-    @InjectModel(EventEntity)
-    private readonly eventModel: typeof EventEntity,
+    private readonly eventService: EventService,
   ) {}
 
   /**
@@ -48,14 +48,7 @@ export class PathwayEventService {
 
     const eventUuids = eventItems.map((e) => e.eventId);
 
-    const events = await this.eventModel.findAll({
-      where: {
-        uuid: eventUuids,
-        organization_id: organizationId,
-        is_active: true,
-      },
-      ...(transaction && { transaction }),
-    });
+    const events = await this.eventService.findActiveByUuids(eventUuids, organizationId, transaction);
 
     if (events.length !== eventUuids.length) {
       const foundUuids = events.map((e) => e.uuid);

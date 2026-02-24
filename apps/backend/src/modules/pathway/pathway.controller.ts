@@ -17,15 +17,15 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
-import { PathwayService } from '../services/pathway.service';
-import { PathwayParticipantService } from '../services/pathway-participant.service';
+import { PathwayService } from './pathway.service';
+import { PathwayParticipantService } from './pathway-participant.service';
 import {
   CreatePathwayDto,
   UpdatePathwayDto,
   AddParticipantDto,
   UpdateParticipantStatusDto,
-} from '../dtos';
-import { Role } from '../../role/enums';
+} from './dtos';
+import { Role } from '../role/enums';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';

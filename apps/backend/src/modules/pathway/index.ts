@@ -1,4 +1,4 @@
 export * from './pathway.module';
-export * from './services/pathway.service';
-export * from './services/pathway-event.service';
-export * from './services/pathway-participant.service';
+export * from './pathway.service';
+export * from './pathway-event.service';
+export * from './pathway-participant.service';

@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import {
   PathwayEntity,
   EventEntity,
@@ -8,7 +9,7 @@ import {
   RecipientEntity,
   OrganizationEntity,
 } from '@src/entities';
-import { CreatePathwayDto, UpdatePathwayDto } from '../dtos';
+import { CreatePathwayDto, UpdatePathwayDto } from './dtos';
 import { PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { PathwayEventService } from './pathway-event.service';
@@ -34,6 +35,7 @@ export class PathwayService {
   constructor(
     @InjectModel(PathwayEntity)
     private readonly pathwayModel: typeof PathwayEntity,
+    private readonly sequelize: Sequelize,
     private readonly pathwayEventService: PathwayEventService,
     private readonly organizationService: OrganizationService,
   ) {}
@@ -135,8 +137,7 @@ export class PathwayService {
       return this.restorePathway(existing, dto, organization);
     }
 
-    const sequelize = this.pathwayModel.sequelize!;
-    const transaction = await sequelize.transaction();
+    const transaction = await this.sequelize.transaction();
     let pathwayUuid: string;
 
     try {
@@ -203,8 +204,7 @@ export class PathwayService {
     if (dto.bannerUrl !== undefined) updateData.banner_url = dto.bannerUrl ?? null;
     if (dto.status !== undefined) updateData.status = dto.status;
 
-    const sequelize = this.pathwayModel.sequelize!;
-    const transaction = await sequelize.transaction();
+    const transaction = await this.sequelize.transaction();
 
     try {
       await pathway.update(updateData, { transaction });
@@ -252,8 +252,7 @@ export class PathwayService {
     dto: CreatePathwayDto,
     organization: OrganizationEntity,
   ): Promise<PathwayEntity> {
-    const sequelize = this.pathwayModel.sequelize!;
-    const transaction = await sequelize.transaction();
+    const transaction = await this.sequelize.transaction();
 
     try {
       const updateData: Partial<PathwayEntity> = {
