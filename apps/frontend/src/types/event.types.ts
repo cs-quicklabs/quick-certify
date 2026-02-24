@@ -25,6 +25,8 @@ export interface Event extends IBaseEvent {
   event_level_id?: string | null;
   event_format_id?: string | null;
   design_id?: string | null;
+  duration_type?: string | null;
+  duration_value?: number | null;
   event_type?: EventType | null;
   event_level?: EventLevel | null;
   event_format?: EventFormat | null;
