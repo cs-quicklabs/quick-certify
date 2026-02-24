@@ -1,10 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
-import { PathwayEntity } from '@src/entities/pathway.entity';
-import { EventEntity } from '@src/entities/event.entity';
-import { DesignEntity } from '@src/entities/design.entity';
-import { RecipientEntity } from '@src/entities/recipient.entity';
+import {
+  PathwayEntity,
+  EventEntity,
+  DesignEntity,
+  RecipientEntity,
+  OrganizationEntity,
+} from '@src/entities';
 import { CreatePathwayDto, UpdatePathwayDto } from '../dtos';
 import { PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
@@ -129,7 +132,7 @@ export class PathwayService {
         );
       }
       // Restore soft-deleted pathway
-      return this.restorePathway(existing, dto, organization.id, organizationUuid);
+      return this.restorePathway(existing, dto, organization);
     }
 
     const sequelize = this.pathwayModel.sequelize!;
@@ -247,8 +250,7 @@ export class PathwayService {
   private async restorePathway(
     existing: PathwayEntity,
     dto: CreatePathwayDto,
-    organizationId: number,
-    organizationUuid: string,
+    organization: OrganizationEntity,
   ): Promise<PathwayEntity> {
     const sequelize = this.pathwayModel.sequelize!;
     const transaction = await sequelize.transaction();
@@ -269,7 +271,7 @@ export class PathwayService {
         await this.pathwayEventService.syncEvents(
           existing,
           dto.events,
-          organizationId,
+          organization.id,
           transaction,
         );
       }
@@ -280,7 +282,7 @@ export class PathwayService {
       throw error;
     }
 
-    return this.requirePathway(existing.uuid, organizationUuid);
+    return this.requirePathway(existing.uuid, organization.uuid);
   }
 
   private emptyPaginatedResult(limit: number): PaginatedResult<PathwayEntity> {

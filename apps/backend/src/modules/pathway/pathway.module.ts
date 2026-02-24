@@ -9,12 +9,11 @@ import {
   PathwayEventEntity,
   PathwayParticipantEntity,
   EventEntity,
-  RecipientEntity,
-  CredentialEntity,
 } from '@src/entities';
 import { AuthModule } from '../auth';
 import { OrganizationModule } from '../organization';
 import { RecipientModule } from '../recipient/recipient.module';
+import { CredentialModule } from '../credential/credential.module';
 import { EmailService } from '@src/commons/services';
 
 @Module({
@@ -24,12 +23,11 @@ import { EmailService } from '@src/commons/services';
       PathwayEventEntity,
       PathwayParticipantEntity,
       EventEntity,
-      RecipientEntity,
-      CredentialEntity,
     ]),
     AuthModule,
     OrganizationModule,
     RecipientModule,
+    CredentialModule,
   ],
   controllers: [PathwayController],
   providers: [PathwayService, PathwayEventService, PathwayParticipantService, EmailService],

@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsEnum,
   IsOptional,
   IsString,
   IsUrl,
@@ -10,6 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { PathwayStatusEnum } from '@src/commons/enums';
 import { PathwayEventItemDto } from './pathway-event-item.dto';
 
 export class UpdatePathwayDto {
@@ -49,14 +51,14 @@ export class UpdatePathwayDto {
 
   @ApiPropertyOptional({
     example: 'active',
-    description: 'Pathway status (draft, active, archived)',
+    description: 'Pathway status',
+    enum: PathwayStatusEnum,
   })
   @IsOptional()
-  @IsString({ message: 'Status must be a string' })
-  @Matches(/^(draft|active|archived)$/, {
+  @IsEnum(PathwayStatusEnum, {
     message: 'Status must be draft, active, or archived',
   })
-  status?: string;
+  status?: PathwayStatusEnum;
 
   @ApiPropertyOptional({
     example: [

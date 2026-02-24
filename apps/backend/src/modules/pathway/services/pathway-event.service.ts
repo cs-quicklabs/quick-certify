@@ -1,9 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
-import { PathwayEventEntity } from '@src/entities/pathway-event.entity';
-import { EventEntity } from '@src/entities/event.entity';
-import { PathwayEntity } from '@src/entities/pathway.entity';
+import { PathwayEventEntity, EventEntity, PathwayEntity } from '@src/entities';
 
 export interface EventSyncItem {
   eventId: string;

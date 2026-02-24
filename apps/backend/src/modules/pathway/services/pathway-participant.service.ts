@@ -1,15 +1,17 @@
 import { Injectable, ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Order, Transaction, WhereOptions } from 'sequelize';
-import { PathwayParticipantEntity } from '@src/entities/pathway-participant.entity';
-import { PathwayEventEntity } from '@src/entities/pathway-event.entity';
-import { CredentialEntity } from '@src/entities/credential.entity';
-import { RecipientEntity } from '@src/entities/recipient.entity';
-import { PathwayEntity } from '@src/entities/pathway.entity';
+import {
+  PathwayParticipantEntity,
+  PathwayEventEntity,
+  RecipientEntity,
+  PathwayEntity,
+} from '@src/entities';
 import { RecipientService } from '@src/modules/recipient/recipient.service';
+import { CredentialService } from '@src/modules/credential/credential.service';
 import { EmailService } from '@src/commons/services';
-import { CredentialStatusEnum } from '@src/commons/enums';
-import { PaginatedResult } from '@src/commons/base';
+import { PathwayParticipantStatusEnum } from '@src/commons/enums';
+import { PaginatedResult, PaginationDto } from '@src/commons/base';
 
 @Injectable()
 export class PathwayParticipantService {
@@ -20,8 +22,7 @@ export class PathwayParticipantService {
     private readonly pathwayParticipantModel: typeof PathwayParticipantEntity,
     @InjectModel(PathwayEventEntity)
     private readonly pathwayEventModel: typeof PathwayEventEntity,
-    @InjectModel(CredentialEntity)
-    private readonly credentialModel: typeof CredentialEntity,
+    private readonly credentialService: CredentialService,
     private readonly recipientService: RecipientService,
     private readonly emailService: EmailService,
   ) {}
@@ -32,11 +33,11 @@ export class PathwayParticipantService {
    */
   async addParticipant(
     pathway: PathwayEntity,
-    name: string,
-    email: string,
+    dto: { name: string; email: string },
     organizationUuid: string,
     transaction?: Transaction,
   ): Promise<PathwayParticipantEntity> {
+    const { name, email } = dto;
     const recipient = await this.recipientService.findOrCreate(
       organizationUuid,
       { name, email },
@@ -108,7 +109,7 @@ export class PathwayParticipantService {
     pathwayId: number,
     recipientId: number,
     transaction?: Transaction,
-  ): Promise<string> {
+  ): Promise<PathwayParticipantStatusEnum> {
     const pathwayEvents = await this.pathwayEventModel.findAll({
       where: { pathway_id: pathwayId },
       attributes: ['event_id'],
@@ -116,20 +117,17 @@ export class PathwayParticipantService {
     });
     const eventIds = pathwayEvents.map((pe) => pe.event_id);
 
-    if (eventIds.length === 0) return 'invited';
+    if (eventIds.length === 0) return PathwayParticipantStatusEnum.INVITED;
 
-    const issuedCount = await this.credentialModel.count({
-      where: {
-        recipient_id: recipientId,
-        event_id: { [Op.in]: eventIds },
-        status: CredentialStatusEnum.ISSUED,
-      },
-      ...(transaction && { transaction }),
-    });
+    const issuedCount = await this.credentialService.countIssuedForRecipient(
+      recipientId,
+      eventIds,
+      transaction,
+    );
 
-    if (issuedCount >= eventIds.length) return 'completed';
-    if (issuedCount > 0) return 'in_progress';
-    return 'invited';
+    if (issuedCount >= eventIds.length) return PathwayParticipantStatusEnum.COMPLETED;
+    if (issuedCount > 0) return PathwayParticipantStatusEnum.IN_PROGRESS;
+    return PathwayParticipantStatusEnum.INVITED;
   }
 
   /**
@@ -137,15 +135,9 @@ export class PathwayParticipantService {
    */
   async getParticipants(
     pathwayId: number,
-    options: {
-      page?: number;
-      limit?: number;
-      search?: string;
-      sortBy?: string;
-      sortOrder?: string;
-    } = {},
+    pagination: PaginationDto = {},
   ): Promise<PaginatedResult<PathwayParticipantEntity>> {
-    const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = options;
+    const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = pagination;
 
     const safeLimit = Math.min(Math.max(1, limit), 100);
     const safePage = Math.max(1, page);
@@ -230,14 +222,10 @@ export class PathwayParticipantService {
     const recipientIds = participants.map((p) => p.recipient_id);
 
     // Get issued credentials for these recipients and events
-    const issuedCredentials = await this.credentialModel.findAll({
-      where: {
-        recipient_id: { [Op.in]: recipientIds },
-        event_id: { [Op.in]: eventIds },
-        status: CredentialStatusEnum.ISSUED,
-      },
-      attributes: ['recipient_id', 'event_id'],
-    });
+    const issuedCredentials = await this.credentialService.findIssuedForRecipients(
+      recipientIds,
+      eventIds,
+    );
 
     // Group issued event IDs by recipient
     const issuedMap = new Map<number, Set<number>>();
@@ -254,13 +242,13 @@ export class PathwayParticipantService {
     for (const participant of participants) {
       const issuedCount = issuedMap.get(participant.recipient_id)?.size ?? 0;
 
-      let status: string;
+      let status: PathwayParticipantStatusEnum;
       if (issuedCount >= totalEvents) {
-        status = 'completed';
+        status = PathwayParticipantStatusEnum.COMPLETED;
       } else if (issuedCount > 0) {
-        status = 'in_progress';
+        status = PathwayParticipantStatusEnum.IN_PROGRESS;
       } else {
-        status = 'invited';
+        status = PathwayParticipantStatusEnum.INVITED;
       }
 
       participant.setDataValue('status', status);

@@ -36,10 +36,6 @@ module.exports = {
             type: DataTypes.STRING(500),
             allowNull: true,
           },
-          duration: {
-            type: DataTypes.STRING(100),
-            allowNull: true,
-          },
           status: {
             type: DataTypes.STRING(20),
             allowNull: false,
@@ -102,6 +98,11 @@ module.exports = {
           order: {
             type: DataTypes.INTEGER,
             allowNull: true,
+          },
+          is_final: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
           },
           created_at: {
             type: DataTypes.DATE,
@@ -178,10 +179,8 @@ module.exports = {
       });
 
       await transaction.commit();
-      console.log('✅ Pathway tables created successfully');
     } catch (error) {
       await transaction.rollback();
-      console.error('❌ Migration failed:', error);
       throw error;
     }
   },

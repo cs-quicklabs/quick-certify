@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { PathwayService } from '../services/pathway.service';
 import { PathwayParticipantService } from '../services/pathway-participant.service';
 import {
@@ -63,6 +63,7 @@ export class PathwayController {
 
   @Get(':uuid')
   @ApiOperation({ summary: 'Get pathway by UUID' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
   @ApiResponse({ status: 200, description: 'Pathway found' })
   @ApiResponse({ status: 404, description: 'Pathway not found' })
   async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
@@ -81,6 +82,7 @@ export class PathwayController {
 
   @Patch(':uuid')
   @ApiOperation({ summary: 'Update a pathway' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
   @ApiResponse({ status: 200, description: 'Pathway updated successfully' })
   @ApiResponse({ status: 404, description: 'Pathway not found' })
   async update(
@@ -94,6 +96,7 @@ export class PathwayController {
 
   @Delete(':uuid')
   @ApiOperation({ summary: 'Delete a pathway (soft delete)' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
   @ApiResponse({ status: 200, description: 'Pathway deleted successfully' })
   @ApiResponse({ status: 404, description: 'Pathway not found' })
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
@@ -105,6 +108,7 @@ export class PathwayController {
 
   @Get(':uuid/participants')
   @ApiOperation({ summary: 'Get participants for a pathway' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
   @ApiResponse({ status: 200, description: 'Participants list' })
   @ApiResponse({ status: 404, description: 'Pathway not found' })
   @ApiQuery({ name: 'page', required: false })
@@ -119,18 +123,13 @@ export class PathwayController {
   ) {
     const pathway = await this.pathwayService.requirePathway(uuid, user.organizationUuid);
 
-    const result = await this.pathwayParticipantService.getParticipants(pathway.id, {
-      page: pagination.page,
-      limit: pagination.limit,
-      search: pagination.search,
-      sortBy: pagination.sortBy,
-      sortOrder: pagination.sortOrder,
-    });
+    const result = await this.pathwayParticipantService.getParticipants(pathway.id, pagination);
     return new SuccessResponse('Participants retrieved successfully', result);
   }
 
   @Post(':uuid/participants')
   @ApiOperation({ summary: 'Add a participant to a pathway' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
   @ApiResponse({ status: 201, description: 'Participant added successfully' })
   @ApiResponse({ status: 404, description: 'Pathway not found' })
   @ApiResponse({ status: 409, description: 'Participant already added' })
@@ -143,8 +142,7 @@ export class PathwayController {
 
     const participant = await this.pathwayParticipantService.addParticipant(
       pathway,
-      dto.name,
-      dto.email,
+      dto,
       user.organizationUuid,
     );
     return new SuccessResponse('Participant added successfully', participant);
@@ -152,6 +150,8 @@ export class PathwayController {
 
   @Patch(':uuid/participants/:recipientUuid')
   @ApiOperation({ summary: 'Update participant status' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
+  @ApiParam({ name: 'recipientUuid', description: 'Recipient UUID' })
   @ApiResponse({ status: 200, description: 'Participant status updated' })
   @ApiResponse({ status: 404, description: 'Participant not found' })
   async updateParticipantStatus(
