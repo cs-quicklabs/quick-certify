@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -146,6 +145,7 @@ export class CredentialController {
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'eventId', required: false })
+  @ApiQuery({ name: 'recipientId', required: false })
   async findAllPublic(
     @Param('slug', SlugOnlyPipe) slug: string,
     @Query() filters: CredentialFilterDto,

@@ -59,6 +59,7 @@ export class CredentialService {
       sortOrder = 'DESC',
       search,
       eventId,
+      recipientId,
     } = filters;
     //  find organization by UUID or slug
     const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
@@ -83,6 +84,12 @@ export class CredentialService {
       const event = await this.eventService.findByUuid(eventId, organization.uuid);
       if (event) {
         whereClause.event_id = event.id;
+      }
+    }
+    if (recipientId) {
+      const recipient = await this.recipientService.findByUuid(recipientId, organization.uuid);
+      if (recipient) {
+        whereClause.recipient_id = recipient.id;
       }
     }
 

@@ -33,7 +33,7 @@ export function usePublicSendEmail(slug: string) {
   });
 }
 
-export function usePublicGetRecentIssuedCredentials(
+export function usePublicCredentials(
   slug: string,
   options?: {
     page?: number;
@@ -41,25 +41,34 @@ export function usePublicGetRecentIssuedCredentials(
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
     enabled?: boolean;
+    search?: string;
+    eventId?: string;
+    recipientId?: string;
   },
 ) {
   const {
-    page = 1,
-    limit = 3,
+    page,
+    limit,
     sortBy = 'created_at',
     sortOrder = 'DESC',
     enabled = true,
+    search,
+    eventId,
+    recipientId,
   } = options || {};
 
   return useQuery({
-    queryKey: ['public-recent-credentials', slug, page, limit, sortBy, sortOrder],
+    queryKey: ['public-recent-credentials', slug, page, limit, sortBy, sortOrder, search],
     queryFn: async () => {
       if (!slug) throw new Error('Missing organization slug');
-      const response = await publicService.getRecentlyIssuedCredentials(slug, {
+      const response = await publicService.getPublicCredentials(slug, {
         page: 1,
         limit: 3,
         sortBy: 'created_at',
         sortOrder: 'DESC',
+        search,
+        eventId,
+        recipientId,
       });
       return response;
     },
@@ -67,6 +76,7 @@ export function usePublicGetRecentIssuedCredentials(
     staleTime: 30_000,
     retry: 2,
     refetchOnWindowFocus: false,
+    placeholderData: undefined, // doesn't show placeholder data from past queries
   });
 }
 
@@ -74,7 +84,7 @@ export function usePublicRecipients(
   slug: string,
   filters?: BaseSearchFilters & { enabled?: boolean },
 ) {
-  const { enabled = true, ...queryFilters } = filters ?? {};
+  const { enabled = true, eventUuid, ...queryFilters } = filters ?? {};
 
   return useQuery({
     queryKey: ['public-recipients', slug, queryFilters],
@@ -95,24 +105,6 @@ export function usePublicEvent(slug?: string, eventUuid?: string) {
     queryFn: async () => {
       if (!slug || !eventUuid) throw new Error('Missing slug or eventUuid');
       return publicService.getPublicEvent(slug, eventUuid);
-    },
-    enabled: !!slug && !!eventUuid,
-    staleTime: 60_000,
-    retry: 2,
-    refetchOnWindowFocus: false,
-  });
-}
-
-export function usePublicEventParticipants(
-  slug?: string,
-  eventUuid?: string,
-  filters?: BaseSearchFilters,
-) {
-  return useQuery({
-    queryKey: ['public-event-participants', slug, eventUuid, filters],
-    queryFn: async () => {
-      if (!slug || !eventUuid) throw new Error('Missing slug or eventUuid');
-      return publicService.getPublicEventParticipants(slug, eventUuid, filters);
     },
     enabled: !!slug && !!eventUuid,
     staleTime: 60_000,

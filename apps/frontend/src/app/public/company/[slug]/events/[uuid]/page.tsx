@@ -4,11 +4,11 @@ import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePublicEvent, usePublicEventParticipants } from '@/hooks/usePublic';
+import { usePublicEvent, usePublicCredentials } from '@/hooks/usePublic';
 import { PublicBreadcrumb } from '@/app/public/_components/publicBreadcrumb';
 import { SearchSortBar, SortOption } from '@/app/public/_components/searchSortBar';
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
-import { Recipient } from '@/types';
+import { Credential } from '@/types';
 
 type SortOrder = 'ASC' | 'DESC';
 type SortBy = 'created_at' | 'name';
@@ -20,7 +20,7 @@ const SORT_OPTIONS: { label: string; sortBy: SortBy; sortOrder: SortOrder }[] = 
   { label: 'Name Z-A', sortBy: 'name', sortOrder: 'DESC' },
 ];
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 9;
 
 function EventDetailSkeleton() {
   return (
@@ -78,11 +78,14 @@ export default function EventDetailPage() {
   const uuid = params?.uuid as string;
 
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<SortBy>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  const { data: event, isLoading: isLoadingEvent, error: eventError } = usePublicEvent(slug, uuid);
+
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -91,16 +94,19 @@ export default function EventDetailPage() {
     }, 400);
     return () => clearTimeout(timer);
   }, [search]);
+  /**
+   * fetches Recipients
+   */
+  const { data: participantsData, isLoading: isLoadingParticipants } = usePublicCredentials(slug, {
+    page,
+    limit: PAGE_SIZE,
+    sortBy,
+    sortOrder,
+    eventId: uuid,
+    search: debouncedSearch, // ← was missing
+  });
 
-  const { data: event, isLoading: isLoadingEvent, error: eventError } = usePublicEvent(slug, uuid);
-
-  const { data: participantsData, isLoading: isLoadingParticipants } = usePublicEventParticipants(
-    slug,
-    uuid,
-    { page, limit: PAGE_SIZE, search: debouncedSearch, sortBy, sortOrder },
-  );
-
-  const participants = (participantsData?.data ?? []) as Recipient[];
+  const participants = (participantsData?.data ?? []) as Credential[];
   const meta = participantsData?.meta;
 
   const activeSortLabel =
@@ -232,14 +238,22 @@ export default function EventDetailPage() {
                   <dd className="mt-1 text-sm text-gray-900">{event.event_format.name}</dd>
                 </div>
               )}
-              {/* {event.duration && (
+              {event.duration_type && (
                 <div>
                   <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Duration
                   </dt>
-                  <dd className="mt-1 text-sm text-gray-900">{event.duration}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {event.duration_value}{' '}
+                    {event.duration_value === 1
+                      ? event.duration_type.charAt(0).toUpperCase() +
+                        event.duration_type.slice(1).toLowerCase()
+                      : event.duration_type.charAt(0).toUpperCase() +
+                        event.duration_type.slice(1).toLowerCase() +
+                        's'}
+                  </dd>
                 </div>
-              )} */}
+              )}
             </dl>
           </div>
 
@@ -300,12 +314,14 @@ export default function EventDetailPage() {
               >
                 <div className="shrink-0">
                   <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-sm font-semibold">
-                    {participant.name?.[0]?.toUpperCase() ?? '?'}
+                    {participant.recipient?.name?.[0]?.toUpperCase() ?? '?'}
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">{participant.name}</p>
-                  <p className="text-sm text-gray-500 truncate">{participant.email}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {participant.recipient?.name}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">{participant.recipient?.email}</p>
                 </div>
               </Link>
             ))}

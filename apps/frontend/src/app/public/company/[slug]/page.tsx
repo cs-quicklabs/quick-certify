@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  usePublicGetRecentIssuedCredentials,
-  usePublicOrganization,
-  usePublicSendEmail,
-} from '@/hooks/usePublic';
+import { usePublicCredentials, usePublicOrganization, usePublicSendEmail } from '@/hooks/usePublic';
 import { LinkedIn, X } from '@/utils/icons';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
@@ -21,7 +17,7 @@ export default function PublicCompanyPage() {
     data: recentCredentials,
     isLoading: isLoadingCredentials,
     error: credentialsError,
-  } = usePublicGetRecentIssuedCredentials(slug, {
+  } = usePublicCredentials(slug, {
     page: 1,
     limit: 3,
     sortBy: 'created_at',
