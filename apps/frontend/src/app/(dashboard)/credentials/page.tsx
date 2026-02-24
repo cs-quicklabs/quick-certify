@@ -7,6 +7,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { Pagination, ModulePermissionError } from '@/components';
 import { ROUTES, createRoute } from '@/config/routes';
 import { CredentialStatus } from '@/types/credential.types';
+import { ListFilter } from 'lucide-react';
 
 const STATUS_CONFIG: Record<
   CredentialStatus,
@@ -164,19 +165,7 @@ export default function CredentialsPage() {
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="cursor-pointer flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 capitalize"
             >
-              <svg
-                className="w-4 h-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 4h18M6 10h12M10 16h4"
-                />
-              </svg>
+              <ListFilter className="w-4 h-4 text-gray-500" />
               <span className="text-gray-700 dark:text-gray-300">
                 {selectedEvent ? selectedEvent.name : 'Filter by Events'}
               </span>
