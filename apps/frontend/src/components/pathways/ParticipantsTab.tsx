@@ -120,9 +120,7 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
                         }}
                       >
                         {opt.label}
-                        {sortOption === opt.value && (
-                          <Check className="w-4 h-4 text-primary-600" />
-                        )}
+                        {sortOption === opt.value && <Check className="w-4 h-4 text-primary-600" />}
                       </button>
                     </li>
                   ))}
@@ -131,10 +129,7 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
             )}
           </div>
 
-          <button
-            className="btn-primary whitespace-nowrap"
-            onClick={() => setShowModal(true)}
-          >
+          <button className="btn-primary whitespace-nowrap" onClick={() => setShowModal(true)}>
             Add Participant
           </button>
         </div>
@@ -162,16 +157,13 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
               participants.map((participant) => (
                 <tr key={participant.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2.5">
-                    <span className="font-medium text-gray-900">
-                      {participant.recipient.name}
-                    </span>
+                    <span className="font-medium text-gray-900">{participant.recipient.name}</span>
                   </td>
                   <td className="px-4 py-2.5 text-gray-500">{participant.recipient.email}</td>
                   <td className="px-4 py-2.5">
                     <span
                       className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm ${
-                        PARTICIPANT_STATUS[participant.status]?.style ??
-                        'bg-gray-100 text-gray-800'
+                        PARTICIPANT_STATUS[participant.status]?.style ?? 'bg-gray-100 text-gray-800'
                       }`}
                     >
                       {PARTICIPANT_STATUS[participant.status]?.label ?? participant.status}
@@ -192,9 +184,7 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
       {/* Mobile Card Layout */}
       <div className="sm:hidden divide-y divide-gray-200 border border-gray-200 rounded-sm overflow-hidden">
         {participants.length === 0 ? (
-          <div className="px-4 py-8 text-center text-sm text-gray-500">
-            No participants yet.
-          </div>
+          <div className="px-4 py-8 text-center text-sm text-gray-500">No participants yet.</div>
         ) : (
           participants.map((participant) => (
             <div key={participant.id} className="px-4 py-3 bg-white hover:bg-gray-50">
@@ -204,8 +194,7 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
                 </span>
                 <span
                   className={`text-xs font-medium px-2 py-0.5 rounded-sm ${
-                    PARTICIPANT_STATUS[participant.status]?.style ??
-                    'bg-gray-100 text-gray-800'
+                    PARTICIPANT_STATUS[participant.status]?.style ?? 'bg-gray-100 text-gray-800'
                   }`}
                 >
                   {PARTICIPANT_STATUS[participant.status]?.label ?? participant.status}

@@ -32,9 +32,7 @@ export function CredentialsTimeline({ credentials }: CredentialsTimelineProps) {
           >
             <span
               className={`absolute -left-4 flex items-center justify-center w-7 h-7 rounded-full ring-4 ring-white ${
-                expandedIndex === index
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-600'
+                expandedIndex === index ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600'
               }`}
             >
               <span className="text-xs font-semibold">{index + 1}</span>
@@ -63,8 +61,7 @@ export function CredentialsTimeline({ credentials }: CredentialsTimelineProps) {
                     {credential.name}
                   </h4>
                   <p className="text-xs text-gray-500 truncate">
-                    {credential.description ||
-                      `Credential ${index + 1} of ${credentials.length}`}
+                    {credential.description || `Credential ${index + 1} of ${credentials.length}`}
                   </p>
                 </div>
 

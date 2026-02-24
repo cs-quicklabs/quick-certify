@@ -36,10 +36,7 @@ export function AddParticipantModal({ pathwayId, isOpen, onClose }: AddParticipa
       <div ref={modalRef} className="relative w-full max-w-md bg-white rounded-sm shadow-lg">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Add Participant</h3>
-          <button
-            className="cursor-pointer p-1 rounded-sm hover:bg-gray-100"
-            onClick={onClose}
-          >
+          <button className="cursor-pointer p-1 rounded-sm hover:bg-gray-100" onClick={onClose}>
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
