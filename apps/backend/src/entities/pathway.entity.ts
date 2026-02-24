@@ -54,12 +54,6 @@ export class PathwayEntity extends BaseEntity {
   declare banner_url: string | null;
 
   @Column({
-    type: DataType.STRING(100),
-    allowNull: true,
-  })
-  declare duration: string | null;
-
-  @Column({
     type: DataType.STRING(20),
     allowNull: false,
     defaultValue: 'draft',

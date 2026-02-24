@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { usePathways } from '@/hooks/usePathways';
 import { Pagination } from '@/components/ui/pagination';
 import { ROUTES, createRoute } from '@/config/routes';
@@ -28,7 +29,7 @@ const STATUS_LABEL: Record<PathwayStatus, string> = {
   [PathwayStatus.ARCHIVED]: 'Archived',
 };
 
-export default function PathwaysPage() {
+function PathwaysContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -99,9 +100,8 @@ export default function PathwaysPage() {
               <div>
                 <h1 className="mr-3 form-title">Pathways</h1>
                 <p className="form-subtitle">
-                  Manage all your existing{' '}
-                  <span className="font-bold">{meta?.total ?? 0}</span> pathways or create a new
-                  one.
+                  Manage all your existing <span className="font-bold">{meta?.total ?? 0}</span>{' '}
+                  pathways or create a new one.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -180,9 +180,6 @@ export default function PathwaysPage() {
                     Participants
                   </th>
                   <th scope="col" className="px-4 py-3">
-                    Duration
-                  </th>
-                  <th scope="col" className="px-4 py-3">
                     Status
                   </th>
                 </tr>
@@ -190,7 +187,7 @@ export default function PathwaysPage() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center">
+                    <td colSpan={4} className="px-4 py-12 text-center">
                       <div className="flex justify-center">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
                       </div>
@@ -198,7 +195,7 @@ export default function PathwaysPage() {
                   </tr>
                 ) : pathways.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={4} className="px-4 py-12 text-center text-gray-500">
                       No pathways found
                     </td>
                   </tr>
@@ -218,16 +215,14 @@ export default function PathwaysPage() {
                       </th>
                       <td className="px-4 py-2">
                         <div className="flex flex-wrap gap-1">
-                          {pathway.events
-                            .slice(0, MAX_VISIBLE_CREDENTIALS)
-                            .map((credential) => (
-                              <span
-                                key={credential.uuid}
-                                className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
-                              >
-                                {credential.name}
-                              </span>
-                            ))}
+                          {pathway.events.slice(0, MAX_VISIBLE_CREDENTIALS).map((credential) => (
+                            <span
+                              key={credential.uuid}
+                              className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+                            >
+                              {credential.name}
+                            </span>
+                          ))}
                           {pathway.events.length > MAX_VISIBLE_CREDENTIALS && (
                             <span
                               className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 cursor-default"
@@ -244,7 +239,6 @@ export default function PathwaysPage() {
                       <td className="px-4 py-2 form-text-normal">
                         {pathway.participants?.length || '-'}
                       </td>
-                      <td className="px-4 py-2 form-text-normal">{pathway.duration || '-'}</td>
                       <td className="px-4 py-2 form-text-normal">
                         <div className="flex items-center">
                           <div
@@ -288,16 +282,14 @@ export default function PathwaysPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1 mb-2">
-                    {pathway.events
-                      .slice(0, MAX_VISIBLE_CREDENTIALS)
-                      .map((credential) => (
-                        <span
-                          key={credential.uuid}
-                          className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
-                        >
-                          {credential.name}
-                        </span>
-                      ))}
+                    {pathway.events.slice(0, MAX_VISIBLE_CREDENTIALS).map((credential) => (
+                      <span
+                        key={credential.uuid}
+                        className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+                      >
+                        {credential.name}
+                      </span>
+                    ))}
                     {pathway.events.length > MAX_VISIBLE_CREDENTIALS && (
                       <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                         +{pathway.events.length - MAX_VISIBLE_CREDENTIALS}
@@ -306,7 +298,6 @@ export default function PathwaysPage() {
                   </div>
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <span>{pathway.participants?.length ?? 0} participants</span>
-                    <span>{pathway.duration || '- Durations'}</span>
                   </div>
                 </button>
               ))
@@ -324,5 +315,19 @@ export default function PathwaysPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function PathwaysPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-20">
+          <Loader2 className="animate-spin text-gray-400" size={32} />
+        </div>
+      }
+    >
+      <PathwaysContent />
+    </Suspense>
   );
 }

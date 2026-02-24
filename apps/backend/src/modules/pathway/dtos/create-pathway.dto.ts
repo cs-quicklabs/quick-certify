@@ -46,15 +46,6 @@ export class CreatePathwayDto {
   bannerUrl?: string;
 
   @ApiPropertyOptional({
-    example: '6 months',
-    description: 'Pathway duration',
-  })
-  @IsOptional()
-  @IsString({ message: 'Duration must be a string' })
-  @MaxLength(100, { message: 'Duration must not exceed 100 characters' })
-  duration?: string;
-
-  @ApiPropertyOptional({
     example: 'active',
     description: 'Pathway status (draft, active, archived)',
   })
@@ -66,7 +57,10 @@ export class CreatePathwayDto {
   status?: string;
 
   @ApiPropertyOptional({
-    example: [{ eventId: 'event-uuid-1', isFinal: false }, { eventId: 'event-uuid-2', isFinal: true }],
+    example: [
+      { eventId: 'event-uuid-1', isFinal: false },
+      { eventId: 'event-uuid-2', isFinal: true },
+    ],
     description: 'Array of events with order (from array index) and isFinal flag',
     type: [PathwayEventItemDto],
   })

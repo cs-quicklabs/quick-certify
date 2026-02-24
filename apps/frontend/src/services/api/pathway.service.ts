@@ -12,7 +12,6 @@ export interface CreatePathwayRequest {
   name: string;
   description?: string;
   bannerUrl?: string;
-  duration?: string;
   status?: string;
   events?: PathwayEventInput[];
 }
@@ -21,7 +20,6 @@ export interface UpdatePathwayRequest {
   name?: string;
   description?: string | null;
   bannerUrl?: string | null;
-  duration?: string | null;
   status?: string;
   events?: PathwayEventInput[];
 }
@@ -61,7 +59,13 @@ export const pathwayService = {
 
   async getParticipants(
     pathwayUuid: string,
-    filters?: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string },
+    filters?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: string;
+    },
   ): Promise<PaginatedResponse<PathwayParticipant>> {
     const response = await apiClient.get<ApiResponse<PaginatedResponse<PathwayParticipant>>>(
       buildUrl(`/pathways/${pathwayUuid}/participants`, filters),
@@ -69,7 +73,10 @@ export const pathwayService = {
     return response.data.data;
   },
 
-  async addParticipant(pathwayUuid: string, data: AddParticipantRequest): Promise<PathwayParticipant> {
+  async addParticipant(
+    pathwayUuid: string,
+    data: AddParticipantRequest,
+  ): Promise<PathwayParticipant> {
     const response = await apiClient.post<ApiResponse<PathwayParticipant>>(
       `/pathways/${pathwayUuid}/participants`,
       data,

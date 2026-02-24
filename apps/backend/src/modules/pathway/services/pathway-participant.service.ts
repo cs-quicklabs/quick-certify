@@ -57,7 +57,7 @@ export class PathwayParticipantService {
     }
 
     // Compute initial status based on existing credentials
-    const initialStatus = await this.computeRecipientStatus(pathway.id, recipient.id);
+    const initialStatus = await this.computeRecipientStatus(pathway.id, recipient.id, transaction);
 
     const participant = await this.pathwayParticipantModel.create(
       {
@@ -73,7 +73,9 @@ export class PathwayParticipantService {
 
     // Fire-and-forget: send invitation email
     this.sendInvitationEmail(email, name, pathway).catch((err) => {
-      this.logger.warn(`Failed to send pathway invitation email to ${email}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      this.logger.warn(
+        `Failed to send pathway invitation email to ${email}: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
     });
 
     return participant;
@@ -82,7 +84,11 @@ export class PathwayParticipantService {
   /**
    * Send pathway invitation email to a participant.
    */
-  private async sendInvitationEmail(email: string, name: string, pathway: PathwayEntity): Promise<void> {
+  private async sendInvitationEmail(
+    email: string,
+    name: string,
+    pathway: PathwayEntity,
+  ): Promise<void> {
     await this.emailService.sendTemplatedEmail(
       email,
       `You're invited to the ${pathway.name} pathway`,
@@ -91,7 +97,6 @@ export class PathwayParticipantService {
         name,
         pathwayName: pathway.name,
         description: pathway.description ?? '',
-        duration: pathway.duration ?? '',
       },
     );
   }
@@ -99,10 +104,15 @@ export class PathwayParticipantService {
   /**
    * Compute status for a single recipient based on their credential progress in a pathway.
    */
-  private async computeRecipientStatus(pathwayId: number, recipientId: number): Promise<string> {
+  private async computeRecipientStatus(
+    pathwayId: number,
+    recipientId: number,
+    transaction?: Transaction,
+  ): Promise<string> {
     const pathwayEvents = await this.pathwayEventModel.findAll({
       where: { pathway_id: pathwayId },
       attributes: ['event_id'],
+      ...(transaction && { transaction }),
     });
     const eventIds = pathwayEvents.map((pe) => pe.event_id);
 
@@ -114,6 +124,7 @@ export class PathwayParticipantService {
         event_id: { [Op.in]: eventIds },
         status: CredentialStatusEnum.ISSUED,
       },
+      ...(transaction && { transaction }),
     });
 
     if (issuedCount >= eventIds.length) return 'completed';
@@ -126,7 +137,13 @@ export class PathwayParticipantService {
    */
   async getParticipants(
     pathwayId: number,
-    options: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string } = {},
+    options: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: string;
+    } = {},
   ): Promise<PaginatedResult<PathwayParticipantEntity>> {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = options;
 

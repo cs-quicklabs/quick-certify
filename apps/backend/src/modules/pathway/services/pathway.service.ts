@@ -1,18 +1,12 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { PathwayEntity } from '@src/entities/pathway.entity';
 import { EventEntity } from '@src/entities/event.entity';
 import { DesignEntity } from '@src/entities/design.entity';
 import { RecipientEntity } from '@src/entities/recipient.entity';
-import { PathwayEventEntity } from '@src/entities/pathway-event.entity';
-import { PathwayParticipantEntity } from '@src/entities/pathway-participant.entity';
 import { CreatePathwayDto, UpdatePathwayDto } from '../dtos';
-import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { PathwayEventService } from './pathway-event.service';
 
@@ -43,7 +37,14 @@ export class PathwayService {
 
   async findAll(
     organizationUuid: string,
-    filters: { page?: number; limit?: number; search?: string; status?: string; sortBy?: string; sortOrder?: 'ASC' | 'DESC' } = {},
+    filters: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    } = {},
   ): Promise<PaginatedResult<PathwayEntity>> {
     const organization = await this.organizationService.findByUuid(organizationUuid);
     if (!organization) {
@@ -58,7 +59,7 @@ export class PathwayService {
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
 
-    const queryWhere: Record<string, unknown> = {
+    const queryWhere: WhereOptions<PathwayEntity> = {
       organization_id: organization.id,
       is_active: true,
     };
@@ -75,7 +76,7 @@ export class PathwayService {
       where: queryWhere,
       include: DEFAULT_PATHWAY_INCLUDES,
       distinct: true,
-      order: [[safeSortBy, sortOrder]],
+      order: [[safeSortBy, sortOrder === 'ASC' ? 'ASC' : 'DESC']],
       limit: safeLimit,
       offset,
     });
@@ -123,14 +124,17 @@ export class PathwayService {
 
     if (existing) {
       if (existing.is_active) {
-        throw new ConflictException(`Pathway "${normalizedName}" already exists in this organization`);
+        throw new ConflictException(
+          `Pathway "${normalizedName}" already exists in this organization`,
+        );
       }
       // Restore soft-deleted pathway
-      return this.restorePathway(existing, dto, organization.id);
+      return this.restorePathway(existing, dto, organization.id, organizationUuid);
     }
 
     const sequelize = this.pathwayModel.sequelize!;
     const transaction = await sequelize.transaction();
+    let pathwayUuid: string;
 
     try {
       const pathway = await this.pathwayModel.create(
@@ -139,7 +143,6 @@ export class PathwayService {
           name: normalizedName,
           description: dto.description ?? null,
           banner_url: dto.bannerUrl ?? null,
-          duration: dto.duration ?? null,
           status: dto.status ?? 'draft',
           is_active: true,
         },
@@ -155,12 +158,14 @@ export class PathwayService {
         );
       }
 
+      pathwayUuid = pathway.uuid;
       await transaction.commit();
-      return pathway.reload({ include: DEFAULT_PATHWAY_INCLUDES });
     } catch (error) {
       await transaction.rollback();
       throw error;
     }
+
+    return this.requirePathway(pathwayUuid, organizationUuid);
   }
 
   async updateByUuid(
@@ -184,14 +189,15 @@ export class PathwayService {
         },
       });
       if (duplicate) {
-        throw new ConflictException(`Pathway "${normalizedName}" already exists in this organization`);
+        throw new ConflictException(
+          `Pathway "${normalizedName}" already exists in this organization`,
+        );
       }
       updateData.name = normalizedName;
     }
 
     if (dto.description !== undefined) updateData.description = dto.description ?? null;
     if (dto.bannerUrl !== undefined) updateData.banner_url = dto.bannerUrl ?? null;
-    if (dto.duration !== undefined) updateData.duration = dto.duration ?? null;
     if (dto.status !== undefined) updateData.status = dto.status;
 
     const sequelize = this.pathwayModel.sequelize!;
@@ -210,11 +216,12 @@ export class PathwayService {
       }
 
       await transaction.commit();
-      return pathway.reload({ include: DEFAULT_PATHWAY_INCLUDES });
     } catch (error) {
       await transaction.rollback();
       throw error;
     }
+
+    return this.requirePathway(uuid, organizationUuid);
   }
 
   async deleteByUuid(uuid: string, organizationUuid: string): Promise<boolean> {
@@ -231,7 +238,7 @@ export class PathwayService {
     return org;
   }
 
-  private async requirePathway(uuid: string, organizationUuid: string): Promise<PathwayEntity> {
+  async requirePathway(uuid: string, organizationUuid: string): Promise<PathwayEntity> {
     const pathway = await this.findByUuid(uuid, organizationUuid);
     if (!pathway) throw new NotFoundException('Pathway not found');
     return pathway;
@@ -241,6 +248,7 @@ export class PathwayService {
     existing: PathwayEntity,
     dto: CreatePathwayDto,
     organizationId: number,
+    organizationUuid: string,
   ): Promise<PathwayEntity> {
     const sequelize = this.pathwayModel.sequelize!;
     const transaction = await sequelize.transaction();
@@ -253,7 +261,6 @@ export class PathwayService {
 
       if (dto.description !== undefined) updateData.description = dto.description;
       if (dto.bannerUrl !== undefined) updateData.banner_url = dto.bannerUrl;
-      if (dto.duration !== undefined) updateData.duration = dto.duration;
       if (dto.status !== undefined) updateData.status = dto.status;
 
       await existing.update(updateData, { transaction });
@@ -268,11 +275,12 @@ export class PathwayService {
       }
 
       await transaction.commit();
-      return existing.reload({ include: DEFAULT_PATHWAY_INCLUDES });
     } catch (error) {
       await transaction.rollback();
       throw error;
     }
+
+    return this.requirePathway(existing.uuid, organizationUuid);
   }
 
   private emptyPaginatedResult(limit: number): PaginatedResult<PathwayEntity> {

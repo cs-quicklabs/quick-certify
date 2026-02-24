@@ -7,6 +7,9 @@ export enum PathwayStatus {
 export interface PathwayEvent {
   uuid: string;
   name: string;
+  description?: string | null;
+  duration_type?: string | null;
+  duration_value?: number | null;
   pathway_event?: {
     order: number;
     is_final: boolean;
@@ -38,7 +41,6 @@ export interface Pathway {
   name: string;
   description: string | null;
   banner_url: string | null;
-  duration: string | null;
   status: PathwayStatus;
   is_active: boolean;
   events: PathwayEvent[];

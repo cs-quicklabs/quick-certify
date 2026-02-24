@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   Patch,
   Post,
@@ -67,10 +66,7 @@ export class PathwayController {
   @ApiResponse({ status: 200, description: 'Pathway found' })
   @ApiResponse({ status: 404, description: 'Pathway not found' })
   async findOne(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
-    const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
-    if (!pathway) {
-      throw new NotFoundException('Pathway not found');
-    }
+    const pathway = await this.pathwayService.requirePathway(uuid, user.organizationUuid);
     return new SuccessResponse('Pathway retrieved successfully', pathway);
   }
 
@@ -121,10 +117,7 @@ export class PathwayController {
     @Param('uuid') uuid: string,
     @Query() pagination: PaginationDto,
   ) {
-    const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
-    if (!pathway) {
-      throw new NotFoundException('Pathway not found');
-    }
+    const pathway = await this.pathwayService.requirePathway(uuid, user.organizationUuid);
 
     const result = await this.pathwayParticipantService.getParticipants(pathway.id, {
       page: pagination.page,
@@ -146,10 +139,7 @@ export class PathwayController {
     @Param('uuid') uuid: string,
     @Body() dto: AddParticipantDto,
   ) {
-    const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
-    if (!pathway) {
-      throw new NotFoundException('Pathway not found');
-    }
+    const pathway = await this.pathwayService.requirePathway(uuid, user.organizationUuid);
 
     const participant = await this.pathwayParticipantService.addParticipant(
       pathway,
@@ -170,10 +160,7 @@ export class PathwayController {
     @Param('recipientUuid') recipientUuid: string,
     @Body() dto: UpdateParticipantStatusDto,
   ) {
-    const pathway = await this.pathwayService.findByUuid(uuid, user.organizationUuid);
-    if (!pathway) {
-      throw new NotFoundException('Pathway not found');
-    }
+    const pathway = await this.pathwayService.requirePathway(uuid, user.organizationUuid);
 
     const participant = await this.pathwayParticipantService.updateStatus(
       pathway.id,
