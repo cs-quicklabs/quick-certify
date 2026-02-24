@@ -48,7 +48,11 @@ export class PathwayEventService {
 
     const eventUuids = eventItems.map((e) => e.eventId);
 
-    const events = await this.eventService.findActiveByUuids(eventUuids, organizationId, transaction);
+    const events = await this.eventService.findActiveByUuids(
+      eventUuids,
+      organizationId,
+      transaction,
+    );
 
     if (events.length !== eventUuids.length) {
       const foundUuids = events.map((e) => e.uuid);
