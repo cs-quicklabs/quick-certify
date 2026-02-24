@@ -88,3 +88,35 @@ export function usePublicRecipients(
     refetchOnWindowFocus: false,
   });
 }
+
+export function usePublicEvent(slug?: string, eventUuid?: string) {
+  return useQuery({
+    queryKey: ['public-event', slug, eventUuid],
+    queryFn: async () => {
+      if (!slug || !eventUuid) throw new Error('Missing slug or eventUuid');
+      return publicService.getPublicEvent(slug, eventUuid);
+    },
+    enabled: !!slug && !!eventUuid,
+    staleTime: 60_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePublicEventParticipants(
+  slug?: string,
+  eventUuid?: string,
+  filters?: BaseSearchFilters,
+) {
+  return useQuery({
+    queryKey: ['public-event-participants', slug, eventUuid, filters],
+    queryFn: async () => {
+      if (!slug || !eventUuid) throw new Error('Missing slug or eventUuid');
+      return publicService.getPublicEventParticipants(slug, eventUuid, filters);
+    },
+    enabled: !!slug && !!eventUuid,
+    staleTime: 60_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}

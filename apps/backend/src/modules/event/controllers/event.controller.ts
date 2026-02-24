@@ -100,6 +100,12 @@ export class EventController {
     return new SuccessResponse('Event deleted successfully', { deleted: true });
   }
 
+  /**
+   *
+   * @param slug (organization slug)
+   * @param filters
+   * @returns
+   */
   @Public()
   @Get('public/org/:slug')
   @ApiOperation({ summary: 'Get all events for current organization' })
@@ -118,6 +124,18 @@ export class EventController {
   })
   async findAllByOrg(@Param('slug', SlugOnlyPipe) slug: string, @Query() filters: EventFilterDto) {
     const result = await this.eventService.findAll(slug, filters);
+    return new SuccessResponse('Events retrieved successfully', result);
+  }
+
+  /**
+   * Fetch one Event wrt Org slug and uuid
+   */
+  @Public()
+  @Get('public/org/:slug/event/:uuid')
+  @ApiOperation({ summary: 'Get event for current organization' })
+  @ApiResponse({ status: 200, description: 'Events list' })
+  async findOneByOrg(@Param('slug', SlugOnlyPipe) slug: string, @Param('uuid') uuid: string) {
+    const result = await this.eventService.findByUuid(uuid, slug);
     return new SuccessResponse('Events retrieved successfully', result);
   }
 }

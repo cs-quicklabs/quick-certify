@@ -36,135 +36,137 @@ export default function PublicCompanyPage() {
   const credentials = (recentCredentials?.data ?? []) as Credential[];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      {/* Header Card */}
-      <div className="mx-auto max-w-7xl overflow-hidden rounded-sm border border-gray-200 bg-white">
-        <div className="relative">
-          <Image
-            src={
-              organization.banner_url ||
-              'https://images.unsplash.com/photo-1444628838545-ac4016a5418a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'
-            }
-            alt="Company banner"
-            width={1950}
-            height={400}
-            className="h-32 w-full object-cover lg:h-48"
-          />
-          <Image
-            src={organization.logo_url || 'https://flowbite.s3.amazonaws.com/logo.svg'}
-            alt={`${organization.name} Logo`}
-            width={80}
-            height={80}
-            className="absolute left-6 -bottom-10 rounded-full border-4 border-white bg-white"
-          />
-        </div>
-        <div className="px-6 pb-4 pt-12">
-          <h2 className="truncate text-2xl font-bold text-gray-900 sm:text-3xl">
-            {organization.name}
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {organization.slogan || 'IT Services and Consulting'}
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="mx-auto mt-6 flex max-w-7xl flex-col gap-8 lg:flex-row">
-        {/* Left Column */}
-        <div className="flex flex-1 flex-col gap-4">
-          <div className="rounded border border-gray-200 bg-white p-4">
-            <h4 className="mb-2 font-medium text-gray-700">About</h4>
-            <p className="text-sm text-gray-600">{organization.description}</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <main className="flex-1 p-8">
+        {/* Header Card */}
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-sm border border-gray-200 bg-white">
+          <div className="relative">
+            <Image
+              src={
+                organization.banner_url ||
+                'https://images.unsplash.com/photo-1444628838545-ac4016a5418a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'
+              }
+              alt="Company banner"
+              width={1950}
+              height={400}
+              className="h-32 w-full object-cover lg:h-48"
+            />
+            <Image
+              src={organization.logo_url || 'https://flowbite.s3.amazonaws.com/logo.svg'}
+              alt={`${organization.name} Logo`}
+              width={80}
+              height={80}
+              className="absolute left-6 -bottom-10 rounded-full border-4 border-white bg-white"
+            />
           </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {organization.website && (
-              <InfoItem title="Website">
-                <a
-                  href={organization.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  {organization.website.replace(/^https?:\/\//, '')}
-                </a>
-              </InfoItem>
-            )}
-
-            {organization.support_email && (
-              <InfoItem title="Email">
-                <a
-                  href={`mailto:${organization.support_email}`}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  {organization.support_email}
-                </a>
-              </InfoItem>
-            )}
-
-            {organization.support_phone && (
-              <InfoItem title="Phone">
-                <p className="text-sm text-gray-600">{organization.support_phone}</p>
-              </InfoItem>
-            )}
-
-            {organization.linkedin_url && (
-              <InfoItem title="LinkedIn">
-                <a
-                  href={organization.linkedin_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
-                >
-                  <LinkedIn className="w-4 h-4" />
-                  {organization.linkedin_url.replace(/^https?:\/\/(www\.)?/, '')}
-                </a>
-              </InfoItem>
-            )}
-
-            {organization.twitter_url && (
-              <InfoItem title="X">
-                <a
-                  href={organization.twitter_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
-                >
-                  <X className="w-4 h-4" />
-                  {organization.twitter_url.replace(/^https?:\/\/(www\.)?/, '')}
-                </a>
-              </InfoItem>
-            )}
-
-            <InfoItem title="Browse">
-              <div className="flex flex-col gap-1">
-                <Link
-                  href={`/public/company/${slug}/events`}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  → View all Events
-                </Link>
-                <Link
-                  href={`/public/company/${slug}/recipients`}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  → View all Recipients
-                </Link>
-              </div>
-            </InfoItem>
+          <div className="px-6 pb-4 pt-12">
+            <h2 className="truncate text-2xl font-bold text-gray-900 sm:text-3xl">
+              {organization.name}
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              {organization.slogan || 'IT Services and Consulting'}
+            </p>
           </div>
         </div>
 
-        {/* Right Column */}
-        <div className="flex flex-1 flex-col gap-6">
-          <RecentCertificates
-            credentials={credentials}
-            isLoading={isLoadingCredentials}
-            error={credentialsError}
-          />
-          <ContactForm organizationName={organization.name} slug={slug} />
+        {/* Main Content */}
+        <div className="mx-auto mt-6 flex max-w-7xl flex-col gap-8 lg:flex-row">
+          {/* Left Column */}
+          <div className="flex flex-1 flex-col gap-4">
+            <div className="rounded border border-gray-200 bg-white p-4">
+              <h4 className="mb-2 font-medium text-gray-700">About</h4>
+              <p className="text-sm text-gray-600">{organization.description}</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {organization.website && (
+                <InfoItem title="Website">
+                  <a
+                    href={organization.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    {organization.website.replace(/^https?:\/\//, '')}
+                  </a>
+                </InfoItem>
+              )}
+
+              {organization.support_email && (
+                <InfoItem title="Email">
+                  <a
+                    href={`mailto:${organization.support_email}`}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    {organization.support_email}
+                  </a>
+                </InfoItem>
+              )}
+
+              {organization.support_phone && (
+                <InfoItem title="Phone">
+                  <p className="text-sm text-gray-600">{organization.support_phone}</p>
+                </InfoItem>
+              )}
+
+              {organization.linkedin_url && (
+                <InfoItem title="LinkedIn">
+                  <a
+                    href={organization.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                  >
+                    <LinkedIn className="w-4 h-4" />
+                    {organization.linkedin_url.replace(/^https?:\/\/(www\.)?/, '')}
+                  </a>
+                </InfoItem>
+              )}
+
+              {organization.twitter_url && (
+                <InfoItem title="X">
+                  <a
+                    href={organization.twitter_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                  >
+                    <X className="w-4 h-4" />
+                    {organization.twitter_url.replace(/^https?:\/\/(www\.)?/, '')}
+                  </a>
+                </InfoItem>
+              )}
+
+              <InfoItem title="Browse">
+                <div className="flex flex-col gap-1">
+                  <Link
+                    href={`/public/company/${slug}/events`}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    → View all Events
+                  </Link>
+                  <Link
+                    href={`/public/company/${slug}/recipients`}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    → View all Recipients
+                  </Link>
+                </div>
+              </InfoItem>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="flex flex-1 flex-col gap-6">
+            <RecentCertificates
+              credentials={credentials}
+              isLoading={isLoadingCredentials}
+              error={credentialsError}
+            />
+            <ContactForm organizationName={organization.name} slug={slug} />
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -225,8 +227,6 @@ function RecentCertificatesSkeleton() {
   );
 }
 
-// State Components
-
 function OrgLoadingState() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -267,8 +267,6 @@ function OrgNotFoundState() {
   );
 }
 
-// Helper Components
-
 function InfoItem({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
@@ -290,7 +288,6 @@ function RecentCertificates({
   return (
     <div>
       <h4 className="mb-3 text-lg font-semibold text-gray-800">Recent Certificates Issued</h4>
-
       {isLoading ? (
         <RecentCertificatesSkeleton />
       ) : error ? (

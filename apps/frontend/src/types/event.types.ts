@@ -20,7 +20,7 @@ export type EventFormat = IBaseEvent;
  */
 export interface Event extends IBaseEvent {
   description?: string | null;
-  learningLink?: string | null;
+  learning_link?: string | null;
   event_type_id?: string | null;
   event_level_id?: string | null;
   event_format_id?: string | null;

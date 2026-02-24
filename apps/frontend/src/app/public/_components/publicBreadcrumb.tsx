@@ -10,9 +10,10 @@ interface BreadcrumbItem {
 interface PublicBreadcrumbProps {
   items: BreadcrumbItem[];
   title: string;
+  subtitle?: string;
 }
 
-export function PublicBreadcrumb({ items, title }: PublicBreadcrumbProps) {
+export function PublicBreadcrumb({ items, title, subtitle }: PublicBreadcrumbProps) {
   return (
     <div className="max-w-7xl mx-auto p-4 rounded-sm border border-gray-200 bg-white">
       {/* Mobile Back */}
@@ -49,6 +50,7 @@ export function PublicBreadcrumb({ items, title }: PublicBreadcrumbProps) {
       <div className="mt-2">
         <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{title}</h2>
       </div>
+      {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
     </div>
   );
 }

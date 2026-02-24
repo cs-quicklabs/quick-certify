@@ -99,6 +99,12 @@ export class RecipientController {
     return new SuccessResponse('Recipient deleted successfully', { deleted: true });
   }
 
+  /**
+   *
+   * @param slug - organization slug
+   * @param pagination
+   * @returns
+   */
   @Public()
   @Get('/public/org/:slug')
   @ApiOperation({ summary: 'Get all recipients for current organization' })

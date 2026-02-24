@@ -4,10 +4,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Github, Globe } from 'lucide-react';
 
-const DIRECTORY_LINKS = [
-  { label: 'Events', href: '/public/event' },
-  { label: 'Recipients', href: '/public/recipients' },
-];
+type PublicFooterProps = {
+  logoUrl?: string | null;
+  orgName?: string | null;
+  slogan?: string | null;
+  slug: string;
+};
 
 const CREDENTIAL_LINKS = [
   { label: 'Credential Verification', href: '/verify' },
@@ -19,33 +21,42 @@ const SOCIAL_LINKS = [
   { href: 'https://github.com/cs-quicklabs/quick-certify', label: 'Website', icon: Globe },
 ];
 
-export default function PublicFooter() {
+export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicFooterProps) {
+  const displayName = orgName ?? 'Quick Certify';
+  const DIRECTORY_LINKS = [
+    { label: 'Events', href: `/public/company/${slug}/events` },
+    { label: 'Recipients', href: `/public/company/${slug}/recipients` },
+  ];
+
   return (
     <footer className="border-t border-gray-200 bg-white dark:bg-gray-800">
       <div className="mx-auto max-w-7xl px-4 py-10">
-        {/* Top */}
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="https://flowbite.com/docs/images/logo.svg"
-                alt="Crownstack Logo"
-                width={32}
-                height={32}
-              />
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={displayName}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-bold">
+                  {displayName[0]?.toUpperCase() ?? '?'}
+                </div>
+              )}
               <span className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Crownstack
+                {displayName}
               </span>
             </Link>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Building Sustainable Solutions
-            </p>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{slogan ?? ''}</p>
           </div>
 
           {/* Links */}
           <div className="grid grid-cols-2 gap-10 text-sm">
-            {/* Directories */}
             <div>
               <h3 className="mb-4 font-semibold uppercase text-gray-900 dark:text-white">
                 Directories
@@ -60,8 +71,6 @@ export default function PublicFooter() {
                 ))}
               </ul>
             </div>
-
-            {/* Credentials */}
             <div>
               <h3 className="mb-4 font-semibold uppercase text-gray-900 dark:text-white">
                 Credentials
@@ -79,10 +88,8 @@ export default function PublicFooter() {
           </div>
         </div>
 
-        {/* Divider */}
         <hr className="my-8 border-gray-200 dark:border-gray-700" />
 
-        {/* Bottom */}
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <span className="text-sm text-gray-500 dark:text-gray-400">
             © 2025{' '}
@@ -91,8 +98,6 @@ export default function PublicFooter() {
             </Link>
             . All rights reserved.
           </span>
-
-          {/* Social */}
           <div className="flex items-center gap-5">
             {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
               <Link
