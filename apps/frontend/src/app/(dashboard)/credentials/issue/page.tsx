@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/config/routes';
 import { Stepper } from '@/components/Stepper';
 import { StepCreateCredentials } from '@/components/credentials/StepCreateCredentials';
 import { StepReviewIssue } from '@/components/credentials/StepReviewIssue';
 import type { RecipientRow } from '@/schemas/credential.schema';
+import { useSearchParams } from 'next/navigation';
+import { useEvent } from '@/hooks/useEvents';
 
 const STEPS = [
   { title: 'Create Credentials', subtitle: 'Add recipients' },
@@ -24,6 +26,10 @@ export interface IssueFormData {
 
 export default function IssueCredentialPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get('eventId') || '';
+  const { data: event, isLoading, isError } = useEvent(eventId, !!eventId);
+
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<IssueFormData>({
     eventId: '',
@@ -33,6 +39,21 @@ export default function IssueCredentialPage() {
     expirationDate: '',
     noExpiration: true,
   });
+
+  useEffect(() => {
+    if (event) {
+      setFormData((prev) => ({
+        ...prev,
+        eventId: event.uuid,
+        eventName: event.name,
+      }));
+    }
+  }, [event]);
+  useEffect(() => {
+    if (eventId && isError && isLoading) {
+      router.push('/credentials');
+    }
+  }, [eventId, isError, router]);
 
   const completedSteps = activeStep > 0 ? [0] : [];
 

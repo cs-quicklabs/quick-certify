@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { CredentialStatusEnum } from '@src/commons/enums';
 import {
   IsDateString,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -32,6 +34,17 @@ export class PreviewCredentialDto {
     { message: 'Issued date must be a valid ISO 8601 date string (e.g. YYYY-MM-DD)' },
   )
   issuedDate?: string;
+
+  @ApiPropertyOptional({
+    enum: CredentialStatusEnum,
+    example: CredentialStatusEnum.DRAFT,
+    description: 'Credential status',
+  })
+  @IsOptional()
+  @IsEnum(CredentialStatusEnum, {
+    message: `Status must be one of: ${Object.values(CredentialStatusEnum).join(', ')}`,
+  })
+  status?: CredentialStatusEnum;
 
   @ApiPropertyOptional({ description: 'Expiration date (YYYY-MM-DD)', example: '2027-02-16' })
   @IsOptional()

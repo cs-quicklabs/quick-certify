@@ -5,6 +5,7 @@ import { Header, Sidebar, ConfirmationDialog, Alert } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import { getApiErrorMessage } from '@/lib/api-error';
 import type { IBaseEvent } from '@/types';
+import { Table, TableColumn } from '@/components/ui';
 
 interface EventSettingListProps {
   /** Singular display name, e.g. "Event Type". Page title is derived as "{label}s". */
@@ -142,104 +143,85 @@ export default function EventSettingList({
   };
 
   const renderItemsList = () => {
-    if (isLoading) {
-      return <div className="text-center py-8 text-gray-500">Loading...</div>;
-    }
+    if (queryError && showQueryError) return null;
 
-    if (queryError && showQueryError) {
-      return null;
-    }
-
-    if (items.length === 0) {
-      return (
-        <div className="text-center py-8 text-gray-500 ">
-          No {title.toLowerCase()} found. Create your first {lowerLabel} above.
-        </div>
-      );
-    }
+    const columns: TableColumn<IBaseEvent>[] = [
+      {
+        key: 'name',
+        header: label.toUpperCase(),
+        render: (item) =>
+          editingUuid === item.uuid ? (
+            <input
+              type="text"
+              value={editingValue}
+              onChange={(e) => setEditingValue(e.target.value)}
+              className="form-input-field font-bold w-full"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveEdit();
+                else if (e.key === 'Escape') handleCancelEdit();
+              }}
+              disabled={isUpdating}
+              autoFocus
+            />
+          ) : (
+            <span className="form-text-normal">{item.name}</span>
+          ),
+        className: 'w-full',
+      },
+      {
+        key: 'action',
+        header: 'ACTION',
+        render: (item) =>
+          editingUuid === item.uuid ? (
+            <div className="flex items-center justify-end gap-4">
+              <button
+                onClick={handleSaveEdit}
+                className="btn-primary text-sm px-3 py-1.5"
+                disabled={isUpdating || !editingValue.trim()}
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </button>
+              <button onClick={handleCancelEdit} className="btn-inline-blue text-sm">
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-end gap-4">
+              <button
+                onClick={() => handleEdit(item.uuid, item.name)}
+                className="btn-inline-blue"
+                disabled={deletingId !== null}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setConfirmDialog({ isOpen: true, item })}
+                className="btn-inline-red"
+                disabled={deletingId !== null}
+              >
+                {deletingId === item.uuid ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          ),
+        className: 'text-right',
+        headerClassName: 'text-right',
+      },
+    ];
 
     return (
       <>
-        <div className="overflow-x-auto">
-          <table className="table w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 w-full">{label.toUpperCase()}</th>
-                <th className="px-6 py-3">ACTION</th>
-              </tr>
-            </thead>
-            <tbody className="table-body">
-              {items.map((item) => (
-                <tr
-                  key={item.uuid}
-                  className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 border-b border-gray-200"
-                >
-                  {editingUuid === item.uuid ? (
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={editingValue}
-                        onChange={(e) => setEditingValue(e.target.value)}
-                        className="form-input-field font-bold w-full"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveEdit();
-                          else if (e.key === 'Escape') handleCancelEdit();
-                        }}
-                        disabled={isUpdating}
-                        autoFocus
-                      />
-                    </td>
-                  ) : (
-                    <td className="px-6 py-4 form-text-normal">{item.name}</td>
-                  )}
-                  {editingUuid === item.uuid ? (
-                    <td className="p-2">
-                      <div className="flex items-center justify-end gap-4">
-                        <button
-                          onClick={handleSaveEdit}
-                          className="btn-primary text-sm px-3 py-1.5"
-                          disabled={isUpdating || !editingValue.trim()}
-                        >
-                          {isUpdating ? 'Saving...' : 'Save'}
-                        </button>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="btn-inline-blue text-sm whitespace-nowrap"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </td>
-                  ) : (
-                    <td className="px-6 py-4 inline-flex">
-                      <div className="flex items-center justify-end gap-4">
-                        <button
-                          onClick={() => handleEdit(item.uuid, item.name)}
-                          className="btn-inline-blue"
-                          disabled={deletingId !== null}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => setConfirmDialog({ isOpen: true, item })}
-                          className="ml-2 btn-inline-red"
-                          disabled={deletingId !== null}
-                        >
-                          {deletingId === item.uuid ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-              {items.length >= 15 && hasNextPage && (
-                <tr>
-                  <td colSpan={2} ref={observerTarget} className="h-4 p-0" />
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table<IBaseEvent>
+          columns={columns}
+          data={items}
+          isLoading={isLoading}
+          emptyMessage={`No ${title.toLowerCase()} found. Create your first ${lowerLabel} above.`}
+          loadingMessage="Loading..."
+          scrollable
+          maxHeight="420px"
+        />
+
+        {hasNextPage && <div ref={observerTarget} className="h-4" />}
+
         {isFetchingNextPage && (
           <div className="text-center py-4 text-gray-500">Loading more...</div>
         )}
@@ -301,7 +283,7 @@ export default function EventSettingList({
                 />
               )}
 
-              <div className="overflow-hidden">{renderItemsList()}</div>
+              <div>{renderItemsList()}</div>
             </div>
           </div>
         </div>

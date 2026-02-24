@@ -271,13 +271,19 @@ export function useDeleteEventFormat() {
   });
 }
 
-// Event Hooks
 export function useEvents(filters?: EventFilters & { enabled?: boolean }) {
   const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
     queryKey: EVENT_KEYS.list(queryFilters),
     queryFn: () => eventService.getEvents(queryFilters),
     enabled,
+    retry: (failureCount, error: unknown) => {
+      // Don't retry on 403 (permission denied) or 401 (unauthorized)
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 403 || status === 401) return false;
+      return failureCount < 1;
+    },
+    retryDelay: 0,
   });
 }
 

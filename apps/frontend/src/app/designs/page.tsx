@@ -8,7 +8,7 @@ import { Design } from '@/types';
 import { useDesignList } from '@/hooks/useDesigns';
 import { Pagination } from '@/components/ui/pagination';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
-import { ConfirmationDialog } from '@/components';
+import { ConfirmationDialog, ModulePermissionError } from '@/components';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const SEARCH_DEBOUNCE_MS = 1000;
@@ -35,7 +35,7 @@ export default function DesignsPage() {
 
   const apiType = filter === 'All' ? undefined : (filter.toLowerCase() as 'certificate' | 'badge');
 
-  const { designs, meta, loading, error, deleteDesign } = useDesignList({
+  const { designs, meta, loading, deleteDesign, error } = useDesignList({
     page,
     limit: DESIGN_CARD_ITEM_LIMIT,
     search: searchFromUrl,
@@ -107,8 +107,9 @@ export default function DesignsPage() {
   };
 
   if (loading) return <div className="p-4">Loading designs…</div>;
-  if (error) return <div className="p-4 text-red-600">{error}</div>;
-
+  if (error?.includes('403')) {
+    return <ModulePermissionError />;
+  }
   return (
     <div>
       {/* Header */}

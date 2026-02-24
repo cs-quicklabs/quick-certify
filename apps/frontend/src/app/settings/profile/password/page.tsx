@@ -10,30 +10,32 @@ import { useAuthStore } from '../../../../store/auth.store';
 import { clearTokens } from '@/services';
 import { AuthProvider } from '@/types';
 import { toast } from 'react-toastify';
+import { useMemo } from 'react';
 
 export default function ChangePasswordPage() {
   const router = useRouter();
   const changePassword = useChangePassword();
   const disconnectGoogleAuth = useDisconnectGoogle();
   const user = useAuthStore((state) => state.user);
-  const { setUser } = useAuthStore((state) => state);
+  const setUser = useAuthStore((state) => state.setUser);
 
-  const formConfig: FormConfig<typeof changePasswordSchema> = {
-    title: 'Change Password',
-    subtitle: 'Setup a new password for your account',
-    fields: passwordFormFields,
-    schema: changePasswordSchema,
-    submitLabel: 'Save',
-    resetOnSuccess: true,
-    onSubmit: async (data: ChangePasswordData) => {
-      const response = await changePassword.mutateAsync(data);
-
-      // If sessions were revoked, logout user and redirect to login
-      if (response.sessionsRevoked) {
-        clearTokenAndRedirectToLogin();
-      }
-    },
-  };
+  const formConfig: FormConfig<typeof changePasswordSchema> = useMemo(
+    () => ({
+      title: 'Change Password',
+      subtitle: 'Setup a new password for your account',
+      fields: passwordFormFields,
+      schema: changePasswordSchema,
+      submitLabel: 'Save',
+      resetOnSuccess: true,
+      onSubmit: async (data: ChangePasswordData) => {
+        const response = await changePassword.mutateAsync(data);
+        if (response.sessionsRevoked) {
+          clearTokenAndRedirectToLogin();
+        }
+      },
+    }),
+    [changePassword],
+  );
 
   function clearTokenAndRedirectToLogin() {
     // Clear tokens and user state

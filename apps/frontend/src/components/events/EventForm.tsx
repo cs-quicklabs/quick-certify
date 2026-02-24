@@ -21,10 +21,9 @@ import { SkillSelector } from '@/components/events/SkillSelector';
 import { Eye, Images, Plus, SquarePen, Trash, Loader2 } from 'lucide-react';
 import { useDesignList } from '@/hooks/useDesigns';
 import { Design } from '@/types';
-import Link from 'next/link';
 import { toast } from 'react-toastify';
-import { getApiErrorMessage } from '@/lib/api-error';
 import { Event } from '@/types';
+import { showSuccessToast } from '@/lib/toast';
 
 // Maximum number of items to fetch for dropdown lists
 const DROPDOWN_PAGE_SIZE = 100;
@@ -60,8 +59,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const isEditMode = mode === 'edit';
 
   // Loading states
-  const [isUpdating, setIsUpdating] = useState(false);
   const [isFormReady, setIsFormReady] = useState(!isEditMode);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Step 0 data storage (core data for stepper validation)
   const [step0CoreData, setStep0CoreData] = useState<Step0Data>({ name: '' });
@@ -70,7 +69,13 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const [step0FormData, setStep0FormData] = useState<Step0FormData>({ name: '' });
 
   // Step 1 data storage
-  const [step1Data, setStep1Data] = useState<Step1FormData>({});
+  const [step1Data, setStep1Data] = useState<Step1FormData>({
+    description: '',
+    learningLink: '',
+    levelId: '',
+    formatId: '',
+    typeId: '',
+  });
 
   // Skills state - stores selected skill UUIDs
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
@@ -299,8 +304,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
       // Validate that design is selected (required)
       if (!step0FormData.designUuid) {
-        toast.error('Please select a design');
-        return;
+        throw new Error('Please select a design'); // ← tells ConfigForm it failed
       }
 
       // In both create and edit mode, just navigate to Step 1
@@ -315,52 +319,41 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
    */
   const handleStep1Submit = useCallback(
     async (formData: Step1FormData) => {
-      setIsUpdating(true);
+      // Store form data for persistence
+      setStep1Data(formData);
 
-      try {
-        // Store form data for persistence
-        setStep1Data(formData);
+      if (isEditMode && eventUuid) {
+        // Edit mode: update existing event (supports null to clear optional fields)
+        await updateEvent.mutateAsync({
+          name: step0CoreData.name,
+          designId: step0FormData.designUuid || null,
+          eventTypeId: formData.typeId || null,
+          eventLevelId: formData.levelId || null,
+          eventFormatId: formData.formatId || null,
+          description: formData.description || null,
+          learningLink: formData.learningLink || null,
+          skillIds: selectedSkillIds,
+        });
 
-        if (isEditMode && eventUuid) {
-          // Edit mode: update existing event (supports null to clear optional fields)
-          await updateEvent.mutateAsync({
-            name: step0CoreData.name,
-            designId: step0FormData.designUuid || null,
-            eventTypeId: formData.typeId || null,
-            eventLevelId: formData.levelId || null,
-            eventFormatId: formData.formatId || null,
-            description: formData.description || null,
-            learningLink: formData.learningLink || null,
-            skillIds: selectedSkillIds,
-          });
-          toast.success('Event updated successfully!');
-        } else {
-          // Create mode: create event with all data from both steps
-          await createEvent.mutateAsync({
-            name: step0CoreData.name,
-            designId: step0FormData.designUuid || '',
-            eventTypeId: formData.typeId || '',
-            eventLevelId: formData.levelId || '',
-            eventFormatId: formData.formatId || '',
-            description: formData.description || undefined,
-            learningLink: formData.learningLink || undefined,
-            skillIds: selectedSkillIds,
-          });
-          toast.success('Event created successfully!');
-        }
-
-        // Mark Step 1 as completed
-        markStepCompleted(1);
-        router.push('/events');
-      } catch (error) {
-        const message = getApiErrorMessage(
-          error,
-          isEditMode ? 'Failed to update event' : 'Failed to create event',
-        );
-        toast.error(message);
-      } finally {
-        setIsUpdating(false);
+        showSuccessToast('Event updated successfully');
+      } else {
+        // Create mode: create event with all data from both steps
+        await createEvent.mutateAsync({
+          name: step0CoreData.name,
+          designId: step0FormData.designUuid || '',
+          eventTypeId: formData.typeId || '',
+          eventLevelId: formData.levelId || '',
+          eventFormatId: formData.formatId || '',
+          description: formData.description || undefined,
+          learningLink: formData.learningLink || undefined,
+          skillIds: selectedSkillIds,
+        });
+        showSuccessToast('Event created successfully');
       }
+
+      // Mark Step 1 as completed
+      markStepCompleted(1);
+      router.push('/events');
     },
     [
       eventUuid,
@@ -474,7 +467,12 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       },
     ] as FormFieldConfig[],
     schema: step1Schema,
-    submitLabel: isUpdating ? 'Saving...' : isEditMode ? 'Update Event' : 'Save Event',
+    submitLabel:
+      createEvent.isPending || updateEvent.isPending
+        ? 'Saving...'
+        : isEditMode
+          ? 'Update Event'
+          : 'Save Event',
     onSubmit: handleStep1Submit,
     onCancel: () => router.push('/events'),
     // Show checkmark when step is complete
@@ -511,11 +509,15 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           {currentStep === 0 && (
             <div className="max-w-xl pb-12 px-4 lg:col-span-6">
               <ConfigForm
-                key={eventUuid ?? 'create'}
                 config={{ ...step0Config, showSubmit: false }}
                 initialValues={step0FormData}
                 formRef={step0FormRef}
                 isLoading={false}
+                onChange={(values) => {
+                  const name = (values.name as string) || '';
+                  setStep0CoreData((prev) => (prev.name === name ? prev : { ...prev, name }));
+                  setStep0FormData((prev) => (prev.name === name ? prev : { ...prev, name }));
+                }}
               />
 
               {/* Design Selection */}
@@ -544,13 +546,14 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                         </span>
                       </div>
                       <div className="w-full mt-auto flex justify-between">
-                        <Link
-                          href={`/designs/preview/${step0FormData.designUuid}`}
+                        <button
+                          type="button"
+                          onClick={() => setIsPreviewOpen(true)}
                           className="flex items-center text-blue-600 hover:text-blue-800"
                         >
                           <Eye size={16} strokeWidth={1} />
                           <span className="text-xs font-medium ml-1">Preview</span>
-                        </Link>
+                        </button>
                         <div className="flex items-center gap-2">
                           <SquarePen
                             size={16}
@@ -612,7 +615,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                 key={eventUuid ?? 'create'}
                 config={step1Config}
                 initialValues={step1Data}
-                isLoading={isUpdating || isLoadingDropdowns}
+                isLoading={createEvent.isPending || updateEvent.isPending || isLoadingDropdowns}
               >
                 <SkillSelector
                   skills={skills}
@@ -632,6 +635,35 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
             onClose={() => setIsDesignModalOpen(false)}
             onSelect={handleDesignSelect}
           />
+
+          {/* Design Preview Modal */}
+          {isPreviewOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+              onClick={() => setIsPreviewOpen(false)}
+            >
+              <div
+                className="relative bg-white rounded-lg shadow-xl p-6 max-w-3xl w-full mx-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center"
+                >
+                  ✕
+                </button>
+                <h3 className="text-lg font-semibold mb-4">{step0FormData.designTitle}</h3>
+                <div className="flex items-center justify-center bg-gray-50 rounded-lg p-6 min-h-64">
+                  <img
+                    src={step0FormData.design}
+                    alt={step0FormData.designTitle}
+                    className="max-h-[60vh] object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>

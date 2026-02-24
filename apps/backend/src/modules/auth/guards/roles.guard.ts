@@ -39,7 +39,7 @@ export class RolesGuard implements CanActivate {
     const hasRole = requiredRoles.includes(user.role);
 
     if (!hasRole) {
-      throw new ForbiddenException(`Access denied. Required roles: ${requiredRoles.join(', ')}`);
+      throw new ForbiddenException(`Access denied.`);
     }
 
     return true;

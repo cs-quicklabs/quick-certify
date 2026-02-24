@@ -30,7 +30,7 @@ import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
 @ApiBearerAuth()
 @Controller({ path: 'credentials', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class CredentialController {
   constructor(private readonly credentialService: CredentialService) {}
 

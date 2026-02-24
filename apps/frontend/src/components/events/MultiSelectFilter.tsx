@@ -113,7 +113,7 @@ export function MultiSelectFilter({
             {hasActive && (
               <button
                 onClick={onClear}
-                className="text-xs text-blue-600 hover:text-blue-900 flex items-center gap-1 cursor-pointer"
+                className="text-xs text-blue-600  hover:text-blue-900 flex items-center gap-1 cursor-pointer"
               >
                 <X size={12} />
                 Clear

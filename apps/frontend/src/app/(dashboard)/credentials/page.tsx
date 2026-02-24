@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCredentials } from '@/hooks/useCredentials';
 import { useEvents } from '@/hooks/useEvents';
-import { Pagination } from '@/components/ui/pagination';
+import { Pagination, ModulePermissionError } from '@/components';
 import { ROUTES, createRoute } from '@/config/routes';
 import { CredentialStatus } from '@/types/credential.types';
 
@@ -56,7 +56,11 @@ export default function CredentialsPage() {
   const filterRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { data: credentialsData, isLoading } = useCredentials({
+  const {
+    data: credentialsData,
+    isLoading,
+    error,
+  } = useCredentials({
     page: currentPage,
     limit: ITEMS_PER_PAGE,
     search: currentSearch || undefined,
@@ -129,6 +133,9 @@ export default function CredentialsPage() {
     });
   };
 
+  if (error?.message.includes('403')) {
+    return <ModulePermissionError />;
+  }
   return (
     <div className="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -142,7 +149,7 @@ export default function CredentialsPage() {
             </p>
           </div>
           <button
-            onClick={() => router.push(`${ROUTES.CREDENTIALS}/issue`)}
+            onClick={() => router.push(`${ROUTES.CREDENTIALS_ISSUE}`)}
             className="btn-primary"
           >
             Issue Credential
