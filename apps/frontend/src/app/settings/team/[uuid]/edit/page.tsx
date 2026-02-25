@@ -56,7 +56,7 @@ export default function EditTeamMemberPage() {
             options: filteredRoles.map((role) => ({
               label:
                 role.role === 'admin' ? 'Admin' : role.role === 'manager' ? 'Manager' : 'Designer',
-              value: role.id, // Keep as string for form compatibility
+              value: String(role.id), // Keep as string for form compatibility
             })),
           };
         }
@@ -113,7 +113,7 @@ export default function EditTeamMemberPage() {
         first_name: member.first_name || '',
         last_name: member.last_name || '',
         email: member.email || '',
-        roleId: member.role_id || '',
+        roleId: member.role_id ? String(member.role_id) : '',
         status: (() => {
           if (member.status === 'active') return 'active';
           if (member.status === 'invited') return 'invited';

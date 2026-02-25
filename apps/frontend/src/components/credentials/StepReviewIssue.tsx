@@ -101,18 +101,28 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
   }, [setFormData]);
 
   const buildPayload = useCallback(
-    () => ({
+    (status: CredentialStatus) => ({
       eventId: formData.eventId,
-      recipients: formData.recipients.map((r) => ({ name: r.name, email: r.email })),
+      recipients: formData.recipients.map((r) => ({
+        name: r.name,
+        email: r.email,
+      })),
       issuedDate: formData.issuedDate,
       expirationDate: formData.noExpiration ? undefined : formData.expirationDate || undefined,
+      status,
     }),
     [formData],
   );
 
+  const handleSaveDraft = useCallback(async () => {
+    await batchCreate.mutateAsync(buildPayload(CredentialStatus.DRAFT));
+    showSuccessToast('Credentials saved as draft.');
+    router.push(ROUTES.CREDENTIALS);
+  }, [batchCreate, buildPayload, router]);
+
   const handleIssueCredentials = useCallback(async () => {
-    await batchCreate.mutateAsync(buildPayload());
-    showSuccessToast('Credentials are being issued. You can track progress in the list.');
+    await batchCreate.mutateAsync(buildPayload(CredentialStatus.ISSUED));
+    showSuccessToast('Credentials are being issued.');
     router.push(ROUTES.CREDENTIALS);
   }, [batchCreate, buildPayload, router]);
 
@@ -204,14 +214,29 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
         <Button variant="outline" onClick={onCancel} fullWidth className="sm:w-auto">
           Cancel
         </Button>
+
         <Button variant="outline" onClick={onBack} fullWidth className="sm:w-auto">
           Back
         </Button>
+
+        <Button
+          variant="outline"
+          onClick={handleSaveDraft}
+          isLoading={batchCreate.isPending}
+          disabled={batchCreate.isPending}
+          leftIcon={<Save className="h-4 w-4" />}
+          fullWidth
+          className="sm:w-auto"
+        >
+          Save as Draft
+        </Button>
+
         <Button
           variant="primary"
           onClick={handleIssueCredentials}
           isLoading={batchCreate.isPending}
           disabled={batchCreate.isPending}
+          leftIcon={<Send className="h-4 w-4" />}
           fullWidth
           className="sm:w-auto"
         >
@@ -254,43 +279,44 @@ function DetailView({ credential }: DetailMode) {
 
   // Auto-generate preview for failed credentials that have no certificate_url
   const previewRequestedFor = useRef<string | null>(null);
+  const eventId = credential.event?.uuid;
+  const recipientName = credential.recipient?.name;
+  const recipientEmail = credential.recipient?.email;
+  const issuedDate = credential.issued_date?.split('T')[0];
+  const expirationDate = credential.expiration_date?.split('T')[0];
+  const certificateUrl = credential.certificate_url;
+  const credentialId = credential.uuid;
+
   useEffect(() => {
-    if (
-      !isFailed ||
-      credential.certificate_url ||
-      !credential.event?.uuid ||
-      !credential.recipient?.name
-    ) {
-      return;
-    }
+    if (!eventId || !recipientName || !recipientEmail || certificateUrl) return;
 
-    if (previewRequestedFor.current === credential.uuid) {
-      return;
-    }
+    if (previewRequestedFor.current === credentialId) return;
 
-    previewRequestedFor.current = credential.uuid;
+    previewRequestedFor.current = credentialId;
 
-    let cancelled = false;
     previewMutation
       .mutateAsync({
-        eventId: credential.event.uuid,
-        recipientName: credential.recipient.name,
-        recipientEmail: credential.recipient.email,
-        issuedDate: credential.issued_date?.split('T')[0],
-        expirationDate: credential.expiration_date?.split('T')[0],
+        eventId,
+        recipientName,
+        recipientEmail,
+        issuedDate,
+        expirationDate,
       })
       .then((result) => {
-        if (!cancelled) setFailedPreviewUrl(result.previewUrl);
+        setFailedPreviewUrl(result.previewUrl);
       })
       .catch(() => {
-        if (!cancelled) previewRequestedFor.current = null;
+        previewRequestedFor.current = null; // allow retry only if failed
       });
-
-    return () => {
-      cancelled = true;
-      previewRequestedFor.current = null;
-    };
-  }, [isFailed, credential, previewMutation]);
+  }, [
+    eventId,
+    recipientName,
+    recipientEmail,
+    issuedDate,
+    expirationDate,
+    certificateUrl,
+    credentialId,
+  ]);
 
   const handleCancelEdit = useCallback(() => {
     setEditName(credential.recipient?.name ?? '');
@@ -725,6 +751,7 @@ function CredentialLayout({
                       value={expirationDate}
                       onChange={(e) => onExpirationDateChange(e.target.value)}
                       disabled={noExpiration}
+                      min={issuedDate || new Date().toISOString().split('T')[0]}
                       className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
                     />
                     <label className="flex items-center gap-2 cursor-pointer select-none">

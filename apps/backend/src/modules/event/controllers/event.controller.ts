@@ -13,16 +13,17 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { EventService } from '../services/event.service';
 import { CreateEventDto, UpdateEventDto, EventFilterDto } from '../dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
 
 @ApiTags('Events')
 @ApiBearerAuth()
 @Controller({ path: 'events', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.DESIGNER, Role.MANAGER)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
@@ -96,5 +97,44 @@ export class EventController {
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     await this.eventService.deleteByUuid(uuid, user.organizationUuid);
     return new SuccessResponse('Event deleted successfully', { deleted: true });
+  }
+
+  /**
+   *
+   * @param slug (organization slug)
+   * @param filters
+   * @returns
+   */
+  @Public()
+  @Get('public/org/:slug')
+  @ApiOperation({ summary: 'Get all events for current organization' })
+  @ApiResponse({ status: 200, description: 'Events list' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'typeIds', required: false, description: 'Comma-separated event type UUIDs' })
+  @ApiQuery({ name: 'levelIds', required: false, description: 'Comma-separated event level UUIDs' })
+  @ApiQuery({
+    name: 'formatIds',
+    required: false,
+    description: 'Comma-separated event format UUIDs',
+  })
+  async findAllByOrg(@Param('slug', SlugOnlyPipe) slug: string, @Query() filters: EventFilterDto) {
+    const result = await this.eventService.findAll(slug, filters);
+    return new SuccessResponse('Events retrieved successfully', result);
+  }
+
+  /**
+   * Fetch one Event wrt Org slug and uuid
+   */
+  @Public()
+  @Get('public/org/:slug/event/:uuid')
+  @ApiOperation({ summary: 'Get event for current organization' })
+  @ApiResponse({ status: 200, description: 'Events list' })
+  async findOneByOrg(@Param('slug', SlugOnlyPipe) slug: string, @Param('uuid') uuid: string) {
+    const result = await this.eventService.findByUuid(uuid, slug);
+    return new SuccessResponse('Events retrieved successfully', result);
   }
 }

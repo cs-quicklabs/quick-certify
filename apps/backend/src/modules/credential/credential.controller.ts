@@ -23,12 +23,13 @@ import { CurrentUser, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
 @Controller({ path: 'credentials', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.DESIGNER, Role.MANAGER)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class CredentialController {
   constructor(private readonly credentialService: CredentialService) {}
 
@@ -126,5 +127,30 @@ export class CredentialController {
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     await this.credentialService.deleteByUuid(uuid, user.organizationUuid);
     return new SuccessResponse('Credential deleted successfully', { deleted: true });
+  }
+
+  /**
+   *  Fetches all credentials issued by an issuer based on its slug.
+   * @param slug - organization slug
+   * @param filters
+   * @returns
+   */
+  @Public()
+  @Get('public/org/:slug')
+  @ApiOperation({ summary: 'Get all credentials for current organization' })
+  @ApiResponse({ status: 200, description: 'Credentials list' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'eventId', required: false })
+  @ApiQuery({ name: 'recipientId', required: false })
+  async findAllPublic(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Query() filters: CredentialFilterDto,
+  ) {
+    const result = await this.credentialService.findAll(slug, filters);
+    return new SuccessResponse('Credentials retrieved successfully', result);
   }
 }

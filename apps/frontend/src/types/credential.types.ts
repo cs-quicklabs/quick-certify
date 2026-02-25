@@ -70,6 +70,7 @@ export interface PublicCredential {
     logoUrl: string | null;
     website: string;
     slogan: string | null;
+    supportEmail: string;
   };
 }
 

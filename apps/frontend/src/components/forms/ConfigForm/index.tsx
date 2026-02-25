@@ -16,119 +16,79 @@ interface ConfigFormProps<T extends z.ZodType> {
   config: FormConfig<T>;
   initialValues?: Partial<z.infer<T>>;
   isLoading?: boolean;
-  /** Optional ref to access the form element (for requestSubmit) */
   formRef?: React.RefObject<HTMLFormElement | null>;
-  /** Optional children to render inside the form (for custom UI like tags/skills) */
   children?: React.ReactNode;
+  onChange?: (values: Record<string, unknown>) => void;
 }
-
+const emptyObject = {};
 export function ConfigForm<T extends z.ZodType>({
   config,
-  initialValues = {},
+  initialValues = emptyObject,
   isLoading = false,
   formRef,
   children,
+  onChange,
 }: ConfigFormProps<T>) {
-  // Helper to normalize select field values to strings
-  const normalizeSelectValues = useCallback(
-    (values: Record<string, unknown>): Record<string, unknown> => {
-      const selectFieldNames = new Set(
-        config.fields.filter((field) => field.type === 'select').map((field) => field.name),
-      );
-
-      return Object.entries(values).reduce(
-        (acc, [key, value]) => {
-          // Convert null to undefined for schema compatibility
-          if (value === null) {
-            acc[key] = undefined;
-          } else if (selectFieldNames.has(key) && typeof value === 'number') {
-            // Convert number to string for select fields
-            acc[key] = String(value);
-          } else {
-            acc[key] = value;
-          }
-          return acc;
-        },
-        {} as Record<string, unknown>,
-      );
-    },
-    [config.fields],
-  );
-
-  // Sanitize initial values: convert null to undefined and normalize select values
-  const sanitizedInitialValues = normalizeSelectValues(initialValues);
-
-  const initialFormDataRef = useRef<Record<string, unknown>>(sanitizedInitialValues);
-  const [formData, setFormData] = useState<Record<string, unknown>>(sanitizedInitialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const didMountRef = useRef(false);
 
-  // Update form data when initialValues changes - only on initial mount, not subsequent changes
-  useEffect(() => {
-    if (!didMountRef.current) {
-      // Initial mount - set form data from initialValues
-      if (initialValues && Object.keys(initialValues).length > 0) {
-        const sanitizedValues = normalizeSelectValues(initialValues);
-        setFormData(sanitizedValues);
-        initialFormDataRef.current = sanitizedValues;
-      }
-      didMountRef.current = true;
-    }
-  }, []); // Empty deps - only run on mount
+  const [formData, setFormData] = useState<Record<string, unknown>>(
+    initialValues as Record<string, unknown>,
+  );
 
-  // Auto-hide success message
+  // Keep in sync if initialValues loads async (e.g. edit mode)
+  const prevInitialRef = useRef(initialValues);
   useEffect(() => {
-    if (submitSuccess) {
-      const timer = setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 3000);
-      return () => clearTimeout(timer);
+    if (prevInitialRef.current !== initialValues) {
+      prevInitialRef.current = initialValues;
+      setFormData(initialValues as Record<string, unknown>);
     }
-    return undefined;
-  }, [submitSuccess]);
+  }, [initialValues]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target;
       const checked = (e.target as HTMLInputElement).checked;
 
-      setFormData((prev) => ({
-        ...prev,
+      const updated = {
+        ...formData,
         [name]: type === 'checkbox' ? checked : value,
-      }));
+      };
+      setFormData(updated);
+      onChange?.(updated);
 
-      // Clear field error on change
       if (errors[name]) {
         setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[name];
-          return newErrors;
+          const copy = { ...prev };
+          delete copy[name];
+          return copy;
         });
       }
     },
-    [errors],
+    [formData, onChange, errors],
   );
 
-  // Helper for setting field value directly (used by FileField)
   const setFieldValue = useCallback(
     (name: string, value: unknown) => {
-      setFormData((prev) => ({
-        ...prev,
+      const updated = {
+        ...formData,
         [name]: value,
-      }));
+      };
+
+      setFormData(updated);
+      onChange?.(updated);
 
       if (errors[name]) {
         setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[name];
-          return newErrors;
+          const copy = { ...prev };
+          delete copy[name];
+          return copy;
         });
       }
     },
-    [errors],
+    [formData, onChange, errors],
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,7 +96,6 @@ export function ConfigForm<T extends z.ZodType>({
     setSubmitError(null);
     setSubmitSuccess(false);
 
-    // Validate form data
     const result = config.schema.safeParse(formData);
 
     if (!result.success) {
@@ -149,13 +108,6 @@ export function ConfigForm<T extends z.ZodType>({
 
     try {
       await config.onSubmit(result.data as z.infer<T>);
-
-      if (config.resetOnSuccess) {
-        setFormData({});
-        initialFormDataRef.current = {};
-      } else {
-        initialFormDataRef.current = { ...formData };
-      }
       setSubmitSuccess(true);
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
@@ -241,7 +193,6 @@ export function ConfigForm<T extends z.ZodType>({
           />
         );
       default:
-        // Fallback or unhandled types
         return null;
     }
   };
@@ -280,10 +231,8 @@ export function ConfigForm<T extends z.ZodType>({
               : 'space-y-4'
         }`}
       >
-        {/* Render each configured field */}
         {config.fields.map(renderField)}
 
-        {/* Render any children inside the form (e.g., skills tag UI) */}
         {children && (
           <div
             className={config.layout === 'grid' || config.layout === 'grid-3' ? 'col-span-3' : ''}
@@ -292,7 +241,6 @@ export function ConfigForm<T extends z.ZodType>({
           </div>
         )}
 
-        {/* Conditionally render submit area. If config.showSubmit === false, parent controls submit. */}
         {config.showSubmit !== false && (
           <div
             className={

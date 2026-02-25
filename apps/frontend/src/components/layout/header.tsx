@@ -17,9 +17,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/credentials', label: 'Credentials' },
   { href: '/pathways', label: 'Pathways' },
   { href: '/designs', label: 'Designs' },
-  { href: '/emails', label: 'Emails' },
-  { href: '/analytics', label: 'Analytics' },
-  { href: '/integrations', label: 'Integrations' },
+  // { href: '/emails', label: 'Emails' },
+  // { href: '/analytics', label: 'Analytics' },
+  // { href: '/integrations', label: 'Integrations' },
 ];
 
 const SYSTEM_ADMIN_NAV: NavItem[] = [{ href: '/admin/organizations', label: 'Organizations' }];

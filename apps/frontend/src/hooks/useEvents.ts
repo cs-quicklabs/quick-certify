@@ -12,8 +12,8 @@ import {
   useInfiniteQuery,
   UseMutationResult,
 } from '@tanstack/react-query';
+import { eventService, EventServiceError } from '@/services';
 import {
-  eventService,
   CreateEventTypeRequest,
   UpdateEventTypeRequest,
   CreateEventLevelRequest,
@@ -23,9 +23,8 @@ import {
   CreateEventRequest,
   UpdateEventRequest,
   EventFilters,
-  EventServiceError,
   Event,
-} from '@/services';
+} from '@/types';
 
 // Event Type Query Keys
 export const EVENT_TYPE_KEYS = {
@@ -272,13 +271,19 @@ export function useDeleteEventFormat() {
   });
 }
 
-// Event Hooks
 export function useEvents(filters?: EventFilters & { enabled?: boolean }) {
   const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
     queryKey: EVENT_KEYS.list(queryFilters),
     queryFn: () => eventService.getEvents(queryFilters),
     enabled,
+    retry: (failureCount, error: unknown) => {
+      // Don't retry on 403 (permission denied) or 401 (unauthorized)
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 403 || status === 401) return false;
+      return failureCount < 1;
+    },
+    retryDelay: 0,
   });
 }
 
@@ -287,6 +292,15 @@ export function useEvent(id: string, enabled = true) {
     queryKey: EVENT_KEYS.detail(id),
     queryFn: () => eventService.getEvent(id),
     enabled: enabled && !!id,
+  });
+}
+
+export function useEventsPublic(slug: string, filters?: EventFilters & { enabled?: boolean }) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
+  return useQuery({
+    queryKey: EVENT_KEYS.list(queryFilters),
+    queryFn: () => eventService.getEventsPublic(slug, queryFilters),
+    enabled,
   });
 }
 
@@ -305,7 +319,7 @@ export type CreateEventMutationResult = UseMutationResult<
  * Automatically shows toast notification on error via global handler.
  * Component should handle success toast and navigation.
  */
-export function useCreateEvent(): CreateEventMutationResult {
+export function useCreateEvent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateEventRequest) => eventService.createEvent(data),

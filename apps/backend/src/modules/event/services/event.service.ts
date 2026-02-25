@@ -38,10 +38,10 @@ export class EventService {
    * Find all active events for an organization
    */
   async findAll(
-    organizationUuid: string,
+    organizationIdentifier: string,
     filters: EventFilterDto = {},
   ): Promise<PaginatedResult<EventEntity>> {
-    const organization = await this.getOrganization(organizationUuid);
+    const organization = await this.getOrganization(organizationIdentifier);
 
     if (!organization) {
       return this.emptyPaginatedResult(filters.limit || 10);
@@ -239,8 +239,8 @@ export class EventService {
 
   // Private helper methods
 
-  private async getOrganization(uuid: string) {
-    return this.organizationService.findByUuid(uuid);
+  private async getOrganization(identifier: string) {
+    return await this.organizationService.findByUuidOrSlug(identifier);
   }
 
   private async requireOrganization(uuid: string) {

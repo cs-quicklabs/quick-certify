@@ -14,3 +14,7 @@ export type Roles = {
   label: string;
   value: string;
 };
+
+export type IconProps = {
+  className?: string;
+};
