@@ -34,7 +34,7 @@ export function SearchSortBar({
   activeSortOrder,
 }: SearchSortBarProps) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 pr-3">
       {/* Search Input */}
       <div className="relative flex-1">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">

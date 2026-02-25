@@ -92,7 +92,7 @@ export default function EventPage() {
         title="Events"
       />
 
-      <div className="max-w-7xl mx-auto mt-4 p-4 rounded-sm border border-gray-200 bg-white">
+      <div className="max-w-7xl mx-auto mt-4 pt-4 pb-8 px-8 rounded-sm border border-gray-200 bg-white">
         <SearchSortBar
           search={search}
           onSearchChange={handleSearch}
@@ -109,7 +109,7 @@ export default function EventPage() {
         {isLoading ? (
           <EventGridSkeleton />
         ) : error ? (
-          <div className="mt-4 py-16 text-center">
+          <div className="mt-4 py-20 text-center">
             <p className="text-sm text-red-600">Failed to load events. Please try again.</p>
           </div>
         ) : events.length === 0 ? (
@@ -119,7 +119,7 @@ export default function EventPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {events.map((event) => (
               <EventCard
                 key={event.uuid}
@@ -137,7 +137,6 @@ export default function EventPage() {
           </div>
         )}
       </div>
-
       {meta && meta.totalPages > 1 && (
         <div className="max-w-7xl mx-auto mt-4 bg-white border border-gray-200 rounded-sm p-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
