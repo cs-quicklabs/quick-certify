@@ -63,7 +63,16 @@ export function PathwayForm({
   }, []);
 
   const addCredential = (credential: { uuid: string; name: string }) => {
-    setSelectedCredentials((prev) => [...prev, { ...credential, isFinal: false }]);
+    setSelectedCredentials((prev) => {
+      const finalIndex = prev.findIndex((c) => c.isFinal);
+      const newItem = { ...credential, isFinal: false };
+      if (finalIndex !== -1) {
+        const updated = [...prev];
+        updated.splice(finalIndex, 0, newItem);
+        return updated;
+      }
+      return [...prev, newItem];
+    });
     setSearchQuery('');
     setDropdownOpen(false);
   };

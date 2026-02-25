@@ -427,15 +427,19 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         .url('Please enter a valid URL')
         .optional()
         .or(z.literal('')),
-      typeId: z.string().min(1, 'Event type is required'),
-      levelId: z.string().min(1, 'Event level is required'),
-      formatId: z.string().min(1, 'Event format is required'),
+      typeId: z.string({ error: 'Event type is required' }).min(1, 'Event type is required'),
+      levelId: z.string({ error: 'Event level is required' }).min(1, 'Event level is required'),
+      formatId: z.string({ error: 'Event format is required' }).min(1, 'Event format is required'),
       durationType: z.string().optional(),
-      durationValue: z.coerce
-        .number()
-        .int('Must be a whole number')
-        .min(0, 'Must be 0 or greater')
-        .optional(),
+      durationValue: z.preprocess(
+        (val) => (val === '' || val === undefined || val === null ? undefined : val),
+        z.coerce
+          .number()
+          .int('Must be a whole number')
+          .min(1, 'Must be at least 1')
+          .max(999, 'Must not exceed 999')
+          .optional(),
+      ),
     })
     .refine(
       (data) => {
@@ -518,6 +522,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         type: 'number' as FormFieldConfig['type'],
         placeholder: 'e.g. 4',
         required: true,
+        min: 1,
+        max: 999,
         visibleWhen: (formData) => !!formData.durationType,
       },
     ] as FormFieldConfig[],
