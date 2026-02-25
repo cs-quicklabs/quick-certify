@@ -73,7 +73,7 @@ export function usePublicCredentials(
       return response;
     },
     enabled: !!slug && enabled,
-    staleTime: 30_000,
+    staleTime: 0,
     retry: 2,
     refetchOnWindowFocus: false,
     placeholderData: undefined, // doesn't show placeholder data from past queries
@@ -93,7 +93,7 @@ export function usePublicRecipients(
       return await publicService.getRecipientPublic(slug, queryFilters);
     },
     enabled: !!slug && enabled,
-    staleTime: 30_000,
+    staleTime: 0,
     retry: 2,
     refetchOnWindowFocus: false,
   });
@@ -107,7 +107,7 @@ export function usePublicEvent(slug?: string, eventUuid?: string) {
       return publicService.getPublicEvent(slug, eventUuid);
     },
     enabled: !!slug && !!eventUuid,
-    staleTime: 60_000,
+    staleTime: 10_000,
     retry: 2,
     refetchOnWindowFocus: false,
   });

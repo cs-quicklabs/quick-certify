@@ -58,6 +58,13 @@ export default function RecipientCredentialsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Reset when navigating to a different recipient
+  useEffect(() => {
+    setPage(1);
+    setSearch('');
+    setDebouncedSearch('');
+  }, [recipientUuid]);
+
   const { data, isLoading, error } = usePublicCredentials(slug, {
     page,
     limit: PAGE_SIZE,
@@ -130,7 +137,7 @@ export default function RecipientCredentialsPage() {
             {credentials.map((credential) => (
               <Link
                 key={credential.uuid}
-                href={`/public/credential/${credential.uuid}`}
+                href={`/public/company/${slug}/credential/${credential.uuid}`}
                 className="bg-white border border-gray-200 rounded-sm shadow-sm hover:shadow-md transition-shadow"
               >
                 <Image
