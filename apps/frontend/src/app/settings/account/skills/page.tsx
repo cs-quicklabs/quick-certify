@@ -55,7 +55,7 @@ export default function SkillsPage() {
                 setEditSkillName(e.target.value);
                 setError(null);
               }}
-              className="form-input-field font-bold w-full"
+              className="form-input-field w-full"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleEditSave(skill.uuid);
@@ -227,9 +227,9 @@ export default function SkillsPage() {
     (checkIfUserIsAdmin(user) || checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="mb-4">
+      <div>
         <h1 className="form-title">Skills</h1>
         <p className="form-subtitle">
           Skills help categorize participants based on expertise. You can add, edit, or delete
@@ -242,8 +242,11 @@ export default function SkillsPage() {
 
       {/* Add New Skill Form */}
       {isAuthorized && (
-        <form onSubmit={handleAddSkill} className="w-full mb-4">
-          <div className="mb-4 mt-4">
+        <form
+          onSubmit={handleAddSkill}
+          className="w-full mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
+        >
+          <div className="mb-4">
             <label htmlFor="skill" className="form-input-label">
               Add New Skill
             </label>
@@ -281,7 +284,7 @@ export default function SkillsPage() {
       )}
 
       {/* Skills Table */}
-      <div className="relative overflow-x-auto mt-4">
+      <div className="relative overflow-x-auto mt-8">
         {isLoading ? (
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
         ) : queryError && showQueryError ? null : skills.length === 0 ? null : (
