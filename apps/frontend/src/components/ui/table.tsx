@@ -63,7 +63,7 @@ export function Table<T = unknown>({
                 {columns.map((column) => (
                   <TableHeader
                     key={column.key}
-                    className={`px-6 py-4 ${column.headerClassName || ''}`}
+                    className={`px-6 py-3.5 ${column.headerClassName || ''}`}
                   >
                     {column.header}
                   </TableHeader>
@@ -99,7 +99,7 @@ export function Table<T = unknown>({
                     {columns.map((column) => (
                       <td
                         key={column.key}
-                        className={`px-6 py-4 whitespace-nowrap ${column.className || ''}`}
+                        className={`px-6 py-3.5 whitespace-nowrap ${column.className || ''}`}
                       >
                         {column.render
                           ? column.render(item, index)

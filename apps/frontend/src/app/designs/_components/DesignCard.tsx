@@ -27,20 +27,29 @@ export default function DesignCard({ design, onDelete }: { design: Design; onDel
         </div>
       </div>
       {/* Actions */}
-      <div className="flex justify-end gap-1 text-sm font-medium">
-        <Link href={`/designs/preview/${design.uuid}`} className="action-item action-item-blue">
+      <div className="flex justify-end items-center gap-3 text-sm">
+        <Link
+          href={`/designs/preview/${design.uuid}`}
+          className="action-item action-item-blue inline-flex items-center gap-2 px-3 py-1 rounded-md"
+        >
           <Eye className="w-4 h-4 stroke-[1.5]" />
-          <span>Preview</span>
+          <span className="whitespace-nowrap">Preview</span>
         </Link>
 
-        <Link href={`/designs/edit/${design.uuid}`} className="action-item action-item-gray">
+        <Link
+          href={`/designs/edit/${design.uuid}`}
+          className="action-item action-item-gray inline-flex items-center gap-2 px-3 py-1 rounded-md"
+        >
           <Pen className="w-4 h-4 stroke-[1.5]" />
-          <span>Edit</span>
+          <span className="whitespace-nowrap">Edit</span>
         </Link>
 
-        <button onClick={onDelete} className="action-item action-item-red">
+        <button
+          onClick={onDelete}
+          className="action-item action-item-red inline-flex items-center gap-2 px-3 py-1 rounded-md"
+        >
           <Trash2 className="w-4 h-4 stroke-[1.5]" />
-          <span>Delete</span>
+          <span className="whitespace-nowrap">Delete</span>
         </button>
       </div>
     </div>

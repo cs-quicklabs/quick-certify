@@ -44,9 +44,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <Header />
-
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
+      <main className="px-4 mx-auto max-w-screen-2xl lg:px-8 bg-gray-50 py-3 sm:py-5 min-h-screen ">
+        {children}
+      </main>
     </div>
   );
 }

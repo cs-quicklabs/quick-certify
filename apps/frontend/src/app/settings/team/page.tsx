@@ -189,22 +189,22 @@ export default function TeamsPage() {
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-4 py-3">
+              <th scope="col" className="px-4 py-2">
                 User
               </th>
-              <th scope="col" className="px-4 py-3">
+              <th scope="col" className="px-4 py-2">
                 Role
               </th>
-              <th scope="col" className="px-4 py-3">
+              <th scope="col" className="px-4 py-2">
                 Email
               </th>
-              <th scope="col" className="px-4 py-3">
+              <th scope="col" className="px-4 py-2">
                 Status
               </th>
-              <th scope="col" className="px-4 py-3 whitespace-nowrap">
+              <th scope="col" className="px-4 py-2 whitespace-nowrap">
                 Last Login
               </th>
-              <th scope="col" className="px-4 py-3 whitespace-nowrap">
+              <th scope="col" className="px-4 py-2 whitespace-nowrap">
                 Added On
               </th>
             </tr>
@@ -232,7 +232,7 @@ export default function TeamsPage() {
                 >
                   <th scope="row" className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
-                      <span className="ml-2 hover:underline cursor-pointer">
+                      <span className="hover:underline cursor-pointer">
                         {capitalizeFirst(member.first_name)} {capitalizeFirst(member.last_name)}
                       </span>
                     </div>

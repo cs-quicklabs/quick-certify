@@ -26,7 +26,7 @@ import {
   useResendCredential,
 } from '@/hooks/useCredentials';
 import { ROUTES } from '@/config/routes';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { IssueFormData } from '@/app/(dashboard)/credentials/issue/page';
 import { CredentialStatus, type Credential } from '@/types/credential.types';
 
@@ -520,7 +520,20 @@ function DetailView({ credential }: DetailMode) {
           {(isIssued || isFailed) && (
             <Button
               variant="outline"
-              onClick={() => resendCredential.mutate(credential.uuid)}
+              onClick={() => {
+                resendCredential.mutate(credential.uuid, {
+                  onSuccess: () => {
+                    showSuccessToast(
+                      isFailed
+                        ? 'Credential resent successfully.'
+                        : 'Credential resent to recipient.',
+                    );
+                  },
+                  onError: () => {
+                    showErrorToast('Failed to resend credential. Please try again.');
+                  },
+                });
+              }}
               isLoading={resendCredential.isPending}
               disabled={resendCredential.isPending}
               leftIcon={<Send className="h-4 w-4" />}

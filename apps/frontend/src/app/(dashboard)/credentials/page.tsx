@@ -7,6 +7,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { Pagination, ModulePermissionError } from '@/components';
 import { ROUTES, createRoute } from '@/config/routes';
 import { CredentialStatus } from '@/types/credential.types';
+import { ListFilter } from 'lucide-react';
 
 const STATUS_CONFIG: Record<
   CredentialStatus,
@@ -137,15 +138,14 @@ export default function CredentialsPage() {
     return <ModulePermissionError />;
   }
   return (
-    <div className="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div>
+      <div className="bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center justify-between min-w-34 px-4 py-2 border-b border-gray-200">
           <div>
-            <h1 className="form-title">Credential</h1>
-            <p className="form-subtitle">
-              Manage all your {meta?.total ?? 0} credential{(meta?.total ?? 0) > 1 ? 's' : ''} or
-              add a new one.
+            <h1 className="text-lg font-semibold text-gray-900">Credential</h1>
+            <p className="text-sm text-gray-500">
+              {meta?.total ?? 0} credential{(meta?.total ?? 0) !== 1 ? 's' : ''}
             </p>
           </div>
           <button
@@ -157,31 +157,30 @@ export default function CredentialsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 px-4 py-2">
+        <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
           {/* Event Filter Dropdown */}
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="cursor-pointer flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 capitalize"
+              className="cursor-pointer flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 capitalize"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 4h18M6 10h12M10 16h4"
-                />
-              </svg>
-              {selectedEvent ? selectedEvent.name : 'Filter by Events'}
+              <ListFilter className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-700 dark:text-gray-300">
+                {selectedEvent ? selectedEvent.name : 'Filter by Events'}
+              </span>
             </button>
 
             {isFilterOpen && (
-              <div className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                <p className="text-xs font-medium text-gray-500 mb-2">Select Events</p>
+              <div className="absolute z-10 mt-1 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg p-3">
+                <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                  Select Events
+                </p>
                 <button
                   onClick={() => handleEventFilter('')}
-                  className={`w-full text-left py-1 text-sm hover:text-blue-600 cursor-pointer ${
-                    !currentEventId ? 'text-blue-600 font-medium' : 'text-gray-700'
+                  className={`w-full text-left py-1.5 px-1 text-sm rounded hover:text-blue-600 cursor-pointer ${
+                    !currentEventId
+                      ? 'text-blue-600 font-medium'
+                      : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   All Events
@@ -190,8 +189,10 @@ export default function CredentialsPage() {
                   <button
                     key={event.uuid}
                     onClick={() => handleEventFilter(event.uuid)}
-                    className={`w-full text-left py-1 text-sm hover:text-blue-600 cursor-pointer capitalize ${
-                      currentEventId === event.uuid ? 'text-blue-600 font-medium' : 'text-gray-700'
+                    className={`w-full text-left py-1.5 px-1 text-sm rounded hover:text-blue-600 cursor-pointer capitalize ${
+                      currentEventId === event.uuid
+                        ? 'text-blue-600 font-medium'
+                        : 'text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     {event.name}
@@ -201,22 +202,22 @@ export default function CredentialsPage() {
             )}
           </div>
 
-          {/* Search */}
+          {/* Search — pushed to the right */}
           <div className="ml-auto">
             <input
               type="text"
-              placeholder="Search by name, email..."
+              placeholder="Search by name..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-3xs px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-gray-300 focus:outline-none"
+              className="w-56 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
             />
           </div>
         </div>
 
         {/* Desktop Table */}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-md text-gray-600 bg-gray-50 border-b border-gray-200">
               <tr>
                 <th scope="col" className="px-6 py-3 font-medium">
                   Name
@@ -257,17 +258,17 @@ export default function CredentialsPage() {
                 credentials.map((item) => (
                   <tr
                     key={item.uuid}
-                    className="border-b border-gray-200 dark:border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <td className="px-6 py-2 form-text-normal font-medium text-gray-900">
+                    <td className="px-6 py-3  text-gray-900 dark:text-white">
                       {item.recipient?.name}
                     </td>
-                    <td className="px-6 py-2 text-gray-500">{item.recipient?.email}</td>
-                    <td className="px-6 py-2">
+                    <td className="px-6 py-3 text-gray-500">{item.recipient?.email}</td>
+                    <td className="px-6 py-3">
                       {item.event ? (
                         <button
                           onClick={() => router.push(createRoute.eventDetail(item.event!.uuid))}
-                          className="text-gray-900 font-medium hover:text-blue-600 hover:underline cursor-pointer"
+                          className="text-gray-900 dark:text-white  hover:text-blue-600 hover:underline cursor-pointer"
                         >
                           {item.event.name}
                         </button>
@@ -275,18 +276,20 @@ export default function CredentialsPage() {
                         <span className="text-gray-400">--</span>
                       )}
                     </td>
-                    <td className="px-6 py-2 text-gray-900">{formatDate(item.issued_date)}</td>
-                    <td className="px-6 py-2">
+                    <td className="px-6 py-3 text-gray-900 dark:text-white">
+                      {formatDate(item.issued_date)}
+                    </td>
+                    <td className="px-6 py-3">
                       <CredentialStatusBadge status={item.status} />
                     </td>
-                    <td className="px-6 py-2">
+                    <td className="px-6 py-3">
                       <a
                         href={createRoute.credentialDetail(item.uuid)}
                         onClick={(e) => {
                           e.preventDefault();
                           router.push(createRoute.credentialDetail(item.uuid));
                         }}
-                        className="text-blue-600 hover:underline"
+                        className="text-blue-600 hover:underline font-medium"
                       >
                         View
                       </a>
@@ -312,7 +315,7 @@ export default function CredentialsPage() {
                 key={item.uuid}
                 className="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1.5">
                   <span className="font-semibold text-sm text-gray-900 dark:text-white">
                     {item.recipient?.name}
                   </span>
@@ -337,7 +340,7 @@ export default function CredentialsPage() {
                     href={createRoute.publicCredential(item.uuid)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-auto text-blue-600 hover:underline"
+                    className="ml-auto text-blue-600 hover:underline font-medium"
                   >
                     View
                   </a>
@@ -347,14 +350,15 @@ export default function CredentialsPage() {
           )}
         </div>
       </div>
-
-      {/* Pagination */}
+      {/* Pagination  */}
       {meta && meta.totalPages > 1 && (
-        <Pagination
-          currentPage={meta.page}
-          totalPages={meta.totalPages}
-          onPageChange={handlePageChange}
-        />
+        <div className="flex justify-end mt-6 px-4">
+          <Pagination
+            currentPage={meta.page}
+            totalPages={meta.totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
       )}
     </div>
   );
