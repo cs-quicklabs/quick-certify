@@ -1,4 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 export class AccountBrandingPage {
   readonly page: Page;
@@ -77,7 +79,7 @@ export class AccountBrandingPage {
   /**
    * Navigate to Account Settings - Branding page
    */
-  async openUrl() {
+  async gotoAccountBrandingPage() {
     await this.page.goto('/settings/account/branding');
     await this.page.waitForLoadState('networkidle');
   }
@@ -96,38 +98,42 @@ export class AccountBrandingPage {
     await expect(this.locator_pageSubtitle).toBeVisible();
   }
 
-  /**
-   * Upload logo image
-   */
   async uploadLogo(filePath: string) {
+    // Resolve relative paths to absolute paths
+    // __dirname in compiled JS points to Playwright/pageobjects/, so '..' goes to Playwright/
+    let absolutePath: string;
+    if (path.isAbsolute(filePath)) {
+      absolutePath = filePath;
+    } else {
+      // Resolve relative to Playwright directory
+      absolutePath = path.resolve(__dirname, '..', filePath);
+    }
+
+    // Verify file exists
+    if (!fs.existsSync(absolutePath)) {
+      throw new Error(`File not found: ${absolutePath} (resolved from: ${filePath})`);
+    }
+
     // Wait for file input to be available
     await this.locator_logoFileInput.waitFor({ state: 'attached', timeout: 5000 });
-    await this.locator_logoFileInput.setInputFiles(filePath);
+    await this.locator_logoFileInput.setInputFiles(absolutePath);
     // Wait for upload to start
     await this.page.waitForTimeout(500);
   }
 
-  /**
-   * Upload favicon image
-   */
   async uploadFavicon(filePath: string) {
-    // Wait for file input to be available
+    const absolutePath = path.isAbsolute(filePath)
+      ? filePath
+      : path.resolve(__dirname, '..', filePath);
     await this.locator_faviconFileInput.waitFor({ state: 'attached', timeout: 5000 });
-    await this.locator_faviconFileInput.setInputFiles(filePath);
-    // Wait for upload to start
+    await this.locator_faviconFileInput.setInputFiles(absolutePath);
     await this.page.waitForTimeout(500);
   }
 
-  /**
-   * Click logo dropzone to trigger file picker
-   */
   async clickLogoDropzone() {
     await this.locator_logoDropzone.click();
   }
 
-  /**
-   * Click favicon dropzone to trigger file picker
-   */
   async clickFaviconDropzone() {
     await this.locator_faviconDropzone.click();
   }
@@ -193,9 +199,26 @@ export class AccountBrandingPage {
   }
 
   /**
+   * Validate file size error for logo
+   * @param expectedMessage - Expected error message (partial match)
+   */
+  async validateLogoFileSizeError(expectedMessage: string) {
+    const errorVisible = await this.locator_logoError
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+
+    if (errorVisible) {
+      const errorText = await this.locator_logoError.textContent();
+      expect(errorText).toContain(expectedMessage);
+    } else {
+      throw new Error('Logo file size error was not visible');
+    }
+  }
+
+  /**
    * Wait for upload to complete (check for success message or image display)
    */
-  async waitForUploadComplete(timeout: number = 15000) {
+  async waitForUploadComplete(timeout = 15000) {
     // Wait for either success message or image to appear
     await Promise.race([
       this.locator_alertToast.first().waitFor({ state: 'visible', timeout }),
@@ -204,5 +227,59 @@ export class AccountBrandingPage {
       // Ignore timeout, continue
     });
     await this.page.waitForTimeout(1000);
+  }
+
+  /**
+   * Upload file by file type (logo or favicon)
+   * @param fileType - 'logo' | 'favicon'
+   * @param filePath - Absolute path or relative path (relative to Playwright directory)
+   * @param waitForApiResponse - Optional: wait for API response (default: false)
+   */
+  async uploadFile(fileType: string, filePath: string, waitForApiResponse = false) {
+    const fileTypeMap: Record<string, Locator> = {
+      logo: this.locator_logoFileInput,
+      favicon: this.locator_faviconFileInput,
+    };
+
+    const normalizedFileType = fileType.toLowerCase();
+    const selectedFileInput = fileTypeMap[normalizedFileType];
+
+    if (!selectedFileInput) {
+      throw new Error(`Invalid file type: ${fileType}. Valid types are: logo, favicon`);
+    }
+
+    // Resolve relative paths to absolute paths
+    const absolutePath = path.isAbsolute(filePath)
+      ? filePath
+      : path.resolve(__dirname, '..', filePath);
+
+    // Verify file exists
+    if (!fs.existsSync(absolutePath)) {
+      throw new Error(`File not found: ${absolutePath} (resolved from: ${filePath})`);
+    }
+
+    // Wait for file input to be available
+    await selectedFileInput.waitFor({ state: 'attached', timeout: 5000 });
+
+    // Upload file and optionally wait for API response
+    if (waitForApiResponse) {
+      await Promise.all([
+        selectedFileInput.setInputFiles(absolutePath),
+        this.page
+          .waitForResponse(
+            (resp) =>
+              (resp.url().includes('/organizations/settings/branding') ||
+                resp.url().includes('/api/v1/files/upload')) &&
+              resp.status() === 200,
+            { timeout: 15000 },
+          )
+          .catch(() => {}),
+      ]);
+    } else {
+      await selectedFileInput.setInputFiles(absolutePath);
+    }
+
+    // Wait for upload to start
+    await this.page.waitForTimeout(500);
   }
 }

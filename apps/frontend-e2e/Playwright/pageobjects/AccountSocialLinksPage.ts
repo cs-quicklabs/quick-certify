@@ -33,9 +33,8 @@ export class AccountSocialLinksPage {
   /**
    * Navigate to Account Settings - Social Links page
    */
-  async openUrl() {
+  async gotoAccountSocialLinkPage() {
     await this.page.goto('/settings/account/social-links');
-    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -166,6 +165,14 @@ export class AccountSocialLinksPage {
     if (data.facebook_url !== undefined) await this.enterFacebookUrl(data.facebook_url);
     if (data.twitter_url !== undefined) await this.enterTwitterUrl(data.twitter_url);
     if (data.website !== undefined) await this.enterWebsite(data.website);
-    await this.clickSaveButton();
+    await Promise.all([
+      await this.clickSaveButton(),
+      this.page
+        .waitForResponse(
+          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
+          { timeout: 2000 },
+        )
+        .catch(() => {}),
+    ]);
   }
 }

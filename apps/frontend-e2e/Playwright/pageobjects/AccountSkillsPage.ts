@@ -55,9 +55,8 @@ export class AccountSkillsPage {
   /**
    * Navigate to Account Settings - Skills page
    */
-  async openUrl() {
+  async gotoAccountSkillPage() {
     await this.page.goto('/settings/account/skills');
-    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -92,7 +91,17 @@ export class AccountSkillsPage {
    * Click Add/Save button to add new skill
    */
   async clickAddSkillButton() {
-    await this.locator_addSkillButton.click();
+    await Promise.all([
+      this.locator_addSkillButton.click(),
+      this.page
+        .waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            (resp.status() === 400 || resp.status() === 409),
+          { timeout: 10000 },
+        )
+        .catch(() => {}),
+    ]);
   }
 
   /**
@@ -100,7 +109,17 @@ export class AccountSkillsPage {
    */
   async addSkill(skillName: string) {
     await this.enterNewSkillName(skillName);
-    await this.clickAddSkillButton();
+    await Promise.all([
+      this.clickAddSkillButton(),
+      this.page
+        .waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            resp.status() === 201,
+          { timeout: 10000 },
+        )
+        .catch(() => {}),
+    ]);
   }
 
   /**
@@ -173,6 +192,18 @@ export class AccountSkillsPage {
   async clickSaveEditButton() {
     const saveButton = this.page.getByRole('button', { name: /^(Save|Saving\.\.\.)$/ }).last();
     await saveButton.click();
+
+    await Promise.all([
+      saveButton.click(),
+      this.page
+        .waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            resp.status() === 200,
+          { timeout: 10000 },
+        )
+        .catch(() => {}),
+    ]);
   }
 
   async cancelEdit() {
@@ -214,8 +245,17 @@ export class AccountSkillsPage {
     // Wait for delete button to be visible and enabled
     await this.locator_confirmDeleteButton.waitFor({ state: 'visible', timeout: 5000 });
     await this.locator_confirmDeleteButton.waitFor({ state: 'attached', timeout: 2000 });
-    await this.locator_confirmDeleteButton.click();
-    await this.page.waitForTimeout(1000);
+    await Promise.all([
+      this.locator_confirmDeleteButton.click(),
+      this.page
+        .waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            resp.status() === 200,
+          { timeout: 10000 },
+        )
+        .catch(() => {}),
+    ]);
   }
 
   /**

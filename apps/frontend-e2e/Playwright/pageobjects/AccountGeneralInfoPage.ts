@@ -36,9 +36,8 @@ export class AccountGeneralInfoPage {
   /**
    * Navigate to Account General Information page
    */
-  async openUrl() {
+  async gotoAccountGeneralInfoPage() {
     await this.page.goto('/settings/account/general-information');
-    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -57,6 +56,18 @@ export class AccountGeneralInfoPage {
     await expect(this.locator_pageTitle).toBeVisible();
     await expect(this.locator_pageSubtitle).toBeVisible();
     await expect(this.locator_nameField).toBeVisible();
+  }
+
+  /**
+   * Validate all form fields are visible
+   */
+  async validateFormFieldsVisible() {
+    await expect(this.locator_nameField).toBeVisible();
+    await expect(this.locator_descriptionField).toBeVisible();
+    await expect(this.locator_supportEmailField).toBeVisible();
+    await expect(this.locator_sloganField).toBeVisible();
+    await expect(this.locator_linkedinCompanyIdField).toBeVisible();
+    await expect(this.locator_saveButton).toBeVisible();
   }
 
   async enterName(name: string) {
@@ -181,5 +192,31 @@ export class AccountGeneralInfoPage {
     if (data.linkedin_company_id !== undefined)
       await this.enterLinkedInCompanyId(data.linkedin_company_id);
     await this.clickSaveButton();
+  }
+
+  /**
+   * Save general info and wait for API response
+   * @param data - Form data to save
+   * @param timeout - Timeout for waiting for response (default: 10000ms)
+   */
+  async saveGeneralInfoAndWaitForResponse(
+    data: {
+      name: string;
+      description?: string;
+      support_email?: string;
+      slogan?: string;
+      linkedin_company_id?: string;
+    },
+    timeout: number = 10000,
+  ) {
+    await Promise.all([
+      this.saveGeneralInfo(data),
+      this.page
+        .waitForResponse(
+          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
+          { timeout },
+        )
+        .catch(() => {}),
+    ]);
   }
 }
