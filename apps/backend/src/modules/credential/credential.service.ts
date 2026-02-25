@@ -554,7 +554,15 @@ export class CredentialService {
         {
           model: OrganizationEntity,
           as: 'organization',
-          attributes: ['uuid', 'name', 'description', 'logo_url', 'website', 'slogan'],
+          attributes: [
+            'uuid',
+            'name',
+            'description',
+            'logo_url',
+            'website',
+            'slogan',
+            'support_email',
+          ],
         },
       ],
     });
@@ -577,6 +585,7 @@ export class CredentialService {
         logoUrl: credential.organization?.logo_url ?? null,
         website: credential.organization?.website ?? '',
         slogan: credential.organization?.slogan ?? null,
+        supportEmail: credential.organization?.support_email ?? '',
       },
     };
   }

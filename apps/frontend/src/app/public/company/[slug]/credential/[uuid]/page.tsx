@@ -7,7 +7,7 @@ import { CREDENTIAL_KEYS } from '@/hooks/useCredentials';
 import { Award, Download, Link as LinkIcon, Check, Mail } from 'lucide-react';
 
 interface PublicCredentialPageProps {
-  params: Promise<{ uuid: string }>;
+  params: Promise<{ slug: string; uuid: string }>;
 }
 
 export default function PublicCredentialPage({ params }: PublicCredentialPageProps) {
@@ -24,12 +24,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
     enabled: !!uuid,
   });
 
-  const getCredentialUrl = () => {
-    if (typeof window !== 'undefined') {
-      return window.location.href;
-    }
-    return '';
-  };
+  const getCredentialUrl = () => window.location.href;
 
   const handleAddToLinkedIn = () => {
     if (!credential) return;
@@ -50,6 +45,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
     );
   };
 
+  // 2. Clipboard error fallback
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(getCredentialUrl());
@@ -57,6 +53,17 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = getCredentialUrl();
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -109,7 +116,11 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
           <div className="flex w-full items-center justify-between">
             <p className="mt-1 text-xs font-normal text-gray-500">
               Credential ID:{' '}
-              <span className="cursor-pointer text-green-700 hover:underline">
+              <span
+                onClick={handleCopyLink}
+                className="cursor-pointer text-green-700 hover:underline"
+                title="Copy link"
+              >
                 {credential.uuid}
               </span>
             </p>
@@ -125,7 +136,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
 
       {/* Details Section */}
       <div className="bg-gray-50">
-        {/* 3 column wrapper */}
+        {/* column wrapper */}
         <div className="mx-auto w-full max-w-7xl grow bg-gray-50 lg:flex xl:px-2">
           {/* Left sidebar & main wrapper */}
           <div className="flex-1 xl:flex">
@@ -177,8 +188,8 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
                     <p className="text-gray-500">
                       <a
                         href={
-                          credential.organization.website
-                            ? `mailto:${credential.organization.website}`
+                          credential.organization.supportEmail
+                            ? `mailto:${credential.organization.supportEmail}`
                             : '#'
                         }
                         className="inline-flex items-center text-sm font-medium text-blue-600 hover:underline"
@@ -204,7 +215,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
                         </h4>
                       </div>
                       <div className="flex gap-2">
-                        <h2 className="text-2xl font-medium leading-[26px]">
+                        <h2 className="text-2xl font-medium leading-6.5">
                           {credential.organization.name}
                         </h2>
                       </div>

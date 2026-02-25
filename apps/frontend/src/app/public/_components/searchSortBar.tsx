@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export interface SortOption {
   label: string;
@@ -33,6 +34,9 @@ export function SearchSortBar({
   activeSortBy,
   activeSortOrder,
 }: SearchSortBarProps) {
+  const sortRef = useClickOutside<HTMLDivElement>(() => {
+    if (showSortDropdown) onSortToggle();
+  });
   return (
     <div className="flex items-center gap-4 pr-3">
       {/* Search Input */}
@@ -51,7 +55,7 @@ export function SearchSortBar({
 
       {/* Sort By Dropdown */}
       {sortOptions.length > 0 && (
-        <div className="relative">
+        <div className="relative" ref={sortRef}>
           <button
             type="button"
             onClick={onSortToggle}

@@ -3,10 +3,16 @@ import { buildUrl } from '@/lib/query-params';
 import { Organization, Recipient, PaginatedResponse, Event } from '@/types';
 import { BaseSearchFilters } from '@/lib/query-params';
 
-/**
- * Public Service - Api Client for Public Apis - Issuer Details, Events, Recipients
- *
- */
+export interface PublicCredentialFilters {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+  search?: string;
+  eventId?: string;
+  recipientId?: string;
+  [key: string]: unknown;
+}
 
 export const publicService = {
   async getPublicOrganization(slug: string): Promise<Organization> {
@@ -21,18 +27,7 @@ export const publicService = {
     return response.data;
   },
 
-  async getPublicCredentials(
-    slug: string,
-    filter: {
-      page: 1;
-      limit: 3;
-      sortBy: 'created_at';
-      sortOrder: 'DESC';
-      search?: string;
-      eventId?: string;
-      recipientId?: string;
-    },
-  ) {
+  async getPublicCredentials(slug: string, filter?: PublicCredentialFilters) {
     const response = await apiClient.get(buildUrl(`/credentials/public/org/${slug}`, filter));
     return response.data.data;
   },

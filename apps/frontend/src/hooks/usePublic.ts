@@ -3,9 +3,18 @@ import { publicService } from '@/services/api/public.service';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { BaseSearchFilters } from '@/lib/query-params';
 
+// Query key factory
+export const PUBLIC_KEYS = {
+  all: ['public'] as const,
+  organization: (slug: string) => ['public', 'organization', slug] as const,
+  credentials: (slug: string, filters: object) => ['public', 'credentials', slug, filters] as const,
+  recipients: (slug: string, filters: object) => ['public', 'recipients', slug, filters] as const,
+  event: (slug: string, eventUuid: string) => ['public', 'event', slug, eventUuid] as const,
+};
+
 export function usePublicOrganization(slug?: string) {
   return useQuery({
-    queryKey: ['public-organization', slug],
+    queryKey: PUBLIC_KEYS.organization(slug ?? ''),
     queryFn: async () => {
       if (!slug) throw new Error('Missing organization slug');
       const response = await publicService.getPublicOrganization(slug);
@@ -27,9 +36,7 @@ export function usePublicSendEmail(slug: string) {
     onSuccess: () => {
       showSuccessToast('Message sent successfully');
     },
-    onError: (error: Error) => {
-      console.error('Failed to send email:', error);
-    },
+    // Removed onError — global MutationCache handles toast on error
   });
 }
 
@@ -47,8 +54,8 @@ export function usePublicCredentials(
   },
 ) {
   const {
-    page,
-    limit,
+    page = 1,
+    limit = 10,
     sortBy = 'created_at',
     sortOrder = 'DESC',
     enabled = true,
@@ -57,26 +64,19 @@ export function usePublicCredentials(
     recipientId,
   } = options || {};
 
+  const filters = { page, limit, sortBy, sortOrder, search, eventId, recipientId };
+
   return useQuery({
-    queryKey: ['public-recent-credentials', slug, page, limit, sortBy, sortOrder, search],
+    queryKey: PUBLIC_KEYS.credentials(slug, filters), // ← includes all filter params
     queryFn: async () => {
       if (!slug) throw new Error('Missing organization slug');
-      const response = await publicService.getPublicCredentials(slug, {
-        page: 1,
-        limit: 3,
-        sortBy: 'created_at',
-        sortOrder: 'DESC',
-        search,
-        eventId,
-        recipientId,
-      });
-      return response;
+      return publicService.getPublicCredentials(slug, filters);
     },
     enabled: !!slug && enabled,
-    staleTime: 0,
+    staleTime: 10_000,
     retry: 2,
     refetchOnWindowFocus: false,
-    placeholderData: undefined, // doesn't show placeholder data from past queries
+    placeholderData: undefined,
   });
 }
 
@@ -84,16 +84,16 @@ export function usePublicRecipients(
   slug: string,
   filters?: BaseSearchFilters & { enabled?: boolean },
 ) {
-  const { enabled = true, eventUuid, ...queryFilters } = filters ?? {};
+  const { enabled = true, ...queryFilters } = filters ?? {};
 
   return useQuery({
-    queryKey: ['public-recipients', slug, queryFilters],
+    queryKey: PUBLIC_KEYS.recipients(slug, queryFilters),
     queryFn: async () => {
       if (!slug) throw new Error('Missing organization slug');
       return await publicService.getRecipientPublic(slug, queryFilters);
     },
     enabled: !!slug && enabled,
-    staleTime: 0,
+    staleTime: 10_000,
     retry: 2,
     refetchOnWindowFocus: false,
   });
@@ -101,7 +101,7 @@ export function usePublicRecipients(
 
 export function usePublicEvent(slug?: string, eventUuid?: string) {
   return useQuery({
-    queryKey: ['public-event', slug, eventUuid],
+    queryKey: PUBLIC_KEYS.event(slug ?? '', eventUuid ?? ''),
     queryFn: async () => {
       if (!slug || !eventUuid) throw new Error('Missing slug or eventUuid');
       return publicService.getPublicEvent(slug, eventUuid);
