@@ -130,7 +130,7 @@ export default function RecipientCredentialsPage() {
             {credentials.map((credential) => (
               <Link
                 key={credential.uuid}
-                href={`/public/company/${slug}/credentials/${credential.uuid}`}
+                href={`/public/credential/${credential.uuid}`}
                 className="bg-white border border-gray-200 rounded-sm shadow-sm hover:shadow-md transition-shadow"
               >
                 <Image
