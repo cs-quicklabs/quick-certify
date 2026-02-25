@@ -223,6 +223,7 @@ export function ConfigForm<T extends z.ZodType>({
       <form
         ref={formRef}
         onSubmit={handleSubmit}
+        noValidate
         className={`w-full mt-6 ${
           config.layout === 'grid'
             ? 'grid grid-cols-2 gap-4'
