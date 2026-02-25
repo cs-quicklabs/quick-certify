@@ -6,3 +6,4 @@ export * from './utils.enum';
 export * from './credential.types';
 export * from './organization.types';
 export * from './event.types';
+export * from './pathway.types';

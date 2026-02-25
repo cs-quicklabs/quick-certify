@@ -595,6 +595,45 @@ export class CredentialService {
     return credential;
   }
 
+  /**
+   * Count issued credentials for a recipient across specific events.
+   */
+  async countIssuedForRecipient(
+    recipientId: number,
+    eventIds: number[],
+    transaction?: import('sequelize').Transaction,
+  ): Promise<number> {
+    if (eventIds.length === 0) return 0;
+    return this.credentialModel.count({
+      where: {
+        recipient_id: recipientId,
+        event_id: { [Op.in]: eventIds },
+        status: CredentialStatusEnum.ISSUED,
+      },
+      ...(transaction && { transaction }),
+    });
+  }
+
+  /**
+   * Find issued credentials for multiple recipients across specific events.
+   * Returns only recipient_id and event_id for status computation.
+   */
+  async findIssuedForRecipients(
+    recipientIds: number[],
+    eventIds: number[],
+  ): Promise<Array<{ recipient_id: number; event_id: number }>> {
+    if (recipientIds.length === 0 || eventIds.length === 0) return [];
+    return this.credentialModel.findAll({
+      where: {
+        recipient_id: { [Op.in]: recipientIds },
+        event_id: { [Op.in]: eventIds },
+        status: CredentialStatusEnum.ISSUED,
+      },
+      attributes: ['recipient_id', 'event_id'],
+      raw: true,
+    });
+  }
+
   private async requireOrganization(uuid: string) {
     const organization = await this.organizationService.findByUuid(uuid);
     if (!organization) {

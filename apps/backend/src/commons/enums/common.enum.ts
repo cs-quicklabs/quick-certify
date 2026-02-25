@@ -12,6 +12,18 @@ export enum CredentialStatusEnum {
   FAILED = 'FAILED',
 }
 
+export enum PathwayStatusEnum {
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  ARCHIVED = 'archived',
+}
+
+export enum PathwayParticipantStatusEnum {
+  INVITED = 'invited',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
+
 export enum BatchStatusEnum {
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',

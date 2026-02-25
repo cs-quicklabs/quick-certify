@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/events', label: 'Events' },
   { href: '/credentials', label: 'Credentials' },
+  { href: '/pathways', label: 'Pathways' },
   { href: '/designs', label: 'Designs' },
   // { href: '/emails', label: 'Emails' },
   // { href: '/analytics', label: 'Analytics' },

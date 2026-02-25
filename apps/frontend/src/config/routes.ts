@@ -59,6 +59,8 @@ export const ROUTES = {
   // Feature routes
   EVENTS: '/events',
   CREDENTIALS: '/credentials',
+  PATHWAYS: '/pathways',
+  PATHWAYS_ADD: '/pathways/add',
   CREDENTIALS_ISSUE: '/credentials/issue',
   DESIGNS: '/designs',
   EMAILS: '/emails',
@@ -85,6 +87,8 @@ export const createRoute = {
   eventDetail: (id: string) => `/events/${id}` as const,
   credentialDetail: (id: string) => `/credentials/${id}` as const,
   teamMember: (id: string) => `/settings/team/${id}` as const,
+  pathwayDetail: (id: string) => `/pathways/${id}` as const,
+  pathwayEdit: (id: string) => `/pathways/edit?id=${id}` as const,
   resetPasswordWithToken: (token: string) => `/reset-password?token=${token}` as const,
   invitationWithToken: (token: string) => `/invitation?token=${token}` as const,
   publicCredential: (uuid: string) => `/public/credential/${uuid}` as const,

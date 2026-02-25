@@ -289,4 +289,22 @@ export class EventRepository {
       },
     });
   }
+
+  /**
+   * Find active events by UUIDs for an organization
+   */
+  async findActiveByUuids(
+    uuids: string[],
+    organizationId: number,
+    transaction?: Transaction,
+  ): Promise<EventEntity[]> {
+    return this.model.findAll({
+      where: {
+        uuid: uuids,
+        organization_id: organizationId,
+        is_active: true,
+      },
+      ...(transaction && { transaction }),
+    });
+  }
 }

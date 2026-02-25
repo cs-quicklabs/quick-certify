@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Transaction } from 'sequelize';
 import { EventEntity } from '@src/entities/event.entity';
 import { CreateEventDto, UpdateEventDto, EventFilterDto } from '../dtos';
 import { PaginatedResult } from '@src/commons/base';
@@ -64,6 +65,19 @@ export class EventService {
     if (!organization) return null;
 
     return this.eventRepository.findByUuid(uuid, organization.id);
+  }
+
+  /**
+   * Find active events by UUIDs for an organization.
+   * Used by PathwayEventService to validate and resolve event IDs.
+   */
+  async findActiveByUuids(
+    uuids: string[],
+    organizationId: number,
+    transaction?: Transaction,
+  ): Promise<EventEntity[]> {
+    if (uuids.length === 0) return [];
+    return this.eventRepository.findActiveByUuids(uuids, organizationId, transaction);
   }
 
   /**
