@@ -100,29 +100,32 @@ export class EventRepository {
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
 
-    const queryWhere: Record<string, unknown> = {
-      organization_id: organizationId,
-      is_active: true,
-      ...where,
-    };
-
     // Apply search filter at database level
     // if (search?.trim()) {
     //   queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
     // }
-    if (search?.trim()) {
-      queryWhere[Op.or as unknown as string] = [
-        { name: { [Op.iLike]: `%${search.trim()}%` } },
-        { '$design.name$': { [Op.iLike]: `%${search.trim()}%` } },
-      ];
-    }
+    const queryWhere: Record<string, unknown> = {
+      organization_id: organizationId,
+      is_active: true,
+      ...where,
+      ...(search?.trim()
+        ? {
+            [Op.or]: [
+              { name: { [Op.iLike]: `%${search.trim()}%` } },
+              { '$design.name$': { [Op.iLike]: `%${search.trim()}%` } },
+            ],
+          }
+        : {}),
+    };
 
     // Build includes with optional UUID filters
     const includes = this.buildIncludes({ typeUuids, levelUuids, formatUuids });
-
     const { count, rows } = await this.model.findAndCountAll({
       where: queryWhere,
       include: includes,
+      // If search is present, we must often disable subQuery to allow
+      // the WHERE clause to access joined tables correctly.
+      subQuery: false,
       distinct: true,
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
