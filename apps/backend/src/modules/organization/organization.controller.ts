@@ -237,7 +237,7 @@ export class OrganizationController {
   @ApiResponse({ status: 500, description: 'Email could not be sent' })
   async sendEmail(@Param('slug') slug: string, @Body() dto: ContactOrganizationDto) {
     const organization = await this.organizationService.findBySlug(slug);
-    if (!organization?.support_email) return new NotFoundException('Email not found');
+    if (!organization?.support_email) throw new NotFoundException('Email not found');
     const emailSubject = `New Contact Form Submission - ${dto.name} ${dto.email}`;
     const mailOptions = {
       text: dto.message,

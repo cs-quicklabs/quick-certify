@@ -11,7 +11,16 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
  **/
 const nextConfig = {
   images: {
-    domains: ['images.unsplash.com', 'dev-quick-certify.sfo3.cdn.digitaloceanspaces.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.cdn.digitaloceanspaces.com',
+      },
+    ],
   },
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
