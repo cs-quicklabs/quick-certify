@@ -1,12 +1,10 @@
 'use client';
 
 import { use, useState } from 'react';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { credentialService } from '@/services/api/credential.service';
 import { CREDENTIAL_KEYS } from '@/hooks/useCredentials';
-import { ROUTES } from '@/config/routes';
-import { Award, Download, Link as LinkIcon, Check, Mail, GithubIcon } from 'lucide-react';
+import { Award, Download, Link as LinkIcon, Check, Mail } from 'lucide-react';
 
 interface PublicCredentialPageProps {
   params: Promise<{ uuid: string }>;
