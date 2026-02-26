@@ -140,7 +140,7 @@ function CredentialBadges({ events }: { events: Pathway['events'] }) {
       {events.slice(0, MAX_VISIBLE_CREDENTIALS).map((credential) => (
         <span
           key={credential.uuid}
-          className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+          className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 mr-1 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
         >
           {credential.name}
         </span>
