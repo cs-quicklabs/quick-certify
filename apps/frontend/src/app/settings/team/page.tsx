@@ -101,7 +101,7 @@ export default function TeamsPage() {
   };
 
   return (
-    <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
+    <div className="relative overflow-x-hidden bg-white shadow-md pb-0 dark:bg-gray-800 sm:rounded-sm">
       {/* Header */}
 
       <div className="divide-y dark:divide-gray-700">
@@ -277,7 +277,7 @@ export default function TeamsPage() {
       </div>
 
       {/* Pagination */}
-      <div className="px-6 py-4 border-t border-gray-200">
+      <div className="px-6 border-t inset-shadow-amber-50 border-gray-200">
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
