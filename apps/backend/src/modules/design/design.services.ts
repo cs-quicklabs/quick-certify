@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
@@ -7,6 +13,7 @@ import { UpdateDesignDto } from './dtos/update-design.dto';
 import { CreateDesignDto } from './dtos/create-design.dto';
 import { toTitleCase } from '@src/commons/utils';
 import { CurrentUser } from '../auth/interfaces';
+import { EventService } from '../event/services/event.service';
 
 @Injectable()
 export class DesignService extends BaseCrudService<
@@ -24,6 +31,8 @@ export class DesignService extends BaseCrudService<
   constructor(
     @InjectModel(DesignEntity)
     private readonly designModel: typeof DesignEntity,
+    @Inject(forwardRef(() => EventService))
+    private readonly eventService: EventService,
   ) {
     super();
   }
@@ -109,6 +118,15 @@ export class DesignService extends BaseCrudService<
   }
 
   override async deleteByUuid(uuid: string): Promise<boolean> {
+    const design = await this.findByUuidOrFail(uuid);
+
+    const isUsedByEvent = await this.eventService.hasActiveEventsForDesign(design.id);
+    if (isUsedByEvent) {
+      throw new ConflictException(
+        'Cannot delete this design because it is associated with one or more events',
+      );
+    }
+
     return super.deleteByUuid(uuid);
   }
 }

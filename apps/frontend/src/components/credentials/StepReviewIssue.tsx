@@ -22,13 +22,16 @@ import {
   useCreateBatchCredentials,
   useUpdateCredential,
   useDeleteCredential,
-  usePreviewCertificate,
   useResendCredential,
 } from '@/hooks/useCredentials';
+import { useEvent } from '@/hooks/useEvents';
+import { useDesignById } from '@/hooks/useDesigns';
 import { ROUTES } from '@/config/routes';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { IssueFormData } from '@/app/(dashboard)/credentials/issue/page';
 import { CredentialStatus, type Credential } from '@/types/credential.types';
+import type { Design } from '@/types';
+import { buildValueMap, type PlaceholderKey } from '@certify/certificate-core';
 
 /* ───── Props ───── */
 
@@ -69,8 +72,8 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
   const [recipientDropdownOpen, setRecipientDropdownOpen] = useState(false);
 
   const batchCreate = useCreateBatchCredentials();
-  const previewMutation = usePreviewCertificate();
-  const [previewCache, setPreviewCache] = useState<Record<number, string>>({});
+  const { data: event } = useEvent(formData.eventId, !!formData.eventId);
+  const { data: design } = useDesignById(event?.design?.uuid ?? undefined);
 
   const selectedRecipient = formData.recipients[selectedRecipientIndex];
 
@@ -126,49 +129,6 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
     router.push(ROUTES.CREDENTIALS);
   }, [batchCreate, buildPayload, router]);
 
-  const handleGeneratePreview = useCallback(async () => {
-    if (previewCache[selectedRecipientIndex]) return;
-    const result = await previewMutation.mutateAsync({
-      eventId: formData.eventId,
-      recipientName: selectedRecipient?.name ?? '',
-      recipientEmail: selectedRecipient?.email ?? '',
-      issuedDate: formData.issuedDate,
-      expirationDate: formData.noExpiration ? undefined : formData.expirationDate || undefined,
-    });
-    setPreviewCache((prev) => ({ ...prev, [selectedRecipientIndex]: result.previewUrl }));
-  }, [formData, selectedRecipient, selectedRecipientIndex, previewCache, previewMutation]);
-
-  // Auto-generate preview on mount and when recipient changes
-  const prevRecipientIndexRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (
-      prevRecipientIndexRef.current !== selectedRecipientIndex &&
-      !previewCache[selectedRecipientIndex] &&
-      !previewMutation.isPending &&
-      selectedRecipient?.name &&
-      selectedRecipient?.email
-    ) {
-      prevRecipientIndexRef.current = selectedRecipientIndex;
-      previewMutation
-        .mutateAsync({
-          eventId: formData.eventId,
-          recipientName: selectedRecipient.name,
-          recipientEmail: selectedRecipient.email,
-          issuedDate: formData.issuedDate,
-          expirationDate: formData.noExpiration ? undefined : formData.expirationDate || undefined,
-        })
-        .then((result) => {
-          setPreviewCache((prev) => ({ ...prev, [selectedRecipientIndex]: result.previewUrl }));
-        })
-        .catch(() => {
-          // Reset so user can retry
-          prevRecipientIndexRef.current = null;
-        });
-    }
-  }, [selectedRecipientIndex, previewCache, previewMutation, selectedRecipient, formData]);
-
-  const cachedPreviewUrl = previewCache[selectedRecipientIndex];
-
   return (
     <div className="space-y-4 sm:space-y-6">
       <CredentialLayout
@@ -194,10 +154,7 @@ function IssueView({ formData, setFormData, onBack, onCancel }: IssueMode) {
           formData.noExpiration ? 'No Expiration' : formatDate(formData.expirationDate)
         }
         hidePublicLink
-        /* Certificate preview */
-        certificatePreviewUrl={cachedPreviewUrl}
-        onGeneratePreview={handleGeneratePreview}
-        isGeneratingPreview={previewMutation.isPending}
+        design={design}
         /* Recipient dropdown */
         recipients={formData.recipients}
         selectedRecipientIndex={selectedRecipientIndex}
@@ -270,53 +227,13 @@ function DetailView({ credential }: DetailMode) {
   const updateCredential = useUpdateCredential();
   const deleteCredential = useDeleteCredential();
   const resendCredential = useResendCredential();
-  const previewMutation = usePreviewCertificate();
-  const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null);
 
   const isDraft = credential.status === CredentialStatus.DRAFT;
   const isIssued = credential.status === CredentialStatus.ISSUED;
   const isFailed = credential.status === CredentialStatus.FAILED;
 
-  // Auto-generate preview for failed credentials that have no certificate_url
-  const previewRequestedFor = useRef<string | null>(null);
-  const eventId = credential.event?.uuid;
-  const recipientName = credential.recipient?.name;
-  const recipientEmail = credential.recipient?.email;
-  const issuedDate = credential.issued_date?.split('T')[0];
-  const expirationDate = credential.expiration_date?.split('T')[0];
-  const certificateUrl = credential.certificate_url;
-  const credentialId = credential.uuid;
-
-  useEffect(() => {
-    if (!eventId || !recipientName || !recipientEmail || certificateUrl) return;
-
-    if (previewRequestedFor.current === credentialId) return;
-
-    previewRequestedFor.current = credentialId;
-
-    previewMutation
-      .mutateAsync({
-        eventId,
-        recipientName,
-        recipientEmail,
-        issuedDate,
-        expirationDate,
-      })
-      .then((result) => {
-        setFailedPreviewUrl(result.previewUrl);
-      })
-      .catch(() => {
-        previewRequestedFor.current = null; // allow retry only if failed
-      });
-  }, [
-    eventId,
-    recipientName,
-    recipientEmail,
-    issuedDate,
-    expirationDate,
-    certificateUrl,
-    credentialId,
-  ]);
+  const { data: event } = useEvent(credential.event?.uuid ?? '', !!credential.event?.uuid);
+  const { data: design } = useDesignById(event?.design?.uuid ?? undefined);
 
   const handleCancelEdit = useCallback(() => {
     setEditName(credential.recipient?.name ?? '');
@@ -478,8 +395,8 @@ function DetailView({ credential }: DetailMode) {
           displayNoExpiration ? 'No Expiration' : formatDate(displayExpirationDate)
         }
         hidePublicLink
-        certificatePreviewUrl={credential.certificate_url ?? failedPreviewUrl ?? undefined}
-        isGeneratingPreview={previewMutation.isPending}
+        certificatePreviewUrl={credential.certificate_url ?? undefined}
+        design={design}
         isDraft={isDraft}
       />
 
@@ -607,10 +524,9 @@ interface CredentialLayoutProps {
   copiedLink?: boolean;
   isDraft?: boolean;
   hidePublicLink?: boolean;
-  // Certificate preview (real template-based)
+  // Certificate preview
   certificatePreviewUrl?: string;
-  onGeneratePreview?: () => void;
-  isGeneratingPreview?: boolean;
+  design?: Design;
   // Recipient dropdown (issue mode)
   recipients?: RecipientOption[];
   selectedRecipientIndex?: number;
@@ -646,8 +562,7 @@ function CredentialLayout({
   copiedLink,
   isDraft,
   certificatePreviewUrl,
-  onGeneratePreview,
-  isGeneratingPreview,
+  design,
   recipients,
   selectedRecipientIndex,
   recipientDropdownOpen,
@@ -873,33 +788,16 @@ function CredentialLayout({
                       className="w-full h-auto"
                     />
                   </div>
-                ) : isGeneratingPreview ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-                    <p className="text-sm">Generating certificate preview...</p>
-                  </div>
-                ) : onGeneratePreview ? (
-                  <div className="space-y-4">
-                    <CredentialPreview
-                      recipientName={previewName}
-                      recipientEmail={previewEmail}
-                      eventName={previewEventName}
-                      issuedDate={previewIssuedDate}
-                      expirationDate={previewExpirationDate}
-                      isDraft={isDraft}
-                    />
-                    <div className="text-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onGeneratePreview}
-                        isLoading={isGeneratingPreview}
-                        disabled={isGeneratingPreview}
-                      >
-                        {isGeneratingPreview ? 'Generating...' : 'Generate Certificate Preview'}
-                      </Button>
-                    </div>
-                  </div>
+                ) : design?.layout ? (
+                  <CertificateDesignPreview
+                    design={design}
+                    recipientName={previewName}
+                    recipientEmail={previewEmail}
+                    eventName={previewEventName}
+                    issuedDate={previewIssuedDate}
+                    expirationDate={previewExpirationDate}
+                    isDraft={isDraft}
+                  />
                 ) : (
                   <CredentialPreview
                     recipientName={previewName}
@@ -924,6 +822,116 @@ function CredentialLayout({
               />
             )}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───── Real Certificate Design Preview ───── */
+
+function CertificateDesignPreview({
+  design,
+  recipientName,
+  recipientEmail,
+  eventName,
+  issuedDate,
+  expirationDate,
+  isDraft,
+}: Readonly<{
+  design: Design;
+  recipientName: string;
+  recipientEmail: string;
+  eventName: string;
+  issuedDate: string;
+  expirationDate: string;
+  isDraft?: boolean;
+}>) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  const layout = design.layout;
+
+  useEffect(() => {
+    if (!layout) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width;
+      if (width) setScale(width / layout.canvasWidth);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [layout]);
+
+  if (!layout) return null;
+
+  const { canvasWidth, canvasHeight, placeholders } = layout;
+
+  const valueMap = buildValueMap({
+    recipientName,
+    recipientEmail,
+    credentialUuid: '',
+    issuedDate,
+    expirationDate,
+    eventName,
+  });
+
+  return (
+    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+      {isDraft && (
+        <div className="px-3 py-1.5 bg-amber-50 border-b border-amber-200 text-center">
+          <span className="text-xs font-medium text-amber-700">Draft Preview</span>
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          height: canvasHeight * scale,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            width: canvasWidth,
+            height: canvasHeight,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            transformOrigin: 'top left',
+            transform: `scale(${scale})`,
+          }}
+        >
+          <img
+            src={design.url}
+            alt="Certificate background"
+            style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+          />
+          {placeholders.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                position: 'absolute',
+                left: p.x,
+                top: p.y,
+                transform: `translate(-50%, -50%) scale(${p.scaleX ?? 1}, ${p.scaleY ?? 1})`,
+                fontSize: p.fontSize,
+                fontFamily: p.fontFamily,
+                fontWeight: p.fontWeight ?? 'normal',
+                fontStyle: p.fontStyle ?? 'normal',
+                color: p.color,
+                textAlign: p.align ?? 'left',
+                maxWidth: p.maxWidth ?? undefined,
+                whiteSpace: p.maxWidth ? 'normal' : 'nowrap',
+                lineHeight: 1.2,
+                pointerEvents: 'none',
+              }}
+            >
+              {valueMap[p.key as PlaceholderKey] ?? p.text}
+            </div>
+          ))}
         </div>
       </div>
     </div>
