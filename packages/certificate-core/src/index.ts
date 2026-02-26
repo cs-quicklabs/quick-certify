@@ -1,6 +1,13 @@
 // Types
-export type { PlaceholderKey, DesignLayoutPlaceholder, DesignLayout } from './types/design-layout.types';
-export type { CertificateGenerationParams, CertificateGenerationResult } from './types/certificate-params.types';
+export type {
+  PlaceholderKey,
+  DesignLayoutPlaceholder,
+  DesignLayout,
+} from './types/design-layout.types';
+export type {
+  CertificateGenerationParams,
+  CertificateGenerationResult,
+} from './types/certificate-params.types';
 export { CredentialStatusEnum, BatchStatusEnum } from './types/credential-status.types';
 
 // Utils
