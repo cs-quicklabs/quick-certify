@@ -279,6 +279,16 @@ export class EventRepository {
   }
 
   /**
+   * Check whether any active event references the given design
+   */
+  async existsByDesignId(designId: number): Promise<boolean> {
+    const count = await this.model.count({
+      where: { design_id: designId, is_active: true },
+    });
+    return count > 0;
+  }
+
+  /**
    * Count events
    */
   async count(organizationId: number): Promise<number> {
