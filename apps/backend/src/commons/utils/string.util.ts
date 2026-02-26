@@ -34,6 +34,18 @@ export function toTitleCase(value: string): string {
 }
 
 /**
+ * Escape special LIKE/ILIKE wildcard characters in a search string.
+ * Prevents users from injecting `%` or `_` to alter query behavior.
+ * @param value - Raw user input
+ * @returns Escaped string safe for use in LIKE/ILIKE patterns
+ * @example escapeLikePattern('100%') => '100\\%'
+ * @example escapeLikePattern('user_name') => 'user\\_name'
+ */
+export function escapeLikePattern(value: string): string {
+  return value.replace(/[%_\\]/g, '\\$&');
+}
+
+/**
  * Extract and normalize domain from a URL
  * Removes protocol, www prefix, paths, and query strings
  * @param url - Full URL string

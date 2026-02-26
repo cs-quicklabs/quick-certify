@@ -76,6 +76,7 @@ export const ROUTES = {
     RECIPIENTS: '/public/recipients',
     VERIFY: '/public/verify',
     RETRIEVE: '/public/retrieve',
+    PATHWAYS: '/public/pathways',
   },
 } as const;
 
@@ -89,7 +90,14 @@ export const createRoute = {
   teamMember: (id: string) => `/settings/team/${id}` as const,
   pathwayDetail: (id: string) => `/pathways/${id}` as const,
   pathwayEdit: (id: string) => `/pathways/edit?id=${id}` as const,
+  pathwayParticipantDetail: (pathwayId: string, recipientUuid: string) =>
+    `/pathways/${pathwayId}/participants/${recipientUuid}` as const,
   resetPasswordWithToken: (token: string) => `/reset-password?token=${token}` as const,
   invitationWithToken: (token: string) => `/invitation?token=${token}` as const,
   publicCredential: (uuid: string) => `/public/credential/${uuid}` as const,
+  publicPathways: (slug: string) => `/public/company/${slug}/pathways` as const,
+  publicPathwayDetail: (slug: string, uuid: string) =>
+    `/public/company/${slug}/pathways/${uuid}` as const,
+  publicPathwayParticipant: (slug: string, pathwayUuid: string, participantUuid: string) =>
+    `/public/company/${slug}/pathways/${pathwayUuid}/participants/${participantUuid}` as const,
 } as const;

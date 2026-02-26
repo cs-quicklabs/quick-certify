@@ -10,6 +10,7 @@ import { OrganizationModule } from '../organization';
 import { RecipientModule } from '../recipient/recipient.module';
 import { CredentialModule } from '../credential/credential.module';
 import { EventModule } from '../event/event.module';
+import { PathwayResponseMapper } from './pathway-response.mapper';
 import { EmailService } from '@src/commons/services';
 
 @Module({
@@ -22,7 +23,7 @@ import { EmailService } from '@src/commons/services';
     EventModule,
   ],
   controllers: [PathwayController],
-  providers: [PathwayService, PathwayEventService, PathwayParticipantService, EmailService],
+  providers: [PathwayService, PathwayEventService, PathwayParticipantService, PathwayResponseMapper, EmailService],
   exports: [PathwayService, PathwayEventService, PathwayParticipantService],
 })
 export class PathwayModule {}
