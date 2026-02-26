@@ -174,23 +174,6 @@ export function Header() {
 
           {/* Desktop Profile */}
           <div className="hidden lg:flex items-center ml-4">
-            <button type="button" className="rounded-full p-1 text-gray-400 hover:text-blue">
-              <span className="sr-only">Notifications</span>
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-                />
-              </svg>
-            </button>
-
             <div className="relative ml-2" ref={dropdownRef}>
               <button onClick={() => setMenuOpened(!menuOpened)} className="cursor-pointer">
                 <Avatar
