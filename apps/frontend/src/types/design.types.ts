@@ -1,5 +1,9 @@
 import type { DesignLayout } from '@certify/certificate-core';
-export type { PlaceholderKey, DesignLayoutPlaceholder, DesignLayout } from '@certify/certificate-core';
+export type {
+  PlaceholderKey,
+  DesignLayoutPlaceholder,
+  DesignLayout,
+} from '@certify/certificate-core';
 
 export const DESIGN_TYPES = ['certificate', 'badge'] as const;
 export type DesignType = (typeof DESIGN_TYPES)[number];

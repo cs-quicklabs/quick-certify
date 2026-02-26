@@ -11,7 +11,10 @@ import {
   type CertificateGenerationResult,
 } from '@certify/certificate-core';
 
-export type { CertificateGenerationParams, CertificateGenerationResult } from '@certify/certificate-core';
+export type {
+  CertificateGenerationParams,
+  CertificateGenerationResult,
+} from '@certify/certificate-core';
 
 @Injectable()
 export class CertificateGenerationService {

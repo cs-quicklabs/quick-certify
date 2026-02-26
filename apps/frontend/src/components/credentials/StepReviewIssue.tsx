@@ -868,7 +868,14 @@ function CertificateDesignPreview({
 
   const { canvasWidth, canvasHeight, placeholders } = layout;
 
-  const valueMap = buildValueMap({ recipientName, recipientEmail, credentialUuid: '', issuedDate, expirationDate, eventName });
+  const valueMap = buildValueMap({
+    recipientName,
+    recipientEmail,
+    credentialUuid: '',
+    issuedDate,
+    expirationDate,
+    eventName,
+  });
 
   return (
     <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
@@ -877,7 +884,15 @@ function CertificateDesignPreview({
           <span className="text-xs font-medium text-amber-700">Draft Preview</span>
         </div>
       )}
-      <div ref={containerRef} style={{ width: '100%', height: canvasHeight * scale, position: 'relative', overflow: 'hidden' }}>
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          height: canvasHeight * scale,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
         <div
           style={{
             width: canvasWidth,

@@ -7,11 +7,7 @@ import { UserModule } from '../user';
 import { EventModule } from '../event/event.module';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([DesignEntity]),
-    UserModule,
-    forwardRef(() => EventModule),
-  ],
+  imports: [SequelizeModule.forFeature([DesignEntity]), UserModule, forwardRef(() => EventModule)],
   controllers: [DesignController],
   providers: [DesignService],
   exports: [DesignService],

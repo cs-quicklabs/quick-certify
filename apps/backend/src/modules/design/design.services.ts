@@ -1,4 +1,10 @@
-import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
@@ -116,7 +122,9 @@ export class DesignService extends BaseCrudService<
 
     const isUsedByEvent = await this.eventService.hasActiveEventsForDesign(design.id);
     if (isUsedByEvent) {
-      throw new ConflictException('Cannot delete this design because it is associated with one or more events');
+      throw new ConflictException(
+        'Cannot delete this design because it is associated with one or more events',
+      );
     }
 
     return super.deleteByUuid(uuid);
