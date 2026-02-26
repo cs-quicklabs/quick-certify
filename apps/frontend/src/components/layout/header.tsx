@@ -101,7 +101,7 @@ export function Header() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-gray-800">
+    <nav className="sticky top-0 bg-gray-800 z-30">
       <div className="mx-auto px-2 sm:px-4 lg:px-8">
         <div className="relative flex h-12 items-center justify-between">
           {/* Logo & Desktop Nav */}
