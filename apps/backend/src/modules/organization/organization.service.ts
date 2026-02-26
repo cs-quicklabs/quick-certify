@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -35,6 +34,10 @@ export class OrganizationService implements IOrganizationService {
     private userModel: typeof UserEntity,
     private readonly storageService: StorageService,
   ) {}
+
+  async resolveOrgFromRequestOrDb(identifier: string, orgFromRequest?: OrganizationEntity) {
+    return orgFromRequest ?? (await this.resolveOrganization(identifier));
+  }
 
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
@@ -106,15 +109,8 @@ export class OrganizationService implements IOrganizationService {
     });
   }
 
-  async findByUuidOrSlug(identifier: string): Promise<OrganizationEntity | null> {
-    const org = await this.findByUuid(identifier);
-    if (!org) return await this.findBySlug(identifier);
-    return org;
-  }
-
   async resolveOrganization(identifier: string): Promise<OrganizationEntity | null> {
     // Lookup by slug OR UUID
-    console.log(' identifier: ', identifier);
     const org = await this.organizationModel.findOne({
       where: {
         [Op.or]: [{ slug: identifier }, { uuid: identifier }],

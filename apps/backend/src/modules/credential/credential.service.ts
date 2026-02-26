@@ -50,6 +50,7 @@ export class CredentialService {
   async findAll(
     organizationIdentifier: string, // Can be either UUID or slug
     filters: CredentialFilterDto,
+    orgFromReq?: OrganizationEntity,
   ): Promise<PaginatedResult<CredentialEntity>> {
     const ALLOWED_SORT_COLUMNS = ['created_at', 'issued_date', 'expiration_date', 'status'];
     const {
@@ -62,7 +63,8 @@ export class CredentialService {
       recipientId,
     } = filters;
     //  find organization by UUID or slug
-    const organization = await this.organizationService.resolveOrganization(organizationIdentifier);
+    const organization =
+      orgFromReq ?? (await this.organizationService.resolveOrganization(organizationIdentifier));
     const sortBy = ALLOWED_SORT_COLUMNS.includes(rawSortBy) ? rawSortBy : 'created_at';
 
     if (!organization) {

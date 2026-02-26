@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
@@ -24,6 +25,8 @@ import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
+import { PublicPortalGuard } from '../organization';
+import type { PublicRequest } from '@src/commons/interfaces/public-request.interface';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -137,6 +140,7 @@ export class CredentialController {
    */
   @Public()
   @Get('public/org/:slug')
+  @UseGuards(PublicPortalGuard)
   @ApiOperation({ summary: 'Get all credentials for current organization' })
   @ApiResponse({ status: 200, description: 'Credentials list' })
   @ApiQuery({ name: 'page', required: false })
@@ -149,8 +153,10 @@ export class CredentialController {
   async findAllPublic(
     @Param('slug', SlugOnlyPipe) slug: string,
     @Query() filters: CredentialFilterDto,
+    @Req() req: PublicRequest,
   ) {
-    const result = await this.credentialService.findAll(slug, filters);
+    const orgFromReq = req.organization;
+    const result = await this.credentialService.findAll(slug, filters, orgFromReq);
     return new SuccessResponse('Credentials retrieved successfully', result);
   }
 }

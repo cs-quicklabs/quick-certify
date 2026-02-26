@@ -31,7 +31,7 @@ import { Op } from 'sequelize';
 import { EmailService } from '@src/commons/services';
 import { ContactOrganizationDto } from './dtos/contact-organization.dto';
 import { PublicPortalGuard } from './guards/public-portal.guard';
-import type { PublicRequest } from '@src/commons/types/public-request.type';
+import type { PublicRequest } from '../../commons/interfaces/public-request.interface';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
@@ -214,7 +214,8 @@ export class OrganizationController {
     return new SuccessResponse('Portal settings updated successfully', organization);
   }
 
-  // PUBLIC ROUTES
+  // --------------- PUBLIC ROUTES -----------------------------------------------
+
   /**
    *
    * @param slug -> organization slug
@@ -233,12 +234,17 @@ export class OrganizationController {
 
   @Post('public/:slug/contact')
   @Public()
+  @UseGuards(PublicPortalGuard)
   @ApiOperation({ summary: 'Email Organization - Contact Us' })
   @ApiResponse({ status: 200, description: 'Email Sent to the issuer' })
   @ApiResponse({ status: 500, description: 'Email could not be sent' })
-  async sendEmail(@Param('slug') slug: string, @Body() dto: ContactOrganizationDto) {
-    const organization = await this.organizationService.findBySlug(slug);
-    if (!organization?.support_email) throw new NotFoundException('Email not found');
+  async sendEmail(
+    @Param('slug') slug: string,
+    @Body() dto: ContactOrganizationDto,
+    @Req() req: PublicRequest,
+  ) {
+    const organization = req.organization ?? (await this.organizationService.findBySlug(slug));
+    if (!organization?.support_email) throw new NotFoundException('Contact not found');
     const emailSubject = `New Contact Form Submission - ${dto.name} ${dto.email}`;
     const mailOptions = {
       text: dto.message,
