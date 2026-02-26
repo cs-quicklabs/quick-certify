@@ -68,7 +68,6 @@ export default function SkillsPage() {
             />
           );
         }
-
         return <span className="form-text-normal">{skill.name}</span>;
       },
     },
@@ -83,13 +82,22 @@ export default function SkillsPage() {
 
         if (editingSkill?.uuid === skill.uuid) {
           return (
-            <button
-              onClick={() => handleEditSave(skill.uuid)}
-              className="btn-primary text-sm px-3 py-1.5"
-              disabled={isUpdating || !editSkillName.trim()}
-            >
-              {isUpdating ? 'Saving...' : 'Save'}
-            </button>
+            <div className="flex items-center justify-end gap-4">
+              <button
+                onClick={() => handleEditSave(skill.uuid)}
+                className="btn-primary text-sm px-3 py-1.5"
+                disabled={isUpdating || !editSkillName.trim()}
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={handleEditCancel}
+                className="btn-inline-blue text-sm"
+                disabled={isUpdating}
+              >
+                Cancel
+              </button>
+            </div>
           );
         }
 
@@ -242,10 +250,7 @@ export default function SkillsPage() {
 
       {/* Add New Skill Form */}
       {isAuthorized && (
-        <form
-          onSubmit={handleAddSkill}
-          className="w-full mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
-        >
+        <form onSubmit={handleAddSkill} className="w-full mb-4">
           <div className="mb-4">
             <label htmlFor="skill" className="form-input-label">
               Add New Skill
