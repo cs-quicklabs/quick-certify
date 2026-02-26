@@ -31,6 +31,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { IssueFormData } from '@/app/(dashboard)/credentials/issue/page';
 import { CredentialStatus, type Credential } from '@/types/credential.types';
 import type { Design } from '@/types';
+import { buildValueMap, type PlaceholderKey } from '@certify/certificate-core';
 
 /* ───── Props ───── */
 
@@ -867,14 +868,7 @@ function CertificateDesignPreview({
 
   const { canvasWidth, canvasHeight, placeholders } = layout;
 
-  const valueMap: Record<string, string> = {
-    'recipient.name': recipientName,
-    'recipient.email': recipientEmail,
-    'credential.id': '',
-    'credential.issue_date': issuedDate,
-    'credential.expiration_date': expirationDate,
-    'event.name': eventName,
-  };
+  const valueMap = buildValueMap({ recipientName, recipientEmail, credentialUuid: '', issuedDate, expirationDate, eventName });
 
   return (
     <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
@@ -920,7 +914,7 @@ function CertificateDesignPreview({
                 pointerEvents: 'none',
               }}
             >
-              {valueMap[p.key] ?? p.text}
+              {valueMap[p.key as PlaceholderKey] ?? p.text}
             </div>
           ))}
         </div>

@@ -48,27 +48,6 @@ export interface DesignLayoutPlaceholder {
 
 /**
  * Represents the layout configuration for a design template with text placeholders.
- *
- * @example
- * const layout: DesignLayout = {
- *   version: 2,
- *   canvasWidth: 1100,
- *   canvasHeight: 800,
- *   placeholders: [
- *     {
- *       id: "ph_abc123",
- *       type: "text",
- *       key: "recipient.name",
- *       text: "{{name}}",
- *       x: 550,
- *       y: 420,
- *       fontSize: 42,
- *       fontFamily: "Times New Roman",
- *       color: "#000",
- *       align: "center"
- *     }
- *   ]
- * };
  */
 export interface DesignLayout {
   /** Schema version for backward compatibility */

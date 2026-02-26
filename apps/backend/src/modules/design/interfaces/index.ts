@@ -1,1 +1,1 @@
-export * from './design.layout.interface';
+export type { PlaceholderKey, DesignLayoutPlaceholder, DesignLayout } from '@certify/certificate-core';
