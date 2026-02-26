@@ -177,8 +177,8 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
-      <div className="divide-y dark:divide-gray-700">
+    <div>
+      <div className="divide-y dark:divide-gray-700 relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
           <div>

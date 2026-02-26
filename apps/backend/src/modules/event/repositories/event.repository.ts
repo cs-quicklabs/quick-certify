@@ -100,32 +100,55 @@ export class EventRepository {
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
 
-    // Apply search filter at database level
-    // if (search?.trim()) {
-    //   queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
-    // }
-    const queryWhere: Record<string, unknown> = {
+    const baseWhere: Record<string, unknown> = {
       organization_id: organizationId,
       is_active: true,
       ...where,
-      ...(search?.trim()
-        ? {
-            [Op.or]: [
-              { name: { [Op.iLike]: `%${search.trim()}%` } },
-              { '$design.name$': { [Op.iLike]: `%${search.trim()}%` } },
-            ],
-          }
-        : {}),
     };
 
-    // Build includes with optional UUID filters
+    // If searching, pre-fetch IDs matching event name OR design name
+    let searchIdFilter: Record<string, unknown> = {};
+    if (search?.trim()) {
+      const [nameMatches, designMatches] = await Promise.all([
+        this.model.findAll({
+          where: { ...baseWhere, name: { [Op.iLike]: `%${search.trim()}%` } },
+          attributes: ['id'],
+          raw: true,
+        }),
+        this.model.findAll({
+          where: baseWhere,
+          attributes: ['id'],
+          include: [
+            {
+              model: DesignEntity,
+              as: 'design',
+              required: true,
+              attributes: [],
+              where: { name: { [Op.iLike]: `%${search.trim()}%` } },
+            },
+          ],
+          raw: true,
+        }),
+      ]);
+
+      const ids = [
+        ...new Set([...nameMatches.map((e: any) => e.id), ...designMatches.map((e: any) => e.id)]),
+      ];
+
+      // If no matches found, use -1 to guarantee empty result
+      searchIdFilter = { id: { [Op.in]: ids.length ? ids : [-1] } };
+    }
+
+    const queryWhere: Record<string, unknown> = {
+      ...baseWhere,
+      ...searchIdFilter,
+    };
+
     const includes = this.buildIncludes({ typeUuids, levelUuids, formatUuids });
+
     const { count, rows } = await this.model.findAndCountAll({
       where: queryWhere,
       include: includes,
-      // If search is present, we must often disable subQuery to allow
-      // the WHERE clause to access joined tables correctly.
-      subQuery: false,
       distinct: true,
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
