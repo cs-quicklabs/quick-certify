@@ -12,8 +12,7 @@
     "jest.config.cts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
-    "src/**/*.d.ts",
-    "src/commons/types/public-request.type.ts"
+    "src/**/*.d.ts"
   ],
   "references": [
     {
