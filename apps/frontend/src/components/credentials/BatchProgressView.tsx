@@ -32,7 +32,7 @@ export function BatchProgressView({ batchUuid }: Props) {
     );
   }
 
-  const config = STATUS_CONFIG[status.status];
+  const config = STATUS_CONFIG[status.status as keyof typeof STATUS_CONFIG];
   const progress =
     status.totalCount > 0 ? Math.round((status.processedCount / status.totalCount) * 100) : 0;
 

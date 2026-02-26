@@ -237,6 +237,13 @@ export class EventService {
     return true;
   }
 
+  /**
+   * Check whether any active event references the given design (by PK)
+   */
+  async hasActiveEventsForDesign(designId: number): Promise<boolean> {
+    return this.eventRepository.existsByDesignId(designId);
+  }
+
   // Private helper methods
 
   private async getOrganization(identifier: string) {
