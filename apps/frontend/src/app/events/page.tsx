@@ -33,6 +33,7 @@ export default function EventsPage() {
   const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>([]);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [filterDataLoaded, setFilterDataLoaded] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Debounce search query (300ms)
   useEffect(() => {
@@ -95,6 +96,13 @@ export default function EventsPage() {
   const totalPages = meta?.totalPages ?? 1;
   const pageSafe = Math.min(Math.max(1, page), totalPages);
 
+  // Mark initial load as complete once data is loaded
+  useEffect(() => {
+    if (!isLoading && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [isLoading, isInitialLoad]);
+
   const hasActiveFilters =
     selectedTypeIds.length > 0 || selectedLevelIds.length > 0 || selectedFormatIds.length > 0;
 
@@ -143,8 +151,8 @@ export default function EventsPage() {
   // Show permission error
   if (error) return <ModulePermissionError />;
 
-  // Show loader while fetching
-  if (isLoading) {
+  // Show loader only on initial load, not when filters/search change
+  if (isLoading && isInitialLoad) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="animate-spin text-gray-400" size={32} />
@@ -255,11 +263,18 @@ export default function EventsPage() {
 
         {/* Events Table */}
         {events.length > 0 && (
-          <EventsTable
-            events={events}
-            onDelete={handleDeleteEvent}
-            deletingEventId={deletingEventId}
-          />
+          <div className="relative">
+            {isLoading && !isInitialLoad && (
+              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 flex items-center justify-center z-10">
+                <Loader2 className="animate-spin text-gray-400" size={24} />
+              </div>
+            )}
+            <EventsTable
+              events={events}
+              onDelete={handleDeleteEvent}
+              deletingEventId={deletingEventId}
+            />
+          </div>
         )}
       </div>
 
