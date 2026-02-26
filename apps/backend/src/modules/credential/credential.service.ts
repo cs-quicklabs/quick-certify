@@ -62,7 +62,7 @@ export class CredentialService {
       recipientId,
     } = filters;
     //  find organization by UUID or slug
-    const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
+    const organization = await this.organizationService.resolveOrganization(organizationIdentifier);
     const sortBy = ALLOWED_SORT_COLUMNS.includes(rawSortBy) ? rawSortBy : 'created_at';
 
     if (!organization) {

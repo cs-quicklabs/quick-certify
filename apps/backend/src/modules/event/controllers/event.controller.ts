@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
@@ -121,7 +122,12 @@ export class EventController {
     required: false,
     description: 'Comma-separated event format UUIDs',
   })
-  async findAllByOrg(@Param('slug', SlugOnlyPipe) slug: string, @Query() filters: EventFilterDto) {
+  async findAllByOrg(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Req() req: any,
+    @Query() filters: EventFilterDto,
+  ) {
+    const org = req.organization;
     const result = await this.eventService.findAll(slug, filters);
     return new SuccessResponse('Events retrieved successfully', result);
   }

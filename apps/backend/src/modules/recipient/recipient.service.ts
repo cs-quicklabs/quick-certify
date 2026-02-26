@@ -20,7 +20,7 @@ export class RecipientService {
   ): Promise<PaginatedResult<RecipientEntity>> {
     const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {} } = options;
 
-    const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
+    const organization = await this.organizationService.resolveOrganization(organizationIdentifier);
     if (!organization) {
       return {
         data: [],

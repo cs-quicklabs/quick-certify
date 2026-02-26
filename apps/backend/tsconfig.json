@@ -9,5 +9,11 @@
     {
       "path": "./tsconfig.spec.json"
     }
-  ]
+  ],
+  {
+  "compilerOptions": {
+    "typeRoots": ["./src/common/types", "./node_modules/@types"]
+  },
+  "include": ["src/**/*"]
+}
 }

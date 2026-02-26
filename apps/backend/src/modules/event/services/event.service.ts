@@ -87,7 +87,7 @@ export class EventService {
   async create(organizationUuid: string, dto: CreateEventDto): Promise<EventEntity> {
     const organization = await this.requireOrganization(organizationUuid);
     const normalizedName = dto.name.trim();
-
+    console.log(organization);
     // Validate required design
     if (!dto.designId) {
       throw new BadRequestException('Design ID is required');
@@ -238,9 +238,9 @@ export class EventService {
   }
 
   // Private helper methods
-
   private async getOrganization(identifier: string) {
-    return await this.organizationService.findByUuidOrSlug(identifier);
+    console.log(identifier);
+    return await this.organizationService.resolveOrganization(identifier);
   }
 
   private async requireOrganization(uuid: string) {

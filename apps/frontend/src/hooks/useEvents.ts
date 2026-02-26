@@ -25,7 +25,6 @@ import {
   EventFilters,
   Event,
 } from '@/types';
-import { ModulePermissionError } from '@/components';
 
 // Event Type Query Keys
 export const EVENT_TYPE_KEYS = {
