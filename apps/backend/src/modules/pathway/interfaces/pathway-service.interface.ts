@@ -56,10 +56,7 @@ export interface IPathwayService {
   /**
    * List active pathways for an organization by slug (public, no auth)
    */
-  findAllPublic(
-    slug: string,
-    filters?: PathwayFilters,
-  ): Promise<PaginatedResult<PathwayEntity>>;
+  findAllPublic(slug: string, filters?: PathwayFilters): Promise<PaginatedResult<PathwayEntity>>;
 
   /**
    * Get a single active pathway by UUID under the given org slug (public, no auth)

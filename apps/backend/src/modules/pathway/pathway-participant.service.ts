@@ -358,9 +358,7 @@ export class PathwayParticipantService implements IPathwayParticipantService {
       eventIds,
     );
 
-    const credentialMap = new Map(
-      issuedCredentials.map((c) => [c.event_id, c.issued_date]),
-    );
+    const credentialMap = new Map(issuedCredentials.map((c) => [c.event_id, c.issued_date]));
 
     return pathwayEvents.map((pe) => ({
       event_id: pe.event_id,

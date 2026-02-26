@@ -208,7 +208,11 @@ export class PathwayController {
 
     return new SuccessResponse(
       'Participant retrieved successfully',
-      this.pathwayResponseMapper.buildParticipantProgressResponse(pathway, participant, credentialProgress),
+      this.pathwayResponseMapper.buildParticipantProgressResponse(
+        pathway,
+        participant,
+        credentialProgress,
+      ),
     );
   }
 
@@ -244,10 +248,7 @@ export class PathwayController {
   @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
   @ApiResponse({ status: 200, description: 'Pathway found' })
   @ApiResponse({ status: 404, description: 'Pathway not found' })
-  async findOnePublic(
-    @Param('slug', SlugOnlyPipe) slug: string,
-    @Param('uuid') uuid: string,
-  ) {
+  async findOnePublic(@Param('slug', SlugOnlyPipe) slug: string, @Param('uuid') uuid: string) {
     const pathway = await this.pathwayService.findOnePublic(slug, uuid);
     if (!pathway) throw new NotFoundException('Pathway not found');
 
@@ -311,7 +312,11 @@ export class PathwayController {
 
     return new SuccessResponse(
       'Participant retrieved successfully',
-      this.pathwayResponseMapper.buildParticipantProgressResponse(pathway, participant, credentialProgress),
+      this.pathwayResponseMapper.buildParticipantProgressResponse(
+        pathway,
+        participant,
+        credentialProgress,
+      ),
     );
   }
 }

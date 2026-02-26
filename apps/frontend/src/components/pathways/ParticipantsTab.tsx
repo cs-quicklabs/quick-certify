@@ -173,7 +173,10 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
                   </td>
                   <td className="px-4 py-2.5">
                     <Link
-                      href={createRoute.pathwayParticipantDetail(pathwayId, participant.recipient.uuid)}
+                      href={createRoute.pathwayParticipantDetail(
+                        pathwayId,
+                        participant.recipient.uuid,
+                      )}
                       className="text-primary-600 hover:text-primary-700 text-xs font-medium"
                     >
                       View

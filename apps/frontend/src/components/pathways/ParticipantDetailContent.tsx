@@ -72,7 +72,10 @@ interface ParticipantDetailContentProps {
   breadcrumb?: React.ReactNode;
 }
 
-export function ParticipantDetailContent({ participant, breadcrumb }: ParticipantDetailContentProps) {
+export function ParticipantDetailContent({
+  participant,
+  breadcrumb,
+}: ParticipantDetailContentProps) {
   const { label: statusLabel, style: statusStyle } = formatStatus(participant.status);
   const credentials = participant.credentials ?? [];
 
@@ -89,7 +92,10 @@ export function ParticipantDetailContent({ participant, breadcrumb }: Participan
           <p className="text-gray-500 text-sm mt-1">{participant.email}</p>
           <div className="flex flex-wrap items-center gap-3 mt-3">
             <span
-              className={clsx('inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm', statusStyle.badge)}
+              className={clsx(
+                'inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm',
+                statusStyle.badge,
+              )}
             >
               <span className={clsx('w-2 h-2 mr-1.5 rounded-full', statusStyle.dot)} />
               {statusLabel}

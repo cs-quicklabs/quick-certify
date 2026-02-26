@@ -143,11 +143,7 @@ export function ParticipantsTab({ slug, pathwayUuid }: ParticipantsTabProps) {
 
       {meta && meta.totalPages > 1 && (
         <div className="mt-4">
-          <Pagination
-            currentPage={meta.page}
-            totalPages={meta.totalPages}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={meta.page} totalPages={meta.totalPages} onPageChange={setPage} />
         </div>
       )}
     </div>

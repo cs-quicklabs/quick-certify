@@ -24,9 +24,7 @@ function getStatusBadge(status: 'earned' | 'not_earned') {
   };
 }
 
-export function ParticipantCredentialTimeline({
-  credentials,
-}: ParticipantCredentialTimelineProps) {
+export function ParticipantCredentialTimeline({ credentials }: ParticipantCredentialTimelineProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 pb-6 rounded-sm border border-gray-200 bg-white mt-4">
       <div className="p-4 sm:p-6">
@@ -78,7 +76,10 @@ export function ParticipantCredentialTimeline({
                           {credential.name}
                         </h4>
                         <span
-                          className={clsx('inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm border', badge.classes)}
+                          className={clsx(
+                            'inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm border',
+                            badge.classes,
+                          )}
                         >
                           <span className={clsx('w-2 h-2 mr-1.5 rounded-full', badge.dotClass)} />
                           {badge.text}

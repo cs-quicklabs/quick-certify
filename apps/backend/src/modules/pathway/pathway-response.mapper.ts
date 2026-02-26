@@ -48,8 +48,7 @@ export class PathwayResponseMapper {
   buildPublicDetail(pathway: PathwayEntity): PublicPathwayDetailPayload {
     const events = pathway.events ?? [];
     const nonFinalCount = events.filter(
-      (e: EventEntity & { pathway_event?: { is_final: boolean } }) =>
-        !e.pathway_event?.is_final,
+      (e: EventEntity & { pathway_event?: { is_final: boolean } }) => !e.pathway_event?.is_final,
     ).length;
 
     return {

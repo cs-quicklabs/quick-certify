@@ -11,7 +11,9 @@ interface PathwayParticipantDetailPageProps {
   params: Promise<{ id: string; recipientUuid: string }>;
 }
 
-export default function PathwayParticipantDetailPage({ params }: PathwayParticipantDetailPageProps) {
+export default function PathwayParticipantDetailPage({
+  params,
+}: PathwayParticipantDetailPageProps) {
   const { id, recipientUuid } = use(params);
   const { data: participant, isLoading, error } = usePathwayParticipantDetail(id, recipientUuid);
 

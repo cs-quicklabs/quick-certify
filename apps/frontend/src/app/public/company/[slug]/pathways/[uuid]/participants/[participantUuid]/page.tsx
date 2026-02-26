@@ -15,11 +15,11 @@ export default function PublicPathwayParticipantPage() {
   const uuid = params?.uuid as string;
   const participantUuid = params?.participantUuid as string;
 
-  const { data: participant, isLoading, error } = usePublicPathwayParticipant(
-    slug,
-    uuid,
-    participantUuid,
-  );
+  const {
+    data: participant,
+    isLoading,
+    error,
+  } = usePublicPathwayParticipant(slug, uuid, participantUuid);
 
   if (isLoading) {
     return (
@@ -46,7 +46,10 @@ export default function PublicPathwayParticipantPage() {
             items={[
               { label: 'Issuer Profile', href: `${ROUTES.PUBLIC.COMPANY}/${slug}` },
               { label: 'Pathways', href: createRoute.publicPathways(slug) },
-              { label: participant.pathway_name ?? 'Pathway', href: createRoute.publicPathwayDetail(slug, uuid) },
+              {
+                label: participant.pathway_name ?? 'Pathway',
+                href: createRoute.publicPathwayDetail(slug, uuid),
+              },
               { label: participant.name },
             ]}
           />

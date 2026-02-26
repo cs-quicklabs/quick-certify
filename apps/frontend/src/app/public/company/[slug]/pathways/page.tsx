@@ -88,7 +88,10 @@ export default function PublicPathwaysPage() {
   return (
     <div className="bg-gray-50 p-4 min-h-screen">
       <PublicBreadcrumb
-        items={[{ label: 'Issuer Profile', href: `${ROUTES.PUBLIC.COMPANY}/${slug}` }, { label: 'Pathways' }]}
+        items={[
+          { label: 'Issuer Profile', href: `${ROUTES.PUBLIC.COMPANY}/${slug}` },
+          { label: 'Pathways' },
+        ]}
         title="Pathways"
       />
 

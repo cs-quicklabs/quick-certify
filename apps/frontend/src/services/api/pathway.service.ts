@@ -1,5 +1,10 @@
 import { PaginatedResponse } from '@/types';
-import { Pathway, PathwayFilters, PathwayParticipant, PublicPathwayParticipant } from '@/types/pathway.types';
+import {
+  Pathway,
+  PathwayFilters,
+  PathwayParticipant,
+  PublicPathwayParticipant,
+} from '@/types/pathway.types';
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
 

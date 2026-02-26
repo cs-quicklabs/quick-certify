@@ -23,7 +23,13 @@ import { EmailService } from '@src/commons/services';
     EventModule,
   ],
   controllers: [PathwayController],
-  providers: [PathwayService, PathwayEventService, PathwayParticipantService, PathwayResponseMapper, EmailService],
+  providers: [
+    PathwayService,
+    PathwayEventService,
+    PathwayParticipantService,
+    PathwayResponseMapper,
+    EmailService,
+  ],
   exports: [PathwayService, PathwayEventService, PathwayParticipantService],
 })
 export class PathwayModule {}

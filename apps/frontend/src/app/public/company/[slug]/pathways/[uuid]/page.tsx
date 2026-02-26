@@ -150,12 +150,7 @@ export default function PublicPathwayDetailPage() {
 
         {/* Tab Content */}
         {activeTab === 'credentials' && <CredentialTimeline events={nonFinalEvents} />}
-        {activeTab === 'participants' && (
-          <ParticipantsTab
-            slug={slug}
-            pathwayUuid={uuid}
-          />
-        )}
+        {activeTab === 'participants' && <ParticipantsTab slug={slug} pathwayUuid={uuid} />}
       </div>
     </div>
   );
