@@ -22,6 +22,8 @@ import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interface
 import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
 import { PublicPortalGuard } from '../organization';
 import type { PublicRequest } from '../../commons/interfaces/public-request.interface';
+import { Op } from 'sequelize';
+import { escapeLikePattern } from '@src/commons/utils';
 
 @ApiTags('Recipients')
 @ApiBearerAuth()
@@ -50,17 +52,9 @@ export class RecipientController {
       ? {
           ...pagination,
           where: {
-            [Symbol.for('sequelize.or') as unknown as string]: [
-              {
-                name: {
-                  [Symbol.for('sequelize.iLike') as unknown as string]: `%${pagination.search}%`,
-                },
-              },
-              {
-                email: {
-                  [Symbol.for('sequelize.iLike') as unknown as string]: `%${pagination.search}%`,
-                },
-              },
+            [Op.or]: [
+              { name: { [Op.iLike]: `%${escapeLikePattern(pagination.search)}%` } },
+              { email: { [Op.iLike]: `%${escapeLikePattern(pagination.search)}%` } },
             ],
           },
         }
@@ -128,17 +122,9 @@ export class RecipientController {
       ? {
           ...pagination,
           where: {
-            [Symbol.for('sequelize.or') as unknown as string]: [
-              {
-                name: {
-                  [Symbol.for('sequelize.iLike') as unknown as string]: `%${pagination.search}%`,
-                },
-              },
-              {
-                email: {
-                  [Symbol.for('sequelize.iLike') as unknown as string]: `%${pagination.search}%`,
-                },
-              },
+            [Op.or]: [
+              { name: { [Op.iLike]: `%${escapeLikePattern(pagination.search)}%` } },
+              { email: { [Op.iLike]: `%${escapeLikePattern(pagination.search)}%` } },
             ],
           },
         }

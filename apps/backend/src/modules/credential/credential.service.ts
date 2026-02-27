@@ -9,6 +9,7 @@ import { RecipientEntity } from '@src/entities/recipient.entity';
 import { EventEntity } from '@src/entities/event.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { CredentialStatusEnum } from '@src/commons/enums';
+import { escapeLikePattern } from '@src/commons/utils';
 import { DesignLayout } from '@certify/certificate-core';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { EventService } from '@src/modules/event/services/event.service';
@@ -98,8 +99,8 @@ export class CredentialService {
     const recipientWhere: Record<string, unknown> | undefined = search
       ? {
           [Op.or]: [
-            { name: { [Op.iLike]: `%${search}%` } },
-            { email: { [Op.iLike]: `%${search}%` } },
+            { name: { [Op.iLike]: `%${escapeLikePattern(search)}%` } },
+            { email: { [Op.iLike]: `%${escapeLikePattern(search)}%` } },
           ],
         }
       : undefined;
@@ -666,7 +667,7 @@ export class CredentialService {
   async findIssuedForRecipients(
     recipientIds: number[],
     eventIds: number[],
-  ): Promise<Array<{ recipient_id: number; event_id: number }>> {
+  ): Promise<Array<{ recipient_id: number; event_id: number; issued_date: string | null }>> {
     if (recipientIds.length === 0 || eventIds.length === 0) return [];
     return this.credentialModel.findAll({
       where: {
@@ -674,7 +675,7 @@ export class CredentialService {
         event_id: { [Op.in]: eventIds },
         status: CredentialStatusEnum.ISSUED,
       },
-      attributes: ['recipient_id', 'event_id'],
+      attributes: ['recipient_id', 'event_id', 'issued_date'],
       raw: true,
     });
   }

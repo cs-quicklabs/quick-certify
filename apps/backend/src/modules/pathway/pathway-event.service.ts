@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { PathwayEventEntity, PathwayEntity } from '@src/entities';
 import { EventService } from '@src/modules/event/services/event.service';
+import { IPathwayEventService } from './interfaces';
 
 export interface EventSyncItem {
   eventId: string;
@@ -10,7 +11,7 @@ export interface EventSyncItem {
 }
 
 @Injectable()
-export class PathwayEventService {
+export class PathwayEventService implements IPathwayEventService {
   constructor(
     @InjectModel(PathwayEventEntity)
     private readonly pathwayEventModel: typeof PathwayEventEntity,
