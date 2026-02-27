@@ -5,11 +5,10 @@ import Link from 'next/link';
 interface RecipientCardProps {
   uuid: string;
   name: string;
-  email: string;
   href: string;
 }
 
-export function RecipientCard({ uuid, name, email, href }: RecipientCardProps) {
+export function RecipientCard({ uuid, name, href }: RecipientCardProps) {
   const initials = name
     .split(' ')
     .map((n) => n[0])
@@ -31,7 +30,6 @@ export function RecipientCard({ uuid, name, email, href }: RecipientCardProps) {
 
       <div className="min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
-        <p className="text-sm text-gray-500 truncate">{email}</p>
       </div>
     </Link>
   );
