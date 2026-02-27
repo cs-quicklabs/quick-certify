@@ -8,3 +8,4 @@ export * from './organization-admin.service';
 export * from './design.service';
 export * from './credential.service';
 export * from './pathway.service';
+export * from './search.service';
