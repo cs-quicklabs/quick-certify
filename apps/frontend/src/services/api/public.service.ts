@@ -1,6 +1,15 @@
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
-import { Organization, Recipient, PaginatedResponse, Event } from '@/types';
+import {
+  Organization,
+  Recipient,
+  PaginatedResponse,
+  Event,
+  PublicPathway,
+  PublicPathwayParticipant,
+  PublicPathwayFilters,
+  PathwayParticipant,
+} from '@/types';
 import { BaseSearchFilters } from '@/lib/query-params';
 
 export interface PublicCredentialFilters {
@@ -45,6 +54,45 @@ export const publicService = {
   async getPublicEvent(slug: string, eventUuid: string): Promise<Event> {
     const response = await apiClient.get<ApiResponse<Event>>(
       `/events/public/org/${slug}/event/${eventUuid}`,
+    );
+    return response.data.data;
+  },
+
+  async getPublicPathways(
+    slug: string,
+    filters?: PublicPathwayFilters,
+  ): Promise<PaginatedResponse<PublicPathway>> {
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<PublicPathway>>>(
+      buildUrl(`/pathways/public/org/${slug}`, filters),
+    );
+    return response.data.data;
+  },
+
+  async getPublicPathway(slug: string, pathwayUuid: string): Promise<PublicPathway> {
+    const response = await apiClient.get<ApiResponse<PublicPathway>>(
+      `/pathways/public/org/${slug}/pathway/${pathwayUuid}`,
+    );
+    return response.data.data;
+  },
+
+  async getPublicPathwayParticipants(
+    slug: string,
+    pathwayUuid: string,
+    filters?: PublicPathwayFilters,
+  ): Promise<PaginatedResponse<PathwayParticipant>> {
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<PathwayParticipant>>>(
+      buildUrl(`/pathways/public/org/${slug}/pathway/${pathwayUuid}/participants`, filters),
+    );
+    return response.data.data;
+  },
+
+  async getPublicPathwayParticipant(
+    slug: string,
+    pathwayUuid: string,
+    participantUuid: string,
+  ): Promise<PublicPathwayParticipant> {
+    const response = await apiClient.get<ApiResponse<PublicPathwayParticipant>>(
+      `/pathways/public/org/${slug}/pathway/${pathwayUuid}/participant/${participantUuid}`,
     );
     return response.data.data;
   },

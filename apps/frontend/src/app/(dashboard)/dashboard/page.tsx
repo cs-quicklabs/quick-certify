@@ -1,7 +1,13 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { Calendar, Users, Award, TrendingUp } from 'lucide-react';
+import { useEvents } from '@/hooks/useEvents';
+import { useCredentials } from '@/hooks/useCredentials';
+import { useDesignList } from '@/hooks/useDesigns';
+import { ROUTES, createRoute } from '@/config/routes';
+import type { Event } from '@/types';
+import { Calendar, Users, Award, Palette, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 /**
  * Dashboard Stats Card
@@ -10,25 +16,22 @@ function StatsCard({
   title,
   value,
   icon: Icon,
-  trend,
-  trendLabel,
+  isLoading,
 }: {
   title: string;
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
-  trend?: 'up' | 'down';
-  trendLabel?: string;
+  isLoading?: boolean;
 }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{value}</p>
-          {trendLabel && (
-            <p className={`mt-1 text-sm ${trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-              {trend === 'up' ? '↑' : '↓'} {trendLabel}
-            </p>
+          {isLoading ? (
+            <Loader2 className="mt-2 w-6 h-6 animate-spin text-gray-400" />
+          ) : (
+            <p className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{value}</p>
           )}
         </div>
         <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
@@ -40,12 +43,71 @@ function StatsCard({
 }
 
 /**
+ * Recent Events List
+ */
+function RecentEventsList({ events, isLoading }: { events: Event[]; isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+        No events yet. Create your first event to get started.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {events.slice(0, 5).map((event) => (
+        <div
+          key={event.uuid}
+          className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-gray-900 dark:text-white truncate">{event.name}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {event.event_type?.name ?? 'No type'} &bull;{' '}
+              {new Date(event.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <Link
+            href={createRoute.eventDetail(event.uuid)}
+            className="ml-4 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium shrink-0"
+          >
+            View
+          </Link>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
  * Dashboard Page
  *
- * Main dashboard for authenticated users
+ * Main dashboard for authenticated users showing real data from APIs
  */
 export default function DashboardPage() {
   const { user } = useAuthStore();
+
+  const { data: eventsData, isLoading: eventsLoading } = useEvents({
+    limit: 5,
+    sortBy: 'createdAt',
+    sortOrder: 'DESC',
+  });
+  const { data: credentialsData, isLoading: credentialsLoading } = useCredentials({ limit: 1 });
+  const { meta: designsMeta, loading: designsLoading } = useDesignList({ page: 1, limit: 1 });
+
+  const totalEvents = eventsData?.meta?.total ?? 0;
+  const totalCredentials = credentialsData?.meta?.total ?? 0;
+  const totalDesigns = designsMeta?.total ?? 0;
+  const recentEvents = eventsData?.data ?? [];
 
   return (
     <div className="space-y-6">
@@ -55,40 +117,30 @@ export default function DashboardPage() {
           Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
         </h1>
         <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Here&apos;s what&apos;s happening with your certificates today.
+          Here&apos;s an overview of your credential management platform.
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
-          title="Total Events"
-          value={12}
-          icon={Calendar}
-          trend="up"
-          trendLabel="2 this week"
-        />
-        <StatsCard
-          title="Total Participants"
-          value={1248}
-          icon={Users}
-          trend="up"
-          trendLabel="124 new"
-        />
-        <StatsCard
-          title="Certificates Issued"
-          value={856}
-          icon={Award}
-          trend="up"
-          trendLabel="56 this month"
-        />
-        <StatsCard
-          title="Verification Rate"
-          value="94%"
-          icon={TrendingUp}
-          trend="up"
-          trendLabel="2% increase"
-        />
+        {[
+          { title: 'Total Events', value: totalEvents, icon: Calendar, isLoading: eventsLoading },
+          {
+            title: 'Total Credentials',
+            value: totalCredentials,
+            icon: Award,
+            isLoading: credentialsLoading,
+          },
+          { title: 'Total Designs', value: totalDesigns, icon: Palette, isLoading: designsLoading },
+          {
+            title: 'Active Events',
+            value: recentEvents.filter((e) => e.is_active).length,
+            icon: Users,
+            isLoading: eventsLoading,
+          },
+        ].map((stat) => (
+          <StatsCard key={stat.title} {...stat} />
+        ))}
       </div>
 
       {/* Recent Activity & Quick Actions */}
@@ -99,31 +151,13 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Events</h2>
           </div>
           <div className="p-6">
-            <div className="space-y-4">
-              {[
-                { name: 'Annual Tech Conference 2024', participants: 450, date: 'Jan 15, 2024' },
-                { name: 'Leadership Workshop', participants: 32, date: 'Jan 10, 2024' },
-                { name: 'Product Launch Webinar', participants: 180, date: 'Jan 5, 2024' },
-              ].map((event, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{event.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {event.participants} participants • {event.date}
-                    </p>
-                  </div>
-                  <button className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium">
-                    View
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button className="mt-4 w-full py-2 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium">
+            <RecentEventsList events={recentEvents} isLoading={eventsLoading} />
+            <Link
+              href={ROUTES.EVENTS}
+              className="mt-4 block w-full py-2 text-sm text-center text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
               View all events →
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -135,24 +169,45 @@ export default function DashboardPage() {
           <div className="p-6">
             <div className="grid grid-cols-2 gap-4">
               {[
-                { name: 'Create Event', icon: Calendar, color: 'bg-blue-500' },
-                { name: 'Add Participants', icon: Users, color: 'bg-green-500' },
-                { name: 'Issue Certificates', icon: Award, color: 'bg-purple-500' },
-                { name: 'View Analytics', icon: TrendingUp, color: 'bg-orange-500' },
-              ].map((action, index) => {
-                const Icon = action.icon;
+                {
+                  name: 'Create Event',
+                  icon: Calendar,
+                  color: 'bg-blue-500',
+                  href: ROUTES.CREAT_EVENT,
+                },
+                {
+                  name: 'Issue Credentials',
+                  icon: Award,
+                  color: 'bg-purple-500',
+                  href: ROUTES.CREDENTIALS_ISSUE,
+                },
+                {
+                  name: 'Manage Designs',
+                  icon: Palette,
+                  color: 'bg-green-500',
+                  href: ROUTES.DESIGNS,
+                },
+                {
+                  name: 'View Credentials',
+                  icon: Users,
+                  color: 'bg-orange-500',
+                  href: ROUTES.CREDENTIALS,
+                },
+              ].map((action) => {
+                const ActionIcon = action.icon;
                 return (
-                  <button
-                    key={index}
+                  <Link
+                    key={action.name}
+                    href={action.href}
                     className="flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className={`p-3 ${action.color} rounded-lg mb-3`}>
-                      <Icon className="w-6 h-6 text-white" />
+                      <ActionIcon className="w-6 h-6 text-white" />
                     </div>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {action.name}
                     </span>
-                  </button>
+                  </Link>
                 );
               })}
             </div>
