@@ -1,18 +1,5 @@
 import { test, registrationData } from './Fixture';
 
-/** Test Case: UR10
- * Description: Verifies the Super Admin Registration * Elements Verified :
- * User Registration with Valid data
- * First Name field
- * Last Name field
- * Email field
- * Issuer Name field
- * Issuer Url field
- * Password Field
- * Confirm Password Field
- * Create New User Button
- * */
-
 let email: string;
 let issuerUrl: string;
 let issuerName: string;

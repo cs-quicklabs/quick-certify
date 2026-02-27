@@ -3,63 +3,48 @@ import type { AccountBrandingPage } from '../pageobjects/AccountBrandingPage';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-/**
- * Test Suite: Account Settings - Branding
- * Screen: /settings/account/branding
- *
- * Coverage:
- * - Super Admin can upload valid logo image
- * - Super Admin can upload valid favicon image
- * - Error shown when invalid file type is uploaded
- * - Error shown when file size exceeds limit
- * - Logo and favicon can be removed
- */
-
-/**
- * Helper function to create a minimal valid PNG image for testing
- */
 function createTestImage(filePath: string, sizeKB = 50): void {
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  // Create a minimal valid PNG (1x1 pixel PNG)
-  // PNG signature + minimal IHDR chunk + IEND chunk
+  
+  
   const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const ihdrChunk = Buffer.alloc(25);
-  ihdrChunk.writeUInt32BE(13, 0); // Chunk length
-  ihdrChunk.write('IHDR', 4); // Chunk type
-  // Width: 1, Height: 1, Bit depth: 8, Color type: 2 (RGB), Compression: 0, Filter: 0, Interlace: 0
-  ihdrChunk.writeUInt32BE(1, 8); // Width
-  ihdrChunk.writeUInt32BE(1, 12); // Height
-  ihdrChunk[16] = 8; // Bit depth
-  ihdrChunk[17] = 2; // Color type
-  ihdrChunk[18] = 0; // Compression
-  ihdrChunk[19] = 0; // Filter
-  ihdrChunk[20] = 0; // Interlace
-  const ihdrCrc = 0x12345678; // Placeholder CRC
+  ihdrChunk.writeUInt32BE(13, 0); 
+  ihdrChunk.write('IHDR', 4); 
+  
+  ihdrChunk.writeUInt32BE(1, 8); 
+  ihdrChunk.writeUInt32BE(1, 12); 
+  ihdrChunk[16] = 8; 
+  ihdrChunk[17] = 2; 
+  ihdrChunk[18] = 0; 
+  ihdrChunk[19] = 0; 
+  ihdrChunk[20] = 0; 
+  const ihdrCrc = 0x12345678; 
   ihdrChunk.writeUInt32BE(ihdrCrc, 21);
 
   const iendChunk = Buffer.from([
     0x00,
     0x00,
     0x00,
-    0x00, // Length
+    0x00, 
     0x49,
     0x45,
     0x4e,
-    0x44, // IEND
+    0x44, 
     0xae,
     0x42,
     0x60,
-    0x82, // CRC
+    0x82, 
   ]);
 
-  // For larger files, pad with IDAT chunk data
+  
   let imageData = Buffer.concat([pngSignature, ihdrChunk]);
   if (sizeKB > 1) {
-    // Add padding to reach desired size (simplified - just add zeros)
+    
     const paddingSize = (sizeKB - 1) * 1024;
     const padding = Buffer.alloc(paddingSize);
     imageData = Buffer.concat([imageData, padding]);
@@ -81,20 +66,20 @@ test.beforeEach(async ({ page, loginPage, accountBrandingPage: fixtureAccountBra
     throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
   }
 
-  // Create test assets directory and images if they don't exist
+  
   const testAssetsDir = path.join(__dirname, '..', 'test-assets');
   const logoPath = path.join(testAssetsDir, 'logo.png');
   const faviconPath = path.join(testAssetsDir, 'favicon.png');
   const largeImagePath = path.join(testAssetsDir, 'large-image.png');
 
   if (!fs.existsSync(logoPath)) {
-    createTestImage(logoPath, 50); // 50KB
+    createTestImage(logoPath, 50); 
   }
   if (!fs.existsSync(faviconPath)) {
-    createTestImage(faviconPath, 50); // 50KB
+    createTestImage(faviconPath, 50); 
   }
   if (!fs.existsSync(largeImagePath)) {
-    createTestImage(largeImagePath, 2048); // 2MB (exceeds 1MB limit)
+    createTestImage(largeImagePath, 2048); 
   }
 
   await page.goto('/settings/account/branding');
@@ -141,9 +126,9 @@ test.describe('Account Settings - Branding', () => {
       brandingData.expectedMessages.logoSuccessMessage,
     );
 
-    // Verify logo is displayed
+    
     const isLogoDisplayed = await accountBrandingPage.isLogoDisplayed();
-    // Logo might be displayed or might need a reload
+    
     if (!isLogoDisplayed) {
       await page.reload();
       await accountBrandingPage.waitForPageReady();
@@ -176,7 +161,7 @@ test.describe('Account Settings - Branding', () => {
       brandingData.expectedMessages.faviconSuccessMessage,
     );
 
-    // Verify favicon is displayed
+    
     const isFaviconDisplayed = await accountBrandingPage.isFaviconDisplayed();
     if (!isFaviconDisplayed) {
       await page.reload();
@@ -188,12 +173,12 @@ test.describe('Account Settings - Branding', () => {
     await accountBrandingPage.openUrl();
     await accountBrandingPage.waitForPageReady();
 
-    // Create a test PDF file
+    
     const testAssetsDir = path.join(__dirname, '..', 'test-assets');
     const pdfPath = path.join(testAssetsDir, 'document.pdf');
     if (!fs.existsSync(pdfPath)) {
       fs.mkdirSync(testAssetsDir, { recursive: true });
-      // Create a minimal PDF file
+      
       const pdfContent = Buffer.from(
         '%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj\nxref\n0 1\ntrailer\n<<\n/Root 1 0 R\n>>\n%%EOF',
       );
@@ -202,11 +187,11 @@ test.describe('Account Settings - Branding', () => {
 
     const absolutePdfPath = path.resolve(pdfPath);
 
-    // Try to upload PDF as logo (should fail)
+    
     await accountBrandingPage.uploadLogo(absolutePdfPath);
     await page.waitForTimeout(2000);
 
-    // Check for error message
+    
     await accountBrandingPage.validateLogoError(brandingData.expectedMessages.invalidFileTypeError);
   });
 
@@ -217,11 +202,11 @@ test.describe('Account Settings - Branding', () => {
     const largeImagePath = path.join(__dirname, '..', 'test-assets', 'large-image.png');
     const absoluteLargeImagePath = path.resolve(largeImagePath);
 
-    // Try to upload large file (should fail)
+    
     await accountBrandingPage.uploadLogo(absoluteLargeImagePath);
     await page.waitForTimeout(2000);
 
-    // Check for file size error
+    
     const errorVisible = await accountBrandingPage.locator_logoError
       .isVisible({ timeout: 5000 })
       .catch(() => false);

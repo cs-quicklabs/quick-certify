@@ -1,19 +1,6 @@
 import { test, accountGeneralInfoData, expect } from './Fixture';
 import type { AccountGeneralInfoPage } from '../pageobjects/AccountGeneralInfoPage';
 
-/**
- * Test Case: A10
- * Description: Verifies Account Settings - General Information page
- * Elements Verified:
- * - Page load and navigation
- * - Issuer/Organisation Name (required)
- * - Issuer Description (textarea)
- * - Support Email
- * - Slogan
- * - LinkedIn Company ID
- * - Save and validation messages
- */
-
 const userName = process.env.USER_EMAIL || 'divanshu@crownstack.com';
 const password = process.env.USER_PASS || 'Password@12';
 
@@ -115,7 +102,7 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify success message does NOT appear (form should not submit)
+    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -127,13 +114,13 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify validation error appears
+    
     await accountGeneralInfoPage.validateFieldError(
       'name',
       accountGeneralInfoData.expectedMessages.nameNotOnlySpaces,
     );
 
-    // Verify success message does NOT appear (form should not submit)
+    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -148,7 +135,7 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify success message does NOT appear (form should not submit)
+    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -163,13 +150,13 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify validation error appears
+    
     await accountGeneralInfoPage.validateFieldError(
       'linkedin_company_id',
       accountGeneralInfoData.expectedMessages.linkedInIdInvalid,
     );
 
-    // Verify success message does NOT appear (form should not submit)
+    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 

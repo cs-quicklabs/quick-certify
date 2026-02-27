@@ -1,16 +1,5 @@
 import { test, loginData } from './Fixture';
 
-/**
- * Test Case: L10
- * Description: Verifies the complete flow for the Login Functionality
- * Elements Verified :
- * - Valid Login
- * - Invalid Login
- * - Blank Login
- * - Password Eye Icon
- * - Login Button
- */
-
 let loginPage;
 
 const userName = process.env.USER_EMAIL;

@@ -1,18 +1,5 @@
 import { test, teamData } from './Fixture';
 
-/**
- * Test Case: TM10
- * Description: Verifies the Team Management Functionalities
- * Features Verified :
- * - Team Member Adding
- * - Team Member Searching and Filter
- * - Team Member Editing
- * - Team Member Archiving
- * - Team Member Un-Archiving
- * - Team Member Permanent Deletion
- * - Archived User Searching
- */
-
 let loginPage;
 let teamPage;
 
