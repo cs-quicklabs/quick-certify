@@ -4,14 +4,16 @@ import { OrganizationController } from './organization.controller';
 import { OrganizationService } from './organization.service';
 import { OrganizationEntity, RoleEntity, UserEntity } from '@src/entities';
 import { FileModule } from '../file';
+import { EmailService } from '@src/commons/services';
+import { PublicPortalGuard } from './guards/public-portal.guard';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([OrganizationEntity, RoleEntity, UserEntity]),
-    FileModule, // Provides StorageService
+    FileModule, // Provides StorageService,
   ],
   controllers: [OrganizationController],
-  providers: [OrganizationService],
-  exports: [OrganizationService],
+  providers: [OrganizationService, EmailService, PublicPortalGuard],
+  exports: [OrganizationService, PublicPortalGuard],
 })
 export class OrganizationModule {}

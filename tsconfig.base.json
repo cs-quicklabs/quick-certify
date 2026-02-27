@@ -21,7 +21,9 @@
       "@crownstack/mailer": ["packages/mailer/src/index.ts"],
       "@crownstack/mailer/*": ["packages/mailer/src/*"],
       "@crownstack/sms": ["packages/sms/src/index.ts"],
-      "@crownstack/sms/*": ["packages/sms/src/*"]
+      "@crownstack/sms/*": ["packages/sms/src/*"],
+      "@certify/certificate-core": ["packages/certificate-core/src/index.ts"],
+      "@certify/certificate-core/*": ["packages/certificate-core/src/*"]
     }
   }
 }

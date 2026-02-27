@@ -3,10 +3,12 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
@@ -21,17 +23,24 @@ import {
 } from './dtos';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Disabled, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Disabled, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
 import { Op } from 'sequelize';
+import { EmailService } from '@src/commons/services';
+import { ContactOrganizationDto } from './dtos/contact-organization.dto';
+import { PublicPortalGuard } from './guards/public-portal.guard';
+import type { PublicRequest } from '../../commons/interfaces/public-request.interface';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()
 @Controller({ path: 'organizations', version: '1' })
 export class OrganizationController {
-  constructor(private readonly organizationService: OrganizationService) {}
+  constructor(
+    private readonly organizationService: OrganizationService,
+    private readonly emailService: EmailService,
+  ) {}
 
   @Get()
   @UseGuards(RolesGuard)
@@ -203,5 +212,48 @@ export class OrganizationController {
       dto,
     );
     return new SuccessResponse('Portal settings updated successfully', organization);
+  }
+
+  // --------------- PUBLIC ROUTES -----------------------------------------------
+
+  /**
+   *
+   * @param slug -> organization slug
+   * @returns
+   */
+  @Get('public/:slug')
+  @Public()
+  @UseGuards(PublicPortalGuard)
+  @ApiOperation({ summary: 'Get public organization data by UUID' })
+  @ApiResponse({ status: 200, description: 'Organization found' })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  async findOnePublic(@Param('slug') slug: string, @Req() req: PublicRequest) {
+    const organization = req.organization;
+    return new SuccessResponse('Organization retrieved successfully', organization);
+  }
+
+  @Post('public/:slug/contact')
+  @Public()
+  @UseGuards(PublicPortalGuard)
+  @ApiOperation({ summary: 'Email Organization - Contact Us' })
+  @ApiResponse({ status: 200, description: 'Email Sent to the issuer' })
+  @ApiResponse({ status: 500, description: 'Email could not be sent' })
+  async sendEmail(
+    @Param('slug') slug: string,
+    @Body() dto: ContactOrganizationDto,
+    @Req() req: PublicRequest,
+  ) {
+    const organization = req.organization ?? (await this.organizationService.findBySlug(slug));
+    if (!organization?.support_email) throw new NotFoundException('Contact not found');
+    const emailSubject = `New Contact Form Submission - ${dto.name} ${dto.email}`;
+    const mailOptions = {
+      text: dto.message,
+    };
+    const email = await this.emailService.sendEmail(
+      organization?.support_email,
+      emailSubject,
+      mailOptions,
+    );
+    return new SuccessResponse('Email sent successfully', email);
   }
 }

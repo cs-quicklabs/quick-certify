@@ -660,7 +660,10 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    */
   private getExcludedRolesForVisibility(currentUserRole: string): string[] {
     const role = currentUserRole.toLowerCase();
-
+    if (role === Role.SYSTEM_ADMIN) {
+      // System Admin can see all roles
+      return [];
+    }
     if (role === Role.SUPER_ADMIN) {
       // Super Admin cannot see other Super Admins
       return [Role.SUPER_ADMIN];

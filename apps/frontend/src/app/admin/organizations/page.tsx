@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { useOrganizations, useDeleteOrganization } from '@/hooks/useOrganizationAdmin';
-import type { Organization } from '@/services/api/organization-admin.service';
+import { Organization } from '@/types';
 import { Pagination } from '@/components/ui/pagination';
 import { capitalizeFirst } from '@/utils/helpers';
 import { ConfirmationDialog } from '@/components';
@@ -169,37 +169,60 @@ export default function AdminOrganizationsPage() {
   }
 
   return (
-    <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
-      {/* Header */}
-      <div className="divide-y dark:divide-gray-700">
-        <div className="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
-          <div>
-            <h1 className="mr-3 form-title">Organizations</h1>
-            <p className="form-subtitle">
-              Manage all <span className="font-bold">{meta.total}</span> organization
-              {meta.total > 1 ? 's' : ''} on the platform.
-            </p>
+    <div>
+      <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
+        {/* Header */}
+        <div className="divide-y dark:divide-gray-700">
+          <div className="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
+            <div>
+              <h1 className="mr-3 form-title">Organizations</h1>
+              <p className="form-subtitle">
+                Manage all <span className="font-bold">{meta.total}</span> organization
+                {meta.total > 1 ? 's' : ''} on the platform.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              {tableColumns.map((column) => (
-                <th
-                  key={column.accessor}
-                  scope="col"
-                  className={`px-4 py-3 ${column.className || ''}`}
-                >
-                  {column.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>{renderTableBody()}</tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <tr>
+                {tableColumns.map((column) => (
+                  <th
+                    key={column.accessor}
+                    scope="col"
+                    className={`px-4 py-3 ${column.className || ''}`}
+                  >
+                    {column.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>{renderTableBody()}</tbody>
+          </table>
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmationDialog
+          className="p-3 max-w-md rounded-sm"
+          isOpen={deleteModalOpen && !!organizationToDelete}
+          title="Delete Organization"
+          message={
+            <>
+              Are you sure you want to permanently delete{' '}
+              <span className="font-semibold">{organizationToDelete?.name}</span>? This action
+              cannot be undone and will delete all associated data including users, credentials, and
+              settings.
+            </>
+          }
+          confirmLabel="Delete"
+          confirmLoadingLabel="Deleting..."
+          cancelLabel="Cancel"
+          isLoading={deleteOrganization.isPending}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
       </div>
 
       {/* Pagination */}
@@ -214,27 +237,6 @@ export default function AdminOrganizationsPage() {
           variant="compact"
         />
       </div>
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationDialog
-        className="p-3 max-w-md rounded-sm"
-        isOpen={deleteModalOpen && !!organizationToDelete}
-        title="Delete Organization"
-        message={
-          <>
-            Are you sure you want to permanently delete{' '}
-            <span className="font-semibold">{organizationToDelete?.name}</span>? This action cannot
-            be undone and will delete all associated data including users, credentials, and
-            settings.
-          </>
-        }
-        confirmLabel="Delete"
-        confirmLoadingLabel="Deleting..."
-        cancelLabel="Cancel"
-        isLoading={deleteOrganization.isPending}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
     </div>
   );
 }

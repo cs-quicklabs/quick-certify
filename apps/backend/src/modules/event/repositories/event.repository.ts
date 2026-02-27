@@ -100,24 +100,50 @@ export class EventRepository {
     const safePage = Math.max(1, page);
     const offset = (safePage - 1) * safeLimit;
 
-    const queryWhere: Record<string, unknown> = {
+    const baseWhere: Record<string, unknown> = {
       organization_id: organizationId,
       is_active: true,
       ...where,
     };
 
-    // Apply search filter at database level
-    // if (search?.trim()) {
-    //   queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
-    // }
+    // If searching, pre-fetch IDs matching event name OR design name
+    let searchIdFilter: Record<string, unknown> = {};
     if (search?.trim()) {
-      queryWhere[Op.or as unknown as string] = [
-        { name: { [Op.iLike]: `%${search.trim()}%` } },
-        { '$design.name$': { [Op.iLike]: `%${search.trim()}%` } },
+      const [nameMatches, designMatches] = await Promise.all([
+        this.model.findAll({
+          where: { ...baseWhere, name: { [Op.iLike]: `%${search.trim()}%` } },
+          attributes: ['id'],
+          raw: true,
+        }),
+        this.model.findAll({
+          where: baseWhere,
+          attributes: ['id'],
+          include: [
+            {
+              model: DesignEntity,
+              as: 'design',
+              required: true,
+              attributes: [],
+              where: { name: { [Op.iLike]: `%${search.trim()}%` } },
+            },
+          ],
+          raw: true,
+        }),
+      ]);
+
+      const ids = [
+        ...new Set([...nameMatches.map((e: any) => e.id), ...designMatches.map((e: any) => e.id)]),
       ];
+
+      // If no matches found, use -1 to guarantee empty result
+      searchIdFilter = { id: { [Op.in]: ids.length ? ids : [-1] } };
     }
 
-    // Build includes with optional UUID filters
+    const queryWhere: Record<string, unknown> = {
+      ...baseWhere,
+      ...searchIdFilter,
+    };
+
     const includes = this.buildIncludes({ typeUuids, levelUuids, formatUuids });
 
     const { count, rows } = await this.model.findAndCountAll({
@@ -279,6 +305,28 @@ export class EventRepository {
   }
 
   /**
+   * Check whether any active event references the given design
+   */
+  async existsByDesignId(designId: number): Promise<boolean> {
+    const count = await this.model.count({
+      where: { design_id: designId, is_active: true },
+    });
+    return count > 0;
+  }
+
+  async countActiveByTypeId(typeId: number): Promise<number> {
+    return this.model.count({ where: { event_type_id: typeId, is_active: true } });
+  }
+
+  async countActiveByLevelId(levelId: number): Promise<number> {
+    return this.model.count({ where: { event_level_id: levelId, is_active: true } });
+  }
+
+  async countActiveByFormatId(formatId: number): Promise<number> {
+    return this.model.count({ where: { event_format_id: formatId, is_active: true } });
+  }
+
+  /**
    * Count events
    */
   async count(organizationId: number): Promise<number> {
@@ -287,6 +335,24 @@ export class EventRepository {
         organization_id: organizationId,
         is_active: true,
       },
+    });
+  }
+
+  /**
+   * Find active events by UUIDs for an organization
+   */
+  async findActiveByUuids(
+    uuids: string[],
+    organizationId: number,
+    transaction?: Transaction,
+  ): Promise<EventEntity[]> {
+    return this.model.findAll({
+      where: {
+        uuid: uuids,
+        organization_id: organizationId,
+        is_active: true,
+      },
+      ...(transaction && { transaction }),
     });
   }
 }

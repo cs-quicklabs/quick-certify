@@ -2,25 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createCanvas, loadImage, CanvasRenderingContext2D } from 'canvas';
 import PDFDocument from 'pdfkit';
 import { StorageService } from '@src/commons/services/storage.service';
-import type {
-  DesignLayout,
-  DesignLayoutPlaceholder,
-  PlaceholderKey,
-} from '@src/modules/design/interfaces/design.layout.interface';
+import {
+  buildValueMap,
+  type DesignLayout,
+  type DesignLayoutPlaceholder,
+  type PlaceholderKey,
+  type CertificateGenerationParams,
+  type CertificateGenerationResult,
+} from '@certify/certificate-core';
 
-export interface CertificateGenerationParams {
-  recipientName: string;
-  recipientEmail: string;
-  credentialUuid: string;
-  issuedDate: string | null;
-  expirationDate: string | null;
-  eventName: string;
-}
-
-export interface CertificateGenerationResult {
-  imageUrl: string;
-  pdfUrl: string;
-}
+export type {
+  CertificateGenerationParams,
+  CertificateGenerationResult,
+} from '@certify/certificate-core';
 
 @Injectable()
 export class CertificateGenerationService {
@@ -34,7 +28,7 @@ export class CertificateGenerationService {
     params: CertificateGenerationParams,
     organizationId: string,
   ): Promise<CertificateGenerationResult> {
-    const valueMap = this.buildValueMap(params);
+    const valueMap = buildValueMap(params);
 
     // Generate PNG
     const pngBuffer = await this.renderPng(backgroundUrl, layout, valueMap);
@@ -64,28 +58,6 @@ export class CertificateGenerationService {
       imageUrl: imageResult.url,
       pdfUrl: pdfResult.url,
     };
-  }
-
-  private buildValueMap(params: CertificateGenerationParams): Record<PlaceholderKey, string> {
-    return {
-      'recipient.name': params.recipientName,
-      'recipient.email': params.recipientEmail,
-      'credential.id': params.credentialUuid,
-      'credential.issue_date': params.issuedDate ? this.formatDate(params.issuedDate) : 'N/A',
-      'credential.expiration_date': params.expirationDate
-        ? this.formatDate(params.expirationDate)
-        : 'No Expiration',
-      'event.name': params.eventName,
-    };
-  }
-
-  private formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
   }
 
   private async renderPng(

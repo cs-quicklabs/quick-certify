@@ -11,6 +11,7 @@ export interface EventItemProps {
   createdAt: string;
   event_type?: { name: string } | null;
   event_level?: { name: string } | null;
+  event_format?: { name: string } | null;
   design?: { url: string; name?: string; type: string } | null;
   onDelete?: (uuid: string) => void;
   isDeleting?: boolean;
@@ -21,6 +22,8 @@ export const EventItem = ({
   name,
   createdAt,
   event_type,
+  event_level,
+  event_format,
   design,
   onDelete,
   isDeleting = false,
@@ -79,10 +82,12 @@ export const EventItem = ({
                   Created On: {new Date(createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <div className="text-xs text-gray-500 mt-1 flex gap-2">
-                <span className="capitalize bg-brand-softer border border-brand-subtle text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded">
-                  {design?.type || 'Event'}
-                </span>
+              <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-1.5">
+                {design?.type && (
+                  <span className="capitalize bg-brand-softer border border-brand-subtle text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded">
+                    {design.type}
+                  </span>
+                )}
               </div>
             </div>
           </div>
