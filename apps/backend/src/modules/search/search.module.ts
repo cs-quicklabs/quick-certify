@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { EventEntity, PathwayEntity, DesignEntity, UserEntity } from '@src/entities';
+import { SearchController } from './search.controller';
+import { SearchService } from './search.service';
+
+@Module({
+  imports: [SequelizeModule.forFeature([EventEntity, PathwayEntity, DesignEntity, UserEntity])],
+  controllers: [SearchController],
+  providers: [SearchService],
+})
+export class SearchModule {}
