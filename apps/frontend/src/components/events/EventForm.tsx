@@ -451,7 +451,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
   const step1Config = {
     title: 'About',
-    subtitle: 'Add a detailed description of your event.',
+    subtitle: 'Add a detailed description of your event and a link to its website.',
     layout: 'grid-3' as const,
     fields: [
       {
@@ -633,7 +633,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                   >
                     <UploadCloud className="w-10 h-10 mb-2 text-gray-400" strokeWidth={1.5} />
                     <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold text-black">Select from</span> or drag and drop
+                      <span className="font-semibold text-black">Click to upload</span> or drag and
+                      drop
                     </p>
                     <p className="text-xs text-gray-500">Select from your designs</p>
                   </div>
