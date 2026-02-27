@@ -14,7 +14,7 @@ test.beforeEach(
   async ({ page, loginPage, accountGeneralInfoPage: fixtureAccountGeneralInfoPage }) => {
     accountGeneralInfoPage = fixtureAccountGeneralInfoPage;
 
-    await page.goto('/settings/account/general-information');
+    await accountGeneralInfoPage.openUrl();
 
     const currentUrl = page.url();
     if (currentUrl.includes('/login')) {
@@ -24,7 +24,7 @@ test.beforeEach(
         loginPage.clickOnSigninBtn(),
         page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
       ]);
-      await page.goto('/settings/account/general-information');
+      await accountGeneralInfoPage.openUrl();
       await page.waitForLoadState('networkidle');
     } else {
       await page.waitForLoadState('networkidle');
