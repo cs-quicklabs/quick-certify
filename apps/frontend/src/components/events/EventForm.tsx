@@ -461,6 +461,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         placeholder: 'Write a description for this event...',
         className: 'col-span-3',
         rows: 5,
+        tooltipText:
+          'Provide a detailed description of your event that will appear on the issuer portal. This helps recipients understand the context and significance of the credentials they receive.',
       },
       {
         name: 'learningLink',
