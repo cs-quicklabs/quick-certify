@@ -1,9 +1,14 @@
 import { test, profileData, expect } from './Fixture';
+import type { ProfileSettingsPage } from '../pageobjects/ProfileSettingsPage';
 
-const userName = process.env.USER_EMAIL || 'divanshu@crownstack.com';
-const password = process.env.USER_PASS || 'Password@12';
+const userName = process.env.USER_EMAIL;
+const password = process.env.USER_PASS;
 
-let profileSettingsPage;
+if (!userName || !password) {
+  throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
+}
+
+let profileSettingsPage: ProfileSettingsPage;
 
 test.beforeEach(async ({ page, loginPage, profileSettingsPage: fixtureProfileSettingsPage }) => {
   profileSettingsPage = fixtureProfileSettingsPage;

@@ -1,7 +1,9 @@
 import { test, teamData } from './Fixture';
+import type { LoginPage } from '../pageobjects/LoginPage';
+import type { TeamPage } from '../pageobjects/TeamPage';
 
-let loginPage;
-let teamPage;
+let loginPage: LoginPage;
+let teamPage: TeamPage;
 
 test.beforeEach(async ({ loginPage: fixtureLoginPage, teamPage: TeamPage }) => {
   loginPage = fixtureLoginPage;
@@ -11,9 +13,7 @@ test.beforeEach(async ({ loginPage: fixtureLoginPage, teamPage: TeamPage }) => {
 });
 
 test.describe('To validate the team management functionalities', () => {
-  test('TM101_To verify the functionality of Team Member Adding with valid data', async ({
-    page,
-  }) => {
+  test('TM101_To verify the functionality of Team Member Adding with valid data', async () => {
     console.log(
       'Starting test: TM101_To verify the functionality of Team Member Adding with valid data',
     );
@@ -33,7 +33,7 @@ test.describe('To validate the team management functionalities', () => {
     );
   });
 
-  test('TM102_To verify the functionality of Team Member Adding after entering existing email id', async ({}) => {
+  test('TM102_To verify the functionality of Team Member Adding after entering existing email id', async () => {
     console.log(
       'Starting test: TM102_To verify the functionality of Team Member Adding after entering existing email id',
     );
@@ -53,7 +53,7 @@ test.describe('To validate the team management functionalities', () => {
     );
   });
 
-  test('TM103_To verify the functionality of Team Member Adding after entering invalid email', async ({}) => {
+  test('TM103_To verify the functionality of Team Member Adding after entering invalid email', async () => {
     console.log(
       'Starting test: TM103_To verify the functionality of Team Member Adding after entering invalid email',
     );
@@ -67,10 +67,10 @@ test.describe('To validate the team management functionalities', () => {
       teamData.userRoles.admin,
     );
     await teamPage.clickOnSendInviteButton();
-    await teamPage.validateFieldError(teamData.expectßedMessages.invalidEmail);
+    await teamPage.validateFieldError(teamData.expectedMessages.invalidEmail);
   });
 
-  test('TM104_To verify the functionality of Team Member Adding after leaving role dropdown unselected', async ({}) => {
+  test('TM104_To verify the functionality of Team Member Adding after leaving role dropdown unselected', async () => {
     console.log(
       'Starting test: TM104_To verify the functionality of Team Member Adding after leaving role dropdown unselected',
     );
@@ -83,7 +83,7 @@ test.describe('To validate the team management functionalities', () => {
     await teamPage.validateFieldError(teamData.expectedMessages.blankRole);
   });
 
-  test('TM105_To verify the functionality of Team Member Details Editing', async ({}) => {
+  test('TM105_To verify the functionality of Team Member Details Editing', async () => {
     console.log('Starting test: TM105_To verify the functionality of Team Member Details Editing');
     await teamPage.clickOnTeamOption();
     await teamPage.openAddedMember();
@@ -97,13 +97,13 @@ test.describe('To validate the team management functionalities', () => {
     );
   });
 
-  test('TM106_To verify the functionality of Team Member DeActivating', async ({}) => {
+  test('TM106_To verify the functionality of Team Member DeActivating', async () => {
     console.log('Starting test: TM106_To verify the functionality of Team Member DeActivating');
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.openActiveMember();
-    } catch (error) {
-      if (error.message === 'NO_ACTIVE_USER_FOUND') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'NO_ACTIVE_USER_FOUND') {
         test.skip(true, 'Skipping test because no active user found');
       }
       throw error;
@@ -116,7 +116,7 @@ test.describe('To validate the team management functionalities', () => {
     );
   });
 
-  test('TM107_To verify the search functionality of Team Member with user name', async ({}) => {
+  test('TM107_To verify the search functionality of Team Member with user name', async () => {
     console.log(
       'Starting test: TM107_To verify the search functionality of Team Member with user name',
     );
@@ -125,7 +125,7 @@ test.describe('To validate the team management functionalities', () => {
     await teamPage.validateUserSearching(teamData.searchType.name, addedName);
   });
 
-  test('TM108_To verify the search functionality of Team Member with user email', async ({}) => {
+  test('TM108_To verify the search functionality of Team Member with user email', async () => {
     console.log(
       'Starting test: TM108_To verify the search functionality of Team Member with user email',
     );
@@ -134,52 +134,52 @@ test.describe('To validate the team management functionalities', () => {
     await teamPage.validateUserSearching(teamData.searchType.email, addedEmail);
   });
 
-  test('TM109_To verify the filter functionality of Team Member with Admin Role', async ({}) => {
+  test('TM109_To verify the filter functionality of Team Member with Admin Role', async () => {
     console.log(
       'Starting test: TM109_To verify the filter functionality of Team Member with Admin Role',
     );
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.validateUserFilter(teamData.filterType.admin, teamData.filterType.admin);
-    } catch (error: any) {
-      if (error.message.includes('No records found')) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('No records found')) {
         test.skip(true, 'Skipping because no records were found for this filter');
       }
       throw error;
     }
   });
 
-  test('TM110_To verify the filter functionality of Team Member with Designer Role', async ({}) => {
+  test('TM110_To verify the filter functionality of Team Member with Designer Role', async () => {
     console.log(
       'Starting test: TM110_To verify the filter functionality of Team Member with Designer Role',
     );
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.validateUserFilter(teamData.filterType.designer, teamData.filterType.designer);
-    } catch (error: any) {
-      if (error.message.includes('No records found')) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('No records found')) {
         test.skip(true, 'Skipping because no records were found for this filter');
       }
       throw error;
     }
   });
 
-  test('TM111_To verify the filter functionality of Team Member with Manager Role', async ({}) => {
+  test('TM111_To verify the filter functionality of Team Member with Manager Role', async () => {
     console.log(
       'Starting test: TM111_To verify the filter functionality of Team Member with Manager Role',
     );
     await teamPage.clickOnTeamOption();
     try {
       await teamPage.validateUserFilter(teamData.filterType.manager, teamData.filterType.manager);
-    } catch (error: any) {
-      if (error.message.includes('No records found')) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('No records found')) {
         test.skip(true, 'Skipping because no records were found for this filter');
       }
       throw error;
     }
   });
 
-  test('TM112_To verify the Archived user search functionality', async ({}) => {
+  test('TM112_To verify the Archived user search functionality', async () => {
     console.log('Starting test: TM112_To verify the Archived user search functionality');
     await teamPage.clickOnArchivedOption();
     const searchName = await teamPage.validateArchivedRecords();
@@ -187,7 +187,7 @@ test.describe('To validate the team management functionalities', () => {
     await teamPage.validateArchivedUserSearch(searchName);
   });
 
-  test('TM113_To verify the Archived user Activation', async ({}) => {
+  test('TM113_To verify the Archived user Activation', async () => {
     console.log('Starting test: TM113_To verify the Archived user Activation');
     await teamPage.clickOnArchivedOption();
     await teamPage.validateArchivedRecords();
@@ -199,7 +199,7 @@ test.describe('To validate the team management functionalities', () => {
     );
   });
 
-  test('TM114_To verify the user Permanent Deletion', async ({}) => {
+  test('TM114_To verify the user Permanent Deletion', async () => {
     console.log('Starting test: TM114_To verify the user Permanent Deletion');
     await teamPage.clickOnArchivedOption();
     await teamPage.validateArchivedRecords();

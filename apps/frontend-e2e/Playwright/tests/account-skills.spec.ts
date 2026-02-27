@@ -55,14 +55,12 @@ test.describe('Account Settings - Skills', () => {
 
     await Promise.all([
       accountSkillsPage.addSkill(skillName),
-      page
-        .waitForResponse(
-          (resp) =>
-            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-            resp.status() === 201,
-          { timeout: 10000 },
-        )
-        .catch(() => {}),
+      page.waitForResponse(
+        (resp) =>
+          (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+          resp.status() === 201,
+        { timeout: 10000 },
+      ),
     ]);
 
     await accountSkillsPage.waitForSkillToAppear(skillName);
@@ -95,14 +93,12 @@ test.describe('Account Settings - Skills', () => {
     if (!skillExists) {
       await Promise.all([
         accountSkillsPage.addSkill(originalSkillName),
-        page
-          .waitForResponse(
-            (resp) =>
-              (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-              resp.status() === 201,
-            { timeout: 10000 },
-          )
-          .catch(() => {}),
+        page.waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            resp.status() === 201,
+          { timeout: 10000 },
+        ),
       ]);
       await accountSkillsPage.page.waitForTimeout(2000);
     }
@@ -122,14 +118,12 @@ test.describe('Account Settings - Skills', () => {
 
     await Promise.all([
       accountSkillsPage.clickSaveEditButton(),
-      page
-        .waitForResponse(
-          (resp) =>
-            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-            resp.status() === 200,
-          { timeout: 10000 },
-        )
-        .catch(() => {}),
+      page.waitForResponse(
+        (resp) =>
+          (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+          resp.status() === 200,
+        { timeout: 10000 },
+      ),
     ]);
 
     await accountSkillsPage.page.waitForTimeout(2000);
@@ -149,14 +143,12 @@ test.describe('Account Settings - Skills', () => {
     if (!skillExists) {
       await Promise.all([
         accountSkillsPage.addSkill(skillName),
-        page
-          .waitForResponse(
-            (resp) =>
-              (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-              resp.status() === 201,
-            { timeout: 10000 },
-          )
-          .catch(() => {}),
+        page.waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            resp.status() === 201,
+          { timeout: 10000 },
+        ),
       ]);
       await accountSkillsPage.page.waitForTimeout(2000);
     }
@@ -174,14 +166,12 @@ test.describe('Account Settings - Skills', () => {
 
     await Promise.all([
       accountSkillsPage.confirmDelete(),
-      page
-        .waitForResponse(
-          (resp) =>
-            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-            resp.status() === 200,
-          { timeout: 10000 },
-        )
-        .catch(() => {}),
+      page.waitForResponse(
+        (resp) =>
+          (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+          resp.status() === 200,
+        { timeout: 10000 },
+      ),
     ]);
 
     await accountSkillsPage.page.waitForTimeout(2000);
@@ -202,14 +192,12 @@ test.describe('Account Settings - Skills', () => {
     if (!skillExists) {
       await Promise.all([
         accountSkillsPage.addSkill(skillName),
-        page
-          .waitForResponse(
-            (resp) =>
-              (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-              resp.status() === 201,
-            { timeout: 10000 },
-          )
-          .catch(() => {}),
+        page.waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            resp.status() === 201,
+          { timeout: 10000 },
+        ),
       ]);
       await accountSkillsPage.page.waitForTimeout(2000);
     }
@@ -277,14 +265,12 @@ test.describe('Account Settings - Skills', () => {
     if (!skillExists) {
       await Promise.all([
         accountSkillsPage.addSkill(skillName),
-        page
-          .waitForResponse(
-            (resp) =>
-              (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-              resp.status() === 201,
-            { timeout: 10000 },
-          )
-          .catch(() => {}),
+        page.waitForResponse(
+          (resp) =>
+            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+            resp.status() === 201,
+          { timeout: 10000 },
+        ),
       ]);
       await accountSkillsPage.page.waitForTimeout(2000);
     }
@@ -294,14 +280,12 @@ test.describe('Account Settings - Skills', () => {
     await accountSkillsPage.enterNewSkillName(skillName);
     await Promise.all([
       accountSkillsPage.clickAddSkillButton(),
-      page
-        .waitForResponse(
-          (resp) =>
-            (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
-            (resp.status() === 400 || resp.status() === 409),
-          { timeout: 10000 },
-        )
-        .catch(() => {}),
+      page.waitForResponse(
+        (resp) =>
+          (resp.url().includes('/skills') || resp.url().includes('/api/v1/skills')) &&
+          (resp.status() === 400 || resp.status() === 409),
+        { timeout: 10000 },
+      ),
     ]);
 
     await accountSkillsPage.page.waitForTimeout(1500);
