@@ -30,13 +30,11 @@ export class AccountSocialLinksPage {
     });
   }
 
-  
   async openUrl() {
     await this.page.goto('/settings/account/social-links');
     await this.page.waitForLoadState('networkidle');
   }
 
-  
   async waitForFormReady() {
     await this.page.waitForSelector('#linkedin_url', { state: 'visible', timeout: 10000 });
     await this.page.waitForTimeout(1000);
@@ -101,7 +99,6 @@ export class AccountSocialLinksPage {
     return this.locator_websiteField.inputValue();
   }
 
-  
   getFieldErrorLocator(fieldId: string): Locator {
     return this.page.locator(`#${fieldId}`).locator('..').locator('..').locator('p.text-red-500');
   }
@@ -135,7 +132,6 @@ export class AccountSocialLinksPage {
     }
   }
 
-  
   async validateNoSuccessMessage() {
     await this.page.waitForTimeout(1000);
     const successMessages = this.page
@@ -145,7 +141,6 @@ export class AccountSocialLinksPage {
     expect(count).toBe(0);
   }
 
-  
   async saveSocialLinks(data: {
     linkedin_url?: string;
     facebook_url?: string;

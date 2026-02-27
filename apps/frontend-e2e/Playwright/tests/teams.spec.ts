@@ -1,6 +1,5 @@
 import { test, teamData } from './Fixture';
 
-
 let loginPage;
 let teamPage;
 
@@ -12,7 +11,9 @@ test.beforeEach(async ({ loginPage: fixtureLoginPage, teamPage: TeamPage }) => {
 });
 
 test.describe('To validate the team management functionalities', () => {
-  test('TM101_To verify the functionality of Team Member Adding with valid data', async ({page}) => {
+  test('TM101_To verify the functionality of Team Member Adding with valid data', async ({
+    page,
+  }) => {
     console.log(
       'Starting test: TM101_To verify the functionality of Team Member Adding with valid data',
     );

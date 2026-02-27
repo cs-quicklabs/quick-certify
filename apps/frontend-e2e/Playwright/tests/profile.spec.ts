@@ -8,27 +8,21 @@ let profileSettingsPage;
 test.beforeEach(async ({ page, loginPage, profileSettingsPage: fixtureProfileSettingsPage }) => {
   profileSettingsPage = fixtureProfileSettingsPage;
 
-  
   await page.goto('/settings/profile/general');
 
-  
   const currentUrl = page.url();
   if (currentUrl.includes('/login')) {
-    
     await loginPage.enterUserEmail(userName);
     await loginPage.enterPassword(password);
 
-    
     await Promise.all([
       loginPage.clickOnSigninBtn(),
       page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
     ]);
 
-    
     await page.goto('/settings/profile/general');
     await page.waitForLoadState('networkidle');
   } else {
-    
     await page.waitForLoadState('networkidle');
   }
 });
@@ -65,7 +59,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
     const firstName = profileData.formData.validFirstName;
     const lastName = profileData.formData.validLastName;
 
-    
     await Promise.all([
       profileSettingsPage.saveProfile(firstName, lastName),
       page
@@ -74,15 +67,12 @@ test.describe('To validate the Profile Settings Functionality', () => {
           { timeout: 10000 },
         )
         .catch(() => {
-          
           console.log('API response wait timed out, continuing...');
         }),
     ]);
 
-    
     await page.waitForTimeout(1000);
 
-    
     await profileSettingsPage.validateFieldValues(firstName, lastName);
   });
 
@@ -97,7 +87,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
 
     const firstName = profileData.formData.validFirstName;
 
-    
     await Promise.all([
       profileSettingsPage.saveProfile(firstName),
       page
@@ -106,15 +95,12 @@ test.describe('To validate the Profile Settings Functionality', () => {
           { timeout: 10000 },
         )
         .catch(() => {
-          
           console.log('API response wait timed out, continuing...');
         }),
     ]);
 
-    
     await page.waitForTimeout(1000);
 
-    
     await profileSettingsPage.validateFieldValues(firstName);
   });
 
@@ -123,25 +109,20 @@ test.describe('To validate the Profile Settings Functionality', () => {
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
-    
     await profileSettingsPage.clearFirstName();
     await profileSettingsPage.clickSaveButton();
 
-    
     await profileSettingsPage.page.waitForTimeout(1000);
 
-    
     const firstNameValue = await profileSettingsPage.getFirstName();
     if (firstNameValue === '') {
-      
       const isInvalid = await profileSettingsPage.locator_firstNameField.evaluate(
         (el: HTMLInputElement) => {
           return !el.validity.valid;
         },
       );
-      
+
       if (!isInvalid) {
-        
         const errorVisible = await profileSettingsPage.locator_firstNameError
           .first()
           .isVisible()
@@ -163,10 +144,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
     await profileSettingsPage.enterFirstName(profileData.formData.shortFirstName);
     await profileSettingsPage.clickSaveButton();
 
-    
     await profileSettingsPage.page.waitForTimeout(1500);
 
-    
     await expect(profileSettingsPage.locator_firstNameError.first()).toBeVisible({ timeout: 5000 });
     await profileSettingsPage.validateFirstNameError(
       profileData.expectedMessages.firstNameMinLengthError,
@@ -181,10 +160,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
     await profileSettingsPage.enterFirstName(profileData.formData.firstNameWithNumbers);
     await profileSettingsPage.clickSaveButton();
 
-    
     await profileSettingsPage.page.waitForTimeout(1500);
 
-    
     await expect(profileSettingsPage.locator_firstNameError.first()).toBeVisible({ timeout: 5000 });
     await profileSettingsPage.validateFirstNameError(
       profileData.expectedMessages.firstNameOnlyLettersError,
@@ -201,10 +178,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
     await profileSettingsPage.enterFirstName(profileData.formData.firstNameWithSpaces);
     await profileSettingsPage.clickSaveButton();
 
-    
     await profileSettingsPage.page.waitForTimeout(1500);
 
-    
     await expect(profileSettingsPage.locator_firstNameError.first()).toBeVisible({ timeout: 5000 });
     await profileSettingsPage.validateFirstNameError(
       profileData.expectedMessages.firstNameNoSpacesOnlyError,
@@ -220,10 +195,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
     await profileSettingsPage.enterLastName(profileData.formData.lastNameWithNumbers);
     await profileSettingsPage.clickSaveButton();
 
-    
     await profileSettingsPage.page.waitForTimeout(1500);
 
-    
     await expect(profileSettingsPage.locator_lastNameError.first()).toBeVisible({ timeout: 5000 });
     await profileSettingsPage.validateLastNameError(
       profileData.expectedMessages.lastNameOnlyLettersError,
@@ -240,10 +213,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
 
     await profileSettingsPage.saveProfile(firstName, lastName);
 
-    
     await profileSettingsPage.page.waitForTimeout(2000);
 
-    
     await profileSettingsPage.validateFieldValues(firstName, lastName);
   });
 
@@ -255,15 +226,12 @@ test.describe('To validate the Profile Settings Functionality', () => {
     const firstName = profileData.formData.validFirstName;
     const lastName = profileData.formData.validLastName;
 
-    
     await profileSettingsPage.saveProfile(firstName, lastName);
     await profileSettingsPage.page.waitForTimeout(2000);
 
-    
     await profileSettingsPage.page.reload();
     await profileSettingsPage.waitForFormReady();
 
-    
     await profileSettingsPage.validateFieldValues(firstName, lastName);
   });
 
@@ -295,17 +263,14 @@ test.describe('To validate the Profile Settings Functionality', () => {
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
-    
     const initialFirstName = await profileSettingsPage.getFirstName();
     const initialLastName = await profileSettingsPage.getLastName();
     const initialEmail = await profileSettingsPage.getEmail();
 
-    
     expect(initialFirstName).not.toBe('');
     expect(initialEmail).not.toBe('');
     expect(initialEmail).toContain('@');
 
-    
     await profileSettingsPage.page.reload();
     await profileSettingsPage.waitForFormReady();
 

@@ -9,42 +9,27 @@ function createTestImage(filePath: string, sizeKB = 50): void {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  
-  
   const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const ihdrChunk = Buffer.alloc(25);
-  ihdrChunk.writeUInt32BE(13, 0); 
-  ihdrChunk.write('IHDR', 4); 
-  
-  ihdrChunk.writeUInt32BE(1, 8); 
-  ihdrChunk.writeUInt32BE(1, 12); 
-  ihdrChunk[16] = 8; 
-  ihdrChunk[17] = 2; 
-  ihdrChunk[18] = 0; 
-  ihdrChunk[19] = 0; 
-  ihdrChunk[20] = 0; 
-  const ihdrCrc = 0x12345678; 
+  ihdrChunk.writeUInt32BE(13, 0);
+  ihdrChunk.write('IHDR', 4);
+
+  ihdrChunk.writeUInt32BE(1, 8);
+  ihdrChunk.writeUInt32BE(1, 12);
+  ihdrChunk[16] = 8;
+  ihdrChunk[17] = 2;
+  ihdrChunk[18] = 0;
+  ihdrChunk[19] = 0;
+  ihdrChunk[20] = 0;
+  const ihdrCrc = 0x12345678;
   ihdrChunk.writeUInt32BE(ihdrCrc, 21);
 
   const iendChunk = Buffer.from([
-    0x00,
-    0x00,
-    0x00,
-    0x00, 
-    0x49,
-    0x45,
-    0x4e,
-    0x44, 
-    0xae,
-    0x42,
-    0x60,
-    0x82, 
+    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
   ]);
 
-  
   let imageData = Buffer.concat([pngSignature, ihdrChunk]);
   if (sizeKB > 1) {
-    
     const paddingSize = (sizeKB - 1) * 1024;
     const padding = Buffer.alloc(paddingSize);
     imageData = Buffer.concat([imageData, padding]);
@@ -67,16 +52,15 @@ test.beforeEach(
       throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
     }
 
-    
     const testAssetsDir = path.join(__dirname, '..', 'test-assets');
     const bannerPath = path.join(testAssetsDir, 'banner.png');
     const largeBannerPath = path.join(testAssetsDir, 'large-banner.png');
 
     if (!fs.existsSync(bannerPath)) {
-      createTestImage(bannerPath, 50); 
+      createTestImage(bannerPath, 50);
     }
     if (!fs.existsSync(largeBannerPath)) {
-      createTestImage(largeBannerPath, 2048); 
+      createTestImage(largeBannerPath, 2048);
     }
 
     await page.goto('/settings/account/issuer-portal');
@@ -124,9 +108,8 @@ test.describe('Account Settings - Issuer Portal', () => {
       issuerPortalData.expectedMessages.bannerSuccessMessage,
     );
 
-    
     const isBannerDisplayed = await accountIssuerPortalPage.isBannerDisplayed();
-    
+
     if (!isBannerDisplayed) {
       await page.reload();
       await accountIssuerPortalPage.waitForPageReady();
@@ -138,12 +121,8 @@ test.describe('Account Settings - Issuer Portal', () => {
     await accountIssuerPortalPage.waitForPageReady();
     await accountIssuerPortalPage.validatePageLoaded();
 
-    
     const initialState = await accountIssuerPortalPage.isPortalEnabled();
 
-    
-    
-    
     const targetState = !initialState;
 
     const responsePromise = page

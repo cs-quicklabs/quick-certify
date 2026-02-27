@@ -102,7 +102,6 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -114,13 +113,11 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    
     await accountGeneralInfoPage.validateFieldError(
       'name',
       accountGeneralInfoData.expectedMessages.nameNotOnlySpaces,
     );
 
-    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -135,7 +132,6 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -150,13 +146,11 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    
     await accountGeneralInfoPage.validateFieldError(
       'linkedin_company_id',
       accountGeneralInfoData.expectedMessages.linkedInIdInvalid,
     );
 
-    
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 

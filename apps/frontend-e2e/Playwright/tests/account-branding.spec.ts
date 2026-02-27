@@ -9,42 +9,27 @@ function createTestImage(filePath: string, sizeKB = 50): void {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  
-  
   const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const ihdrChunk = Buffer.alloc(25);
-  ihdrChunk.writeUInt32BE(13, 0); 
-  ihdrChunk.write('IHDR', 4); 
-  
-  ihdrChunk.writeUInt32BE(1, 8); 
-  ihdrChunk.writeUInt32BE(1, 12); 
-  ihdrChunk[16] = 8; 
-  ihdrChunk[17] = 2; 
-  ihdrChunk[18] = 0; 
-  ihdrChunk[19] = 0; 
-  ihdrChunk[20] = 0; 
-  const ihdrCrc = 0x12345678; 
+  ihdrChunk.writeUInt32BE(13, 0);
+  ihdrChunk.write('IHDR', 4);
+
+  ihdrChunk.writeUInt32BE(1, 8);
+  ihdrChunk.writeUInt32BE(1, 12);
+  ihdrChunk[16] = 8;
+  ihdrChunk[17] = 2;
+  ihdrChunk[18] = 0;
+  ihdrChunk[19] = 0;
+  ihdrChunk[20] = 0;
+  const ihdrCrc = 0x12345678;
   ihdrChunk.writeUInt32BE(ihdrCrc, 21);
 
   const iendChunk = Buffer.from([
-    0x00,
-    0x00,
-    0x00,
-    0x00, 
-    0x49,
-    0x45,
-    0x4e,
-    0x44, 
-    0xae,
-    0x42,
-    0x60,
-    0x82, 
+    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
   ]);
 
-  
   let imageData = Buffer.concat([pngSignature, ihdrChunk]);
   if (sizeKB > 1) {
-    
     const paddingSize = (sizeKB - 1) * 1024;
     const padding = Buffer.alloc(paddingSize);
     imageData = Buffer.concat([imageData, padding]);
@@ -66,20 +51,19 @@ test.beforeEach(async ({ page, loginPage, accountBrandingPage: fixtureAccountBra
     throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
   }
 
-  
   const testAssetsDir = path.join(__dirname, '..', 'test-assets');
   const logoPath = path.join(testAssetsDir, 'logo.png');
   const faviconPath = path.join(testAssetsDir, 'favicon.png');
   const largeImagePath = path.join(testAssetsDir, 'large-image.png');
 
   if (!fs.existsSync(logoPath)) {
-    createTestImage(logoPath, 50); 
+    createTestImage(logoPath, 50);
   }
   if (!fs.existsSync(faviconPath)) {
-    createTestImage(faviconPath, 50); 
+    createTestImage(faviconPath, 50);
   }
   if (!fs.existsSync(largeImagePath)) {
-    createTestImage(largeImagePath, 2048); 
+    createTestImage(largeImagePath, 2048);
   }
 
   await page.goto('/settings/account/branding');
@@ -126,9 +110,8 @@ test.describe('Account Settings - Branding', () => {
       brandingData.expectedMessages.logoSuccessMessage,
     );
 
-    
     const isLogoDisplayed = await accountBrandingPage.isLogoDisplayed();
-    
+
     if (!isLogoDisplayed) {
       await page.reload();
       await accountBrandingPage.waitForPageReady();
@@ -161,7 +144,6 @@ test.describe('Account Settings - Branding', () => {
       brandingData.expectedMessages.faviconSuccessMessage,
     );
 
-    
     const isFaviconDisplayed = await accountBrandingPage.isFaviconDisplayed();
     if (!isFaviconDisplayed) {
       await page.reload();
@@ -173,12 +155,11 @@ test.describe('Account Settings - Branding', () => {
     await accountBrandingPage.openUrl();
     await accountBrandingPage.waitForPageReady();
 
-    
     const testAssetsDir = path.join(__dirname, '..', 'test-assets');
     const pdfPath = path.join(testAssetsDir, 'document.pdf');
     if (!fs.existsSync(pdfPath)) {
       fs.mkdirSync(testAssetsDir, { recursive: true });
-      
+
       const pdfContent = Buffer.from(
         '%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj\nxref\n0 1\ntrailer\n<<\n/Root 1 0 R\n>>\n%%EOF',
       );
@@ -187,11 +168,9 @@ test.describe('Account Settings - Branding', () => {
 
     const absolutePdfPath = path.resolve(pdfPath);
 
-    
     await accountBrandingPage.uploadLogo(absolutePdfPath);
     await page.waitForTimeout(2000);
 
-    
     await accountBrandingPage.validateLogoError(brandingData.expectedMessages.invalidFileTypeError);
   });
 
@@ -202,11 +181,9 @@ test.describe('Account Settings - Branding', () => {
     const largeImagePath = path.join(__dirname, '..', 'test-assets', 'large-image.png');
     const absoluteLargeImagePath = path.resolve(largeImagePath);
 
-    
     await accountBrandingPage.uploadLogo(absoluteLargeImagePath);
     await page.waitForTimeout(2000);
 
-    
     const errorVisible = await accountBrandingPage.locator_logoError
       .isVisible({ timeout: 5000 })
       .catch(() => false);

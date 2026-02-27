@@ -33,20 +33,17 @@ export class AccountGeneralInfoPage {
     this.locator_unverifiedAlert = page.locator('[role="alert"]').filter({ hasText: 'unverified' });
   }
 
-  
   async openUrl() {
     await this.page.goto('/settings/account/general-information');
     await this.page.waitForLoadState('networkidle');
   }
 
-  
   async waitForFormReady() {
     await this.page.waitForSelector('#name', { state: 'visible', timeout: 10000 });
     await this.page.waitForTimeout(1000);
     await this.page.waitForLoadState('networkidle');
   }
 
-  
   async validatePageLoaded() {
     await expect(this.locator_pageTitle).toBeVisible();
     await expect(this.locator_pageSubtitle).toBeVisible();
@@ -109,7 +106,6 @@ export class AccountGeneralInfoPage {
     return this.locator_linkedinCompanyIdField.inputValue();
   }
 
-  
   getFieldErrorLocator(fieldId: string): Locator {
     return this.page.locator(`#${fieldId}`).locator('..').locator('..').locator('p.text-red-500');
   }
@@ -142,19 +138,16 @@ export class AccountGeneralInfoPage {
     if (message) await expect(this.locator_alertToast.first()).toContainText(message);
   }
 
-  
   async validateNoSuccessMessage() {
-    
     await this.page.waitForTimeout(1000);
     const successMessages = this.page
       .locator('[role="alert"]')
       .filter({ hasText: /saved successfully|success/i });
     const count = await successMessages.count();
-    
+
     expect(count).toBe(0);
   }
 
-  
   async saveGeneralInfo(data: {
     name: string;
     description?: string;

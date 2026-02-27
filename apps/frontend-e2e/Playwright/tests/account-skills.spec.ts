@@ -65,13 +65,10 @@ test.describe('Account Settings - Skills', () => {
         .catch(() => {}),
     ]);
 
-    
     await accountSkillsPage.waitForSkillToAppear(skillName);
 
-    
     await accountSkillsPage.validateSkillInTable(skillName);
 
-    
     const inputValue = await accountSkillsPage.locator_newSkillInput.inputValue();
     expect(inputValue).toBe('');
   });
@@ -79,26 +76,21 @@ test.describe('Account Settings - Skills', () => {
   test('SK03_Verify Super Admin can edit existing skill and change skill name', async ({
     page,
   }) => {
-    
     await accountSkillsPage.openUrl();
     await accountSkillsPage.waitForPageReady();
     await accountSkillsPage.validatePageLoaded();
 
-    
     const originalSkillName = randomDataGenerator.generateRandomSkillName();
     const editedSkillName = randomDataGenerator.generateRandomSkillName();
 
-    
     const editedSkillExists = await accountSkillsPage.isSkillVisible(editedSkillName);
     if (editedSkillExists) {
-      
       await accountSkillsPage.clickDeleteSkill(editedSkillName);
       await accountSkillsPage.waitForConfirmationDialog();
       await accountSkillsPage.confirmDelete();
       await accountSkillsPage.page.waitForTimeout(2000);
     }
 
-    
     const skillExists = await accountSkillsPage.isSkillVisible(originalSkillName);
     if (!skillExists) {
       await Promise.all([
@@ -115,25 +107,19 @@ test.describe('Account Settings - Skills', () => {
       await accountSkillsPage.page.waitForTimeout(2000);
     }
 
-    
     await accountSkillsPage.validateSkillInTable(originalSkillName);
 
-    
     await accountSkillsPage.clickEditSkill(originalSkillName);
     await accountSkillsPage.page.waitForTimeout(500);
 
-    
     await expect(accountSkillsPage.getEditInput()).toBeVisible({ timeout: 5000 });
     await expect(accountSkillsPage.getEditInput()).toHaveValue(originalSkillName);
 
-    
     await accountSkillsPage.enterEditSkillName(editedSkillName);
     await accountSkillsPage.page.waitForTimeout(300);
 
-    
     await expect(accountSkillsPage.getEditInput()).toHaveValue(editedSkillName);
 
-    
     await Promise.all([
       accountSkillsPage.clickSaveEditButton(),
       page
@@ -148,10 +134,8 @@ test.describe('Account Settings - Skills', () => {
 
     await accountSkillsPage.page.waitForTimeout(2000);
 
-    
     await accountSkillsPage.validateSkillNotInTable(originalSkillName);
 
-    
     await accountSkillsPage.validateSkillInTable(editedSkillName);
   });
 
@@ -159,10 +143,8 @@ test.describe('Account Settings - Skills', () => {
     await accountSkillsPage.openUrl();
     await accountSkillsPage.waitForPageReady();
 
-    
     const skillName = randomDataGenerator.generateRandomSkillName();
 
-    
     const skillExists = await accountSkillsPage.isSkillVisible(skillName);
     if (!skillExists) {
       await Promise.all([
@@ -179,13 +161,10 @@ test.describe('Account Settings - Skills', () => {
       await accountSkillsPage.page.waitForTimeout(2000);
     }
 
-    
     const initialCount = await accountSkillsPage.getSkillCount();
 
-    
     await accountSkillsPage.clickDeleteSkill(skillName);
 
-    
     await accountSkillsPage.waitForConfirmationDialog();
     await expect(accountSkillsPage.locator_confirmationDialog).toBeVisible({ timeout: 5000 });
     await expect(accountSkillsPage.locator_confirmationDialog).toContainText(
@@ -193,7 +172,6 @@ test.describe('Account Settings - Skills', () => {
     );
     await expect(accountSkillsPage.locator_confirmationDialog).toContainText(skillName);
 
-    
     await Promise.all([
       accountSkillsPage.confirmDelete(),
       page
@@ -208,10 +186,8 @@ test.describe('Account Settings - Skills', () => {
 
     await accountSkillsPage.page.waitForTimeout(2000);
 
-    
     await accountSkillsPage.validateSkillNotInTable(skillName);
 
-    
     const newCount = await accountSkillsPage.getSkillCount();
     expect(newCount).toBe(initialCount - 1);
   });
@@ -220,10 +196,8 @@ test.describe('Account Settings - Skills', () => {
     await accountSkillsPage.openUrl();
     await accountSkillsPage.waitForPageReady();
 
-    
     const skillName = randomDataGenerator.generateRandomSkillName();
 
-    
     const skillExists = await accountSkillsPage.isSkillVisible(skillName);
     if (!skillExists) {
       await Promise.all([
@@ -240,20 +214,15 @@ test.describe('Account Settings - Skills', () => {
       await accountSkillsPage.page.waitForTimeout(2000);
     }
 
-    
     await accountSkillsPage.clickDeleteSkill(skillName);
 
-    
     await accountSkillsPage.waitForConfirmationDialog();
     await expect(accountSkillsPage.locator_confirmationDialog).toBeVisible({ timeout: 5000 });
 
-    
     await accountSkillsPage.cancelDelete();
 
-    
     await expect(accountSkillsPage.locator_confirmationDialog).not.toBeVisible({ timeout: 2000 });
 
-    
     await accountSkillsPage.validateSkillInTable(skillName);
   });
 
@@ -264,17 +233,14 @@ test.describe('Account Settings - Skills', () => {
     await accountSkillsPage.clearNewSkillInput();
     await accountSkillsPage.clickAddSkillButton();
 
-    
     await accountSkillsPage.page.waitForTimeout(1500);
 
-    
     const inputValue = await accountSkillsPage.locator_newSkillInput.inputValue();
     if (inputValue === '') {
-      
       const isInvalid = await accountSkillsPage.locator_newSkillInput.evaluate(
         (el: HTMLInputElement) => !el.validity.valid,
       );
-      
+
       if (!isInvalid) {
         const errorVisible = await accountSkillsPage.locator_alertToast
           .first()
@@ -298,7 +264,6 @@ test.describe('Account Settings - Skills', () => {
 
     await accountSkillsPage.page.waitForTimeout(1500);
 
-    
     await accountSkillsPage.validateErrorMessage(skillsData.expectedMessages.whitespaceOnlyError);
   });
 
@@ -308,7 +273,6 @@ test.describe('Account Settings - Skills', () => {
 
     const skillName = randomDataGenerator.generateRandomSkillName();
 
-    
     const skillExists = await accountSkillsPage.isSkillVisible(skillName);
     if (!skillExists) {
       await Promise.all([
@@ -325,10 +289,8 @@ test.describe('Account Settings - Skills', () => {
       await accountSkillsPage.page.waitForTimeout(2000);
     }
 
-    
     await accountSkillsPage.validateSkillInTable(skillName);
 
-    
     await accountSkillsPage.enterNewSkillName(skillName);
     await Promise.all([
       accountSkillsPage.clickAddSkillButton(),
@@ -344,23 +306,19 @@ test.describe('Account Settings - Skills', () => {
 
     await accountSkillsPage.page.waitForTimeout(1500);
 
-    
     await accountSkillsPage.validateErrorMessage(skillsData.expectedMessages.duplicateSkillError);
 
-    
     const skillRows = await accountSkillsPage.getSkillRows();
     const duplicateCount = await skillRows.filter({ hasText: skillName }).count();
-    expect(duplicateCount).toBe(1); 
+    expect(duplicateCount).toBe(1);
   });
 
   test('SK09_Verify skills table displays correctly', async () => {
     await accountSkillsPage.openUrl();
     await accountSkillsPage.waitForPageReady();
 
-    
     await accountSkillsPage.waitForSkillsTable();
 
-    
     await expect(accountSkillsPage.locator_skillsTable).toBeVisible();
     await expect(accountSkillsPage.locator_skillsTable.locator('thead')).toBeVisible();
     await expect(

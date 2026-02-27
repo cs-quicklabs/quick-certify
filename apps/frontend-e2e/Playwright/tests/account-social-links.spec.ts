@@ -60,7 +60,6 @@ test.describe('Account Settings - Social Links', () => {
       socialLinksData.expectedMessages.successMessage,
     );
 
-    
     await page.reload();
     await accountSocialLinksPage.waitForFormReady();
     await accountSocialLinksPage.validateFieldValues(data);
