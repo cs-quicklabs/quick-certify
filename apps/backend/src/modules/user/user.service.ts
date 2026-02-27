@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,7 +15,7 @@ import { RoleEntity } from '@src/entities/role.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { PasswordService, SessionService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
-import { AuditLogService } from '../audit/audit-service.entity';
+import { AuditLogService } from '../audit/audit-log.service';
 import { AuditAction } from '../audit/audit-action.action';
 import { AuditContext } from '../audit/interfaces/audit.context.interface';
 import { CurrentUser } from '../auth/interfaces';
@@ -219,7 +220,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     );
 
     if (!createdUserResult) {
-      throw new Error('Failed to create user');
+      throw new InternalServerErrorException('Failed to create user');
     }
 
     const createdUser = createdUserResult as UserEntity;
@@ -239,13 +240,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       })) as UserEntity;
 
       if (!userWithRelations) {
-        throw new Error('Failed to reload created user');
+        throw new InternalServerErrorException('Failed to reload created user');
       }
     } else {
       // If no transaction, use findOne which will work normally
       const foundUser = await this.findOne(createdUser.id);
       if (!foundUser) {
-        throw new Error('Failed to find created user');
+        throw new InternalServerErrorException('Failed to find created user');
       }
       userWithRelations = foundUser;
     }
@@ -385,7 +386,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Use transaction if role/status changes and no transaction provided
     if (needsTransaction) {
       if (!this.userModel.sequelize) {
-        throw new Error('Sequelize instance not available');
+        throw new InternalServerErrorException('Sequelize instance not available');
       }
       const transaction = await this.userModel.sequelize.transaction();
       try {
@@ -774,13 +775,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   private async getRoleIdsByNames(roleNames: string[]): Promise<number[]> {
     const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
     return roles
-      .filter((r) => r !== null && r !== undefined)
-      .map((r) => {
-        if (r === null || r === undefined) {
-          throw new Error('Role should not be null after filter');
-        }
-        return r.id;
-      });
+      .filter((r): r is NonNullable<typeof r> => r !== null && r !== undefined)
+      .map((r) => r.id);
   }
 
   /**

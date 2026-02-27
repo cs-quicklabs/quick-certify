@@ -4,7 +4,7 @@ import { CurrentUser } from '../auth/interfaces/jwt-payload.interface';
 /** Minimal shape the builder needs — works with both Express and NestJS request objects. */
 interface AuditRequest {
   ip?: string;
-  headers: any;
+  headers: Record<string, string | string[] | undefined>;
   id?: string;
   user?: CurrentUser;
 }
