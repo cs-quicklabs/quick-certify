@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -19,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { PathwayService } from './pathway.service';
 import { PathwayParticipantService } from './pathway-participant.service';
+import { PathwayResponseMapper } from './pathway-response.mapper';
 import {
   CreatePathwayDto,
   UpdatePathwayDto,
@@ -28,8 +30,9 @@ import {
 import { Role } from '../role/enums';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
-import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { CurrentUser, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
+import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 
 @ApiTags('Pathways')
@@ -41,6 +44,7 @@ export class PathwayController {
   constructor(
     private readonly pathwayService: PathwayService,
     private readonly pathwayParticipantService: PathwayParticipantService,
+    private readonly pathwayResponseMapper: PathwayResponseMapper,
   ) {}
 
   @Get()
@@ -176,5 +180,143 @@ export class PathwayController {
       user.organizationUuid,
     );
     return new SuccessResponse('Participant status updated successfully', participant);
+  }
+
+  @Get(':uuid/participants/:recipientUuid')
+  @ApiOperation({ summary: 'Get participant progress in a pathway' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
+  @ApiParam({ name: 'recipientUuid', description: 'Recipient UUID' })
+  @ApiResponse({ status: 200, description: 'Participant progress found' })
+  @ApiResponse({ status: 404, description: 'Participant not found' })
+  async getParticipantDetail(
+    @CurrentUser() user: CurrentUserType,
+    @Param('uuid') uuid: string,
+    @Param('recipientUuid') recipientUuid: string,
+  ) {
+    const pathway = await this.pathwayService.requirePathway(uuid, user.organizationUuid);
+
+    const participant = await this.pathwayParticipantService.getParticipantPublic(
+      pathway.id,
+      recipientUuid,
+    );
+    if (!participant) throw new NotFoundException('Participant not found in this pathway');
+
+    const credentialProgress = await this.pathwayParticipantService.getCredentialProgress(
+      pathway.id,
+      participant.recipient_id,
+    );
+
+    return new SuccessResponse(
+      'Participant retrieved successfully',
+      this.pathwayResponseMapper.buildParticipantProgressResponse(
+        pathway,
+        participant,
+        credentialProgress,
+      ),
+    );
+  }
+
+  // ─── Public (unauthenticated) routes ───
+
+  @Public()
+  @Get('public/org/:slug')
+  @ApiOperation({ summary: 'Get all active pathways for an organization (public)' })
+  @ApiResponse({ status: 200, description: 'Pathways list' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
+  @ApiQuery({ name: 'search', required: false })
+  async findAllPublic(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    const result = await this.pathwayService.findAllPublic(slug, {
+      page: pagination.page,
+      limit: pagination.limit,
+      sortBy: pagination.sortBy,
+      sortOrder: pagination.sortOrder,
+      search: pagination.search,
+    });
+    return new SuccessResponse('Pathways retrieved successfully', result);
+  }
+
+  @Public()
+  @Get('public/org/:slug/pathway/:uuid')
+  @ApiOperation({ summary: 'Get a single pathway by UUID (public)' })
+  @ApiParam({ name: 'slug', description: 'Organization slug' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
+  @ApiResponse({ status: 200, description: 'Pathway found' })
+  @ApiResponse({ status: 404, description: 'Pathway not found' })
+  async findOnePublic(@Param('slug', SlugOnlyPipe) slug: string, @Param('uuid') uuid: string) {
+    const pathway = await this.pathwayService.findOnePublic(slug, uuid);
+    if (!pathway) throw new NotFoundException('Pathway not found');
+
+    return new SuccessResponse(
+      'Pathway retrieved successfully',
+      this.pathwayResponseMapper.buildPublicDetail(pathway),
+    );
+  }
+
+  @Public()
+  @Get('public/org/:slug/pathway/:uuid/participants')
+  @ApiOperation({ summary: 'Get participants for a pathway (public)' })
+  @ApiParam({ name: 'slug', description: 'Organization slug' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
+  async getParticipantsPublic(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Param('uuid') uuid: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    const pathway = await this.pathwayService.findOnePublic(slug, uuid);
+    if (!pathway) throw new NotFoundException('Pathway not found');
+
+    const result = await this.pathwayParticipantService.getParticipantsPublic(
+      pathway.id,
+      pagination,
+    );
+    return new SuccessResponse('Participants retrieved successfully', result);
+  }
+
+  @Public()
+  @Get('public/org/:slug/pathway/:uuid/participant/:participantUuid')
+  @ApiOperation({ summary: 'Get participant progress in a pathway (public)' })
+  @ApiParam({ name: 'slug', description: 'Organization slug' })
+  @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
+  @ApiParam({ name: 'participantUuid', description: 'Recipient UUID' })
+  @ApiResponse({ status: 200, description: 'Participant progress found' })
+  @ApiResponse({ status: 404, description: 'Participant not found' })
+  async findParticipantPublic(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Param('uuid') uuid: string,
+    @Param('participantUuid') participantUuid: string,
+  ) {
+    const pathway = await this.pathwayService.findOnePublic(slug, uuid);
+    if (!pathway) throw new NotFoundException('Pathway not found');
+
+    const participant = await this.pathwayParticipantService.getParticipantPublic(
+      pathway.id,
+      participantUuid,
+    );
+    if (!participant) throw new NotFoundException('Participant not found in this pathway');
+
+    const credentialProgress = await this.pathwayParticipantService.getCredentialProgress(
+      pathway.id,
+      participant.recipient_id,
+    );
+
+    return new SuccessResponse(
+      'Participant retrieved successfully',
+      this.pathwayResponseMapper.buildParticipantProgressResponse(
+        pathway,
+        participant,
+        credentialProgress,
+      ),
+    );
   }
 }
