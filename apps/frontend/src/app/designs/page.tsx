@@ -13,7 +13,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { getApiErrorMessage } from '@/lib/api-error';
 
 const SEARCH_DEBOUNCE_MS = 1000;
-const DESIGN_CARD_ITEM_LIMIT = 10;
+const DESIGN_CARD_ITEM_LIMIT = 6;
 
 type Filter = 'All' | 'Certificate' | 'Badge';
 

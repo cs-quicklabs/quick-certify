@@ -14,11 +14,11 @@ type NavItem = { href: string; label: string };
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/designs', label: 'Designs' },
   { href: '/events', label: 'Events' },
   { href: '/credentials', label: 'Credentials' },
   { href: '/pathways', label: 'Pathways' },
-  { href: '/designs', label: 'Designs' },
-  // { href: '/emails', label: 'Emails' },
+  // { href: '/emails', label: 'Emails' }
   // { href: '/analytics', label: 'Analytics' },
   // { href: '/integrations', label: 'Integrations' },
 ];
