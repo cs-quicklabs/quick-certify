@@ -4,6 +4,7 @@ import React from 'react';
 import PublicHeader from '../../_components/header';
 import PublicFooter from '../../_components/footer';
 import { usePublicOrganization } from '@/hooks/usePublic';
+import { OrgPageState } from '../../_components/orgPageState';
 
 export default function CompanyLayout({
   children,
@@ -13,7 +14,10 @@ export default function CompanyLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = React.use(params);
-  const { data: org } = usePublicOrganization(slug);
+  const { data: org, isLoading, error } = usePublicOrganization(slug);
+
+  if (isLoading) return <OrgPageState isLoading />;
+  if (error) return <OrgPageState error={error} />;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

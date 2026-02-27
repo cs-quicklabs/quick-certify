@@ -155,7 +155,7 @@ export default function EventSettingList({
               type="text"
               value={editingValue}
               onChange={(e) => setEditingValue(e.target.value)}
-              className="form-input-field font-bold w-full"
+              className="form-input-field w-full"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSaveEdit();
                 else if (e.key === 'Escape') handleCancelEdit();

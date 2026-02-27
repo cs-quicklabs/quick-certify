@@ -135,6 +135,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.982.0",
+    "@certify/certificate-core": "*",
     "@crownstack/mailer": "*",
     "@crownstack/sms": "*",
     "@nestjs/common": "^11.1.13",

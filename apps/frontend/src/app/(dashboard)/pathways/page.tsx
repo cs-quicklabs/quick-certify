@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { usePathways } from '@/hooks/usePathways';
@@ -27,7 +28,7 @@ function PathwaysContent() {
   const isShowAll = currentStatus === 'all';
 
   const [searchInput, setSearchInput] = useState(currentSearch);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debouncedInput = useDebounce(searchInput);
 
   const { data: pathwaysData, isLoading } = usePathways({
     page: currentPage,
@@ -55,16 +56,10 @@ function PathwaysContent() {
   );
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      if (searchInput !== currentSearch) {
-        updateParams({ search: searchInput, page: '' });
-      }
-    }, 500);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchInput, currentSearch, updateParams]);
+    if (debouncedInput !== currentSearch) {
+      updateParams({ search: debouncedInput, page: '' });
+    }
+  }, [debouncedInput, currentSearch, updateParams]);
 
   // Sync input when URL changes externally (e.g. browser back/forward)
   useEffect(() => {

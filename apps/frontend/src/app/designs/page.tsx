@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
@@ -9,9 +10,10 @@ import { useDesignList } from '@/hooks/useDesigns';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 import { ConfirmationDialog, ModulePermissionError, Pagination } from '@/components';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 const SEARCH_DEBOUNCE_MS = 1000;
-const DESIGN_CARD_ITEM_LIMIT = 10;
+const DESIGN_CARD_ITEM_LIMIT = 6;
 
 type Filter = 'All' | 'Certificate' | 'Badge';
 
@@ -24,6 +26,7 @@ export default function DesignsPage() {
   const typeFromUrl = searchParams.get('type') as Filter | null;
 
   const [search, setSearch] = useState(searchFromUrl);
+  const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
   const [filter, setFilter] = useState<Filter>(typeFromUrl ?? 'All');
   const [open, setOpen] = useState(false);
 
@@ -42,25 +45,16 @@ export default function DesignsPage() {
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', '1');
 
-    debounceRef.current = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', '1');
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    else params.delete('search');
 
-      if (search) params.set('search', search);
-      else params.delete('search');
-
-      router.replace(`/designs?${params.toString()}`, { scroll: false });
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [search]);
+    router.replace(`/designs?${params.toString()}`, { scroll: false });
+  }, [debouncedSearch]);
 
   // Handlers
   const handleDeleteClick = (design: Design) => {
@@ -72,6 +66,7 @@ export default function DesignsPage() {
     setIsDialogOpen(false);
     setSelectedDesign(null);
   };
+
   const handleConfirmDelete = async () => {
     if (!selectedDesign) return;
 
@@ -79,11 +74,11 @@ export default function DesignsPage() {
       setIsDeleting(true);
       await deleteDesign(selectedDesign.uuid);
       showSuccessToast('Design deleted successfully');
-      handleCancelDelete();
-    } catch {
-      showErrorToast('Failed to delete design');
+    } catch (error) {
+      showErrorToast(getApiErrorMessage(error, 'Failed to delete design'));
     } finally {
       setIsDeleting(false);
+      handleCancelDelete();
     }
   };
 

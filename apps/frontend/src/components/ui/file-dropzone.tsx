@@ -420,7 +420,7 @@ export function FileDropzone({
                   drop
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Max. File Size: {maxSizeMB}MB
+                  {category === 'banner' ? 'Size: 1920x300' : `Max. File Size: ${maxSizeMB}MB`}
                 </p>
               </>
             )}

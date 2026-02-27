@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Req,
   Param,
   Patch,
   Post,
@@ -19,6 +20,8 @@ import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
+import { PublicPortalGuard } from '../organization';
+import type { PublicRequest } from '../../commons/interfaces/public-request.interface';
 
 @ApiTags('Recipients')
 @ApiBearerAuth()
@@ -107,6 +110,7 @@ export class RecipientController {
    */
   @Public()
   @Get('/public/org/:slug')
+  @UseGuards(PublicPortalGuard)
   @ApiOperation({ summary: 'Get all recipients for current organization' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -116,7 +120,10 @@ export class RecipientController {
     slug: string,
     @Query()
     pagination: PaginationDto,
+    @Req()
+    req: PublicRequest,
   ) {
+    const organization = req.organization;
     const options = pagination.search
       ? {
           ...pagination,
@@ -136,7 +143,7 @@ export class RecipientController {
           },
         }
       : pagination;
-    const result = await this.recipientService.findAll(slug, options);
+    const result = await this.recipientService.findAll(slug, options, organization);
     return new SuccessResponse('Recipients retrieved successfully', result);
   }
 }

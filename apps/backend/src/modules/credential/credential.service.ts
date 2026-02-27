@@ -10,7 +10,7 @@ import { EventEntity } from '@src/entities/event.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { CredentialStatusEnum } from '@src/commons/enums';
 import { escapeLikePattern } from '@src/commons/utils';
-import { DesignLayout } from '@src/modules/design/interfaces/design.layout.interface';
+import { DesignLayout } from '@certify/certificate-core';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { EventService } from '@src/modules/event/services/event.service';
 import { RecipientService } from '@src/modules/recipient/recipient.service';
@@ -51,6 +51,7 @@ export class CredentialService {
   async findAll(
     organizationIdentifier: string, // Can be either UUID or slug
     filters: CredentialFilterDto,
+    orgFromReq?: OrganizationEntity,
   ): Promise<PaginatedResult<CredentialEntity>> {
     const ALLOWED_SORT_COLUMNS = ['created_at', 'issued_date', 'expiration_date', 'status'];
     const {
@@ -63,7 +64,8 @@ export class CredentialService {
       recipientId,
     } = filters;
     //  find organization by UUID or slug
-    const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
+    const organization =
+      orgFromReq ?? (await this.organizationService.resolveOrganization(organizationIdentifier));
     const sortBy = ALLOWED_SORT_COLUMNS.includes(rawSortBy) ? rawSortBy : 'created_at';
 
     if (!organization) {
@@ -232,16 +234,23 @@ export class CredentialService {
     }
 
     const design = await this.designService.findOne(event.design_id);
-    if (!design?.url || !design?.layout) {
-      throw new BadRequestException('Event has no design template with layout');
+    if (!design?.url) {
+      throw new BadRequestException('Event has no design template assigned');
     }
+
+    const effectiveLayout: DesignLayout = design.layout ?? {
+      version: 2,
+      canvasWidth: 1100,
+      canvasHeight: 800,
+      placeholders: [],
+    };
 
     // Mark as PROCESSING
     await credential.update({ status: CredentialStatusEnum.PROCESSING });
 
     const result = await this.certificateGenerationService.generateCertificate(
       design.url,
-      design.layout,
+      effectiveLayout,
       {
         recipientName: credential.recipient?.name ?? '',
         recipientEmail: credential.recipient?.email ?? '',
@@ -481,15 +490,27 @@ export class CredentialService {
   ): Promise<void> {
     const organization = await this.requireOrganization(organizationUuid);
 
+    console.log(`Regenerating credential ${credential.uuid} for organization ${organization.name}`);
+
     const event = credential.event;
     if (!event?.design_id) {
       throw new BadRequestException('Event has no design template assigned');
     }
 
+    console.log(`Found event ${event.name} for credential ${credential.uuid}`);
+
     const design = await this.designService.findOne(event.design_id);
-    if (!design?.url || !design?.layout) {
-      throw new BadRequestException('Event has no design template with layout');
+    console.log(`Found design for event ${event.name}: ${design?.name}`, design);
+    if (!design?.url) {
+      throw new BadRequestException('Event has no design template assigned');
     }
+
+    const effectiveLayout: DesignLayout = design.layout ?? {
+      version: 2,
+      canvasWidth: 1100,
+      canvasHeight: 800,
+      placeholders: [],
+    };
 
     // Mark as PROCESSING
     await credential.update({ status: CredentialStatusEnum.PROCESSING });
@@ -498,7 +519,7 @@ export class CredentialService {
     this.doRegenerateAndSend(
       credential,
       event,
-      { url: design.url, layout: design.layout },
+      { url: design.url, layout: effectiveLayout },
       organization.uuid,
     ).catch((err) => {
       this.logger.warn(
@@ -562,7 +583,15 @@ export class CredentialService {
             'logo_url',
             'website',
             'slogan',
+            'slug',
             'support_email',
+            'linkedin_company_id',
+            'linkedin_url',
+            'facebook_url',
+            'twitter_url',
+            'logo_url',
+            'favicon_url',
+            'banner_url',
           ],
         },
       ],
@@ -586,7 +615,14 @@ export class CredentialService {
         logoUrl: credential.organization?.logo_url ?? null,
         website: credential.organization?.website ?? '',
         slogan: credential.organization?.slogan ?? null,
+        slug: credential.organization?.slug ?? '',
         supportEmail: credential.organization?.support_email ?? '',
+        linkedinID: credential.organization?.linkedin_company_id ?? '',
+        linkedinUrl: credential.organization?.linkedin_url ?? '',
+        facebookUrl: credential.organization?.facebook_url ?? '',
+        twitterUrl: credential.organization?.twitter_url ?? '',
+        faviconUrl: credential.organization?.favicon_url ?? null,
+        bannerUrl: credential.organization?.banner_url ?? null,
       },
     };
   }

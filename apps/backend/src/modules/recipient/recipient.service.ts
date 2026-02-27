@@ -5,6 +5,7 @@ import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { RecipientEntity } from '@src/entities/recipient.entity';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { CreateRecipientDto, UpdateRecipientDto } from './dtos';
+import { OrganizationEntity } from '@src/entities';
 
 @Injectable()
 export class RecipientService {
@@ -17,10 +18,13 @@ export class RecipientService {
   async findAll(
     organizationIdentifier: string,
     options: FindAllOptions = {},
+    orgFromRequest?: OrganizationEntity,
   ): Promise<PaginatedResult<RecipientEntity>> {
     const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {} } = options;
 
-    const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
+    const organization =
+      orgFromRequest ??
+      (await this.organizationService.resolveOrganization(organizationIdentifier));
     if (!organization) {
       return {
         data: [],

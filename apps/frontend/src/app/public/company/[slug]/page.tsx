@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Credential } from '@/types';
 import Link from 'next/link';
+import { OrgPageState, RecentCertificatesSkeleton } from '../../_components/orgPageState';
 
 export default function PublicCompanyPage() {
   const params = useParams();
@@ -24,10 +25,11 @@ export default function PublicCompanyPage() {
     sortOrder: 'DESC',
   });
 
-  if (isLoading) return <OrgLoadingState />;
-  if (error) return <OrgErrorState message={error.message} />;
-  if (!data) return <OrgNotFoundState />;
+  if (isLoading) return <OrgPageState isLoading />;
+  if (error) return <OrgPageState error={error} />;
+  if (!data) return <OrgPageState error={{ status: 404 }} />; // 404 fallback
 
+  // ... rest unchanged
   const organization = data;
   const credentials = (recentCredentials?.data ?? []) as Credential[];
 
@@ -163,102 +165,6 @@ export default function PublicCompanyPage() {
           </div>
         </div>
       </main>
-    </div>
-  );
-}
-
-// Skeleton Components
-function OrgHeaderSkeleton() {
-  return (
-    <div className="mx-auto max-w-7xl overflow-hidden rounded-sm border border-gray-200 bg-white animate-pulse">
-      <div className="relative">
-        <div className="h-32 lg:h-48 bg-gray-200" />
-        <div className="absolute left-6 -bottom-10 h-20 w-20 rounded-full bg-gray-300 border-4 border-white" />
-      </div>
-      <div className="px-6 pb-4 pt-12 space-y-2">
-        <div className="h-8 bg-gray-200 rounded w-1/3" />
-        <div className="h-4 bg-gray-200 rounded w-1/4" />
-      </div>
-    </div>
-  );
-}
-
-function InfoSectionSkeleton() {
-  return (
-    <div className="rounded border border-gray-200 bg-white p-4 animate-pulse space-y-3">
-      <div className="h-5 bg-gray-200 rounded w-1/4" />
-      <div className="h-4 bg-gray-200 rounded w-full" />
-      <div className="h-4 bg-gray-200 rounded w-5/6" />
-    </div>
-  );
-}
-
-function ContactInfoSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="animate-pulse space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-1/3" />
-          <div className="h-4 bg-gray-200 rounded w-2/3" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function RecentCertificatesSkeleton() {
-  return (
-    <ul className="divide-y divide-gray-100 rounded-sm border border-gray-200 bg-white">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <li key={i} className="flex gap-3 p-4 animate-pulse">
-          <div className="h-14 w-20 bg-gray-200 rounded-sm" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 rounded w-1/2" />
-            <div className="h-3 bg-gray-200 rounded w-2/3" />
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function OrgLoadingState() {
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <OrgHeaderSkeleton />
-      <div className="mx-auto mt-6 flex max-w-7xl flex-col gap-8 lg:flex-row">
-        <div className="flex flex-1 flex-col gap-4">
-          <InfoSectionSkeleton />
-          <ContactInfoSkeleton />
-        </div>
-        <div className="flex flex-1 flex-col gap-6">
-          <div>
-            <div className="mb-3 h-6 bg-gray-200 rounded w-1/3 animate-pulse" />
-            <RecentCertificatesSkeleton />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OrgErrorState({ message }: { message: string }) {
-  return (
-    <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-red-600">Error: {message}</p>
-      </div>
-    </div>
-  );
-}
-
-function OrgNotFoundState() {
-  return (
-    <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-gray-600">Organization not found</p>
-      </div>
     </div>
   );
 }

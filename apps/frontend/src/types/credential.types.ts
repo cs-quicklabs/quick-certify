@@ -1,18 +1,6 @@
-export enum CredentialStatus {
-  DRAFT = 'DRAFT',
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  ISSUED = 'ISSUED',
-  FAILED = 'FAILED',
-}
-
-export enum BatchStatusEnum {
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  COMPLETED = 'COMPLETED',
-  PARTIAL_FAILURE = 'PARTIAL_FAILURE',
-  FAILED = 'FAILED',
-}
+import { CredentialStatusEnum, BatchStatusEnum } from '@certify/certificate-core';
+export { CredentialStatusEnum, BatchStatusEnum };
+export { CredentialStatusEnum as CredentialStatus };
 
 export interface Recipient {
   uuid: string;
@@ -34,7 +22,7 @@ export interface Credential {
   expiration_date: string | null;
   certificate_url: string | null;
   certificate_pdf_url: string | null;
-  status: CredentialStatus;
+  status: CredentialStatusEnum;
   batch_id: number | null;
   is_active: boolean;
   createdAt: string;
@@ -70,7 +58,14 @@ export interface PublicCredential {
     logoUrl: string | null;
     website: string;
     slogan: string | null;
+    slug: string;
     supportEmail: string;
+    linkedinID: string;
+    linkedinUrl: string;
+    facebookUrl: string;
+    twitterUrl: string;
+    faviconUrl: string | null;
+    bannerUrl: string | null;
   };
 }
 

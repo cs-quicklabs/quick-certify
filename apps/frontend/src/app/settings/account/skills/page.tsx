@@ -33,6 +33,7 @@ export default function SkillsPage() {
     skill: Skill | null;
   }>({ isOpen: false, skill: null });
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showQueryError, setShowQueryError] = useState<boolean>(true);
@@ -68,7 +69,6 @@ export default function SkillsPage() {
             />
           );
         }
-
         return <span className="form-text-normal">{skill.name}</span>;
       },
     },
@@ -83,13 +83,22 @@ export default function SkillsPage() {
 
         if (editingSkill?.uuid === skill.uuid) {
           return (
-            <button
-              onClick={() => handleEditSave(skill.uuid)}
-              className="btn-primary text-sm px-3 py-1.5"
-              disabled={isUpdating || !editSkillName.trim()}
-            >
-              {isUpdating ? 'Saving...' : 'Save'}
-            </button>
+            <div className="flex items-center justify-end gap-4">
+              <button
+                onClick={() => handleEditSave(skill.uuid)}
+                className="btn-primary text-sm px-3 py-1.5"
+                disabled={isUpdating || !editSkillName.trim()}
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={handleEditCancel}
+                className="btn-inline-blue text-sm"
+                disabled={isUpdating}
+              >
+                Cancel
+              </button>
+            </div>
           );
         }
 
@@ -134,6 +143,12 @@ export default function SkillsPage() {
 
   const skills = data?.data || [];
 
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(null), 4000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   // Reset showQueryError when queryError changes
   useEffect(() => {
     if (queryError) {
@@ -159,7 +174,7 @@ export default function SkillsPage() {
     try {
       await createSkillMutation.mutateAsync({ name: trimmedName });
       setNewSkillName('');
-      setError(null);
+      setSuccessMessage('Skill created successfully');
     } catch (error) {
       setError(getApiErrorMessage(error));
     }
@@ -193,7 +208,7 @@ export default function SkillsPage() {
       queryClient.invalidateQueries({ queryKey: SKILL_KEYS.lists() });
       setEditingSkill(null);
       setEditSkillName('');
-      setError(null);
+      setSuccessMessage('Skill updated successfully');
     } catch (error) {
       setError(getApiErrorMessage(error));
     } finally {
@@ -213,7 +228,7 @@ export default function SkillsPage() {
     try {
       await deleteSkillMutation.mutateAsync(confirmDialog.skill.uuid);
       setConfirmDialog({ isOpen: false, skill: null });
-      setError(null);
+      setSuccessMessage('Skill deleted successfully');
     } catch (error) {
       setError(getApiErrorMessage(error));
       setConfirmDialog({ isOpen: false, skill: null });
@@ -237,15 +252,17 @@ export default function SkillsPage() {
         </p>
       </div>
 
+      {/* Success Message */}
+      {successMessage && (
+        <Alert type="success" message={successMessage} onClose={() => setSuccessMessage(null)} />
+      )}
+
       {/* Error Message */}
       {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
       {/* Add New Skill Form */}
       {isAuthorized && (
-        <form
-          onSubmit={handleAddSkill}
-          className="w-full mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
-        >
+        <form onSubmit={handleAddSkill} className="w-full mb-4">
           <div className="mb-4">
             <label htmlFor="skill" className="form-input-label">
               Add New Skill

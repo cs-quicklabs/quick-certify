@@ -18,7 +18,7 @@ import { useSkills } from '@/hooks/useSkills';
 import { useEventStepper, Step0Data, Step1Data } from '@/hooks/useEventStepper';
 import { DesignSelectorModal } from '@/components/designs/DesignSelectorModal';
 import { SkillSelector } from '@/components/events/SkillSelector';
-import { Eye, Images, Plus, SquarePen, Trash, Loader2 } from 'lucide-react';
+import { Eye, SquarePen, Trash, Loader2, UploadCloud } from 'lucide-react';
 import { useDesignList } from '@/hooks/useDesigns';
 import { Design } from '@/types';
 import { Event } from '@/types';
@@ -451,7 +451,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
 
   const step1Config = {
     title: 'About',
-    subtitle: 'Add a detailed description of your event.',
+    subtitle: 'Add a detailed description of your event and a link to its website.',
     layout: 'grid-3' as const,
     fields: [
       {
@@ -461,6 +461,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         placeholder: 'Write a description for this event...',
         className: 'col-span-3',
         rows: 5,
+        tooltipText:
+          'Provide a detailed description of your event that will appear on the issuer portal. This helps recipients understand the context and significance of the credentials they receive.',
       },
       {
         name: 'learningLink',
@@ -625,19 +627,17 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
                     </div>
                   </div>
                 ) : (
-                  <button
-                    type="button"
+                  <div
                     onClick={() => setIsDesignModalOpen(true)}
-                    className="w-full flex flex-col items-center rounded-lg border border-dashed border-gray-400 bg-gray-50 p-5 transition-colors hover:border-blue-500 hover:bg-gray-100"
+                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
                   >
-                    <div className="mb-3">
-                      <Images size={48} strokeWidth={1} className="text-gray-400" />
-                    </div>
-                    <div className="flex items-center gap-x-2 text-gray-600">
-                      <Plus size={16} strokeWidth={1} />
-                      <span className="text-sm">Add Design</span>
-                    </div>
-                  </button>
+                    <UploadCloud className="w-10 h-10 mb-2 text-gray-400" strokeWidth={1.5} />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold text-black">Click to upload</span> or drag and
+                      drop
+                    </p>
+                    <p className="text-xs text-gray-500">Select from your designs</p>
+                  </div>
                 )}
               </div>
 
