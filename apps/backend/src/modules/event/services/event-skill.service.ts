@@ -110,6 +110,13 @@ export class EventSkillService {
   }
 
   /**
+   * Count events that have this skill associated
+   */
+  async countBySkillId(skillId: number): Promise<number> {
+    return this.eventSkillModel.count({ where: { skill_id: skillId } });
+  }
+
+  /**
    * Clear all skills from an event
    */
   async clearSkills(eventId: number, transaction?: Transaction): Promise<void> {
