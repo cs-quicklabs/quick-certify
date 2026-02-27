@@ -10,6 +10,18 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.cdn.digitaloceanspaces.com',
+      },
+    ],
+  },
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTeamMembers, useRestoreUser, usePermanentlyDeleteTeamMember } from '@/hooks/useTeam';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useAuthStore } from '@/store/auth.store';
 import { ConfirmationDialog } from '@/components';
 import { Pagination } from '@/components/ui/pagination';
@@ -20,6 +21,7 @@ export default function ArchivedMembersPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [memberToRestore, setMemberToRestore] = useState<TeamMember | null>(null);
   const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null);
@@ -37,11 +39,15 @@ export default function ArchivedMembersPage() {
     }
   }, [user, router]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
   const { data, isLoading } = useTeamMembers({
     page: currentPage,
     limit: pageSize,
     status: 'archived',
-    search: searchQuery || undefined,
+    search: debouncedSearch || undefined,
     sortBy: 'updated_at',
     sortOrder: 'DESC',
   });

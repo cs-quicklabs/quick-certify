@@ -64,3 +64,6 @@ docs/_build/
 # Misc
 *.min.js
 *.min.css
+
+# Ignore auto-generated environment types to avoid git conflicts with Next.js
+apps/frontend/next-env.d.ts

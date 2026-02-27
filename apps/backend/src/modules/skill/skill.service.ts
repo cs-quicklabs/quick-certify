@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { SkillEntity, OrganizationEntity } from '@src/entities';
 import { CreateSkillDto, UpdateSkillDto } from './dtos';
+import { EventSkillService } from '@src/modules/event/services/event-skill.service';
 
 /**
  * Skill Service
@@ -16,6 +17,7 @@ export class SkillService {
   constructor(
     @InjectModel(SkillEntity)
     private readonly skillModel: typeof SkillEntity,
+    private readonly eventSkillService: EventSkillService,
   ) {}
 
   async findAll(
@@ -146,6 +148,12 @@ export class SkillService {
 
   async delete(id: number, organizationId: number): Promise<boolean> {
     const skill = await this.requireById(id, organizationId);
+    const eventCount = await this.eventSkillService.countBySkillId(id);
+    if (eventCount > 0) {
+      throw new ConflictException(
+        `Cannot delete skill: it is associated with ${eventCount} event(s)`,
+      );
+    }
     await skill.destroy();
     return true;
   }

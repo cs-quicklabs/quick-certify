@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
@@ -23,6 +24,9 @@ import { CurrentUser, Public, Roles } from '@src/modules/auth/decorators';
 import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
+import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
+import { PublicPortalGuard } from '../organization';
+import type { PublicRequest } from '@src/commons/interfaces/public-request.interface';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -126,5 +130,33 @@ export class CredentialController {
   async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
     await this.credentialService.deleteByUuid(uuid, user.organizationUuid);
     return new SuccessResponse('Credential deleted successfully', { deleted: true });
+  }
+
+  /**
+   *  Fetches all credentials issued by an issuer based on its slug.
+   * @param slug - organization slug
+   * @param filters
+   * @returns
+   */
+  @Public()
+  @Get('public/org/:slug')
+  @UseGuards(PublicPortalGuard)
+  @ApiOperation({ summary: 'Get all credentials for current organization' })
+  @ApiResponse({ status: 200, description: 'Credentials list' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'eventId', required: false })
+  @ApiQuery({ name: 'recipientId', required: false })
+  async findAllPublic(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Query() filters: CredentialFilterDto,
+    @Req() req: PublicRequest,
+  ) {
+    const orgFromReq = req.organization;
+    const result = await this.credentialService.findAll(slug, filters, orgFromReq);
+    return new SuccessResponse('Credentials retrieved successfully', result);
   }
 }

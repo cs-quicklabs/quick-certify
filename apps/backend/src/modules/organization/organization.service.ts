@@ -35,6 +35,10 @@ export class OrganizationService implements IOrganizationService {
     private readonly storageService: StorageService,
   ) {}
 
+  async resolveOrgFromRequestOrDb(identifier: string, orgFromRequest?: OrganizationEntity) {
+    return orgFromRequest ?? (await this.resolveOrganization(identifier));
+  }
+
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
 
@@ -103,6 +107,16 @@ export class OrganizationService implements IOrganizationService {
       where: { id, is_active: true },
       ...(transaction && { transaction }),
     });
+  }
+
+  async resolveOrganization(identifier: string): Promise<OrganizationEntity | null> {
+    // Lookup by slug OR UUID
+    const org = await this.organizationModel.findOne({
+      where: {
+        [Op.or]: [{ slug: identifier }, { uuid: identifier }],
+      },
+    });
+    return org;
   }
 
   async findByUuid(uuid: string): Promise<OrganizationEntity | null> {

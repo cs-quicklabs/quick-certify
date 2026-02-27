@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Header, Sidebar, ConfirmationDialog, Alert } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import { getApiErrorMessage } from '@/lib/api-error';
-import type { IBaseEvent } from '@/services/api/event.service';
+import type { IBaseEvent } from '@/types';
 import { Table, TableColumn } from '@/components/ui';
 
 interface EventSettingListProps {
@@ -155,7 +155,7 @@ export default function EventSettingList({
               type="text"
               value={editingValue}
               onChange={(e) => setEditingValue(e.target.value)}
-              className="form-input-field font-bold w-full"
+              className="form-input-field w-full"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSaveEdit();
                 else if (e.key === 'Escape') handleCancelEdit();

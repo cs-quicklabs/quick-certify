@@ -32,10 +32,13 @@ export class DesignEntity extends BaseEntity {
     type: DataType.INTEGER,
     allowNull: false,
     field: 'organization_id',
+    onDelete: 'CASCADE',
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, {
+    onDelete: 'CASCADE',
+  })
   declare organization: OrganizationEntity;
 
   @Column({

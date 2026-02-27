@@ -16,8 +16,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantClasses = {
   primary: 'btn-primary',
   secondary: 'btn-secondary',
-  outline:
-    'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-primary-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700',
+  outline: 'btn-normal',
   ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700',
   danger: 'btn-red',
 };

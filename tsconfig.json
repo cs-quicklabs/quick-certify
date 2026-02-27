@@ -17,6 +17,9 @@
     },
     {
       "path": "./packages/sms"
+    },
+    {
+      "path": "./packages/certificate-core"
     }
   ]
 }

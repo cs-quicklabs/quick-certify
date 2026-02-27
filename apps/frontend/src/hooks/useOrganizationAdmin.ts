@@ -3,7 +3,8 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { organizationAdminService, OrganizationFilters } from '@/services';
+import { organizationAdminService } from '@/services';
+import { OrganizationFilters } from '@/types';
 
 export const ORGANIZATION_ADMIN_KEYS = {
   all: ['organizations-admin'] as const,

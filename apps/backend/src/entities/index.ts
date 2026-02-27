@@ -13,6 +13,9 @@ import { EventSkillEntity } from './event-skill.entity';
 import { RecipientEntity } from './recipient.entity';
 import { CredentialEntity } from './credential.entity';
 import { CredentialIssueBatchEntity } from './credential-issue-batch.entity';
+import { PathwayEntity } from './pathway.entity';
+import { PathwayEventEntity } from './pathway-event.entity';
+import { PathwayParticipantEntity } from './pathway-participant.entity';
 
 export * from './base.entity';
 export * from './organization.entity';
@@ -30,6 +33,9 @@ export * from './event-skill.entity';
 export * from './recipient.entity';
 export * from './credential.entity';
 export * from './credential-issue-batch.entity';
+export * from './pathway.entity';
+export * from './pathway-event.entity';
+export * from './pathway-participant.entity';
 
 export const entities = [
   RoleEntity,
@@ -47,4 +53,7 @@ export const entities = [
   RecipientEntity,
   CredentialEntity,
   CredentialIssueBatchEntity,
+  PathwayEntity,
+  PathwayEventEntity,
+  PathwayParticipantEntity,
 ];
