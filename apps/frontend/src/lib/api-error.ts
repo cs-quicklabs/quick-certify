@@ -108,3 +108,15 @@ export function getApiFieldErrors(error: unknown): Record<string, string> | null
   }
   return null;
 }
+
+/**
+ *
+ * @param error
+ * @returns
+ */
+export function getApiErrorStatus(error: unknown): number | null {
+  if (isAxiosError(error)) {
+    return error.response?.status ?? null;
+  }
+  return null;
+}

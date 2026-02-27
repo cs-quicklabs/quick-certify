@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
@@ -18,6 +19,8 @@ import { RolesGuard } from '@src/modules/auth/guards';
 import { Role } from '@src/modules/role/enums';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { SlugOnlyPipe } from '@src/commons/pipes/slug-only.pipe';
+import { PublicPortalGuard } from '@src/modules/organization';
+import type { PublicRequest } from '../../../commons/interfaces/public-request.interface';
 
 @ApiTags('Events')
 @ApiBearerAuth()
@@ -107,6 +110,7 @@ export class EventController {
    */
   @Public()
   @Get('public/org/:slug')
+  @UseGuards(PublicPortalGuard)
   @ApiOperation({ summary: 'Get all events for current organization' })
   @ApiResponse({ status: 200, description: 'Events list' })
   @ApiQuery({ name: 'page', required: false })
@@ -121,8 +125,13 @@ export class EventController {
     required: false,
     description: 'Comma-separated event format UUIDs',
   })
-  async findAllByOrg(@Param('slug', SlugOnlyPipe) slug: string, @Query() filters: EventFilterDto) {
-    const result = await this.eventService.findAll(slug, filters);
+  async findAllByOrg(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Req() req: PublicRequest,
+    @Query() filters: EventFilterDto,
+  ) {
+    const orgFromRequest = req.organization;
+    const result = await this.eventService.findAll(slug, filters, orgFromRequest);
     return new SuccessResponse('Events retrieved successfully', result);
   }
 
@@ -131,10 +140,16 @@ export class EventController {
    */
   @Public()
   @Get('public/org/:slug/event/:uuid')
+  @UseGuards(PublicPortalGuard)
   @ApiOperation({ summary: 'Get event for current organization' })
   @ApiResponse({ status: 200, description: 'Events list' })
-  async findOneByOrg(@Param('slug', SlugOnlyPipe) slug: string, @Param('uuid') uuid: string) {
-    const result = await this.eventService.findByUuid(uuid, slug);
+  async findOneByOrg(
+    @Param('slug', SlugOnlyPipe) slug: string,
+    @Param('uuid') uuid: string,
+    @Req() req: PublicRequest,
+  ) {
+    const orgFromRequest = req.organization;
+    const result = await this.eventService.findByUuid(uuid, slug, orgFromRequest);
     return new SuccessResponse('Events retrieved successfully', result);
   }
 }

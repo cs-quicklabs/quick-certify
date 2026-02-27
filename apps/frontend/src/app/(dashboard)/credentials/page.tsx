@@ -137,6 +137,7 @@ export default function CredentialsPage() {
   if (error?.message.includes('403')) {
     return <ModulePermissionError />;
   }
+
   return (
     <div>
       <div className="bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
@@ -157,14 +158,14 @@ export default function CredentialsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100 dark:border-gray-700">
           {/* Event Filter Dropdown */}
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="cursor-pointer flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700 capitalize"
+              className="cursor-pointer flex items-center text-black gap-2 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
             >
-              <ListFilter className="w-4 h-4 text-gray-500" />
+              <ListFilter className="w-4 h-4 stroke-2 text-gray-500 " />
               <span className="text-gray-700 dark:text-gray-300">
                 {selectedEvent ? selectedEvent.name : 'Filter by Events'}
               </span>
@@ -209,7 +210,7 @@ export default function CredentialsPage() {
               placeholder="Search by name..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-56 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 focus:outline-none"
+              className="w-48 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-gray-300 focus:outline-none"
             />
           </div>
         </div>
@@ -217,7 +218,7 @@ export default function CredentialsPage() {
         {/* Desktop Table */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500">
-            <thead className="text-md text-gray-600 bg-gray-50 border-b border-gray-200">
+            <thead className="text-left font-black text-gray-600 bg-gray-50 border-b border-gray-200">
               <tr>
                 <th scope="col" className="px-6 py-3 font-medium">
                   Name
@@ -260,11 +261,11 @@ export default function CredentialsPage() {
                     key={item.uuid}
                     className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <td className="px-6 py-3  text-gray-900 dark:text-white">
+                    <td className="px-6 py-2  text-gray-900 dark:text-white">
                       {item.recipient?.name}
                     </td>
-                    <td className="px-6 py-3 text-gray-500">{item.recipient?.email}</td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-2 text-gray-500">{item.recipient?.email}</td>
+                    <td className="px-6 py-2">
                       {item.event ? (
                         <button
                           onClick={() => router.push(createRoute.eventDetail(item.event!.uuid))}
@@ -276,13 +277,13 @@ export default function CredentialsPage() {
                         <span className="text-gray-400">--</span>
                       )}
                     </td>
-                    <td className="px-6 py-3 text-gray-900 dark:text-white">
+                    <td className="px-6 py-2 text-gray-900 dark:text-white">
                       {formatDate(item.issued_date)}
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-2">
                       <CredentialStatusBadge status={item.status} />
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-2">
                       <a
                         href={createRoute.credentialDetail(item.uuid)}
                         onClick={(e) => {
@@ -313,7 +314,7 @@ export default function CredentialsPage() {
             credentials.map((item) => (
               <div
                 key={item.uuid}
-                className="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="font-semibold text-sm text-gray-900 dark:text-white">

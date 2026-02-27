@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useCallback } from 'react';
-import { Loader2, X } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Loader2, Search, X } from 'lucide-react';
 import {
   Pagination,
   ModulePermissionError,
@@ -18,6 +18,7 @@ import {
   useEventLevels,
   useEventFormats,
 } from '@/hooks/useEvents';
+import { getApiErrorMessage } from '@/lib/api-error';
 
 function toggleId(prev: string[], id: string): string[] {
   return prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id];
@@ -26,8 +27,11 @@ function toggleId(prev: string[], id: string): string[] {
 export default function EventsPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
+
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
   const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
   const [selectedLevelIds, setSelectedLevelIds] = useState<string[]>([]);
   const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>([]);
@@ -35,12 +39,16 @@ export default function EventsPage() {
   const [filterDataLoaded, setFilterDataLoaded] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   // Debounce search query (300ms)
   useEffect(() => {
+    if (query !== debouncedQuery) setIsSearching(true);
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
       setPage(1);
-    }, 300);
+      setIsSearching(false);
+    }, 500);
     return () => clearTimeout(timer);
   }, [query]);
 
@@ -117,6 +125,12 @@ export default function EventsPage() {
     setSelectedFormatIds([]);
     setPage(1);
   };
+  const clearSearch = () => {
+    setQuery('');
+    setDebouncedQuery('');
+    setPage(1);
+    searchInputRef.current?.focus();
+  };
 
   const handleDeleteEvent = async (uuid: string) => {
     setDeletingEventId(uuid);
@@ -148,11 +162,12 @@ export default function EventsPage() {
     })),
   ];
 
-  // Show permission error
-  if (error) return <ModulePermissionError />;
+  if (getApiErrorMessage(error).includes('Access denied.')) {
+    return <ModulePermissionError />;
+  }
 
   // Show loader only on initial load, not when filters/search change
-  if (isLoading && isInitialLoad) {
+  if (isLoading && isInitialLoad && !data) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="animate-spin text-gray-400" size={32} />
@@ -162,8 +177,8 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
-      <div className="divide-y dark:divide-gray-700">
+    <div>
+      <div className="divide-y dark:divide-gray-700 relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
           <div>
@@ -177,7 +192,7 @@ export default function EventsPage() {
           </Link>
         </div>
 
-        {/* Filters */}
+        {/* Filters + Search */}
         <div className="flex flex-wrap items-center gap-4 px-4 py-2 border-b border-gray-200">
           <MultiSelectFilter
             label="Type"
@@ -238,31 +253,61 @@ export default function EventsPage() {
             </div>
           )}
 
-          <div className="ml-auto">
+          {/* Search — icon left, spinner or clear button right */}
+          <div className="ml-auto relative flex items-center">
+            <Search size={15} className="absolute left-3 text-gray-400 pointer-events-none" />
             <input
+              ref={searchInputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by event or design name..."
-              className="w-64 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-gray-300 focus:outline-none"
+              placeholder="Search events or designs..."
+              className="w-64 pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 focus:ring-1 focus:ring-blue-300 focus:border-blue-300 focus:outline-none transition-colors"
             />
+            {/* Spinner while debounce pending, clear button when there's a value */}
+            <div className="absolute right-3">
+              {isSearching ? (
+                <Loader2 size={14} className="animate-spin text-gray-400" />
+              ) : query ? (
+                <button
+                  onClick={clearSearch}
+                  className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
 
         {/* Empty State */}
-        {events.length === 0 && (
+        {events.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-            <p>No events found</p>
-            {hasActiveFilters && (
-              <button onClick={clearFilters} className="mt-2 text-sm text-blue-600 hover:underline">
-                Clear filters
+            <p>{query ? `No results for "${query}"` : 'No events found'}</p>
+            {(hasActiveFilters || query) && (
+              <button
+                onClick={() => {
+                  clearFilters();
+                  clearSearch();
+                }}
+                className="mt-2 text-sm text-blue-600 hover:underline"
+              >
+                Clear all filters
               </button>
             )}
           </div>
         )}
 
+        {/* Loading overlay for subsequent fetches (not initial load) */}
+        {isLoading && data && (
+          <div className="flex justify-center py-6">
+            <Loader2 className="animate-spin text-gray-400" size={24} />
+          </div>
+        )}
+
         {/* Events Table */}
-        {events.length > 0 && (
+        {events.length > 0 && !isLoading && (
           <div className="relative">
             {isLoading && !isInitialLoad && (
               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 flex items-center justify-center z-10">

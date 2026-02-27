@@ -12,19 +12,8 @@ import { OrganizationService } from '@src/modules/organization/organization.serv
 import { EventRepository, EventFindAllOptions } from '../repositories/event.repository';
 import { EventSkillService } from './event-skill.service';
 import { EventReferenceValidator } from '../validators/event-reference.validator';
+import { OrganizationEntity } from '@src/entities';
 
-/**
- * Event Service
- *
- * Handles event CRUD operations with support for progressive creation.
- * Refactored to follow SOLID principles:
- * - Single Responsibility: Only handles event business logic
- * - Dependencies: Uses Repository, Validator, and SkillService
- *
- * Progressive Creation Pattern:
- * - Step 1: Create event with minimal data (name + design)
- * - Step 2: Update with additional details (type, level, format, description, skills)
- */
 @Injectable()
 export class EventService {
   constructor(
@@ -34,18 +23,15 @@ export class EventService {
     private readonly organizationService: OrganizationService,
   ) {}
 
-  /**
-   * Find all active events for an organization
-   */
+  // ─── Public API ────────────────────────────────────────────────────────────
+
   async findAll(
     organizationIdentifier: string,
     filters: EventFilterDto = {},
+    orgFromRequest?: OrganizationEntity,
   ): Promise<PaginatedResult<EventEntity>> {
-    const organization = await this.getOrganization(organizationIdentifier);
-
-    if (!organization) {
-      return this.emptyPaginatedResult(filters.limit || 10);
-    }
+    const organization = await this.resolveOrg(organizationIdentifier, orgFromRequest);
+    if (!organization) return this.emptyPaginatedResult(filters.limit || 10);
 
     const options: EventFindAllOptions = {
       ...filters,
@@ -57,20 +43,16 @@ export class EventService {
     return this.eventRepository.findAll(organization.id, options);
   }
 
-  /**
-   * Find one event by UUID within organization
-   */
-  async findByUuid(uuid: string, organizationUuid: string): Promise<EventEntity | null> {
-    const organization = await this.getOrganization(organizationUuid);
+  async findByUuid(
+    uuid: string,
+    organizationUuid: string,
+    orgFromRequest?: OrganizationEntity,
+  ): Promise<EventEntity | null> {
+    const organization = await this.resolveOrg(organizationUuid, orgFromRequest);
     if (!organization) return null;
-
     return this.eventRepository.findByUuid(uuid, organization.id);
   }
 
-  /**
-   * Find active events by UUIDs for an organization.
-   * Used by PathwayEventService to validate and resolve event IDs.
-   */
   async findActiveByUuids(
     uuids: string[],
     organizationId: number,
@@ -80,20 +62,12 @@ export class EventService {
     return this.eventRepository.findActiveByUuids(uuids, organizationId, transaction);
   }
 
-  /**
-   * Create a new event
-   * Supports restoring soft-deleted events with the same name
-   */
   async create(organizationUuid: string, dto: CreateEventDto): Promise<EventEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.resolveOrg(organizationUuid, undefined, true);
     const normalizedName = dto.name.trim();
+    //validate
+    if (!dto.designId) throw new BadRequestException('Design ID is required');
 
-    // Validate required design
-    if (!dto.designId) {
-      throw new BadRequestException('Design ID is required');
-    }
-
-    // Validate references
     const refs = await this.referenceValidator.validateOptional(organizationUuid, {
       eventTypeId: dto.eventTypeId,
       eventLevelId: dto.eventLevelId,
@@ -101,14 +75,11 @@ export class EventService {
       designId: dto.designId,
     });
 
-    // Check for existing event
     const existingEvent = await this.eventRepository.findByName(normalizedName, organization.id);
-
     if (existingEvent) {
-      return this.restoreOrThrow(existingEvent, normalizedName, dto, refs, organizationUuid);
+      return this.restoreEvent(existingEvent, normalizedName, dto, refs, organizationUuid);
     }
 
-    // Use transaction to ensure atomicity of event + skill creation
     const sequelize = this.eventRepository.getSequelize();
     const transaction = await sequelize.transaction();
 
@@ -130,7 +101,6 @@ export class EventService {
         transaction,
       );
 
-      // Associate skills if provided
       if (dto.skillIds?.length) {
         await this.eventSkillService.addSkills(event, dto.skillIds, organizationUuid, transaction);
       }
@@ -143,42 +113,22 @@ export class EventService {
     }
   }
 
-  /**
-   * Update an event by UUID
-   * Supports partial updates
-   */
   async updateByUuid(
     uuid: string,
     organizationUuid: string,
     dto: UpdateEventDto,
   ): Promise<EventEntity> {
     const event = await this.requireEvent(uuid, organizationUuid);
-
     const updateData: Partial<EventEntity> = {};
 
-    // Handle name update with duplicate check
     if (dto.name !== undefined) {
       updateData.name = await this.validateNameUpdate(dto.name, event.organization_id, event.id);
     }
+    if (dto.description !== undefined) updateData.description = dto.description ?? null;
+    if (dto.learningLink !== undefined) updateData.learning_link = dto.learningLink ?? null;
+    if (dto.durationType !== undefined) updateData.duration_type = dto.durationType ?? null;
+    if (dto.durationValue !== undefined) updateData.duration_value = dto.durationValue ?? null;
 
-    // Handle simple field updates
-    if (dto.description !== undefined) {
-      updateData.description = dto.description ?? null;
-    }
-
-    if (dto.learningLink !== undefined) {
-      updateData.learning_link = dto.learningLink ?? null;
-    }
-
-    if (dto.durationType !== undefined) {
-      updateData.duration_type = dto.durationType ?? null;
-    }
-
-    if (dto.durationValue !== undefined) {
-      updateData.duration_value = dto.durationValue ?? null;
-    }
-
-    // Handle reference updates
     if (dto.eventTypeId !== undefined) {
       const eventType = await this.referenceValidator.validateEventType(
         dto.eventTypeId,
@@ -186,7 +136,6 @@ export class EventService {
       );
       updateData.event_type_id = eventType?.id ?? null;
     }
-
     if (dto.eventLevelId !== undefined) {
       const eventLevel = await this.referenceValidator.validateEventLevel(
         dto.eventLevelId,
@@ -194,7 +143,6 @@ export class EventService {
       );
       updateData.event_level_id = eventLevel?.id ?? null;
     }
-
     if (dto.eventFormatId !== undefined) {
       const eventFormat = await this.referenceValidator.validateEventFormat(
         dto.eventFormatId,
@@ -202,24 +150,19 @@ export class EventService {
       );
       updateData.event_format_id = eventFormat?.id ?? null;
     }
-
     if (dto.designId !== undefined) {
       const design = await this.referenceValidator.validateDesign(dto.designId);
       updateData.design_id = design?.id ?? null;
     }
 
-    // Use transaction for atomicity across event update + skill sync
     const sequelize = this.eventRepository.getSequelize();
     const transaction = await sequelize.transaction();
 
     try {
       await this.eventRepository.update(event, updateData, transaction);
-
-      // Handle skills update if provided
       if (dto.skillIds !== undefined) {
         await this.eventSkillService.syncSkills(event, dto.skillIds, organizationUuid, transaction);
       }
-
       await transaction.commit();
       return this.eventRepository.reload(event);
     } catch (error) {
@@ -228,9 +171,6 @@ export class EventService {
     }
   }
 
-  /**
-   * Soft delete an event
-   */
   async deleteByUuid(uuid: string, organizationUuid: string): Promise<boolean> {
     const event = await this.requireEvent(uuid, organizationUuid);
     await this.eventRepository.softDelete(event);
@@ -244,15 +184,29 @@ export class EventService {
     return this.eventRepository.existsByDesignId(designId);
   }
 
-  // Private helper methods
+  // ─── Private Helpers ───────────────────────────────────────────────────────
 
-  private async getOrganization(identifier: string) {
-    return await this.organizationService.findByUuidOrSlug(identifier);
-  }
-
-  private async requireOrganization(uuid: string) {
-    const org = await this.getOrganization(uuid);
-    if (!org) throw new NotFoundException('Organization not found');
+  /**
+   * Resolves organization from request or DB.
+   * Pass required=true to throw NotFoundException if not found.
+   */
+  private async resolveOrg(
+    identifier: string,
+    orgFromRequest: OrganizationEntity | undefined,
+    required: true,
+  ): Promise<OrganizationEntity>;
+  private async resolveOrg(
+    identifier: string,
+    orgFromRequest?: OrganizationEntity,
+    required?: false,
+  ): Promise<OrganizationEntity | null>;
+  private async resolveOrg(
+    identifier: string,
+    orgFromRequest?: OrganizationEntity,
+    required = false,
+  ): Promise<OrganizationEntity | null> {
+    const org = orgFromRequest ?? (await this.organizationService.resolveOrganization(identifier));
+    if (!org && required) throw new NotFoundException('Organization not found');
     return org;
   }
 
@@ -268,22 +222,18 @@ export class EventService {
     excludeId: number,
   ): Promise<string> {
     const normalizedName = name.trim();
-
     const existing = await this.eventRepository.findByName(
       normalizedName,
       organizationId,
       excludeId,
       true, // Only check active events for name conflicts
     );
-
-    if (existing) {
+    if (existing)
       throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
-    }
-
     return normalizedName;
   }
 
-  private async restoreOrThrow(
+  private async restoreEvent(
     existingEvent: EventEntity,
     normalizedName: string,
     dto: CreateEventDto,
@@ -299,14 +249,11 @@ export class EventService {
       throw new ConflictException(`Event "${normalizedName}" already exists in this organization`);
     }
 
-    // Use transaction to ensure atomicity of restore + skill association
     const sequelize = this.eventRepository.getSequelize();
     const transaction = await sequelize.transaction();
 
     try {
-      const updateData: Partial<EventEntity> = {
-        is_active: true,
-      };
+      const updateData: Partial<EventEntity> = { is_active: true };
 
       if (dto.description !== undefined) updateData.description = dto.description;
       if (dto.learningLink !== undefined) updateData.learning_link = dto.learningLink;
@@ -319,7 +266,6 @@ export class EventService {
 
       await this.eventRepository.update(existingEvent, updateData, transaction);
 
-      // Associate skills if provided
       if (dto.skillIds?.length) {
         await this.eventSkillService.addSkills(
           existingEvent,
@@ -348,14 +294,7 @@ export class EventService {
   private emptyPaginatedResult(limit: number): PaginatedResult<EventEntity> {
     return {
       data: [],
-      meta: {
-        total: 0,
-        page: 1,
-        limit,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPrevPage: false,
-      },
+      meta: { total: 0, page: 1, limit, totalPages: 0, hasNextPage: false, hasPrevPage: false },
     };
   }
 }

@@ -8,7 +8,7 @@ type PublicHeaderProps = {
 };
 
 const getNavItems = (slug: string) => [
-  { label: 'Issuer Profile', href: `/public/company/${slug}` },
+  { label: 'Issuer Profile', href: `/public/company/${slug}/` },
   { label: 'Events', href: `/public/company/${slug}/events` },
   { label: 'Recipients', href: `/public/company/${slug}/recipients` },
 ];

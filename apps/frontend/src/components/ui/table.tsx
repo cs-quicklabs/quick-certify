@@ -35,8 +35,7 @@ export function Table<T = unknown>({
   maxHeight = '400px',
 }: TableProps<T>) {
   const getRowClassName = (item: T, index: number): string => {
-    const baseClasses =
-      'border-b border-gray-200 last:border-b-0 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700';
+    const baseClasses = 'hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700';
 
     const customClasses =
       typeof rowClassName === 'function' ? rowClassName(item, index) : rowClassName;
@@ -48,7 +47,7 @@ export function Table<T = unknown>({
 
   return (
     <div className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-      <div className={`border border-gray-200 rounded-md overflow-hidden ${className}`}>
+      <div className={`overflow-hidden ${className}`}>
         <div
           className={scrollable ? 'overflow-y-auto' : 'overflow-x-auto'}
           style={scrollable ? { maxHeight } : undefined}
