@@ -14,6 +14,7 @@ import {
   CertificateGenerationService,
   CertificateGenerationParams,
 } from './certificate-generation.service';
+import type { DesignLayout } from '@certify/certificate-core';
 import { CredentialEmailService } from './credential-email.service';
 
 @Injectable()
@@ -100,10 +101,10 @@ export class BatchWorkerService {
 
     // Get design and validate
     const design = batch.event?.design;
-    if (!design?.url || !design?.layout) {
+    if (!design?.url) {
       await batch.update({
         status: BatchStatusEnum.FAILED,
-        error_details: [{ credentialId: 0, error: 'Event has no design template with layout' }],
+        error_details: [{ credentialId: 0, error: 'Event has no design template assigned' }],
       });
       // Mark all credentials in this batch as FAILED
       await this.credentialModel.update(
@@ -112,6 +113,13 @@ export class BatchWorkerService {
       );
       return;
     }
+
+    const effectiveLayout: DesignLayout = design.layout ?? {
+      version: 2,
+      canvasWidth: 1100,
+      canvasHeight: 800,
+      placeholders: [],
+    };
 
     // Fetch all credentials for this batch
     const credentials = await this.credentialModel.findAll({
@@ -145,7 +153,7 @@ export class BatchWorkerService {
 
         const result = await this.certificateGenerationService.generateCertificate(
           design.url,
-          design.layout,
+          effectiveLayout,
           genParams,
           batch.organization?.uuid ?? String(batch.organization_id),
         );

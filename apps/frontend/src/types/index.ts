@@ -7,3 +7,4 @@ export * from './credential.types';
 export * from './organization.types';
 export * from './event.types';
 export * from './pathway.types';
+export * from './search.types';

@@ -30,6 +30,7 @@ import { DesignModule } from './modules/design/design.module';
 import { RecipientModule } from './modules/recipient/recipient.module';
 import { CredentialModule } from './modules/credential/credential.module';
 import { PathwayModule } from './modules/pathway/pathway.module';
+import { SearchModule } from './modules/search';
 
 /**
  * Application Root Module
@@ -111,6 +112,7 @@ import { PathwayModule } from './modules/pathway/pathway.module';
     RecipientModule,
     CredentialModule,
     PathwayModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [
