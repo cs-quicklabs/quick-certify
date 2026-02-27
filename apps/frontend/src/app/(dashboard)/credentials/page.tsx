@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCredentials } from '@/hooks/useCredentials';
 import { useEvents } from '@/hooks/useEvents';
@@ -53,9 +54,9 @@ export default function CredentialsPage() {
   const currentEventId = searchParams.get('eventId') || '';
 
   const [searchInput, setSearchInput] = useState(currentSearch);
+  const debouncedInput = useDebounce(searchInput);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     data: credentialsData,
@@ -91,16 +92,10 @@ export default function CredentialsPage() {
   );
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      if (searchInput !== currentSearch) {
-        updateParams({ search: searchInput, page: '' });
-      }
-    }, 500);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchInput, currentSearch, updateParams]);
+    if (debouncedInput !== currentSearch) {
+      updateParams({ search: debouncedInput, page: '' });
+    }
+  }, [debouncedInput, currentSearch, updateParams]);
 
   useEffect(() => {
     setSearchInput(currentSearch);

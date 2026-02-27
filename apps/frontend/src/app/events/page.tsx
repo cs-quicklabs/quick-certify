@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, Search, X } from 'lucide-react';
 import {
   Pagination,
@@ -29,11 +30,8 @@ export default function EventsPage() {
   const [limit] = useState(6);
 
   const [query, setQuery] = useState('');
-  // const debouncedQuery = useDebounce(query);
-  // const isSearching = query !== debouncedQuery;
-
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const debouncedQuery = useDebounce(query);
+  const isSearching = query !== debouncedQuery;
 
   const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
   const [selectedLevelIds, setSelectedLevelIds] = useState<string[]>([]);
@@ -45,14 +43,8 @@ export default function EventsPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (query !== debouncedQuery) setIsSearching(true);
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-      setPage(1);
-      setIsSearching(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [query]);
+    setPage(1);
+  }, [debouncedQuery]);
 
   const handleFilterDataLoad = useCallback(() => {
     if (!filterDataLoaded) setFilterDataLoaded(true);
@@ -75,18 +67,18 @@ export default function EventsPage() {
     enabled: filterDataLoaded,
   });
 
-  const typeItems: FilterItem[] = (typesData?.data ?? []).map((t) => ({
-    uuid: t.uuid,
-    name: t.name,
-  }));
-  const levelItems: FilterItem[] = (levelsData?.data ?? []).map((l) => ({
-    uuid: l.uuid,
-    name: l.name,
-  }));
-  const formatItems: FilterItem[] = (formatsData?.data ?? []).map((f) => ({
-    uuid: f.uuid,
-    name: f.name,
-  }));
+  function mapDataToFilterItems<T extends { uuid: string; name: string }>(
+    data: T[] | undefined,
+  ): FilterItem[] {
+    return (data ?? []).map((item) => ({
+      uuid: item.uuid,
+      name: item.name,
+    }));
+  }
+
+  const typeItems: FilterItem[] = mapDataToFilterItems(typesData?.data);
+  const levelItems: FilterItem[] = mapDataToFilterItems(levelsData?.data);
+  const formatItems: FilterItem[] = mapDataToFilterItems(formatsData?.data);
 
   // Fetch events (paginated, server-side filters)
   const { data, isLoading, error } = useEvents({
@@ -127,12 +119,6 @@ export default function EventsPage() {
     setSelectedFormatIds([]);
     setPage(1);
   };
-  // const clearSearch = () => {
-  //   setQuery('');
-  //   setDebouncedQuery('');
-  //   setPage(1);
-  //   searchInputRef.current?.focus();
-  // };
   const clearSearch = () => {
     setQuery('');
     setPage(1);
@@ -274,17 +260,21 @@ export default function EventsPage() {
             />
             {/* Spinner while debounce pending, clear button when there's a value */}
             <div className="absolute right-3">
-              {isSearching ? (
-                <Loader2 size={14} className="animate-spin text-gray-400" />
-              ) : query ? (
-                <button
-                  onClick={clearSearch}
-                  className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-                  aria-label="Clear search"
-                >
-                  <X size={14} />
-                </button>
-              ) : null}
+              {(() => {
+                if (isSearching)
+                  return <Loader2 size={14} className="animate-spin text-gray-400" />;
+                if (query)
+                  return (
+                    <button
+                      onClick={clearSearch}
+                      className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  );
+                return null;
+              })()}
             </div>
           </div>
         </div>
