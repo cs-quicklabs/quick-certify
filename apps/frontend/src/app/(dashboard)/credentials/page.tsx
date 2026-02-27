@@ -259,8 +259,8 @@ export default function CredentialsPage() {
                     <td className="px-6 py-2  text-gray-900 dark:text-white">
                       {item.recipient?.name}
                     </td>
-                    <td className="px-6 py-2 text-gray-500">{item.recipient?.email}</td>
-                    <td className="px-6 py-2">
+                    <td className="px-6 py-3 text-gray-500">{item.recipient?.email}</td>
+                    <td className="px-6 py-3">
                       {item.event ? (
                         <button
                           onClick={() => router.push(createRoute.eventDetail(item.event!.uuid))}
@@ -278,7 +278,7 @@ export default function CredentialsPage() {
                     <td className="px-6 py-2">
                       <CredentialStatusBadge status={item.status} />
                     </td>
-                    <td className="px-6 py-2">
+                    <td className="px-6 py-3">
                       <a
                         href={createRoute.credentialDetail(item.uuid)}
                         onClick={(e) => {

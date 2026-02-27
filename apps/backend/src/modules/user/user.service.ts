@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,6 +15,9 @@ import { RoleEntity } from '@src/entities/role.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { PasswordService, SessionService } from '@src/modules/auth/services';
 import { CreateUserDto, UpdateUserDto } from './dtos';
+import { AuditLogService } from '../audit/audit-log.service';
+import { AuditAction } from '../audit/audit-action.action';
+import { AuditContext } from '../audit/interfaces/audit.context.interface';
 import { CurrentUser } from '../auth/interfaces';
 import { EmailService } from '@src/commons/services';
 import { Role } from '../role/enums';
@@ -57,6 +61,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     private readonly passwordService: PasswordService,
     private readonly mailService: EmailService,
     private readonly sessionService: SessionService,
+    private readonly auditLogService: AuditLogService,
   ) {
     super();
   }
@@ -152,7 +157,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       google_id?: string;
     },
     currentUser?: CurrentUser,
-    options?: { transaction?: Transaction },
+    options?: { transaction?: Transaction; auditContext?: AuditContext },
   ): Promise<UserEntity> {
     // Validate email uniqueness globally (across all organizations)
     await this.validateEmailUniqueness(dto.email, undefined, currentUser?.organizationId);
@@ -215,7 +220,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     );
 
     if (!createdUserResult) {
-      throw new Error('Failed to create user');
+      throw new InternalServerErrorException('Failed to create user');
     }
 
     const createdUser = createdUserResult as UserEntity;
@@ -235,13 +240,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       })) as UserEntity;
 
       if (!userWithRelations) {
-        throw new Error('Failed to reload created user');
+        throw new InternalServerErrorException('Failed to reload created user');
       }
     } else {
       // If no transaction, use findOne which will work normally
       const foundUser = await this.findOne(createdUser.id);
       if (!foundUser) {
-        throw new Error('Failed to find created user');
+        throw new InternalServerErrorException('Failed to find created user');
       }
       userWithRelations = foundUser;
     }
@@ -268,6 +273,22 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         .catch(console.error);
     }
 
+    // Audit: user.created
+    if (options?.auditContext) {
+      await this.auditLogService.log({
+        action: AuditAction.USER_CREATED,
+        target_user_id: userWithRelations.id,
+        context: options.auditContext,
+        new_value: {
+          first_name: userWithRelations.first_name,
+          last_name: userWithRelations.last_name,
+          email: userWithRelations.email,
+          organization_id: userWithRelations.organization_id,
+          role_id: userWithRelations.role_id,
+          status: userWithRelations.status,
+        },
+      });
+    }
     return userWithRelations;
   }
 
@@ -275,15 +296,25 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     id: number,
     dto: UpdateUserDto,
     currentUser?: CurrentUser,
-    options?: { transaction?: Transaction },
+    options?: { transaction?: Transaction; auditContext?: AuditContext },
   ): Promise<UserEntity> {
     const user = await this.findOneOrThrow(id);
+    const previousValue = {
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      organization_id: user.organization_id,
+      role_id: user.role_id,
+      status: user.status,
+    };
     const previousRoleId = user.role_id;
     const previousStatus = user.status;
     const isEmailChanged = dto.email !== user.email;
+    let auditAction: AuditAction = AuditAction.USER_UPDATED;
 
     // If status is being changed to archived, handle it as soft delete
     if (dto.status && dto.status === 'archived' && previousStatus !== 'archived') {
+      auditAction = AuditAction.USER_ARCHIVED;
       // Update status to archived (soft delete)
       await user.update(
         { status: 'archived' },
@@ -291,6 +322,21 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       );
       // Logout user from all devices when archived
       await this.logoutUserFromAllDevices(user.uuid, options?.transaction);
+
+      // Audit: user.archived
+      if (options?.auditContext) {
+        await this.auditLogService.log({
+          action: auditAction,
+          target_user_id: user.id,
+          context: options.auditContext,
+          previous_value: previousValue,
+          new_value: {
+            ...previousValue,
+            status: 'archived',
+          },
+        });
+      }
+
       // Return the archived user (need to find it without the archived filter)
       return this.userModel.findOne({
         where: { id },
@@ -301,6 +347,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         attributes: { exclude: ['password_hash'] },
         ...(options?.transaction && { transaction: options.transaction }),
       }) as Promise<UserEntity>;
+    }
+
+    // Determine specific audit action if status or role changed
+    if (dto.status && dto.status !== previousStatus) {
+      auditAction = AuditAction.USER_STATUS_CHANGED;
+    } else if (dto.roleId && dto.roleId !== previousRoleId) {
+      auditAction = AuditAction.USER_ROLE_CHANGED;
     }
 
     // Validate email if changing
@@ -333,7 +386,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Use transaction if role/status changes and no transaction provided
     if (needsTransaction) {
       if (!this.userModel.sequelize) {
-        throw new Error('Sequelize instance not available');
+        throw new InternalServerErrorException('Sequelize instance not available');
       }
       const transaction = await this.userModel.sequelize.transaction();
       try {
@@ -373,7 +426,25 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     // Send invitation email if status is invited and email is changed
     if (isEmailChanged) this.sendInvitationEmailIfNeeded(user, dto, currentUser);
 
-    return this.findOne(id) as Promise<UserEntity>;
+    const updatedUser = (await this.findOne(id)) as UserEntity;
+    // Audit: user.updated
+    if (options?.auditContext) {
+      await this.auditLogService.log({
+        action: auditAction,
+        target_user_id: updatedUser.id,
+        context: options.auditContext,
+        previous_value: previousValue,
+        new_value: {
+          first_name: updatedUser.first_name,
+          last_name: updatedUser.last_name,
+          email: updatedUser.email,
+          organization_id: updatedUser.organization_id,
+          role_id: updatedUser.role_id,
+          status: updatedUser.status,
+        },
+      });
+    }
+    return updatedUser;
   }
 
   /**
@@ -407,11 +478,22 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  override async softDelete(id: number): Promise<boolean> {
+  override async softDelete(id: number, auditContext?: AuditContext): Promise<boolean> {
     const user = await this.findOneOrThrow(id);
+    const previousStatus = user.status;
     await user.update({ status: 'archived' });
     // Logout user from all devices when deactivated
     await this.logoutUserFromAllDevices(user.uuid);
+    // Audit: user.archived
+    if (auditContext) {
+      await this.auditLogService.log({
+        action: AuditAction.USER_ARCHIVED,
+        target_user_id: user.id,
+        context: auditContext,
+        previous_value: { status: previousStatus },
+        new_value: { status: 'archived' },
+      });
+    }
     return true;
   }
 
@@ -436,7 +518,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     return true;
   }
 
-  override async restore(id: number): Promise<UserEntity> {
+  override async restore(id: number, auditContext?: AuditContext): Promise<UserEntity> {
     const user = await this.userModel.findOne({
       where: { id, status: 'archived' },
     });
@@ -446,6 +528,17 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     await user.update({ status: 'active' });
+
+    // Audit: user.restored
+    if (auditContext) {
+      await this.auditLogService.log({
+        action: AuditAction.USER_RESTORED,
+        target_user_id: user.id,
+        context: auditContext,
+        previous_value: { status: 'archived' },
+        new_value: { status: 'active' },
+      });
+    }
     return this.findOne(id) as Promise<UserEntity>;
   }
 
@@ -682,13 +775,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
   private async getRoleIdsByNames(roleNames: string[]): Promise<number[]> {
     const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
     return roles
-      .filter((r) => r !== null && r !== undefined)
-      .map((r) => {
-        if (r === null || r === undefined) {
-          throw new Error('Role should not be null after filter');
-        }
-        return r.id;
-      });
+      .filter((r): r is NonNullable<typeof r> => r !== null && r !== undefined)
+      .map((r) => r.id);
   }
 
   /**
