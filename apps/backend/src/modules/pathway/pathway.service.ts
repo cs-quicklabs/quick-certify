@@ -252,7 +252,7 @@ export class PathwayService implements IPathwayService {
     } = {},
   ): Promise<PaginatedResult<PathwayEntity>> {
     const organization = await this.organizationService.findBySlug(slug);
-    if (!organization) return this.emptyPaginatedResult(filters.limit || 10);
+    if (!organization?.portal_enabled) return this.emptyPaginatedResult(filters.limit || 10);
 
     const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', search } = filters;
 
@@ -302,7 +302,7 @@ export class PathwayService implements IPathwayService {
    */
   async findOnePublic(slug: string, pathwayUuid: string): Promise<PathwayEntity | null> {
     const organization = await this.organizationService.findBySlug(slug);
-    if (!organization) return null;
+    if (!organization?.portal_enabled) return null;
 
     return this.pathwayModel.findOne({
       where: {

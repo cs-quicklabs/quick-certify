@@ -97,6 +97,9 @@ export const createRoute = {
   resetPasswordWithToken: (token: string) => `/reset-password?token=${token}` as const,
   invitationWithToken: (token: string) => `/invitation?token=${token}` as const,
   publicCredential: (uuid: string) => `/public/credential/${uuid}` as const,
+  publicCompany: (slug: string) => `/public/company/${slug}` as const,
+  publicCompanyEvents: (slug: string) => `/public/company/${slug}/events` as const,
+  publicCompanyRecipients: (slug: string) => `/public/company/${slug}/recipients` as const,
   publicPathways: (slug: string) => `/public/company/${slug}/pathways` as const,
   publicPathwayDetail: (slug: string, uuid: string) =>
     `/public/company/${slug}/pathways/${uuid}` as const,
