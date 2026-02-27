@@ -210,7 +210,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       if (canNavigateToStep(step)) {
         setCurrentStep(step);
       } else {
-        toast.info('Please complete the current step first');
+        showSuccessToast('Please complete the current step first');
       }
     },
     [canNavigateToStep, setCurrentStep],
