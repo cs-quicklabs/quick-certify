@@ -54,9 +54,9 @@ export default function CredentialsPage() {
   const currentEventId = searchParams.get('eventId') || '';
 
   const [searchInput, setSearchInput] = useState(currentSearch);
-  const debouncedInput = useDebounce(searchInput);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     data: credentialsData,
@@ -92,10 +92,16 @@ export default function CredentialsPage() {
   );
 
   useEffect(() => {
-    if (debouncedInput !== currentSearch) {
-      updateParams({ search: debouncedInput, page: '' });
-    }
-  }, [debouncedInput, currentSearch, updateParams]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (searchInput !== currentSearch) {
+        updateParams({ search: searchInput, page: '' });
+      }
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchInput, currentSearch, updateParams]);
 
   useEffect(() => {
     setSearchInput(currentSearch);
@@ -135,7 +141,7 @@ export default function CredentialsPage() {
 
   return (
     <div>
-      <div className="bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between min-w-34 px-4 py-2 border-b border-gray-200">
           <div>

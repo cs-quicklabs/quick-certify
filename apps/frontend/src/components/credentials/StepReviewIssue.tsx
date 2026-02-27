@@ -788,7 +788,7 @@ function CredentialLayout({
                       className="w-full h-auto"
                     />
                   </div>
-                ) : design?.layout ? (
+                ) : design?.url ? (
                   <CertificateDesignPreview
                     design={design}
                     recipientName={previewName}
@@ -851,22 +851,20 @@ function CertificateDesignPreview({
   const [scale, setScale] = useState(1);
 
   const layout = design.layout;
+  const canvasWidth = layout?.canvasWidth ?? 1100;
+  const canvasHeight = layout?.canvasHeight ?? 800;
+  const placeholders = layout?.placeholders ?? [];
 
   useEffect(() => {
-    if (!layout) return;
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width;
-      if (width) setScale(width / layout.canvasWidth);
+      if (width) setScale(width / canvasWidth);
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [layout]);
-
-  if (!layout) return null;
-
-  const { canvasWidth, canvasHeight, placeholders } = layout;
+  }, [canvasWidth]);
 
   const valueMap = buildValueMap({
     recipientName,

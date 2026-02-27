@@ -233,16 +233,23 @@ export class CredentialService {
     }
 
     const design = await this.designService.findOne(event.design_id);
-    if (!design?.url || !design?.layout) {
-      throw new BadRequestException('Event has no design template with layout');
+    if (!design?.url) {
+      throw new BadRequestException('Event has no design template assigned');
     }
+
+    const effectiveLayout: DesignLayout = design.layout ?? {
+      version: 2,
+      canvasWidth: 1100,
+      canvasHeight: 800,
+      placeholders: [],
+    };
 
     // Mark as PROCESSING
     await credential.update({ status: CredentialStatusEnum.PROCESSING });
 
     const result = await this.certificateGenerationService.generateCertificate(
       design.url,
-      design.layout,
+      effectiveLayout,
       {
         recipientName: credential.recipient?.name ?? '',
         recipientEmail: credential.recipient?.email ?? '',
@@ -482,15 +489,27 @@ export class CredentialService {
   ): Promise<void> {
     const organization = await this.requireOrganization(organizationUuid);
 
+    console.log(`Regenerating credential ${credential.uuid} for organization ${organization.name}`);
+
     const event = credential.event;
     if (!event?.design_id) {
       throw new BadRequestException('Event has no design template assigned');
     }
 
+    console.log(`Found event ${event.name} for credential ${credential.uuid}`);
+
     const design = await this.designService.findOne(event.design_id);
-    if (!design?.url || !design?.layout) {
-      throw new BadRequestException('Event has no design template with layout');
+    console.log(`Found design for event ${event.name}: ${design?.name}`, design);
+    if (!design?.url) {
+      throw new BadRequestException('Event has no design template assigned');
     }
+
+    const effectiveLayout: DesignLayout = design.layout ?? {
+      version: 2,
+      canvasWidth: 1100,
+      canvasHeight: 800,
+      placeholders: [],
+    };
 
     // Mark as PROCESSING
     await credential.update({ status: CredentialStatusEnum.PROCESSING });
@@ -499,7 +518,7 @@ export class CredentialService {
     this.doRegenerateAndSend(
       credential,
       event,
-      { url: design.url, layout: design.layout },
+      { url: design.url, layout: effectiveLayout },
       organization.uuid,
     ).catch((err) => {
       this.logger.warn(
