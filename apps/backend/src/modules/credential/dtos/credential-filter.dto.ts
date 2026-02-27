@@ -7,4 +7,9 @@ export class CredentialFilterDto extends PaginationDto {
   @IsOptional()
   @IsString()
   eventId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by event UUID' })
+  @IsOptional()
+  @IsString()
+  recipientId?: string;
 }

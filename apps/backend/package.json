@@ -7,7 +7,8 @@
     "migration:rollback": "ts-node src/database/run-migrations.ts down",
     "migration:status": "ts-node src/database/run-migrations.ts status",
     "migration:fresh": "ts-node src/database/run-migrations.ts fresh",
-    "seed:run": "ts-node src/database/run-migrations.ts seed"
+    "seed:run": "ts-node src/database/run-migrations.ts seed",
+    "start:debug": "nest start --debug --watch --inspect"
   },
   "nx": {
     "targets": {

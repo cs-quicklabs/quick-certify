@@ -15,12 +15,12 @@ export class RecipientService {
   ) {}
 
   async findAll(
-    organizationUuid: string,
+    organizationIdentifier: string,
     options: FindAllOptions = {},
   ): Promise<PaginatedResult<RecipientEntity>> {
     const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', where = {} } = options;
 
-    const organization = await this.organizationService.findByUuid(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
     if (!organization) {
       return {
         data: [],

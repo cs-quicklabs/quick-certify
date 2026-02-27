@@ -1,7 +1,7 @@
 'use client';
 
 import { EventItem } from './EventItem';
-import { Event } from '@/services';
+import { Event } from '@/types';
 
 export interface EventsTableProps {
   events: Event[];

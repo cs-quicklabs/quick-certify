@@ -48,7 +48,7 @@ export class CredentialService {
   ) {}
 
   async findAll(
-    organizationUuid: string,
+    organizationIdentifier: string, // Can be either UUID or slug
     filters: CredentialFilterDto,
   ): Promise<PaginatedResult<CredentialEntity>> {
     const ALLOWED_SORT_COLUMNS = ['created_at', 'issued_date', 'expiration_date', 'status'];
@@ -59,10 +59,12 @@ export class CredentialService {
       sortOrder = 'DESC',
       search,
       eventId,
+      recipientId,
     } = filters;
+    //  find organization by UUID or slug
+    const organization = await this.organizationService.findByUuidOrSlug(organizationIdentifier);
     const sortBy = ALLOWED_SORT_COLUMNS.includes(rawSortBy) ? rawSortBy : 'created_at';
 
-    const organization = await this.organizationService.findByUuid(organizationUuid);
     if (!organization) {
       return {
         data: [],
@@ -79,9 +81,15 @@ export class CredentialService {
     };
 
     if (eventId) {
-      const event = await this.eventService.findByUuid(eventId, organizationUuid);
+      const event = await this.eventService.findByUuid(eventId, organization.uuid);
       if (event) {
         whereClause.event_id = event.id;
+      }
+    }
+    if (recipientId) {
+      const recipient = await this.recipientService.findByUuid(recipientId, organization.uuid);
+      if (recipient) {
+        whereClause.recipient_id = recipient.id;
       }
     }
 
@@ -546,7 +554,15 @@ export class CredentialService {
         {
           model: OrganizationEntity,
           as: 'organization',
-          attributes: ['uuid', 'name', 'description', 'logo_url', 'website', 'slogan'],
+          attributes: [
+            'uuid',
+            'name',
+            'description',
+            'logo_url',
+            'website',
+            'slogan',
+            'support_email',
+          ],
         },
       ],
     });
@@ -569,6 +585,7 @@ export class CredentialService {
         logoUrl: credential.organization?.logo_url ?? null,
         website: credential.organization?.website ?? '',
         slogan: credential.organization?.slogan ?? null,
+        supportEmail: credential.organization?.support_email ?? '',
       },
     };
   }
@@ -585,6 +602,45 @@ export class CredentialService {
       throw new NotFoundException('Credential not found');
     }
     return credential;
+  }
+
+  /**
+   * Count issued credentials for a recipient across specific events.
+   */
+  async countIssuedForRecipient(
+    recipientId: number,
+    eventIds: number[],
+    transaction?: import('sequelize').Transaction,
+  ): Promise<number> {
+    if (eventIds.length === 0) return 0;
+    return this.credentialModel.count({
+      where: {
+        recipient_id: recipientId,
+        event_id: { [Op.in]: eventIds },
+        status: CredentialStatusEnum.ISSUED,
+      },
+      ...(transaction && { transaction }),
+    });
+  }
+
+  /**
+   * Find issued credentials for multiple recipients across specific events.
+   * Returns only recipient_id and event_id for status computation.
+   */
+  async findIssuedForRecipients(
+    recipientIds: number[],
+    eventIds: number[],
+  ): Promise<Array<{ recipient_id: number; event_id: number }>> {
+    if (recipientIds.length === 0 || eventIds.length === 0) return [];
+    return this.credentialModel.findAll({
+      where: {
+        recipient_id: { [Op.in]: recipientIds },
+        event_id: { [Op.in]: eventIds },
+        status: CredentialStatusEnum.ISSUED,
+      },
+      attributes: ['recipient_id', 'event_id'],
+      raw: true,
+    });
   }
 
   private async requireOrganization(uuid: string) {

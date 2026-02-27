@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Transaction } from 'sequelize';
 import { EventEntity } from '@src/entities/event.entity';
 import { CreateEventDto, UpdateEventDto, EventFilterDto } from '../dtos';
 import { PaginatedResult } from '@src/commons/base';
@@ -37,10 +38,10 @@ export class EventService {
    * Find all active events for an organization
    */
   async findAll(
-    organizationUuid: string,
+    organizationIdentifier: string,
     filters: EventFilterDto = {},
   ): Promise<PaginatedResult<EventEntity>> {
-    const organization = await this.getOrganization(organizationUuid);
+    const organization = await this.getOrganization(organizationIdentifier);
 
     if (!organization) {
       return this.emptyPaginatedResult(filters.limit || 10);
@@ -64,6 +65,19 @@ export class EventService {
     if (!organization) return null;
 
     return this.eventRepository.findByUuid(uuid, organization.id);
+  }
+
+  /**
+   * Find active events by UUIDs for an organization.
+   * Used by PathwayEventService to validate and resolve event IDs.
+   */
+  async findActiveByUuids(
+    uuids: string[],
+    organizationId: number,
+    transaction?: Transaction,
+  ): Promise<EventEntity[]> {
+    if (uuids.length === 0) return [];
+    return this.eventRepository.findActiveByUuids(uuids, organizationId, transaction);
   }
 
   /**
@@ -109,6 +123,8 @@ export class EventService {
           event_level_id: refs.eventLevel!.id,
           event_format_id: refs.eventFormat!.id,
           design_id: refs.design?.id ?? null,
+          duration_type: dto.durationType ?? null,
+          duration_value: dto.durationValue ?? null,
           is_active: true,
         },
         transaction,
@@ -152,6 +168,14 @@ export class EventService {
 
     if (dto.learningLink !== undefined) {
       updateData.learning_link = dto.learningLink ?? null;
+    }
+
+    if (dto.durationType !== undefined) {
+      updateData.duration_type = dto.durationType ?? null;
+    }
+
+    if (dto.durationValue !== undefined) {
+      updateData.duration_value = dto.durationValue ?? null;
     }
 
     // Handle reference updates
@@ -215,8 +239,8 @@ export class EventService {
 
   // Private helper methods
 
-  private async getOrganization(uuid: string) {
-    return this.organizationService.findByUuid(uuid);
+  private async getOrganization(identifier: string) {
+    return await this.organizationService.findByUuidOrSlug(identifier);
   }
 
   private async requireOrganization(uuid: string) {
@@ -279,6 +303,8 @@ export class EventService {
 
       if (dto.description !== undefined) updateData.description = dto.description;
       if (dto.learningLink !== undefined) updateData.learning_link = dto.learningLink;
+      if (dto.durationType !== undefined) updateData.duration_type = dto.durationType;
+      if (dto.durationValue !== undefined) updateData.duration_value = dto.durationValue;
       if (refs.eventType) updateData.event_type_id = refs.eventType.id;
       if (refs.eventLevel) updateData.event_level_id = refs.eventLevel.id;
       if (refs.eventFormat) updateData.event_format_id = refs.eventFormat.id;

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Header, Sidebar, ConfirmationDialog, Alert } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import { getApiErrorMessage } from '@/lib/api-error';
-import type { IBaseEvent } from '@/services/api/event.service';
+import type { IBaseEvent } from '@/types';
 import { Table, TableColumn } from '@/components/ui';
 
 interface EventSettingListProps {

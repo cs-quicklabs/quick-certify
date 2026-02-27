@@ -7,34 +7,7 @@
 import { PaginatedResponse } from '@/types';
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
-
-export interface OrganizationOwner {
-  id: string;
-  uuid: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-}
-
-export interface Organization {
-  id: string;
-  uuid: string;
-  name: string;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
-  users: OrganizationOwner[];
-}
-
-export interface OrganizationFilters {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'ASC' | 'DESC';
-  [key: string]: unknown;
-}
-
+import { OrganizationFilters, Organization } from '@/types';
 export const organizationAdminService = {
   async getOrganizations(filters?: OrganizationFilters): Promise<PaginatedResponse<Organization>> {
     const response = await apiClient.get<ApiResponse<PaginatedResponse<Organization>>>(

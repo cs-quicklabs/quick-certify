@@ -129,6 +129,22 @@ export class EventEntity extends BaseEntity {
   @BelongsTo(() => DesignEntity)
   declare design: DesignEntity | null;
 
+  // Duration type (optional - day, week, month)
+  @Column({
+    type: DataType.STRING(10),
+    allowNull: true,
+    field: 'duration_type',
+  })
+  declare duration_type: string | null;
+
+  // Duration value (optional)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    field: 'duration_value',
+  })
+  declare duration_value: number | null;
+
   // Skills associated with this event (many-to-many)
   @BelongsToMany(() => SkillEntity, () => EventSkillEntity)
   declare skills: SkillEntity[];

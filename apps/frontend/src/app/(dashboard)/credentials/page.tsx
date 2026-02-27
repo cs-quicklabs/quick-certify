@@ -137,7 +137,6 @@ export default function CredentialsPage() {
   if (error?.message.includes('403')) {
     return <ModulePermissionError />;
   }
-
   return (
     <div>
       <div className="bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
