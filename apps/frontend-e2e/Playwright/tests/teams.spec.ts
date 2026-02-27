@@ -1,5 +1,6 @@
 import { test, teamData } from './Fixture';
 
+
 let loginPage;
 let teamPage;
 
@@ -11,7 +12,7 @@ test.beforeEach(async ({ loginPage: fixtureLoginPage, teamPage: TeamPage }) => {
 });
 
 test.describe('To validate the team management functionalities', () => {
-  test('TM101_To verify the functionality of Team Member Adding with valid data', async ({}) => {
+  test('TM101_To verify the functionality of Team Member Adding with valid data', async ({page}) => {
     console.log(
       'Starting test: TM101_To verify the functionality of Team Member Adding with valid data',
     );
@@ -65,7 +66,7 @@ test.describe('To validate the team management functionalities', () => {
       teamData.userRoles.admin,
     );
     await teamPage.clickOnSendInviteButton();
-    await teamPage.validateFieldError(teamData.expectedMessages.invalidEmail);
+    await teamPage.validateFieldError(teamData.expectßedMessages.invalidEmail);
   });
 
   test('TM104_To verify the functionality of Team Member Adding after leaving role dropdown unselected', async ({}) => {
