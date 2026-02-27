@@ -28,7 +28,6 @@ export default function EventsPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
 
-
   const [query, setQuery] = useState('');
   // const debouncedQuery = useDebounce(query);
   // const isSearching = query !== debouncedQuery;
@@ -42,7 +41,6 @@ export default function EventsPage() {
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [filterDataLoaded, setFilterDataLoaded] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
