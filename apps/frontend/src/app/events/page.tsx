@@ -28,7 +28,11 @@ export default function EventsPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
 
+
   const [query, setQuery] = useState('');
+  // const debouncedQuery = useDebounce(query);
+  // const isSearching = query !== debouncedQuery;
+
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -39,9 +43,9 @@ export default function EventsPage() {
   const [filterDataLoaded, setFilterDataLoaded] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Debounce search query (300ms)
   useEffect(() => {
     if (query !== debouncedQuery) setIsSearching(true);
     const timer = setTimeout(() => {
@@ -125,9 +129,14 @@ export default function EventsPage() {
     setSelectedFormatIds([]);
     setPage(1);
   };
+  // const clearSearch = () => {
+  //   setQuery('');
+  //   setDebouncedQuery('');
+  //   setPage(1);
+  //   searchInputRef.current?.focus();
+  // };
   const clearSearch = () => {
     setQuery('');
-    setDebouncedQuery('');
     setPage(1);
     searchInputRef.current?.focus();
   };
@@ -192,6 +201,7 @@ export default function EventsPage() {
           </Link>
         </div>
 
+        {/* Filters + Search */}
         {/* Filters + Search */}
         <div className="flex flex-wrap items-center gap-4 px-4 py-2 border-b border-gray-200">
           <MultiSelectFilter

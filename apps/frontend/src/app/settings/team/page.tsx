@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDebounce } from '@/hooks/useDebounce';
 import Link from 'next/link';
 import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
@@ -19,10 +20,9 @@ export default function TeamsPage() {
   const { user } = useAuthStore();
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: roles } = useRoles();
 
@@ -33,19 +33,9 @@ export default function TeamsPage() {
     }
   }, [user, router]);
 
-  // Debounce search query
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1);
-    }, 500);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchQuery]);
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   // Use backend filtering instead of client-side
   const { data, isLoading } = useTeamMembers({

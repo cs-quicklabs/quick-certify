@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { usePathwayParticipants } from '@/hooks/usePathways';
 import { Pagination } from '@/components/ui/pagination';
 import { AddParticipantModal } from './AddParticipantModal';
@@ -18,25 +19,16 @@ interface ParticipantsTabProps {
 
 export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
   const [searchInput, setSearchInput] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchInput);
   const [participantPage, setParticipantPage] = useState(1);
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'az' | 'za'>('newest');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const sortRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(searchInput);
-      setParticipantPage(1);
-    }, 500);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchInput]);
+    setParticipantPage(1);
+  }, [debouncedSearch]);
 
   // Close sort dropdown on outside click
   useEffect(() => {
