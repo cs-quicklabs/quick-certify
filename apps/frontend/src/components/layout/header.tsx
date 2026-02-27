@@ -6,9 +6,17 @@ import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
 import { ConfirmationDialog } from '@/components/ui';
 import { GlobalSearch } from './global-search';
-import { getInitials } from '@/utils';
+import { getInitials, capitalizeFirst } from '@/utils';
 import { usePathname } from 'next/navigation';
 import { RoleType } from '@/types';
+
+const ROLE_BADGE_STYLES: Record<string, string> = {
+  [RoleType.SystemAdmin]: 'bg-purple-100 text-purple-700',
+  [RoleType.SuperAdmin]: 'bg-blue-100 text-blue-700',
+  [RoleType.Admin]: 'bg-indigo-100 text-indigo-700',
+  [RoleType.Manager]: 'bg-amber-100 text-amber-700',
+  [RoleType.Designer]: 'bg-emerald-100 text-emerald-700',
+};
 
 type NavItem = { href: string; label: string };
 
@@ -169,6 +177,13 @@ export function Header() {
                   <div className="px-4 py-3">
                     <p className="text-sm break-all">{user?.email}</p>
                     <p className="text-xs text-gray-500">{profile?.organizationName}</p>
+                    {user?.role && (
+                      <span
+                        className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_BADGE_STYLES[user.role] || 'bg-gray-100 text-gray-700'}`}
+                      >
+                        {capitalizeFirst(user.role.replace('_', ' '))}
+                      </span>
+                    )}
                   </div>
                   <div className="py-1">
                     {dropdownItems.map((item) => (
