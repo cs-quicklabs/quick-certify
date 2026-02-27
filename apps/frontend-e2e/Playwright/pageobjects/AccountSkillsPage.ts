@@ -156,7 +156,7 @@ export class AccountSkillsPage {
    * Get edit input field (appears when editing)
    */
   getEditInput(): Locator {
-    return this.page.locator('input.form-input-field.font-bold');
+    return this.page.locator('input.form-input-field.w-full');
   }
 
   /**

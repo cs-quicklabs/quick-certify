@@ -35,7 +35,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-auth',
-      testIgnore: [/.*Login\.spec\.ts/, /.*onboarding\.spec\.ts/],
+      testIgnore: [/.*login\.spec\.ts/i, /.*onboarding\.spec\.ts/i],
       use: {
         ...devices['Desktop Chrome'],
         storageState: path.resolve(__dirname, 'auth.json'), //  uses saved session
@@ -44,7 +44,7 @@ export default defineConfig({
     },
     {
       name: 'chromium-login',
-      testMatch: /.*Login\.spec\.ts/, // only run login tests
+      testMatch: /.*login\.spec\.ts/i, // only run login tests
       use: {
         ...devices['Desktop Chrome'],
         storageState: undefined, // Fresh session

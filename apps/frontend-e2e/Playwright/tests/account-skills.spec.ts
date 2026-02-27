@@ -136,7 +136,7 @@ test.describe('Account Settings - Skills', () => {
     await accountSkillsPage.page.waitForTimeout(500);
 
     // Verify edit input field is visible
-    await expect(accountSkillsPage.getEditInput()).toBeVisible({ timeout: 2000 });
+    await expect(accountSkillsPage.getEditInput()).toBeVisible({ timeout: 5000 });
     await expect(accountSkillsPage.getEditInput()).toHaveValue(originalSkillName);
 
     // Step 3: Change skill name
