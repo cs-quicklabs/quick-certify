@@ -17,6 +17,8 @@ export function InputField({ field, value, error, onChange, isDisabled }: BaseFi
           placeholder={field.placeholder}
           disabled={isDisabled}
           required={field.required}
+          min={field.min}
+          max={field.max}
           className={`form-input-field ${field.icon ? 'rounded-s-none' : ''}`}
         />
       </div>

@@ -105,6 +105,12 @@ export class OrganizationService implements IOrganizationService {
     });
   }
 
+  async findByUuidOrSlug(identifier: string): Promise<OrganizationEntity | null> {
+    const org = await this.findByUuid(identifier);
+    if (!org) return await this.findBySlug(identifier);
+    return org;
+  }
+
   async findByUuid(uuid: string): Promise<OrganizationEntity | null> {
     return this.organizationModel.findOne({
       where: { uuid, is_active: true },

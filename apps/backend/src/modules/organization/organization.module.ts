@@ -4,6 +4,7 @@ import { OrganizationController } from './organization.controller';
 import { OrganizationService } from './organization.service';
 import { OrganizationEntity, RoleEntity, UserEntity } from '@src/entities';
 import { FileModule } from '../file';
+import { EmailService } from '@src/commons/services';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { FileModule } from '../file';
     FileModule, // Provides StorageService
   ],
   controllers: [OrganizationController],
-  providers: [OrganizationService],
+  providers: [OrganizationService, EmailService],
   exports: [OrganizationService],
 })
 export class OrganizationModule {}

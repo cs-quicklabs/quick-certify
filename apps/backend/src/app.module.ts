@@ -29,6 +29,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { DesignModule } from './modules/design/design.module';
 import { RecipientModule } from './modules/recipient/recipient.module';
 import { CredentialModule } from './modules/credential/credential.module';
+import { PathwayModule } from './modules/pathway/pathway.module';
 
 /**
  * Application Root Module
@@ -109,6 +110,7 @@ import { CredentialModule } from './modules/credential/credential.module';
     DesignModule,
     RecipientModule,
     CredentialModule,
+    PathwayModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,15 +1,13 @@
 'use client';
 
 import { use, useState } from 'react';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { credentialService } from '@/services/api/credential.service';
 import { CREDENTIAL_KEYS } from '@/hooks/useCredentials';
-import { ROUTES } from '@/config/routes';
-import { Award, Download, Link as LinkIcon, Check, Mail, GithubIcon } from 'lucide-react';
+import { Award, Download, Link as LinkIcon, Check, Mail } from 'lucide-react';
 
 interface PublicCredentialPageProps {
-  params: Promise<{ uuid: string }>;
+  params: Promise<{ slug: string; uuid: string }>;
 }
 
 export default function PublicCredentialPage({ params }: PublicCredentialPageProps) {
@@ -26,12 +24,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
     enabled: !!uuid,
   });
 
-  const getCredentialUrl = () => {
-    if (typeof window !== 'undefined') {
-      return window.location.href;
-    }
-    return '';
-  };
+  const getCredentialUrl = () => window.location.href;
 
   const handleAddToLinkedIn = () => {
     if (!credential) return;
@@ -52,6 +45,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
     );
   };
 
+  // 2. Clipboard error fallback
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(getCredentialUrl());
@@ -59,6 +53,17 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = getCredentialUrl();
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -97,51 +102,6 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="flex flex-col border-b border-gray-200 bg-white antialiased">
-        <nav className="order-1 mx-auto w-full max-w-7xl bg-white px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center justify-start">
-              <Link href={credential.organization.website || ''} className="mr-6 flex">
-                {credential.organization.logoUrl ? (
-                  <img
-                    src={credential.organization.logoUrl}
-                    className="mr-3 h-8 object-contain"
-                    alt={credential.organization.name}
-                  />
-                ) : (
-                  <div className="mr-3 flex h-8 w-8 items-center justify-center rounded bg-blue-100">
-                    <Award className="h-4 w-4 text-blue-600" />
-                  </div>
-                )}
-                <span className="self-center whitespace-nowrap text-2xl font-semibold">
-                  {credential.organization.name}
-                </span>
-              </Link>
-            </div>
-            <div className="flex items-center justify-between lg:order-2">
-              <ul className="mr-4 mt-0 hidden w-full flex-col text-base font-medium text-gray-900 md:flex md:flex-row">
-                <li>
-                  <Link href={ROUTES.PUBLIC.COMPANY} className="px-4 py-3 hover:underline">
-                    Issuer Profile
-                  </Link>
-                </li>
-                <li>
-                  <Link href={ROUTES.PUBLIC.EVENT} className="px-4 py-3 hover:underline">
-                    Events
-                  </Link>
-                </li>
-                <li>
-                  <Link href={ROUTES.PUBLIC.RECIPIENTS} className="px-4 py-3 hover:underline">
-                    Recipients
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </header>
-
       {/* Main Content */}
       <div className="flex min-h-full flex-col bg-gray-50">
         <div className="mx-auto w-full max-w-3xl px-4 py-8">
@@ -156,7 +116,11 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
           <div className="flex w-full items-center justify-between">
             <p className="mt-1 text-xs font-normal text-gray-500">
               Credential ID:{' '}
-              <span className="cursor-pointer text-green-700 hover:underline">
+              <span
+                onClick={handleCopyLink}
+                className="cursor-pointer text-green-700 hover:underline"
+                title="Copy link"
+              >
                 {credential.uuid}
               </span>
             </p>
@@ -172,7 +136,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
 
       {/* Details Section */}
       <div className="bg-gray-50">
-        {/* 3 column wrapper */}
+        {/* column wrapper */}
         <div className="mx-auto w-full max-w-7xl grow bg-gray-50 lg:flex xl:px-2">
           {/* Left sidebar & main wrapper */}
           <div className="flex-1 xl:flex">
@@ -224,8 +188,8 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
                     <p className="text-gray-500">
                       <a
                         href={
-                          credential.organization.website
-                            ? `mailto:${credential.organization.website}`
+                          credential.organization.supportEmail
+                            ? `mailto:${credential.organization.supportEmail}`
                             : '#'
                         }
                         className="inline-flex items-center text-sm font-medium text-blue-600 hover:underline"
@@ -251,7 +215,7 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
                         </h4>
                       </div>
                       <div className="flex gap-2">
-                        <h2 className="text-2xl font-medium leading-[26px]">
+                        <h2 className="text-2xl font-medium leading-6.5">
                           {credential.organization.name}
                         </h2>
                       </div>
@@ -266,84 +230,6 @@ export default function PublicCredentialPage({ params }: PublicCredentialPagePro
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white p-4 sm:p-6">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="md:flex md:justify-between">
-            <div className="mb-8 md:mb-0">
-              <Link href={ROUTES.PUBLIC.HOME} className="flex items-center">
-                {credential.organization.logoUrl ? (
-                  <img
-                    src={credential.organization.logoUrl}
-                    className="mr-3 h-8 object-contain"
-                    alt={credential.organization.name}
-                  />
-                ) : (
-                  <div className="mr-3 flex h-8 w-8 items-center justify-center rounded bg-blue-100">
-                    <Award className="h-4 w-4 text-blue-600" />
-                  </div>
-                )}
-              </Link>
-              <span className="self-center whitespace-nowrap text-2xl font-semibold">
-                {credential.organization.name}
-              </span>
-              {credential.organization.slogan && (
-                <p className="mt-1 text-sm font-normal text-gray-500">
-                  {credential.organization.slogan}
-                </p>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 sm:gap-6">
-              <div>
-                <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900">Directories</h2>
-                <ul className="text-sm text-gray-600">
-                  <li className="mb-4">
-                    <Link href={ROUTES.PUBLIC.EVENT} className="hover:underline">
-                      Events
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href={ROUTES.PUBLIC.RECIPIENTS} className="hover:underline">
-                      Recipients
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900">Credentials</h2>
-                <ul className="text-sm text-gray-600">
-                  <li className="mb-4">
-                    <Link href={ROUTES.PUBLIC.VERIFY} className="hover:underline">
-                      Credentials Verification
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href={ROUTES.PUBLIC.RETRIEVE} className="hover:underline">
-                      Credentials Retrieval
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8" />
-          <div className="sm:flex sm:items-center sm:justify-between">
-            <span className="text-sm text-gray-500 sm:text-center">
-              &copy; {new Date().getFullYear()}{' '}
-              <Link href={ROUTES.PUBLIC.HOME} className="hover:underline">
-                Quick Certify
-              </Link>
-              . All Rights Reserved.
-            </span>
-            <div className="mt-4 flex space-x-6 sm:mt-0 sm:justify-center">
-              <a href="#" className="text-gray-500 hover:text-gray-900">
-                <GithubIcon className="h-5 w-5" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

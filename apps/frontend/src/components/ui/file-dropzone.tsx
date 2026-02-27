@@ -283,6 +283,11 @@ export function FileDropzone({
 
             {/* Actual image */}
             <img
+              ref={(el) => {
+                if (el?.complete && el.naturalWidth > 0 && imageLoading) {
+                  handleImageLoad();
+                }
+              }}
               src={currentImage}
               alt={label}
               onLoad={handleImageLoad}
@@ -290,7 +295,7 @@ export function FileDropzone({
               className={`${
                 imageSizeClasses[imageSize]
               } object-cover border border-gray-200 dark:border-gray-600 rounded-md transition-opacity duration-300 ${
-                imageLoading ? 'hidden' : imageError ? 'opacity-50' : 'opacity-100'
+                imageLoading ? 'opacity-0 absolute' : imageError ? 'opacity-50' : 'opacity-100'
               }`}
             />
 

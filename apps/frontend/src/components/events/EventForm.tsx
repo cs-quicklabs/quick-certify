@@ -21,8 +21,7 @@ import { SkillSelector } from '@/components/events/SkillSelector';
 import { Eye, Images, Plus, SquarePen, Trash, Loader2 } from 'lucide-react';
 import { useDesignList } from '@/hooks/useDesigns';
 import { Design } from '@/types';
-import { toast } from 'react-toastify';
-import { Event } from '@/services';
+import { Event } from '@/types';
 import { showSuccessToast } from '@/lib/toast';
 
 // Maximum number of items to fetch for dropdown lists
@@ -190,6 +189,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         typeId: eventData.event_type?.uuid,
         levelId: eventData.event_level?.uuid,
         formatId: eventData.event_format?.uuid,
+        durationType: (apiData.duration_type as string) || undefined,
+        durationValue: (apiData.duration_value as number) || undefined,
       });
 
       // Populate skills from event data
@@ -209,7 +210,7 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       if (canNavigateToStep(step)) {
         setCurrentStep(step);
       } else {
-        toast.info('Please complete the current step first');
+        showSuccessToast('Please complete the current step first');
       }
     },
     [canNavigateToStep, setCurrentStep],
@@ -332,6 +333,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           eventFormatId: formData.formatId || null,
           description: formData.description || null,
           learningLink: formData.learningLink || null,
+          durationType: formData.durationType || null,
+          durationValue: formData.durationValue ?? null,
           skillIds: selectedSkillIds,
         });
 
@@ -346,6 +349,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           eventFormatId: formData.formatId || '',
           description: formData.description || undefined,
           learningLink: formData.learningLink || undefined,
+          durationType: formData.durationType || undefined,
+          durationValue: formData.durationValue ?? undefined,
           skillIds: selectedSkillIds,
         });
         showSuccessToast('Event created successfully');
@@ -401,22 +406,48 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   };
 
   // Step 1 schema and config
-  const step1Schema = z.object({
-    description: z
-      .string()
-      .max(5000, 'Description must not exceed 5000 characters')
-      .optional()
-      .transform((val) => val?.trim() || undefined),
-    learningLink: z
-      .string()
-      .max(500, 'Learning link must not exceed 500 characters')
-      .url('Please enter a valid URL')
-      .optional()
-      .or(z.literal('')),
-    typeId: z.string().min(1, 'Event type is required'),
-    levelId: z.string().min(1, 'Event level is required'),
-    formatId: z.string().min(1, 'Event format is required'),
-  });
+  const step1Schema = z
+    .object({
+      description: z
+        .string()
+        .max(5000, 'Description must not exceed 5000 characters')
+        .optional()
+        .transform((val) => val?.trim() || undefined),
+      learningLink: z
+        .string()
+        .max(500, 'Learning link must not exceed 500 characters')
+        .url('Please enter a valid URL')
+        .optional()
+        .or(z.literal('')),
+      typeId: z.string({ error: 'Event type is required' }).min(1, 'Event type is required'),
+      levelId: z.string({ error: 'Event level is required' }).min(1, 'Event level is required'),
+      formatId: z.string({ error: 'Event format is required' }).min(1, 'Event format is required'),
+      durationType: z.string().optional(),
+      durationValue: z.preprocess(
+        (val) => (val === '' || val === undefined || val === null ? undefined : val),
+        z.coerce
+          .number()
+          .int('Must be a whole number')
+          .min(1, 'Must be at least 1')
+          .max(999, 'Must not exceed 999')
+          .optional(),
+      ),
+    })
+    .refine(
+      (data) => {
+        if (
+          data.durationType &&
+          (data.durationValue === undefined || data.durationValue === null)
+        ) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message: 'Duration is required when duration type is selected',
+        path: ['durationValue'],
+      },
+    );
 
   const step1Config = {
     title: 'About',
@@ -464,6 +495,28 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         options: formats.map((f) => ({ label: f.name, value: f.uuid })),
         disabled: isLoadingFormats,
         required: true,
+      },
+      {
+        name: 'durationType',
+        label: 'Duration Type',
+        type: 'select' as FormFieldConfig['type'],
+        placeholder: 'Select duration type',
+        options: [
+          { label: 'Day', value: 'day' },
+          { label: 'Week', value: 'week' },
+          { label: 'Month', value: 'month' },
+        ],
+        description: 'Optional',
+      },
+      {
+        name: 'durationValue',
+        label: 'Duration',
+        type: 'number' as FormFieldConfig['type'],
+        placeholder: 'e.g. 4',
+        required: true,
+        min: 1,
+        max: 999,
+        visibleWhen: (formData) => !!formData.durationType,
       },
     ] as FormFieldConfig[],
     schema: step1Schema,
