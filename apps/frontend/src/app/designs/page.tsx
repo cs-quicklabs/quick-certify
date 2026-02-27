@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import DesignsList from '@/app/designs/_components/DesignsList';
@@ -25,6 +26,7 @@ export default function DesignsPage() {
   const typeFromUrl = searchParams.get('type') as Filter | null;
 
   const [search, setSearch] = useState(searchFromUrl);
+  const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
   const [filter, setFilter] = useState<Filter>(typeFromUrl ?? 'All');
   const [open, setOpen] = useState(false);
 
@@ -43,25 +45,16 @@ export default function DesignsPage() {
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', '1');
 
-    debounceRef.current = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', '1');
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    else params.delete('search');
 
-      if (search) params.set('search', search);
-      else params.delete('search');
-
-      router.replace(`/designs?${params.toString()}`, { scroll: false });
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [search]);
+    router.replace(`/designs?${params.toString()}`, { scroll: false });
+  }, [debouncedSearch]);
 
   // Handlers
   const handleDeleteClick = (design: Design) => {

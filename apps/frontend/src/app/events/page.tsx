@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, Search, X } from 'lucide-react';
 import {
   Pagination,
@@ -29,8 +30,8 @@ export default function EventsPage() {
   const [limit] = useState(6);
 
   const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const debouncedQuery = useDebounce(query);
+  const isSearching = query !== debouncedQuery;
 
   const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
   const [selectedLevelIds, setSelectedLevelIds] = useState<string[]>([]);
@@ -41,16 +42,9 @@ export default function EventsPage() {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Debounce search query (300ms)
   useEffect(() => {
-    if (query !== debouncedQuery) setIsSearching(true);
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-      setPage(1);
-      setIsSearching(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [query]);
+    setPage(1);
+  }, [debouncedQuery]);
 
   const handleFilterDataLoad = useCallback(() => {
     if (!filterDataLoaded) setFilterDataLoaded(true);
@@ -127,7 +121,6 @@ export default function EventsPage() {
   };
   const clearSearch = () => {
     setQuery('');
-    setDebouncedQuery('');
     setPage(1);
     searchInputRef.current?.focus();
   };
