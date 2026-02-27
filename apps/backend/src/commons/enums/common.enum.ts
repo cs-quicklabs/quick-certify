@@ -1,10 +1,10 @@
+export { CredentialStatusEnum, BatchStatusEnum } from '@certify/certificate-core';
+
 export enum UserTypeEnum {
   SUPER_ADMIN = 'SUPER_ADMIN',
   MANAGER = 'MANAGER',
   DESIGNER = 'DESIGNER',
 }
-
-export { CredentialStatusEnum } from '@certify/certificate-core';
 
 export enum PathwayStatusEnum {
   DRAFT = 'draft',
@@ -17,5 +17,3 @@ export enum PathwayParticipantStatusEnum {
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
 }
-
-export { BatchStatusEnum } from '@certify/certificate-core';
