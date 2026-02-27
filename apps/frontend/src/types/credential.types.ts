@@ -58,7 +58,14 @@ export interface PublicCredential {
     logoUrl: string | null;
     website: string;
     slogan: string | null;
+    slug: string;
     supportEmail: string;
+    linkedinID: string;
+    linkedinUrl: string;
+    facebookUrl: string;
+    twitterUrl: string;
+    faviconUrl: string | null;
+    bannerUrl: string | null;
   };
 }
 

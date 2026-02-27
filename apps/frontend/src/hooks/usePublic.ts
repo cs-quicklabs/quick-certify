@@ -2,6 +2,8 @@ import { showSuccessToast } from '@/lib/toast';
 import { publicService } from '@/services/api/public.service';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { BaseSearchFilters } from '@/lib/query-params';
+import { credentialService } from '@/services';
+import { CREDENTIAL_KEYS } from './useCredentials';
 
 // Query key factory
 export const PUBLIC_KEYS = {
@@ -10,6 +12,7 @@ export const PUBLIC_KEYS = {
   credentials: (slug: string, filters: object) => ['public', 'credentials', slug, filters] as const,
   recipients: (slug: string, filters: object) => ['public', 'recipients', slug, filters] as const,
   event: (slug: string, eventUuid: string) => ['public', 'event', slug, eventUuid] as const,
+  credential: (uuid: string) => ['public', 'credential', uuid] as const,
 };
 
 export function usePublicOrganization(slug?: string) {
@@ -77,6 +80,20 @@ export function usePublicCredentials(
     retry: 2,
     refetchOnWindowFocus: false,
     placeholderData: undefined,
+  });
+}
+
+export function usePublicCredential(uuid?: string) {
+  return useQuery({
+    queryKey: CREDENTIAL_KEYS.publicDetail(uuid ?? ''),
+    queryFn: async () => {
+      if (!uuid) throw new Error('Missing credential uuid');
+      return credentialService.getPublicCredential(uuid);
+    },
+    enabled: !!uuid,
+    staleTime: 60_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
   });
 }
 
