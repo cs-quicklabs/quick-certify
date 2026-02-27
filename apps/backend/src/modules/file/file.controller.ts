@@ -131,7 +131,10 @@ export class FileController {
 
     // Non-avatar files require admin privileges
     if (!isAvatarFile) {
-      const isAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+      const isAdmin =
+        user.role === Role.ADMIN ||
+        user.role === Role.SUPER_ADMIN ||
+        user.role === Role.SYSTEM_ADMIN;
       if (!isAdmin) {
         throw new ForbiddenException(
           'Access denied. Only Admin/Super Admin can delete non-avatar files.',

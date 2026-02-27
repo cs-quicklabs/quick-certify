@@ -314,6 +314,18 @@ export class EventRepository {
     return count > 0;
   }
 
+  async countActiveByTypeId(typeId: number): Promise<number> {
+    return this.model.count({ where: { event_type_id: typeId, is_active: true } });
+  }
+
+  async countActiveByLevelId(levelId: number): Promise<number> {
+    return this.model.count({ where: { event_level_id: levelId, is_active: true } });
+  }
+
+  async countActiveByFormatId(formatId: number): Promise<number> {
+    return this.model.count({ where: { event_format_id: formatId, is_active: true } });
+  }
+
   /**
    * Count events
    */

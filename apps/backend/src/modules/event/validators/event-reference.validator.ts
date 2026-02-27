@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { EventTypeEntity } from '@src/entities/event-type.entity';
 import { EventLevelEntity } from '@src/entities/event-level.entity';
 import { EventFormatEntity } from '@src/entities/event-format.entity';
@@ -29,7 +29,7 @@ export interface ValidatedEventReferences {
 @Injectable()
 export class EventReferenceValidator {
   constructor(
-    private readonly eventTypeService: EventTypeService,
+    @Inject(forwardRef(() => EventTypeService)) private readonly eventTypeService: EventTypeService,
     private readonly eventLevelService: EventLevelService,
     private readonly eventFormatService: EventFormatService,
     private readonly designService: DesignService,

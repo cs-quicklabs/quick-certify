@@ -33,6 +33,7 @@ export default function SkillsPage() {
     skill: Skill | null;
   }>({ isOpen: false, skill: null });
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showQueryError, setShowQueryError] = useState<boolean>(true);
@@ -142,6 +143,12 @@ export default function SkillsPage() {
 
   const skills = data?.data || [];
 
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(null), 4000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   // Reset showQueryError when queryError changes
   useEffect(() => {
     if (queryError) {
@@ -167,7 +174,7 @@ export default function SkillsPage() {
     try {
       await createSkillMutation.mutateAsync({ name: trimmedName });
       setNewSkillName('');
-      setError(null);
+      setSuccessMessage('Skill created successfully');
     } catch (error) {
       setError(getApiErrorMessage(error));
     }
@@ -201,7 +208,7 @@ export default function SkillsPage() {
       queryClient.invalidateQueries({ queryKey: SKILL_KEYS.lists() });
       setEditingSkill(null);
       setEditSkillName('');
-      setError(null);
+      setSuccessMessage('Skill updated successfully');
     } catch (error) {
       setError(getApiErrorMessage(error));
     } finally {
@@ -221,7 +228,7 @@ export default function SkillsPage() {
     try {
       await deleteSkillMutation.mutateAsync(confirmDialog.skill.uuid);
       setConfirmDialog({ isOpen: false, skill: null });
-      setError(null);
+      setSuccessMessage('Skill deleted successfully');
     } catch (error) {
       setError(getApiErrorMessage(error));
       setConfirmDialog({ isOpen: false, skill: null });
@@ -244,6 +251,11 @@ export default function SkillsPage() {
           skills as needed.
         </p>
       </div>
+
+      {/* Success Message */}
+      {successMessage && (
+        <Alert type="success" message={successMessage} onClose={() => setSuccessMessage(null)} />
+      )}
 
       {/* Error Message */}
       {error && <Alert type="error" message={error} onClose={() => setError(null)} />}

@@ -184,6 +184,18 @@ export class EventService {
     return this.eventRepository.existsByDesignId(designId);
   }
 
+  async countActiveByTypeId(typeId: number): Promise<number> {
+    return this.eventRepository.countActiveByTypeId(typeId);
+  }
+
+  async countActiveByLevelId(levelId: number): Promise<number> {
+    return this.eventRepository.countActiveByLevelId(levelId);
+  }
+
+  async countActiveByFormatId(formatId: number): Promise<number> {
+    return this.eventRepository.countActiveByFormatId(formatId);
+  }
+
   // ─── Private Helpers ───────────────────────────────────────────────────────
 
   /**
