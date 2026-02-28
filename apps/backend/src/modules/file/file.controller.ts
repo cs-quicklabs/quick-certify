@@ -126,6 +126,13 @@ export class FileController {
   @ApiResponse({ status: 400, description: 'Invalid file URL' })
   @ApiResponse({ status: 403, description: 'Access denied for non-avatar files' })
   async deleteFile(@CurrentUser() user: CurrentUserType, @Body() dto: DeleteFileDto) {
+    // Verify the file belongs to the requesting user's organization
+    if (!dto.url.includes(`/organizations/${user.organizationUuid}/`)) {
+      throw new ForbiddenException(
+        'You can only delete files belonging to your organization.',
+      );
+    }
+
     // Check if the file is an avatar (URL contains /avatar/)
     const isAvatarFile = dto.url.includes('/avatar/');
 

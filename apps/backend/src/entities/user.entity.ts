@@ -116,4 +116,17 @@ export class UserEntity extends BaseEntity {
     allowNull: true,
   })
   declare last_login_at: Date | null;
+
+  @Index({ name: 'IDX_USER_INVITATION_TOKEN', unique: true })
+  @Column({
+    type: DataType.STRING(64),
+    allowNull: true,
+  })
+  declare invitation_token: string | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare invitation_expires_at: Date | null;
 }

@@ -234,8 +234,14 @@ export class StorageService {
 
     try {
       const urlObj = new URL(url);
-      // Remove leading slash
-      return urlObj.pathname.slice(1);
+      const pathname = urlObj.pathname.slice(1);
+
+      // Reject path traversal attempts
+      if (pathname.includes('..')) {
+        return null;
+      }
+
+      return pathname;
     } catch {
       return null;
     }

@@ -150,6 +150,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     });
   }
 
+  async findByInvitationToken(token: string): Promise<UserEntity | null> {
+    return this.userModel.findOne({
+      where: { invitation_token: token },
+      include: [RoleEntity],
+    });
+  }
+
   override async create(
     dto: CreateUserDto & {
       organizationId?: number;
@@ -201,6 +208,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       hashedPassword = await this.passwordService.hash(dto.password);
     }
 
+    // Generate a secure invitation token for invited users
+    const invitationToken = isInvitation && !dto.auth_provider
+      ? this.passwordService.generateResetToken()
+      : null;
+
     const createdUserResult = await this.userModel.create(
       {
         first_name: dto.firstName,
@@ -213,6 +225,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         is_email_notifications_enabled: true,
         auth_provider: dto.auth_provider || AuthProvider.Email,
         google_id: dto.google_id || null,
+        invitation_token: invitationToken,
       },
       {
         ...(options?.transaction && { transaction: options.transaction }),
@@ -261,7 +274,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
       const inviteLink = `${
         process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-      }/auth/invitation?token=${userWithRelations.uuid}`;
+      }/auth/invitation?token=${invitationToken}`;
 
       this.mailService
         .sendInvitationEmail(userWithRelations.email, {
@@ -367,6 +380,22 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       if (!role) {
         throw new NotFoundException('Role not found');
       }
+
+      // Prevent privilege escalation
+      if (currentUser) {
+        if (role.role === Role.SYSTEM_ADMIN) {
+          throw new ForbiddenException('System admin role cannot be assigned.');
+        }
+        if (
+          role.role === Role.SUPER_ADMIN &&
+          currentUser.role !== Role.SUPER_ADMIN &&
+          currentUser.role !== Role.SYSTEM_ADMIN
+        ) {
+          throw new ForbiddenException(
+            'You are not authorized to assign the super admin role.',
+          );
+        }
+      }
     }
 
     // Hash password if provided (password in DTO is plain text, needs hashing)
@@ -460,12 +489,17 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       if (!organisation || !organisation.is_active) {
         throw new NotFoundException('Organization not found or inactive');
       }
+
+      // Generate a new secure invitation token
+      const newToken = this.passwordService.generateResetToken();
+      await user.update({ invitation_token: newToken });
+
       const inviterName = currentUser
         ? `${currentUser.firstName} ${currentUser.lastName || ''}`.trim()
         : 'Administrator';
       const inviteLink = `${
         process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-      }/auth/invitation?token=${user.uuid}`;
+      }/auth/invitation?token=${newToken}`;
 
       this.mailService
         .sendInvitationEmail(user.email, {
@@ -566,8 +600,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       throw new BadRequestException('User is not in inactive status');
     }
 
-    // Update status to invited
-    await user.update({ status: 'invited' });
+    // Generate a new secure invitation token and update status
+    const newToken = this.passwordService.generateResetToken();
+    await user.update({ status: 'invited', invitation_token: newToken });
 
     // Send invitation email
     const inviterName = currentUser
@@ -575,7 +610,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       : 'Administrator';
     const inviteLink = `${
       process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-    }/auth/invitation?token=${user.uuid}`;
+    }/auth/invitation?token=${newToken}`;
     const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService
@@ -862,6 +897,9 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Handle last login timestamp
     if (dto.last_login_at !== undefined) updateData.last_login_at = dto.last_login_at;
+
+    // Handle invitation token
+    if (dto.invitation_token !== undefined) updateData.invitation_token = dto.invitation_token;
 
     return updateData;
   }
