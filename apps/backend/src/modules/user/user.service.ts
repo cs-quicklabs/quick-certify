@@ -763,6 +763,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
    * Super Admin can see: Admin, Manager, Designer (exclude: super_admin)
    * Admin can see: Admin, Manager, Designer (exclude: super_admin)
    * Lower level users: exclude super_admin and admin (defense in depth)
+   * @param currentUserRole - Current user's role
+   * @returns Array of excluded role names
    */
   private getExcludedRolesForVisibility(currentUserRole: string): string[] {
     const role = currentUserRole.toLowerCase();
@@ -784,6 +786,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
   /**
    * Get role IDs by role names
+   * @param roleNames - Array of role names
+   * @returns Array of role IDs
    */
   private async getRoleIdsByNames(roleNames: string[]): Promise<number[]> {
     const roles = await Promise.all(roleNames.map((name) => this.roleService.findByRole(name)));
@@ -858,15 +862,18 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     if (dto.first_name) updateData.first_name = dto.first_name;
     if (dto.last_name) updateData.last_name = dto.last_name;
-    if (dto.email) updateData.email = dto.email.toLowerCase();
     if (dto.profile_picture !== undefined) updateData.avatar_url = dto.profile_picture;
+
     if (dto.is_email_notifications_enabled !== undefined)
       updateData.is_email_notifications_enabled = dto.is_email_notifications_enabled;
+
     if (dto.email !== undefined) updateData.email = dto.email.toLowerCase();
     if (dto.roleId !== undefined) updateData.role_id = dto.roleId;
     if (dto.status !== undefined) updateData.status = dto.status;
+
     // Handle password (hashed password passed separately)
     if (hashedPassword) updateData.password_hash = hashedPassword;
+
     // Handle OAuth fields
     if (dto.google_id !== undefined) updateData.google_id = dto.google_id;
     else if (dto.google_id === '') updateData.google_id = null;
