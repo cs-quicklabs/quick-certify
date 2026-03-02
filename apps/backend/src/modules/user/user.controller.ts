@@ -24,6 +24,7 @@ import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interface
 import { Role } from '@src/modules/role/enums';
 import { EmailService } from '@src/commons/services';
 import { UserPaginationRequestOptions } from './dtos/interface';
+import type { AuditableRequest } from '@src/commons/interfaces/auditable-request';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -95,7 +96,7 @@ export class UserController {
   async create(
     @CurrentUser() user: CurrentUserType,
     @Body() dto: CreateUserDto,
-    @Req() req: Request,
+    @Req() req: AuditableRequest,
   ) {
     // Only Admin and Super Admin can create users/invitations
     dto.organizationId = user.organizationId;
@@ -123,7 +124,7 @@ export class UserController {
     @CurrentUser() user: CurrentUserType,
     @Param('uuid') uuid: string,
     @Body() dto: UpdateUserDto,
-    @Req() req: Request,
+    @Req() req: AuditableRequest,
   ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
@@ -146,7 +147,7 @@ export class UserController {
   async remove(
     @CurrentUser() user: CurrentUserType,
     @Param('uuid') uuid: string,
-    @Req() req: Request,
+    @Req() req: AuditableRequest,
   ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
@@ -246,7 +247,7 @@ export class UserController {
   async restore(
     @CurrentUser() user: CurrentUserType,
     @Param('uuid') uuid: string,
-    @Req() req: Request,
+    @Req() req: AuditableRequest,
   ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,

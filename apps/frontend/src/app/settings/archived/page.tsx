@@ -113,6 +113,13 @@ export default function ArchivedMembersPage() {
     return roleMap[role] || role;
   };
 
+  const getArchivedBy = (member: TeamMember): string => {
+    const archiveLog = member.auditLogs?.[0];
+    if (!archiveLog?.actor) return 'Unknown';
+    const { first_name, last_name } = archiveLog.actor;
+    return `${first_name}${last_name ? ` ${last_name}` : ''}`;
+  };
+
   function renderList() {
     if (isLoading) {
       return <div className="py-10 text-center text-sm text-gray-500">Loading...</div>;
@@ -153,7 +160,10 @@ export default function ArchivedMembersPage() {
               ></path>
             </svg>
 
-            <span>Deactivated on {formatDate(member.updatedAt)} by </span>
+            <div>
+              Deactivated on {formatDate(member.updatedAt)} by{' '}
+              <span className="font-medium text-gray-700">{getArchivedBy(member)}</span>{' '}
+            </div>
           </div>
         </div>
 
