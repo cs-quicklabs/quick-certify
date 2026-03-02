@@ -1,6 +1,15 @@
 import { Column, DataType, HasMany, Index, Table } from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
+import { EventEntity } from './event.entity';
+import { EventTypeEntity } from './event-type.entity';
+import { EventLevelEntity } from './event-level.entity';
+import { EventFormatEntity } from './event-format.entity';
+import { SkillEntity } from './skill.entity';
+import { DesignEntity } from './design.entity';
+import { CredentialEntity } from './credential.entity';
+import { PathwayEntity } from './pathway.entity';
+import { RecipientEntity } from './recipient.entity';
 
 /**
  * Organization Entity
@@ -23,6 +32,33 @@ export class OrganizationEntity extends BaseEntity {
 
   @HasMany(() => UserEntity)
   declare users: UserEntity[];
+
+  @HasMany(() => EventEntity)
+  declare events: EventEntity[];
+
+  @HasMany(() => EventTypeEntity)
+  declare eventTypes: EventTypeEntity[];
+
+  @HasMany(() => EventLevelEntity)
+  declare eventLevels: EventLevelEntity[];
+
+  @HasMany(() => EventFormatEntity)
+  declare eventFormats: EventFormatEntity[];
+
+  @HasMany(() => SkillEntity)
+  declare skills: SkillEntity[];
+
+  @HasMany(() => DesignEntity)
+  declare designs: DesignEntity[];
+
+  @HasMany(() => CredentialEntity)
+  declare credentials: CredentialEntity[];
+
+  @HasMany(() => PathwayEntity)
+  declare pathways: PathwayEntity[];
+
+  @HasMany(() => RecipientEntity)
+  declare recipients: RecipientEntity[];
 
   // ============================================
   // General Information

@@ -1,8 +1,10 @@
-import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, HasMany, Index, Table } from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
 import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
 import { Exclude } from 'class-transformer';
+import { SessionEntity } from './session.entity';
+import { PasswordResetEntity } from './password-reset.entity';
 
 /**
  * User Entity
@@ -84,6 +86,12 @@ export class UserEntity extends BaseEntity {
 
   @BelongsTo(() => RoleEntity, { onDelete: 'RESTRICT' })
   declare role: RoleEntity;
+
+  @HasMany(() => SessionEntity)
+  declare sessions: SessionEntity[];
+
+  @HasMany(() => PasswordResetEntity)
+  declare passwordResets: PasswordResetEntity[];
 
   @Column({
     type: DataType.STRING(20),

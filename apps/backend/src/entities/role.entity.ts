@@ -1,5 +1,6 @@
-import { Column, DataType, Index, Table } from 'sequelize-typescript';
+import { Column, DataType, HasMany, Index, Table } from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
+import { UserEntity } from './user.entity';
 
 /**
  * Role Entity
@@ -15,6 +16,9 @@ export class RoleEntity extends BaseEntity {
   // Override UUID with table-specific index
   @Index({ name: 'IDX_ROLE_UUID', unique: true })
   declare uuid: string;
+
+  @HasMany(() => UserEntity)
+  declare users: UserEntity[];
 
   @Index({ name: 'IDX_ROLE_NAME', unique: true })
   @Column({
