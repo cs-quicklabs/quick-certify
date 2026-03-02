@@ -16,6 +16,7 @@ import { CredentialIssueBatchEntity } from './credential-issue-batch.entity';
 import { PathwayEntity } from './pathway.entity';
 import { PathwayEventEntity } from './pathway-event.entity';
 import { PathwayParticipantEntity } from './pathway-participant.entity';
+import { AuditLogEntity } from './audit-log.entity';
 
 export * from './base.entity';
 export * from './organization.entity';
@@ -36,6 +37,7 @@ export * from './credential-issue-batch.entity';
 export * from './pathway.entity';
 export * from './pathway-event.entity';
 export * from './pathway-participant.entity';
+export * from './audit-log.entity';
 
 export const entities = [
   RoleEntity,
@@ -56,4 +58,5 @@ export const entities = [
   PathwayEntity,
   PathwayEventEntity,
   PathwayParticipantEntity,
+  AuditLogEntity,
 ];

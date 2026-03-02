@@ -42,7 +42,7 @@ export class EventEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   // Event name (required)
@@ -78,7 +78,7 @@ export class EventEntity extends BaseEntity {
   })
   declare event_type_id: number | null;
 
-  @BelongsTo(() => EventTypeEntity)
+  @BelongsTo(() => EventTypeEntity, { onDelete: 'RESTRICT' })
   declare event_type: EventTypeEntity | null;
 
   // Event Level (optional - can be set later)
@@ -91,7 +91,7 @@ export class EventEntity extends BaseEntity {
   })
   declare event_level_id: number | null;
 
-  @BelongsTo(() => EventLevelEntity)
+  @BelongsTo(() => EventLevelEntity, { onDelete: 'RESTRICT' })
   declare event_level: EventLevelEntity | null;
 
   // Event Format (optional - can be set later)
@@ -104,7 +104,7 @@ export class EventEntity extends BaseEntity {
   })
   declare event_format_id: number | null;
 
-  @BelongsTo(() => EventFormatEntity)
+  @BelongsTo(() => EventFormatEntity, { onDelete: 'RESTRICT' })
   declare event_format: EventFormatEntity | null;
 
   // Soft delete flag
@@ -126,7 +126,7 @@ export class EventEntity extends BaseEntity {
   })
   declare design_id: number | null;
 
-  @BelongsTo(() => DesignEntity)
+  @BelongsTo(() => DesignEntity, { onDelete: 'SET NULL' })
   declare design: DesignEntity | null;
 
   // Duration type (optional - day, week, month)

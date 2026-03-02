@@ -48,7 +48,7 @@ export class SessionEntity extends BaseEntity {
   })
   declare user_id: number;
 
-  @BelongsTo(() => UserEntity)
+  @BelongsTo(() => UserEntity, { onDelete: 'CASCADE' })
   declare user: UserEntity;
 
   @Column({

@@ -20,7 +20,7 @@ export class EventTypeEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   // Composite unique index on (organization_id, name) - defined in migration

@@ -38,7 +38,7 @@ export class PathwayParticipantEntity extends Model {
   })
   declare recipient_id: number;
 
-  @BelongsTo(() => RecipientEntity)
+  @BelongsTo(() => RecipientEntity, { onDelete: 'CASCADE' })
   declare recipient: RecipientEntity;
 
   @Column({

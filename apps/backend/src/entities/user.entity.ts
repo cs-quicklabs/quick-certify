@@ -26,7 +26,7 @@ export class UserEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   @Column({
@@ -82,7 +82,7 @@ export class UserEntity extends BaseEntity {
   })
   declare role_id: number;
 
-  @BelongsTo(() => RoleEntity)
+  @BelongsTo(() => RoleEntity, { onDelete: 'RESTRICT' })
   declare role: RoleEntity;
 
   @Column({
