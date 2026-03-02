@@ -38,6 +38,7 @@ export const publicService = {
 
   async getPublicCredentials(slug: string, filter?: PublicCredentialFilters) {
     const response = await apiClient.get(buildUrl(`/credentials/public/org/${slug}`, filter));
+    console.log('response   : ', response.data)
     return response.data.data;
   },
 

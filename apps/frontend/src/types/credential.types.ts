@@ -5,6 +5,7 @@ export { CredentialStatusEnum as CredentialStatus };
 export interface Recipient {
   uuid: string;
   name: string;
+  email: string;
 }
 
 export interface Credential {
