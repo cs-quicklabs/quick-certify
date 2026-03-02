@@ -41,7 +41,7 @@ module.exports = {
             allowNull: false,
             defaultValue: 'draft',
           },
-          duration:{
+          duration: {
             type: DataTypes.STRING(100),
             allowNull: true,
           },
