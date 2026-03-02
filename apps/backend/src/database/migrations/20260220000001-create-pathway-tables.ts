@@ -41,10 +41,6 @@ module.exports = {
             allowNull: false,
             defaultValue: 'draft',
           },
-          duration: {
-            type: DataTypes.STRING(100),
-            allowNull: true,
-          },
           is_active: {
             type: DataTypes.BOOLEAN,
             allowNull: false,

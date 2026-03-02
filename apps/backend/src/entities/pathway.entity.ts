@@ -61,12 +61,6 @@ export class PathwayEntity extends BaseEntity {
   declare status: string;
 
   @Column({
-    type: DataType.STRING(100),
-    allowNull: true,
-  })
-  declare duration: string | null;
-
-  @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
