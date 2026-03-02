@@ -41,6 +41,7 @@ export class RecipientService {
         organization_id: organization.id,
         ...where,
       },
+      attributes: ['id', 'uuid', 'name'],
       order: [[sortBy, sortOrder]],
       limit: safeLimit,
       offset,

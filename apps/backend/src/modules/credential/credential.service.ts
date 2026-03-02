@@ -111,7 +111,7 @@ export class CredentialService {
         {
           model: RecipientEntity,
           as: 'recipient',
-          attributes: ['uuid', 'name', 'email'],
+          attributes: ['uuid', 'name'],
           where: recipientWhere,
         },
         {
