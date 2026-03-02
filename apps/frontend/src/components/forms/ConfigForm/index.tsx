@@ -108,6 +108,13 @@ export function ConfigForm<T extends z.ZodType>({
 
     try {
       await config.onSubmit(result.data as z.infer<T>);
+
+      // clear the current values back to the provided initial values
+      // (or an empty object when none were supplied).
+      if (config.resetOnSuccess) {
+        setFormData(initialValues as Record<string, unknown>);
+      }
+
       setSubmitSuccess(true);
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));

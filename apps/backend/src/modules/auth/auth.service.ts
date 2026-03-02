@@ -797,12 +797,13 @@ export class AuthService implements IAuthService {
         undefined,
         { transaction },
       );
-      await this.forgotPassword({ email: user.email });
 
       // Revoke all sessions for security (password changed)
       await this.sessionService.revokeAllForUser(user.uuid, transaction);
 
       await transaction.commit();
+
+      await this.forgotPassword({ email: user.email });
       return {
         success: true,
         message: 'Password changed successfully. All sessions have been revoked.',
