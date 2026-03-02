@@ -128,9 +128,7 @@ export class FileController {
   async deleteFile(@CurrentUser() user: CurrentUserType, @Body() dto: DeleteFileDto) {
     // Verify the file belongs to the requesting user's organization
     if (!dto.url.includes(`/organizations/${user.organizationUuid}/`)) {
-      throw new ForbiddenException(
-        'You can only delete files belonging to your organization.',
-      );
+      throw new ForbiddenException('You can only delete files belonging to your organization.');
     }
 
     // Check if the file is an avatar (URL contains /avatar/)

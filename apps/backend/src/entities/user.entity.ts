@@ -1,4 +1,12 @@
-import { BelongsTo, Column, DataType, ForeignKey, HasMany, Index, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Index,
+  Table,
+} from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
 import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
@@ -15,6 +23,7 @@ import { PasswordResetEntity } from './password-reset.entity';
 @Table({
   tableName: 'user',
   underscored: true,
+  indexes: [{ name: 'IDX_USER_ORG_STATUS', fields: ['organization_id', 'status'] }],
 })
 export class UserEntity extends BaseEntity {
   // Override UUID with table-specific index

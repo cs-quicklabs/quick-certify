@@ -28,6 +28,7 @@ import { CredentialEntity } from './credential.entity';
 @Table({
   tableName: 'event',
   underscored: true,
+  indexes: [{ name: 'IDX_EVENT_ORG_ACTIVE', fields: ['organization_id', 'is_active'] }],
 })
 export class EventEntity extends BaseEntity {
   // Override UUID with table-specific index

@@ -1,4 +1,12 @@
-import { BelongsTo, Column, DataType, ForeignKey, HasMany, Index, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Index,
+  Table,
+} from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
 import { OrganizationEntity } from './organization.entity';
 import { CredentialEntity } from './credential.entity';

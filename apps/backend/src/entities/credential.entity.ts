@@ -9,6 +9,10 @@ import { CredentialStatusEnum } from '@src/commons/enums';
 @Table({
   tableName: 'credential',
   underscored: true,
+  indexes: [
+    { name: 'IDX_CREDENTIAL_ORG_EVENT', fields: ['organization_id', 'event_id'] },
+    { name: 'IDX_CREDENTIAL_ORG_RECIPIENT', fields: ['organization_id', 'recipient_id'] },
+  ],
 })
 export class CredentialEntity extends BaseEntity {
   @Index({ name: 'IDX_CREDENTIAL_UUID', unique: true })

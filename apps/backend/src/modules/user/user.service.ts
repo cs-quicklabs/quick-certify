@@ -209,9 +209,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
 
     // Generate a secure invitation token for invited users
-    const invitationToken = isInvitation && !dto.auth_provider
-      ? this.passwordService.generateResetToken()
-      : null;
+    const invitationToken =
+      isInvitation && !dto.auth_provider ? this.passwordService.generateResetToken() : null;
 
     const createdUserResult = await this.userModel.create(
       {
@@ -391,9 +390,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
           currentUser.role !== Role.SUPER_ADMIN &&
           currentUser.role !== Role.SYSTEM_ADMIN
         ) {
-          throw new ForbiddenException(
-            'You are not authorized to assign the super admin role.',
-          );
+          throw new ForbiddenException('You are not authorized to assign the super admin role.');
         }
       }
     }
