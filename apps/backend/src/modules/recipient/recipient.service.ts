@@ -82,7 +82,7 @@ export class RecipientService {
     dto: CreateRecipientDto,
     options?: { transaction?: Transaction },
   ): Promise<RecipientEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
     const normalizedEmail = dto.email.trim().toLowerCase();
     const normalizedName = dto.name.trim();
 
@@ -113,7 +113,7 @@ export class RecipientService {
   }
 
   async create(organizationUuid: string, dto: CreateRecipientDto): Promise<RecipientEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
     const normalizedEmail = dto.email.trim().toLowerCase();
 
     const existing = await this.recipientModel.findOne({
@@ -140,7 +140,7 @@ export class RecipientService {
     dto: UpdateRecipientDto,
   ): Promise<RecipientEntity> {
     const recipient = await this.findByUuidOrFail(uuid, organizationUuid);
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const updateData: Record<string, unknown> = {};
 
@@ -179,13 +179,5 @@ export class RecipientService {
       throw new NotFoundException('Recipient not found');
     }
     return recipient;
-  }
-
-  private async requireOrganization(uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    return organization;
   }
 }

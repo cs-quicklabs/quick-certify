@@ -154,7 +154,7 @@ export class CredentialService {
   }
 
   async create(organizationUuid: string, dto: CreateCredentialDto): Promise<CredentialEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const recipient = await this.recipientService.findOrCreate(organizationUuid, {
       name: dto.recipientName,
@@ -226,7 +226,7 @@ export class CredentialService {
     credential: CredentialEntity,
     organizationUuid: string,
   ): Promise<CredentialEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const event = credential.event;
     if (!event?.design_id) {
@@ -288,7 +288,7 @@ export class CredentialService {
     userId: number,
     dto: BatchCreateCredentialDto,
   ): Promise<{ batchUuid: string; totalCount: number }> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     // Idempotency check: if batch with same key exists for this org, return it
     const existingBatch = await this.batchModel.findOne({
@@ -382,7 +382,7 @@ export class CredentialService {
     failedCount: number;
     errorDetails: Array<{ credentialId: number; error: string }> | null;
   }> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const batch = await this.batchModel.findOne({
       where: {
@@ -413,7 +413,7 @@ export class CredentialService {
     organizationUuid: string,
     dto: PreviewCredentialDto,
   ): Promise<{ previewUrl: string }> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const event = await this.eventService.findByUuid(dto.eventId, organizationUuid);
     if (!event) {
@@ -488,7 +488,7 @@ export class CredentialService {
     credential: CredentialEntity,
     organizationUuid: string,
   ): Promise<void> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     console.log(`Regenerating credential ${credential.uuid} for organization ${organization.name}`);
 
@@ -678,13 +678,5 @@ export class CredentialService {
       attributes: ['recipient_id', 'event_id', 'issued_date'],
       raw: true,
     });
-  }
-
-  private async requireOrganization(uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    return organization;
   }
 }

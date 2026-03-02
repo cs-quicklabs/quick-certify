@@ -89,7 +89,7 @@ export abstract class BaseNamedEntityService<
   }
 
   async create(organizationUuid: string, dto: CreateDto): Promise<T> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
     const normalizedName = dto.name.trim();
 
     const whereClause: Record<string, unknown> = {
@@ -142,12 +142,6 @@ export abstract class BaseNamedEntityService<
     const entity = await this.findByUuidOrFail(uuid, organizationUuid);
     await entity.update({ is_active: false });
     return true;
-  }
-
-  private async requireOrganization(uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
-    if (!organization) throw new NotFoundException('Organization not found');
-    return organization;
   }
 
   private async findByUuidOrFail(uuid: string, organizationUuid: string): Promise<T> {

@@ -118,7 +118,7 @@ export class PathwayService implements IPathwayService {
   }
 
   async create(organizationUuid: string, dto: CreatePathwayDto): Promise<PathwayEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
     const normalizedName = dto.name.trim();
 
     // Check for existing pathway with same name
@@ -180,7 +180,7 @@ export class PathwayService implements IPathwayService {
     dto: UpdatePathwayDto,
   ): Promise<PathwayEntity> {
     const pathway = await this.requirePathway(uuid, organizationUuid);
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const updateData: Partial<PathwayEntity> = {};
 
@@ -316,12 +316,6 @@ export class PathwayService implements IPathwayService {
   }
 
   // ─── Private helpers ───
-
-  private async requireOrganization(uuid: string) {
-    const org = await this.organizationService.findByUuid(uuid);
-    if (!org) throw new NotFoundException('Organization not found');
-    return org;
-  }
 
   async requirePathway(uuid: string, organizationUuid: string): Promise<PathwayEntity> {
     const pathway = await this.findByUuid(uuid, organizationUuid);
