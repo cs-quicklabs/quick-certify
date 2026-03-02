@@ -14,6 +14,7 @@ import { PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { PathwayEventService } from './pathway-event.service';
 import { escapeLikePattern } from '@src/commons/utils';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { IPathwayService } from './interfaces';
 
 const DEFAULT_PATHWAY_INCLUDES = [
@@ -62,9 +63,7 @@ export class PathwayService implements IPathwayService {
 
     const allowedSortColumns = ['created_at', 'name', 'status'];
     const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : 'created_at';
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const queryWhere: WhereOptions<PathwayEntity> = {
       organization_id: organization.id,
@@ -84,23 +83,11 @@ export class PathwayService implements IPathwayService {
       include: DEFAULT_PATHWAY_INCLUDES,
       distinct: true,
       order: [[safeSortBy, sortOrder === 'ASC' ? 'ASC' : 'DESC']],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findByUuid(uuid: string, organizationUuid: string): Promise<PathwayEntity | null> {
@@ -118,7 +105,7 @@ export class PathwayService implements IPathwayService {
   }
 
   async create(organizationUuid: string, dto: CreatePathwayDto): Promise<PathwayEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
     const normalizedName = dto.name.trim();
 
     // Check for existing pathway with same name
@@ -180,7 +167,7 @@ export class PathwayService implements IPathwayService {
     dto: UpdatePathwayDto,
   ): Promise<PathwayEntity> {
     const pathway = await this.requirePathway(uuid, organizationUuid);
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const updateData: Partial<PathwayEntity> = {};
 
@@ -258,9 +245,7 @@ export class PathwayService implements IPathwayService {
 
     const allowedSortColumns = ['created_at', 'name'];
     const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : 'created_at';
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const queryWhere: WhereOptions<PathwayEntity> = {
       organization_id: organization.id,
@@ -277,23 +262,11 @@ export class PathwayService implements IPathwayService {
       include: DEFAULT_PATHWAY_INCLUDES,
       distinct: true,
       order: [[safeSortBy, sortOrder === 'ASC' ? 'ASC' : 'DESC']],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   /**
@@ -316,12 +289,6 @@ export class PathwayService implements IPathwayService {
   }
 
   // ─── Private helpers ───
-
-  private async requireOrganization(uuid: string) {
-    const org = await this.organizationService.findByUuid(uuid);
-    if (!org) throw new NotFoundException('Organization not found');
-    return org;
-  }
 
   async requirePathway(uuid: string, organizationUuid: string): Promise<PathwayEntity> {
     const pathway = await this.findByUuid(uuid, organizationUuid);

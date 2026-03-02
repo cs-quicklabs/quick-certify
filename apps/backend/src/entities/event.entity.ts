@@ -4,6 +4,7 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Index,
   Table,
 } from 'sequelize-typescript';
@@ -15,6 +16,7 @@ import { EventFormatEntity } from './event-format.entity';
 import { DesignEntity } from './design.entity';
 import { SkillEntity } from './skill.entity';
 import { EventSkillEntity } from './event-skill.entity';
+import { CredentialEntity } from './credential.entity';
 
 /**
  * Event Entity
@@ -26,6 +28,7 @@ import { EventSkillEntity } from './event-skill.entity';
 @Table({
   tableName: 'event',
   underscored: true,
+  indexes: [{ name: 'IDX_EVENT_ORG_ACTIVE', fields: ['organization_id', 'is_active'] }],
 })
 export class EventEntity extends BaseEntity {
   // Override UUID with table-specific index
@@ -42,7 +45,7 @@ export class EventEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   // Event name (required)
@@ -78,7 +81,7 @@ export class EventEntity extends BaseEntity {
   })
   declare event_type_id: number | null;
 
-  @BelongsTo(() => EventTypeEntity)
+  @BelongsTo(() => EventTypeEntity, { onDelete: 'RESTRICT' })
   declare event_type: EventTypeEntity | null;
 
   // Event Level (optional - can be set later)
@@ -91,7 +94,7 @@ export class EventEntity extends BaseEntity {
   })
   declare event_level_id: number | null;
 
-  @BelongsTo(() => EventLevelEntity)
+  @BelongsTo(() => EventLevelEntity, { onDelete: 'RESTRICT' })
   declare event_level: EventLevelEntity | null;
 
   // Event Format (optional - can be set later)
@@ -104,7 +107,7 @@ export class EventEntity extends BaseEntity {
   })
   declare event_format_id: number | null;
 
-  @BelongsTo(() => EventFormatEntity)
+  @BelongsTo(() => EventFormatEntity, { onDelete: 'RESTRICT' })
   declare event_format: EventFormatEntity | null;
 
   // Soft delete flag
@@ -126,7 +129,7 @@ export class EventEntity extends BaseEntity {
   })
   declare design_id: number | null;
 
-  @BelongsTo(() => DesignEntity)
+  @BelongsTo(() => DesignEntity, { onDelete: 'SET NULL' })
   declare design: DesignEntity | null;
 
   // Duration type (optional - day, week, month)
@@ -148,4 +151,7 @@ export class EventEntity extends BaseEntity {
   // Skills associated with this event (many-to-many)
   @BelongsToMany(() => SkillEntity, () => EventSkillEntity)
   declare skills: SkillEntity[];
+
+  @HasMany(() => CredentialEntity)
+  declare credentials: CredentialEntity[];
 }

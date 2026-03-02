@@ -23,6 +23,11 @@ export interface IOrganizationService {
   findByUuid(uuid: string): Promise<OrganizationEntity | null>;
 
   /**
+   * Find organization by UUID or throw NotFoundException
+   */
+  findByUuidOrFail(uuid: string): Promise<OrganizationEntity>;
+
+  /**
    * Find organization by slug
    */
   findBySlug(slug: string): Promise<OrganizationEntity | null>;

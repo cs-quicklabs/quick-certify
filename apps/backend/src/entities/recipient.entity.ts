@@ -1,6 +1,15 @@
-import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Index,
+  Table,
+} from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
 import { OrganizationEntity } from './organization.entity';
+import { CredentialEntity } from './credential.entity';
 
 @Table({
   tableName: 'recipient',
@@ -19,8 +28,11 @@ export class RecipientEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
+
+  @HasMany(() => CredentialEntity)
+  declare credentials: CredentialEntity[];
 
   @Column({
     type: DataType.STRING(200),

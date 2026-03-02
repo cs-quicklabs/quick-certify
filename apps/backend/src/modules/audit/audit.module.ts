@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { AuditLogEntity } from './audit-log.entity';
+import { AuditLogEntity } from '@src/entities';
 import { AuditLogService } from './audit-log.service';
 
 @Module({
