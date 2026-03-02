@@ -13,6 +13,7 @@ import { EmailService } from '@src/commons/services';
 import { PathwayParticipantStatusEnum } from '@src/commons/enums';
 import { PaginatedResult, PaginationDto } from '@src/commons/base';
 import { escapeLikePattern } from '@src/commons/utils';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { IPathwayParticipantService } from './interfaces';
 
 @Injectable()
@@ -141,9 +142,7 @@ export class PathwayParticipantService implements IPathwayParticipantService {
   ): Promise<PaginatedResult<PathwayParticipantEntity>> {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = pagination;
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const paginationParams = sanitizePagination(page, limit);
 
     let includeWhere: WhereOptions | undefined;
     if (search?.trim()) {
@@ -178,26 +177,14 @@ export class PathwayParticipantService implements IPathwayParticipantService {
       ],
       distinct: true,
       order,
-      limit: safeLimit,
-      offset,
+      limit: paginationParams.safeLimit,
+      offset: paginationParams.offset,
     });
 
     // Compute status for each participant based on credential progress
     await this.computeStatuses(pathwayId, rows);
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, paginationParams);
   }
 
   /**

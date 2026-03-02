@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model, ModelStatic, FindOptions, Includeable, WhereOptions, Op } from 'sequelize';
 import { BaseCrudServiceInterface, FindAllOptions, PaginatedResult } from './interfaces';
+import { sanitizePagination, buildPaginatedResult } from '../utils';
 
 @Injectable()
 export abstract class BaseCrudService<
@@ -30,9 +31,7 @@ export abstract class BaseCrudService<
       attributes,
     } = options;
 
-    const safeLimit = Math.min(Math.max(1, limit), this.maxLimit);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit, this.maxLimit);
 
     const findOptionsWhere: WhereOptions<T> = {
       ...where,
@@ -46,8 +45,8 @@ export abstract class BaseCrudService<
     const findOptions: FindOptions<T> = {
       where: findOptionsWhere,
       order: [[sortBy, sortOrder]] as unknown as [string, string],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     };
 
     if (include.length > 0) {
@@ -60,19 +59,7 @@ export abstract class BaseCrudService<
 
     const { count, rows } = await this.model.findAndCountAll(findOptions);
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findOne(id: TId, options: FindOptions<T> = {}): Promise<T | null> {

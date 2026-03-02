@@ -10,6 +10,7 @@ import { EventEntity } from '@src/entities/event.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { CredentialStatusEnum } from '@src/commons/enums';
 import { escapeLikePattern } from '@src/commons/utils';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { DesignLayout } from '@certify/certificate-core';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { EventService } from '@src/modules/event/services/event.service';
@@ -75,9 +76,7 @@ export class CredentialService {
       };
     }
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const whereClause: Record<string, unknown> = {
       organization_id: organization.id,
@@ -121,23 +120,11 @@ export class CredentialService {
         },
       ],
       order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findByUuid(uuid: string, organizationUuid: string): Promise<CredentialEntity | null> {

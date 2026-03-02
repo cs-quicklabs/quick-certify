@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { OrganizationEntity, UserEntity, RoleEntity } from '@src/entities';
 import { StorageService } from '@src/commons/services';
 import { extractDomain, generateNanoid } from '@src/commons/utils';
@@ -42,9 +43,7 @@ export class OrganizationService implements IOrganizationService {
   async findAll(options: FindAllOptions = {}): Promise<PaginatedResult<OrganizationEntity>> {
     const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC', where = {} } = options;
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const { count, rows } = await this.organizationModel.findAndCountAll({
       where: {
@@ -69,8 +68,8 @@ export class OrganizationService implements IOrganizationService {
         },
       ],
       order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
       distinct: true,
     });
 
@@ -87,19 +86,7 @@ export class OrganizationService implements IOrganizationService {
       return orgData;
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: data as unknown as OrganizationEntity[],
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(data as unknown as OrganizationEntity[], count, pagination);
   }
 
   async findOne(id: number, transaction?: Transaction): Promise<OrganizationEntity | null> {

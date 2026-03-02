@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { RecipientEntity } from '@src/entities/recipient.entity';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { CreateRecipientDto, UpdateRecipientDto } from './dtos';
@@ -32,9 +33,7 @@ export class RecipientService {
       };
     }
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const { count, rows } = await this.recipientModel.findAndCountAll({
       where: {
@@ -42,23 +41,11 @@ export class RecipientService {
         ...where,
       },
       order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findByUuid(uuid: string, organizationUuid: string): Promise<RecipientEntity | null> {

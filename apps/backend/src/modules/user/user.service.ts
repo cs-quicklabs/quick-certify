@@ -10,6 +10,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { FindOptions, Op, Sequelize, Transaction } from 'sequelize';
 import { BaseCrudService, FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { UserEntity } from '@src/entities/user.entity';
 import { RoleEntity } from '@src/entities/role.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
@@ -77,9 +78,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       where = {},
     } = options;
 
-    const safeLimit = Math.min(Math.max(1, limit), this.maxLimit);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit, this.maxLimit);
 
     // Exclude current logged-in user if specified
     const whereClause: Record<string, unknown> = {
@@ -109,23 +108,11 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       attributes: { exclude: ['password_hash'] },
       order:
         sortBy === 'last_login_at' ? [[sortBy, `${sortOrder} NULLS LAST`]] : [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   override async findOne(
