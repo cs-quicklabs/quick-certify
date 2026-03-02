@@ -85,17 +85,13 @@ function AcceptInvitationContent() {
   // Show loading state while validating
   if (isValidating) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
           <div className="flex justify-center mb-4">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Validating Invitation...
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Please wait while we verify your invitation link.
-          </p>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Validating Invitation...</h1>
+          <p className="text-gray-600">Please wait while we verify your invitation link.</p>
         </div>
       </div>
     );
@@ -104,13 +100,13 @@ function AcceptInvitationContent() {
   // Show error if token is invalid
   if (!isValid || !token) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+              <div className="p-3 bg-red-100 rounded-full">
                 <svg
-                  className="w-8 h-8 text-red-600 dark:text-red-400"
+                  className="w-8 h-8 text-red-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -124,10 +120,8 @@ function AcceptInvitationContent() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Invalid Invitation Link
-            </h1>
-            {serverError && <p className="text-red-600 dark:text-red-400 mb-4">{serverError}</p>}
+            <h1 className="text-xl font-bold text-gray-900 mb-2">Invalid Invitation Link</h1>
+            {serverError && <p className="text-red-600 mb-4">{serverError}</p>}
           </div>
           <div className="space-y-3">
             <Link
@@ -138,7 +132,7 @@ function AcceptInvitationContent() {
             </Link>
             <Link
               href="/"
-              className="block w-full px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 transition-colors text-center dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700"
+              className="block w-full px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 transition-colors text-center"
             >
               Go to Homepage
             </Link>
@@ -151,11 +145,11 @@ function AcceptInvitationContent() {
   // Show success state
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
             <svg
-              className="w-8 h-8 text-green-600 dark:text-green-400"
+              className="w-8 h-8 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -168,10 +162,8 @@ function AcceptInvitationContent() {
               />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Invitation Accepted!
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Invitation Accepted!</h1>
+          <p className="text-gray-500 mb-6">
             Your account has been activated. Redirecting to dashboard...
           </p>
           <div className="flex justify-center">
@@ -184,12 +176,12 @@ function AcceptInvitationContent() {
 
   // Show password form
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8">
-        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl mb-2">
           Accept Invitation
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <p className="text-sm text-gray-500 mb-6">
           Set your password to activate your account and join the team.
         </p>
 
@@ -224,7 +216,7 @@ function AcceptInvitationContent() {
           <Button type="submit" fullWidth isLoading={isSubmitting}>
             Accept Invitation
           </Button>
-          <div className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
+          <div className="text-sm font-light text-gray-500 text-center">
             <Link href="/login" className="link">
               Return Back to Login
             </Link>
@@ -237,13 +229,13 @@ function AcceptInvitationContent() {
 
 function AcceptInvitationSkeleton() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
         <div className="flex justify-center mb-4">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
         </div>
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mx-auto mb-2"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-64 mx-auto"></div>
+        <div className="h-6 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
       </div>
     </div>
   );

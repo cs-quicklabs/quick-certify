@@ -72,15 +72,13 @@ function ResetPasswordContent() {
 
   if (!isValidToken) {
     return (
-      <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
+      <div className="w-full p-6 bg-white rounded-sm shadow md:mt-0 sm:max-w-md sm:p-8">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-            <CircleX className="w-8 h-8 text-red-600 dark:text-red-400" />
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <CircleX className="w-8 h-8 text-red-600" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invalid token</h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Token has been expired or already used.
-          </p>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Invalid token</h1>
+          <p className="text-gray-500 mb-6">Token has been expired or already used.</p>
           <Link href="/forgot-password" className="btn-primary inline-block">
             Back to forgot password
           </Link>
@@ -91,15 +89,13 @@ function ResetPasswordContent() {
 
   if (isSuccess) {
     return (
-      <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
+      <div className="w-full p-6 bg-white rounded-sm shadow md:mt-0 sm:max-w-md sm:p-8">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Password reset successful
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Password reset successful</h1>
+          <p className="text-gray-500 mb-6">
             Your password has been reset. You can now sign in with your new password.
           </p>
           <Link href="/login" className="btn-primary inline-block">
@@ -111,10 +107,10 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
+    <div className="w-full p-6 bg-white rounded-sm shadow md:mt-0 sm:max-w-md sm:p-8">
       <div>
         {/* Header */}
-        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl mb-2">
           Set a new password
         </h1>
 
@@ -151,7 +147,7 @@ function ResetPasswordContent() {
           <Button type="submit" fullWidth isLoading={isSubmitting}>
             Change Password
           </Button>
-          <div className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
+          <div className="text-sm font-light text-gray-500 text-center">
             <Link href="/login" className="link">
               Return Back to Login
             </Link>
@@ -165,12 +161,12 @@ function ResetPasswordContent() {
 function ResetPasswordSkeleton() {
   return (
     <div className="p-6 sm:p-8 animate-pulse">
-      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-56 mb-6"></div>
+      <div className="h-7 bg-gray-200 rounded w-48 mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-56 mb-6"></div>
       <div className="space-y-4">
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
       </div>
     </div>
   );

@@ -149,9 +149,9 @@ export function StepCreateCredentials({
   const canContinue = !!eventId && hasValidRecipients;
 
   return (
-    <div className="bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
+    <div className="bg-white shadow-md sm:rounded-sm">
       {/* Header */}
-      <div className="px-4 py-4 sm:px-6 sm:py-5 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-4 py-4 sm:px-6 sm:py-5 border-b border-gray-200">
         <h1 className="form-title">Issue Credentials</h1>
         <p className="form-subtitle">
           Select an event and add the recipients who will receive credentials.
@@ -399,7 +399,7 @@ export function StepCreateCredentials({
       </div>
 
       {/* Footer Actions */}
-      <div className="px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-gray-700 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
+      <div className="px-4 py-4 sm:px-6 border-t border-gray-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
         <Button variant="outline" onClick={onCancel} fullWidth className="sm:w-auto">
           Cancel
         </Button>

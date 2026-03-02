@@ -25,9 +25,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Show loading while checking auth
   if (!isInitialized || isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
         <Logo size="lg" asLink={false} />
-        <div className="mt-6 flex items-center gap-2 text-gray-600 dark:text-gray-400">
+        <div className="mt-6 flex items-center gap-2 text-gray-600">
           <Loader2 className="w-5 h-5 animate-spin" />
           <span>Loading...</span>
         </div>
@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <Header />
       {/* Main Content */}
