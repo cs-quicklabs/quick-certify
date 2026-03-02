@@ -25,6 +25,7 @@ function getStatusBadge(status: 'earned' | 'not_earned') {
 }
 
 export function ParticipantCredentialTimeline({ credentials }: ParticipantCredentialTimelineProps) {
+  console.log('Rendering ParticipantCredentialTimeline with credentials:', credentials);
   return (
     <div className="max-w-7xl mx-auto px-4 pb-6 rounded-sm border border-gray-200 bg-white mt-4">
       <div className="p-4 sm:p-6">
