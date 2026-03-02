@@ -133,6 +133,16 @@ export class OrganizationService implements IOrganizationService {
     return organization;
   }
 
+  async findByIdOrFail(id: number): Promise<OrganizationEntity> {
+    const organization = await this.organizationModel.findOne({
+      where: { id, is_active: true },
+    });
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+    return organization;
+  }
+
   async findBySlug(slug: string): Promise<OrganizationEntity | null> {
     return await this.organizationModel.findOne({
       where: { slug, is_active: true },
@@ -179,14 +189,7 @@ export class OrganizationService implements IOrganizationService {
   }
 
   async update(id: number, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
-    const organization = await this.organizationModel.findOne({
-      where: { id, is_active: true },
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-
+    const organization = await this.findByIdOrFail(id);
     const updateData: Partial<OrganizationEntity> = {};
 
     if (dto.name !== undefined) {
@@ -233,10 +236,7 @@ export class OrganizationService implements IOrganizationService {
   }
 
   async updateByUuid(uuid: string, dto: UpdateOrganizationDto): Promise<OrganizationEntity> {
-    const organization = await this.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
+    const organization = await this.findByUuidOrFail(uuid);
     return this.update(organization.id, dto);
   }
 
@@ -254,15 +254,7 @@ export class OrganizationService implements IOrganizationService {
     const transaction = await sequelize.transaction();
 
     try {
-      const organization = await this.organizationModel.findOne({
-        where: { uuid },
-        transaction,
-      });
-
-      if (!organization) {
-        await transaction.rollback();
-        throw new NotFoundException('Organization not found');
-      }
+      const organization = await this.findByUuidOrFail(uuid);
 
       // Delete all users in the organization (cascades to sessions, password_resets)
       await this.userModel.destroy({
@@ -326,17 +318,7 @@ export class OrganizationService implements IOrganizationService {
    * Update organization general information
    */
   async updateGeneralInfo(uuid: string, dto: UpdateGeneralInfoDto): Promise<OrganizationEntity> {
-    const organization = await this.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    const org = await this.organizationModel.findOne({
-      where: { id: organization.id, is_active: true },
-    });
-
-    if (!org) {
-      throw new NotFoundException('Organization not found');
-    }
+    const org = await this.findByUuidOrFail(uuid);
 
     // Check if name is being changed and is unique
     if (dto.name && dto.name !== org.name) {
@@ -380,17 +362,7 @@ export class OrganizationService implements IOrganizationService {
    * Update organization social links
    */
   async updateSocialLinks(uuid: string, dto: UpdateSocialLinksDto): Promise<OrganizationEntity> {
-    const organization = await this.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    const org = await this.organizationModel.findOne({
-      where: { id: organization.id, is_active: true },
-    });
-
-    if (!org) {
-      throw new NotFoundException('Organization not found');
-    }
+    const org = await this.findByUuidOrFail(uuid);
 
     // Check if website domain is being changed and is unique
     if (dto.website) {
@@ -412,17 +384,7 @@ export class OrganizationService implements IOrganizationService {
    * Deletes old images from storage when replaced
    */
   async updateBranding(uuid: string, dto: UpdateBrandingDto): Promise<OrganizationEntity> {
-    const organization = await this.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    const org = await this.organizationModel.findOne({
-      where: { id: organization.id, is_active: true },
-    });
-
-    if (!org) {
-      throw new NotFoundException('Organization not found');
-    }
+    const org = await this.findByUuidOrFail(uuid);
 
     // Delete old logo from storage if being replaced or removed
     if (dto.logo_url !== undefined && org.logo_url) {
@@ -461,17 +423,7 @@ export class OrganizationService implements IOrganizationService {
     uuid: string,
     dto: UpdatePortalSettingsDto,
   ): Promise<OrganizationEntity> {
-    const organization = await this.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    const org = await this.organizationModel.findOne({
-      where: { id: organization.id, is_active: true },
-    });
-
-    if (!org) {
-      throw new NotFoundException('Organization not found');
-    }
+    const org = await this.findByUuidOrFail(uuid);
 
     // Delete old banner from storage if being replaced or removed
     if (dto.banner_url !== undefined && org.banner_url) {

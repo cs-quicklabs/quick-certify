@@ -270,7 +270,7 @@ export class AuthService implements IAuthService {
     }
 
     // Validate user status (extracted to avoid duplication)
-    this.userService.validateUserStatusForPasswordReset(user);
+    this.userService.validateUserStatusForAuth(user);
 
     await this.passwordResetService.invalidateAllForUser(user.id); // user.id is now number
 
@@ -620,7 +620,7 @@ export class AuthService implements IAuthService {
     if (existingUser) {
       // User exists, try to login instead
       // Validate user status (extracted to avoid duplication)
-      this.userService.validateUserStatusForPasswordReset(existingUser);
+      this.userService.validateUserStatusForAuth(existingUser);
 
       // Link Google account if not already linked
       if (!existingUser.google_id) {
@@ -757,7 +757,7 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    this.userService.validateUserStatusForPasswordReset(user);
+    this.userService.validateUserStatusForAuth(user);
 
     if (
       user.google_id &&

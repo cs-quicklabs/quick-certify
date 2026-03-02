@@ -721,25 +721,6 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
   }
 
-  /**
-   * Validate user status for password reset operations
-   * Centralizes status validation logic to avoid duplication
-   * @throws UnauthorizedException if user is archived or inactive
-   */
-  validateUserStatusForPasswordReset(user: UserEntity): void {
-    if (user.status === 'archived') {
-      throw new UnauthorizedException(
-        'Your account is deactivated. For more queries reach out to admin.',
-      );
-    }
-
-    if (user.status !== 'active') {
-      throw new UnauthorizedException(
-        'Your account is not active yet. Please contact support or your organisation admin to proceed further.',
-      );
-    }
-  }
-
   private async findOneOrThrow(id: number): Promise<UserEntity> {
     const user = await this.userModel.findOne({
       where: { id, status: { [Op.ne]: 'archived' } },
