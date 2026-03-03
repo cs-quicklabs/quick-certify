@@ -13,6 +13,7 @@ import { OrganizationEntity } from './organization.entity';
 import { Exclude } from 'class-transformer';
 import { SessionEntity } from './session.entity';
 import { PasswordResetEntity } from './password-reset.entity';
+import { AuditLogEntity } from './audit-log.entity';
 
 /**
  * User Entity
@@ -26,6 +27,9 @@ import { PasswordResetEntity } from './password-reset.entity';
   indexes: [{ name: 'IDX_USER_ORG_STATUS', fields: ['organization_id', 'status'] }],
 })
 export class UserEntity extends BaseEntity {
+  @HasMany(() => AuditLogEntity, { foreignKey: 'target_user_id' })
+  declare audit_logs: AuditLogEntity[];
+
   // Override UUID with table-specific index
   @Index({ name: 'IDX_USER_UUID', unique: true })
   declare uuid: string;

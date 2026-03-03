@@ -21,8 +21,23 @@ export interface TeamMember {
   };
   status: 'active' | 'inactive' | 'invited' | 'archived';
   last_login_at: string | null;
+  audit_logs?: AuditLogEntry[];
   createdAt: string;
   updatedAt: string;
+}
+export interface AuditLogActor {
+  id: number;
+  uuid: string;
+  full_name: string;
+  email: string;
+}
+
+export interface AuditLogEntry {
+  id: number;
+  action: string;
+  actor_id: number | null;
+  created_at: string;
+  actor: AuditLogActor | null;
 }
 
 export interface Role {

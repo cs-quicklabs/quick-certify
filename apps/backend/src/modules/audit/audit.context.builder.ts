@@ -26,7 +26,6 @@ export function buildAuditContext(req: AuditRequest): AuditContext {
       ip_address: req.ip,
       user_agent: req.headers['user-agent'] as string | undefined,
       request_id: req.id,
-      email: currentUser?.email ?? undefined,
       role: currentUser?.role ?? undefined,
       organizationId: currentUser?.organizationId ?? undefined,
     },
