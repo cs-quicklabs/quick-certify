@@ -5,7 +5,6 @@ import { RecipientCard } from './recipientCard';
 interface Recipient {
   uuid: string;
   name: string;
-  email: string;
 }
 
 interface RecipientGridProps {
@@ -50,7 +49,6 @@ export function RecipientGrid({ recipients, isLoading, error, search, slug }: Re
           key={recipient.uuid}
           uuid={recipient.uuid}
           name={recipient.name}
-          email={recipient.email}
           href={`/public/company/${slug}/recipients/${recipient.uuid}`}
         />
       ))}
