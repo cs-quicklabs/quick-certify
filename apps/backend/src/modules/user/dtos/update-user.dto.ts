@@ -83,4 +83,11 @@ export class UpdateUserDto {
   })
   @IsOptional()
   last_login_at?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Invitation token. Internal use only.',
+  })
+  @IsString()
+  @IsOptional()
+  invitation_token?: string | null;
 }

@@ -197,14 +197,14 @@ export function PathwayForm({
 
               {/* Dropdown */}
               {dropdownOpen && searchQuery.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-sm shadow-lg max-h-60 overflow-y-auto dark:bg-gray-700 dark:border-gray-600">
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-sm shadow-lg max-h-60 overflow-y-auto">
                   {filteredCredentials.length > 0 ? (
-                    <ul className="py-1 text-sm text-gray-700 dark:text-gray-200">
+                    <ul className="py-1 text-sm text-gray-700">
                       {filteredCredentials.map((credential) => (
                         <li key={credential.uuid}>
                           <button
                             type="button"
-                            className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white flex items-center gap-2 cursor-pointer"
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 cursor-pointer"
                             onClick={() => addCredential(credential)}
                           >
                             <Plus className="w-4 h-4 text-gray-400 shrink-0" />
@@ -214,7 +214,7 @@ export function PathwayForm({
                       ))}
                     </ul>
                   ) : (
-                    <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="px-4 py-3 text-sm text-gray-500">
                       No matching credentials found.
                     </div>
                   )}

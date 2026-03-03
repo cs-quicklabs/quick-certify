@@ -57,7 +57,7 @@ export function Alert({ type, title, message, onClose, className }: AlertProps) 
         <button
           type="button"
           className={clsx(
-'ml-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg hover:bg-gray-100',
+            'ml-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg hover:bg-gray-100',
             styles.icon,
           )}
           onClick={onClose}

@@ -76,11 +76,11 @@ function AcceptInvitationContent() {
 
   if (isSuccess) {
     return (
-      <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+      <div className="w-full bg-white rounded-sm shadow md:mt-0 sm:max-w-lg xl:p-0">
         <div className="p-6 sm:p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
             <svg
-              className="w-8 h-8 text-green-600 dark:text-green-400"
+              className="w-8 h-8 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -93,10 +93,8 @@ function AcceptInvitationContent() {
               />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Invitation Accepted!
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Invitation Accepted!</h1>
+          <p className="text-gray-500 mb-6">
             Your account has been activated. Redirecting to dashboard...
           </p>
         </div>
@@ -105,12 +103,12 @@ function AcceptInvitationContent() {
   }
 
   return (
-    <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full bg-white rounded-sm shadow md:mt-0 sm:max-w-lg xl:p-0">
       <div className="p-6 sm:p-8">
-        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-2">
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl mb-2">
           Accept Invitation
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <p className="text-sm text-gray-500 mb-6">
           Set your password to activate your account and join the team.
         </p>
 
@@ -145,7 +143,7 @@ function AcceptInvitationContent() {
           <Button type="submit" fullWidth isLoading={isSubmitting}>
             Accept Invitation
           </Button>
-          <div className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
+          <div className="text-sm font-light text-gray-500 text-center">
             <Link href="/login" className="link">
               Back to login
             </Link>
@@ -172,12 +170,12 @@ export default function AcceptInvitationPage() {
 function AcceptInvitationSkeleton() {
   return (
     <div className="p-6 sm:p-8 animate-pulse">
-      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-72 mb-6"></div>
+      <div className="h-7 bg-gray-200 rounded w-48 mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-72 mb-6"></div>
       <div className="space-y-4">
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
       </div>
     </div>
   );

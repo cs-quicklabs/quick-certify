@@ -20,7 +20,7 @@ export const EventsTable = ({ events, onDelete, deletingEventId }: EventsTablePr
 
   return (
     <div className="border-gray-200">
-      <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table className="w-full text-sm text-left text-gray-500">
         <tbody>
           {events.map((event) => (
             <EventItem

@@ -1,8 +1,8 @@
 import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
-import { BaseEntity } from '@src/entities';
-import { UserEntity } from '@src/entities';
-import { AuditAction } from './audit-action.action';
-import { AuditMetadata } from './interfaces/audit.metadata.interface';
+import { BaseEntity } from './base.entity';
+import { UserEntity } from './user.entity';
+import { AuditAction } from '@src/modules/audit/audit-action.action';
+import { AuditMetadata } from '@src/modules/audit/interfaces/audit.metadata.interface';
 
 @Table({
   tableName: 'audit_log',
@@ -15,7 +15,7 @@ export class AuditLogEntity extends BaseEntity {
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare target_user_id: number;
 
-  @BelongsTo(() => UserEntity, 'target_user_id')
+  @BelongsTo(() => UserEntity, { foreignKey: 'target_user_id', onDelete: 'CASCADE' })
   declare target_user: UserEntity;
 
   @Index({ name: 'IDX_AUDIT_LOG_ACTOR_ID' })
@@ -23,7 +23,7 @@ export class AuditLogEntity extends BaseEntity {
   @Column({ type: DataType.INTEGER, allowNull: true }) // null = system / cron
   declare actor_id: number | null;
 
-  @BelongsTo(() => UserEntity, 'actor_id')
+  @BelongsTo(() => UserEntity, { foreignKey: 'actor_id', onDelete: 'SET NULL' })
   declare actor: UserEntity;
 
   @Index({ name: 'IDX_AUDIT_LOG_ACTION' })

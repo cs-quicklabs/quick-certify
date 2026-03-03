@@ -137,10 +137,7 @@ export default function AdminOrganizationsPage() {
     }
 
     return organizations.map((org) => (
-      <tr
-        key={org.id || org.uuid}
-        className="border-b border-gray-200 dark:border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
+      <tr key={org.id || org.uuid} className="border-b border-gray-200 hover:bg-gray-100">
         <th scope="row" className="px-4 py-2 form-text-normal">
           <div className="flex items-center">
             <span className="ml-2">{org.name}</span>
@@ -170,9 +167,9 @@ export default function AdminOrganizationsPage() {
 
   return (
     <div>
-      <div className="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
+      <div className="relative overflow-hidden bg-white shadow-md sm:rounded-sm">
         {/* Header */}
-        <div className="divide-y dark:divide-gray-700">
+        <div className="divide-y">
           <div className="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
             <div>
               <h1 className="mr-3 form-title">Organizations</h1>
@@ -185,8 +182,8 @@ export default function AdminOrganizationsPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
               <tr>
                 {tableColumns.map((column) => (
                   <th

@@ -126,7 +126,7 @@ export function ConfirmationDialog({
               />
             </svg>
 
-            <h3 className=" text-lg font-bold text-gray-700 dark:text-gray-400">{title}</h3>
+            <h3 className="text-lg font-bold text-gray-700">{title}</h3>
 
             {message && (
               <p className="mb-6 text-xs text-slate-500 max-w-[90%] mx-auto">{message}</p>

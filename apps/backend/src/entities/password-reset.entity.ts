@@ -47,7 +47,7 @@ export class PasswordResetEntity extends BaseEntity {
   })
   declare user_id: number;
 
-  @BelongsTo(() => UserEntity)
+  @BelongsTo(() => UserEntity, { onDelete: 'CASCADE' })
   declare user: UserEntity;
 
   @Index({ name: 'IDX_PASSWORD_RESET_TOKEN' })

@@ -19,7 +19,7 @@ export default function LoginPage() {
   }, [clearError]);
 
   return (
-    <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full bg-white rounded-sm shadow md:mt-0 sm:max-w-md xl:p-0">
       <div className="p-6 space-y-4 md:space-y-4 sm:p-8">
         {/* Header */}
         <h1 className="h1">Sign in to issuer account</h1>
@@ -53,7 +53,7 @@ export default function LoginPage() {
             <Checkbox label="Remember me" {...register('rememberMe')} />
             <Link
               href={ROUTES.AUTH.FORGOT_PASSWORD}
-              className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+              className="text-sm font-medium text-primary-600 hover:underline"
             >
               Forgot password?
             </Link>
@@ -68,7 +68,7 @@ export default function LoginPage() {
           <GoogleSignInButton mode="login" disabled={isLoading} />
 
           {/* Sign Up Link */}
-          <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex items-center justify-center">
+          <p className="text-sm font-light text-gray-500 flex items-center justify-center">
             Don&apos;t have an account yet?{' '}
             <Link href={ROUTES.AUTH.REGISTER} className="link ml-2">
               Sign up

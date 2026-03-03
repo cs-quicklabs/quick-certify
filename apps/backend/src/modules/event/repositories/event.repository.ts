@@ -8,6 +8,7 @@ import { EventFormatEntity } from '@src/entities/event-format.entity';
 import { DesignEntity } from '@src/entities/design.entity';
 import { SkillEntity } from '@src/entities/skill.entity';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 
 export interface EventFindAllOptions extends FindAllOptions {
   typeUuids?: string[];
@@ -96,9 +97,7 @@ export class EventRepository {
       formatUuids,
     } = options;
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const baseWhere: Record<string, unknown> = {
       organization_id: organizationId,
@@ -132,7 +131,10 @@ export class EventRepository {
       ]);
 
       const ids = [
-        ...new Set([...nameMatches.map((e: any) => e.id), ...designMatches.map((e: any) => e.id)]),
+        ...new Set([
+          ...nameMatches.map((e: EventEntity) => e.id),
+          ...designMatches.map((e: EventEntity) => e.id),
+        ]),
       ];
 
       // If no matches found, use -1 to guarantee empty result
@@ -151,23 +153,11 @@ export class EventRepository {
       include: includes,
       distinct: true,
       order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   /**

@@ -31,7 +31,7 @@ export class PathwayEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   @Column({
@@ -59,12 +59,6 @@ export class PathwayEntity extends BaseEntity {
     defaultValue: 'draft',
   })
   declare status: string;
-
-  @Column({
-    type: DataType.STRING(100),
-    allowNull: true,
-  })
-  declare duration: string | null;
 
   @Column({
     type: DataType.BOOLEAN,

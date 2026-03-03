@@ -135,7 +135,7 @@ export default function CredentialsPage() {
 
   return (
     <div>
-      <div className="bg-white dark:bg-gray-800 shadow-sm">
+      <div className="bg-white shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between min-w-34 px-4 py-2 border-b border-gray-200">
           <div>
@@ -153,30 +153,28 @@ export default function CredentialsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100">
           {/* Event Filter Dropdown */}
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="cursor-pointer flex items-center text-black gap-2 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="cursor-pointer flex items-center text-black gap-2 px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100"
             >
               <ListFilter className="w-4 h-4 stroke-2 text-gray-500 " />
-              <span className="text-gray-700 dark:text-gray-300">
+              <span className="text-gray-700">
                 {selectedEvent ? selectedEvent.name : 'Filter by Events'}
               </span>
             </button>
 
             {isFilterOpen && (
-              <div className="absolute z-10 mt-1 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg p-3">
+              <div className="absolute z-10 mt-1 w-52 bg-white border border-gray-200 rounded-md shadow-lg p-3">
                 <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
                   Select Events
                 </p>
                 <button
                   onClick={() => handleEventFilter('')}
                   className={`w-full text-left py-1.5 px-1 text-sm rounded hover:text-blue-600 cursor-pointer ${
-                    !currentEventId
-                      ? 'text-blue-600 font-medium'
-                      : 'text-gray-700 dark:text-gray-300'
+                    !currentEventId ? 'text-blue-600 font-medium' : 'text-gray-700'
                   }`}
                 >
                   All Events
@@ -186,9 +184,7 @@ export default function CredentialsPage() {
                     key={event.uuid}
                     onClick={() => handleEventFilter(event.uuid)}
                     className={`w-full text-left py-1.5 px-1 text-sm rounded hover:text-blue-600 cursor-pointer capitalize ${
-                      currentEventId === event.uuid
-                        ? 'text-blue-600 font-medium'
-                        : 'text-gray-700 dark:text-gray-300'
+                      currentEventId === event.uuid ? 'text-blue-600 font-medium' : 'text-gray-700'
                     }`}
                   >
                     {event.name}
@@ -252,19 +248,14 @@ export default function CredentialsPage() {
                 </tr>
               ) : (
                 credentials.map((item) => (
-                  <tr
-                    key={item.uuid}
-                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
-                    <td className="px-6 py-2  text-gray-900 dark:text-white">
-                      {item.recipient?.name}
-                    </td>
+                  <tr key={item.uuid} className="border-b border-gray-200 hover:bg-gray-50">
+                    <td className="px-6 py-2 text-gray-900">{item.recipient?.name}</td>
                     <td className="px-6 py-3 text-gray-500">{item.recipient?.email}</td>
                     <td className="px-6 py-3">
                       {item.event ? (
                         <button
                           onClick={() => router.push(createRoute.eventDetail(item.event!.uuid))}
-                          className="text-gray-900 dark:text-white  hover:text-blue-600 hover:underline cursor-pointer"
+                          className="text-gray-900 hover:text-blue-600 hover:underline cursor-pointer"
                         >
                           {item.event.name}
                         </button>
@@ -272,9 +263,7 @@ export default function CredentialsPage() {
                         <span className="text-gray-400">--</span>
                       )}
                     </td>
-                    <td className="px-6 py-2 text-gray-900 dark:text-white">
-                      {formatDate(item.issued_date)}
-                    </td>
+                    <td className="px-6 py-2 text-gray-900">{formatDate(item.issued_date)}</td>
                     <td className="px-6 py-2">
                       <CredentialStatusBadge status={item.status} />
                     </td>
@@ -298,7 +287,7 @@ export default function CredentialsPage() {
         </div>
 
         {/* Mobile Cards */}
-        <div className="sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="sm:hidden divide-y divide-gray-200">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
@@ -307,12 +296,9 @@ export default function CredentialsPage() {
             <p className="text-center py-12 text-gray-500 text-sm">No credentials found</p>
           ) : (
             credentials.map((item) => (
-              <div
-                key={item.uuid}
-                className="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
+              <div key={item.uuid} className="block px-4 py-2 hover:bg-gray-50">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-semibold text-sm text-gray-900 dark:text-white">
+                  <span className="font-semibold text-sm text-gray-900">
                     {item.recipient?.name}
                   </span>
                   <CredentialStatusBadge status={item.status} />

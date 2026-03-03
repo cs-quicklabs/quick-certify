@@ -31,7 +31,7 @@ export class CredentialIssueBatchEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   @ForeignKey(() => EventEntity)
@@ -42,7 +42,7 @@ export class CredentialIssueBatchEntity extends BaseEntity {
   })
   declare event_id: number;
 
-  @BelongsTo(() => EventEntity)
+  @BelongsTo(() => EventEntity, { onDelete: 'CASCADE' })
   declare event: EventEntity;
 
   @Index({ name: 'IDX_BATCH_IDEMPOTENCY', unique: true })
@@ -108,7 +108,7 @@ export class CredentialIssueBatchEntity extends BaseEntity {
   })
   declare created_by: number;
 
-  @BelongsTo(() => UserEntity)
+  @BelongsTo(() => UserEntity, { onDelete: 'CASCADE' })
   declare creator: UserEntity;
 
   @HasMany(() => CredentialEntity, 'batch_id')

@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Model, ModelStatic, Op } from 'sequelize';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { FindAllOptions, PaginatedResult } from './interfaces';
+import { sanitizePagination, buildPaginatedResult } from '../utils';
 
 export interface NamedEntity {
   id: number;
@@ -44,9 +45,7 @@ export abstract class BaseNamedEntityService<
       };
     }
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const whereClause: Record<string, unknown> = {
       organization_id: organization.id,
@@ -57,22 +56,11 @@ export abstract class BaseNamedEntityService<
     const { count, rows } = await this.model.findAndCountAll({
       where: whereClause,
       order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findByUuid(uuid: string, organizationUuid: string): Promise<T | null> {
@@ -89,7 +77,7 @@ export abstract class BaseNamedEntityService<
   }
 
   async create(organizationUuid: string, dto: CreateDto): Promise<T> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
     const normalizedName = dto.name.trim();
 
     const whereClause: Record<string, unknown> = {
@@ -142,12 +130,6 @@ export abstract class BaseNamedEntityService<
     const entity = await this.findByUuidOrFail(uuid, organizationUuid);
     await entity.update({ is_active: false });
     return true;
-  }
-
-  private async requireOrganization(uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
-    if (!organization) throw new NotFoundException('Organization not found');
-    return organization;
   }
 
   private async findByUuidOrFail(uuid: string, organizationUuid: string): Promise<T> {

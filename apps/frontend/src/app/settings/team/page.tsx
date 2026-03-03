@@ -92,10 +92,10 @@ export default function TeamsPage() {
 
   return (
     <>
-      <div className="relative overflow-x-hidden bg-white shadow-md pb-0 dark:bg-gray-800 sm:rounded-sm">
+      <div className="relative overflow-x-hidden bg-white shadow-md pb-0 sm:rounded-sm">
         {/* Header */}
 
-        <div className="divide-y dark:divide-gray-700">
+        <div className="divide-y">
           <div className="flex-row items-center justify-between p-4 space-y-3 sm:flex sm:space-y-0 sm:space-x-4">
             <div>
               <h1 className="mr-3 form-title">Team</h1>
@@ -130,8 +130,8 @@ export default function TeamsPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 dark:border-gray-200 px-4 space-y-3 sm:space-y-0 sm:space-x-4">
-          <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex dark:text-white">
+        <div className="flex flex-wrap pt-1 pb-4 border-t border-b border-gray-200 px-4 space-y-3 sm:space-y-0 sm:space-x-4">
+          <div className="items-center hidden mt-3 mr-4 text-sm font-medium text-gray-900 md:flex">
             Show records only for:
           </div>
 
@@ -148,12 +148,9 @@ export default function TeamsPage() {
                       name="show-only"
                       checked={roleFilter === value}
                       onChange={() => handleRoleFilterChange(value)}
-                      className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                      className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                     />
-                    <label
-                      htmlFor={inputId}
-                      className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                    >
+                    <label htmlFor={inputId} className="ml-2 text-sm font-medium text-gray-900">
                       {label}
                     </label>
                   </div>
@@ -177,8 +174,8 @@ export default function TeamsPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <table className="w-full text-sm text-left text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
               <tr>
                 <th scope="col" className="px-4 py-2">
                   User
@@ -218,7 +215,7 @@ export default function TeamsPage() {
                 members.map((member) => (
                   <tr
                     key={member.id || member.uuid}
-                    className="border-b border-gray-200 dark:border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="border-b border-gray-200 hover:bg-gray-100"
                     onClick={() => handleRowClick(member)}
                   >
                     <th scope="row" className="px-4 py-2 form-text-normal">
@@ -229,7 +226,7 @@ export default function TeamsPage() {
                       </div>
                     </th>
                     <td className="px-4 py-2">
-                      <div className="inline-flex items-center bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300">
+                      <div className="inline-flex items-center bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-3.5 w-3.5 mr-1"

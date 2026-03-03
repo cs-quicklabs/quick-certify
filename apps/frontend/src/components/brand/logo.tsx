@@ -22,9 +22,7 @@ export function Logo({ size = 'md', className, asLink = true }: LogoProps) {
   const content = (
     <div className={clsx('flex items-center', className)}>
       <img className="w-8 h-8 mr-2" src={logo} alt="logo" />
-      <span className={clsx('font-semibold text-gray-900 dark:text-white', sizeClasses[size])}>
-        {title}
-      </span>
+      <span className={clsx('font-semibold text-gray-900', sizeClasses[size])}>{title}</span>
     </div>
   );
 

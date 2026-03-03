@@ -80,16 +80,13 @@ export class PathwayResponseMapper {
     const progressMap = new Map(credentialProgress.map((cp) => [cp.event_id, cp]));
 
     const credentials = events
-      .filter(
-        (e: EventEntity & { pathway_event?: { is_final: boolean; order: number } }) =>
-          !e.pathway_event?.is_final,
-      )
       .sort(
         (
           a: EventEntity & { pathway_event?: { order: number } },
           b: EventEntity & { pathway_event?: { order: number } },
         ) => (a.pathway_event?.order ?? 0) - (b.pathway_event?.order ?? 0),
       )
+
       .map((event) => {
         const progress = progressMap.get(event.id);
         return {

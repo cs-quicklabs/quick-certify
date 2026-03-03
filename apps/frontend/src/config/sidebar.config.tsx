@@ -8,7 +8,7 @@ export const profileSidebarItems: SidebarItem[] = [
     href: '/settings/profile/general',
     icon: (
       <svg
-        className="w-6 h-6 text-gray-800 dark:text-white"
+        className="w-6 h-6 text-gray-800"
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -30,7 +30,7 @@ export const profileSidebarItems: SidebarItem[] = [
     href: '/settings/profile/password',
     icon: (
       <svg
-        className="w-6 h-6 text-gray-800 dark:text-white"
+        className="w-6 h-6 text-gray-800"
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -52,7 +52,7 @@ export const profileSidebarItems: SidebarItem[] = [
     href: '/settings/profile/email-preferences',
     icon: (
       <svg
-        className="w-6 h-6 text-gray-800 dark:text-white"
+        className="w-6 h-6 text-gray-800"
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -77,12 +77,7 @@ export const accountSidebarItems: SidebarItem[] = [
     label: 'General Information',
     href: '/settings/account/general-information',
     icon: (
-      <svg
-        className="w-6 h-6 text-gray-800 dark:text-white"
-        aria-hidden="true"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
+      <svg className="w-6 h-6 text-gray-800" aria-hidden="true" fill="none" viewBox="0 0 24 24">
         <path
           stroke="currentColor"
           strokeLinecap="round"
@@ -180,7 +175,7 @@ export const eventSidebarItems: SidebarItem[] = [
     href: '/settings/event/type',
     icon: (
       <svg
-        className="w-6 h-6 text-gray-800 dark:text-white"
+        className="w-6 h-6 text-gray-800"
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -202,7 +197,7 @@ export const eventSidebarItems: SidebarItem[] = [
     href: '/settings/event/level',
     icon: (
       <svg
-        className="w-6 h-6 text-gray-800 dark:text-white"
+        className="w-6 h-6 text-gray-800"
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -224,7 +219,7 @@ export const eventSidebarItems: SidebarItem[] = [
     href: '/settings/event/format',
     icon: (
       <svg
-        className="w-6 h-6 text-gray-800 dark:text-white"
+        className="w-6 h-6 text-gray-800"
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

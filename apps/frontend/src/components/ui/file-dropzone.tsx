@@ -254,7 +254,7 @@ export function FileDropzone({
   return (
     <div className={`mb-6 ${className}`}>
       <label className="form-input-label mb-2">{label}</label>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{description}</p>
+      <p className="text-xs text-gray-500 mb-2">{description}</p>
 
       {/* Show current image if exists */}
       {currentImage ? (
@@ -263,7 +263,7 @@ export function FileDropzone({
             {/* Image placeholder/skeleton while loading */}
             {imageLoading && (
               <div
-                className={`${placeholderSizeClasses[imageSize]} flex items-center justify-center bg-gray-200 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md animate-pulse`}
+                className={`${placeholderSizeClasses[imageSize]} flex items-center justify-center bg-gray-200 border border-gray-200 rounded-md animate-pulse`}
               >
                 <svg
                   className={`${imageSize === 'small' ? 'w-8 h-8' : 'w-12 h-12'} text-gray-400`}
@@ -294,7 +294,7 @@ export function FileDropzone({
               onError={handleImageError}
               className={`${
                 imageSizeClasses[imageSize]
-              } object-cover border border-gray-200 dark:border-gray-600 rounded-md transition-opacity duration-300 ${
+              } object-cover border border-gray-200 rounded-md transition-opacity duration-300 ${
                 imageLoading ? 'opacity-0 absolute' : imageError ? 'opacity-50' : 'opacity-100'
               }`}
             />
@@ -302,7 +302,7 @@ export function FileDropzone({
             {/* Error state */}
             {imageError && !imageLoading && (
               <div
-                className={`absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 ${
+                className={`absolute inset-0 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200 ${
                   imageSize === 'large' ? 'min-w-[200px] min-h-[120px]' : ''
                 }`}
               >
@@ -372,8 +372,8 @@ export function FileDropzone({
                             ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
                             ${
                               isDragging
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                : 'border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
+                                ? 'border-primary-500 bg-primary-50'
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
                             }`}
           >
             {uploading ? (
@@ -415,11 +415,11 @@ export function FileDropzone({
                     d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                   />
                 </svg>
-                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mb-2 text-sm text-gray-500">
                   <span className="font-semibold text-black-600">Click to upload</span> or drag and
                   drop
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500">
                   {category === 'banner' ? 'Size: 1920x300' : `Max. File Size: ${maxSizeMB}MB`}
                 </p>
               </>

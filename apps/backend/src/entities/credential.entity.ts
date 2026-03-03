@@ -9,6 +9,10 @@ import { CredentialStatusEnum } from '@src/commons/enums';
 @Table({
   tableName: 'credential',
   underscored: true,
+  indexes: [
+    { name: 'IDX_CREDENTIAL_ORG_EVENT', fields: ['organization_id', 'event_id'] },
+    { name: 'IDX_CREDENTIAL_ORG_RECIPIENT', fields: ['organization_id', 'recipient_id'] },
+  ],
 })
 export class CredentialEntity extends BaseEntity {
   @Index({ name: 'IDX_CREDENTIAL_UUID', unique: true })
@@ -23,7 +27,7 @@ export class CredentialEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   @ForeignKey(() => RecipientEntity)
@@ -35,7 +39,7 @@ export class CredentialEntity extends BaseEntity {
   })
   declare recipient_id: number;
 
-  @BelongsTo(() => RecipientEntity)
+  @BelongsTo(() => RecipientEntity, { onDelete: 'CASCADE' })
   declare recipient: RecipientEntity;
 
   @ForeignKey(() => EventEntity)
@@ -47,7 +51,7 @@ export class CredentialEntity extends BaseEntity {
   })
   declare event_id: number;
 
-  @BelongsTo(() => EventEntity)
+  @BelongsTo(() => EventEntity, { onDelete: 'CASCADE' })
   declare event: EventEntity;
 
   @Column({
@@ -94,6 +98,6 @@ export class CredentialEntity extends BaseEntity {
   })
   declare batch_id: number | null;
 
-  @BelongsTo(() => CredentialIssueBatchEntity)
+  @BelongsTo(() => CredentialIssueBatchEntity, { onDelete: 'SET NULL' })
   declare batch: CredentialIssueBatchEntity | null;
 }

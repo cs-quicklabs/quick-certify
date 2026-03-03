@@ -42,7 +42,7 @@ function AuthCallbackContent() {
         router.push('/dashboard');
         return;
       } catch (err) {
-        console.error('Failed to fetch user:', err);
+        console.error('Failed to fetch user: ', err);
         setError(
           getApiErrorMessage(
             err,
@@ -70,12 +70,12 @@ function AuthCallbackContent() {
   }, [handleCallback]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="mb-8">
         <Logo size="lg" asLink={false} />
       </div>
 
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+      <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
         {error ? (
           <div className="text-center">
             <Alert type="error" message={error} className="mb-6" />
@@ -89,7 +89,7 @@ function AuthCallbackContent() {
         ) : (
           <div className="flex flex-col items-center">
             <Loader2 className="w-10 h-10 animate-spin text-primary-600 mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">{status}</p>
+            <p className="text-gray-600">{status}</p>
           </div>
         )}
       </div>
@@ -99,14 +99,14 @@ function AuthCallbackContent() {
 
 function AuthCallbackSkeleton() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="mb-8">
         <Logo size="lg" asLink={false} />
       </div>
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+      <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
         <div className="flex flex-col items-center">
           <Loader2 className="w-10 h-10 animate-spin text-primary-600 mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Processing authentication...</p>
+          <p className="text-gray-600">Processing authentication...</p>
         </div>
       </div>
     </div>

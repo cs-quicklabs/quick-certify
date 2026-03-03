@@ -35,7 +35,7 @@ export function Table<T = unknown>({
   maxHeight = '400px',
 }: TableProps<T>) {
   const getRowClassName = (item: T, index: number): string => {
-    const baseClasses ='hover:bg-gray-100';
+    const baseClasses = 'hover:bg-gray-100';
 
     const customClasses =
       typeof rowClassName === 'function' ? rowClassName(item, index) : rowClassName;

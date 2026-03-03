@@ -51,10 +51,10 @@ export function InfoTooltip({
   const arrowClasses = {
     top: 'top-full left-1/2 -translate-x-1/2 border-t-gray-900 border-x-transparent border-b-transparent',
     bottom:
-'bottom-full left-1/2 -translate-x-1/2 border-b-gray-900 border-x-transparent border-t-transparent',
+      'bottom-full left-1/2 -translate-x-1/2 border-b-gray-900 border-x-transparent border-t-transparent',
     left: 'left-full top-1/2 -translate-y-1/2 border-l-gray-900 border-y-transparent border-r-transparent',
     right:
-'right-full top-1/2 -translate-y-1/2 border-r-gray-900 border-y-transparent border-l-transparent',
+      'right-full top-1/2 -translate-y-1/2 border-r-gray-900 border-y-transparent border-l-transparent',
   };
 
   return (
@@ -88,7 +88,7 @@ export function InfoTooltip({
           id={id}
           role="tooltip"
           className={clsx(
-'absolute z-50 w-100 p-2 text-xs font-normal text-white bg-gray-900 rounded-md shadow-lg',
+            'absolute z-50 w-100 p-2 text-xs font-normal text-white bg-gray-900 rounded-md shadow-lg',
             placementClasses[placement],
           )}
         >
