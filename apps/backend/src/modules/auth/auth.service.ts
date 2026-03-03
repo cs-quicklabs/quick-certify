@@ -166,9 +166,8 @@ export class AuthService implements IAuthService {
     const user = await this.userService.findByEmail(dto.email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Invalid email');
     }
-
     if (user.auth_provider !== AuthProvider.Email) {
       throw new UnauthorizedException(
         'This account uses Google authentication. Please sign in with Google.',
