@@ -58,7 +58,7 @@ export const ROUTES = {
 
   // Feature routes
   EVENTS: '/events',
-  CREAT_EVENT: '/events/add',
+  CREATE_EVENT: '/events/add',
   CREDENTIALS: '/credentials',
   PATHWAYS: '/pathways',
   PATHWAYS_ADD: '/pathways/add',

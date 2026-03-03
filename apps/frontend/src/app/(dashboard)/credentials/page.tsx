@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCredentials } from '@/hooks/useCredentials';
 import { useEvents } from '@/hooks/useEvents';
@@ -56,7 +57,7 @@ export default function CredentialsPage() {
   const [searchInput, setSearchInput] = useState(currentSearch);
   const debouncedInput = useDebounce(searchInput);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const filterRef = useRef<HTMLDivElement>(null);
+  const filterRef = useClickOutside<HTMLDivElement>(() => setIsFilterOpen(false));
 
   const {
     data: credentialsData,
@@ -100,16 +101,6 @@ export default function CredentialsPage() {
   useEffect(() => {
     setSearchInput(currentSearch);
   }, [currentSearch]);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
-        setIsFilterOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handlePageChange = (page: number) => {
     updateParams({ page: String(page) });

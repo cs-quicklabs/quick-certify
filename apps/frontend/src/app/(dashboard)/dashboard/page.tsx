@@ -183,7 +183,7 @@ export default function DashboardPage() {
                   name: 'Create Event',
                   icon: Calendar,
                   color: 'bg-blue-500',
-                  href: ROUTES.CREAT_EVENT,
+                  href: ROUTES.CREATE_EVENT,
                 },
                 {
                   name: 'Issue Credentials',
