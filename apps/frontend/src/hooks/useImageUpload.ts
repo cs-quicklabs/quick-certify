@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { replaceImage } from '@/lib/image-upload';
 import { getApiErrorMessage } from '@/lib/api-error';
-import { FileCategory } from '@/services/api/file.service';
+import { FileCategory, deleteFile } from '@/services/api/file.service';
 
 interface UseImageUploadOptions {
   category?: FileCategory;
@@ -75,4 +76,10 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     error,
     setError,
   };
+}
+
+export function useDeleteFile() {
+  return useMutation({
+    mutationFn: (url: string) => deleteFile(url),
+  });
 }
