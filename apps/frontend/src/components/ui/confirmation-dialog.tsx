@@ -129,7 +129,7 @@ export function ConfirmationDialog({
             <h3 className="text-lg font-bold text-gray-700">{title}</h3>
 
             {message && (
-              <p className="mb-6 text-xs text-slate-500 max-w-[90%] mx-auto">{message}</p>
+              <div className="mb-6 text-xs text-slate-500 max-w-[90%] mx-auto">{message}</div>
             )}
 
             {/* Actions */}

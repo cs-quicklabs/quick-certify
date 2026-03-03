@@ -25,6 +25,7 @@ import { Role } from '../role/enums';
 import { RoleService } from '../role/role.service';
 import { OrganizationService } from '../organization/organization.service';
 import { AuthProvider } from '@src/commons/constants';
+import { AuditLogEntity } from '@src/entities';
 
 /**
  * Extended FindAllOptions for User Service
@@ -104,12 +105,31 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       include: [
         { model: RoleEntity, attributes: ['id', 'role'] },
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
+        {
+          model: AuditLogEntity,
+          as: 'audit_logs',
+          required: false,
+          where: { action: AuditAction.USER_ARCHIVED },
+          include: [
+            {
+              model: UserEntity,
+              as: 'actor',
+              attributes: ['id', 'uuid', 'first_name', 'last_name', 'full_name', 'email'],
+              required: false,
+            },
+          ],
+          attributes: ['id', 'action', 'actor_id', 'created_at'],
+          // Get only the most recent archive event
+          limit: 1,
+          order: [['created_at', 'DESC']],
+        },
       ],
       attributes: { exclude: ['password_hash'] },
       order:
         sortBy === 'last_login_at' ? [[sortBy, `${sortOrder} NULLS LAST`]] : [[sortBy, sortOrder]],
       limit: pagination.safeLimit,
       offset: pagination.offset,
+      distinct: true,
     });
 
     return buildPaginatedResult(rows, count, pagination);
@@ -132,7 +152,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { email: email.toLowerCase(), status: { [Op.ne]: 'archived' } },
+      where: { email: email.toLowerCase() },
       include: [RoleEntity],
     });
   }
