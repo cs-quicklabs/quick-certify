@@ -64,7 +64,6 @@ export default function PublicPathwayDetailPage() {
 
   const events = pathway.events ?? [];
   const finalEvent = events.find((e) => e.pathway_event?.is_final);
-  const nonFinalEvents = events.filter((e) => !e.pathway_event?.is_final);
 
   return (
     <div className="bg-gray-50 p-4 min-h-screen">
@@ -117,7 +116,7 @@ export default function PublicPathwayDetailPage() {
                       : 'bg-gray-100 text-gray-500',
                   )}
                 >
-                  {nonFinalEvents.length}
+                  {events.length}
                 </span>
               </button>
             </li>
@@ -149,7 +148,7 @@ export default function PublicPathwayDetailPage() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'credentials' && <CredentialTimeline events={nonFinalEvents} />}
+        {activeTab === 'credentials' && <CredentialTimeline events={events} />}
         {activeTab === 'participants' && <ParticipantsTab slug={slug} pathwayUuid={uuid} />}
       </div>
     </div>
