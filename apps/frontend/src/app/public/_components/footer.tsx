@@ -11,11 +11,6 @@ type PublicFooterProps = {
   slug: string;
 };
 
-const CREDENTIAL_LINKS = [
-  { label: 'Credential Verification', href: '/verify' },
-  { label: 'Credential Retrieval', href: '/retrieve' },
-];
-
 const SOCIAL_LINKS = [
   { href: 'https://github.com/cs-quicklabs/quickcertify', label: 'GitHub', icon: Github },
   { href: 'https://github.com/cs-quicklabs/quick-certify', label: 'Website', icon: Globe },
@@ -59,18 +54,6 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
               <h3 className="mb-4 font-semibold uppercase text-gray-900">Directories</h3>
               <ul className="space-y-3 text-gray-600">
                 {DIRECTORY_LINKS.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="hover:underline">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 font-semibold uppercase text-gray-900">Credentials</h3>
-              <ul className="space-y-3 text-gray-600">
-                {CREDENTIAL_LINKS.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="hover:underline">
                       {link.label}
