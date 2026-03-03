@@ -28,7 +28,7 @@ import { AuditLogEntity } from './audit-log.entity';
 })
 export class UserEntity extends BaseEntity {
   @HasMany(() => AuditLogEntity, { foreignKey: 'target_user_id' })
-  declare auditLogs: AuditLogEntity[];
+  declare audit_logs: AuditLogEntity[];
 
   // Override UUID with table-specific index
   @Index({ name: 'IDX_USER_UUID', unique: true })

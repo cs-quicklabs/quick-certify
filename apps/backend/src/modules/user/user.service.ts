@@ -107,14 +107,14 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         { model: OrganizationEntity, attributes: ['id', 'name', 'slug'] },
         {
           model: AuditLogEntity,
-          as: 'auditLogs',
+          as: 'audit_logs',
           required: false,
           where: { action: AuditAction.USER_ARCHIVED },
           include: [
             {
               model: UserEntity,
               as: 'actor',
-              attributes: ['id', 'uuid', 'first_name', 'last_name', 'email'],
+              attributes: ['id', 'uuid', 'first_name', 'last_name', 'full_name', 'email'],
               required: false,
             },
           ],

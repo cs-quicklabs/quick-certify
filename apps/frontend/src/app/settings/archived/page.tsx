@@ -25,7 +25,8 @@ export default function ArchivedMembersPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [memberToRestore, setMemberToRestore] = useState<TeamMember | null>(null);
   const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null);
-  const isDeletePermission = isInitialized && !!(user && (checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user)));
+  const isDeletePermission =
+    isInitialized && !!(user && (checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user)));
   const pageSize = 10;
 
   const { mutate: restoreUser, isPending: isRestoring } = useRestoreUser();
@@ -112,10 +113,8 @@ export default function ArchivedMembersPage() {
   };
 
   const getArchivedBy = (member: TeamMember): string => {
-    const archiveLog = member.auditLogs?.[0];
-    if (!archiveLog?.actor) return 'Unknown';
-    const { first_name, last_name } = archiveLog.actor;
-    return `${first_name}${last_name ? ` ${last_name}` : ''}`;
+    const archiveLog = member.audit_logs?.[0];
+    return archiveLog?.actor?.full_name ?? 'Unknown';
   };
 
   function renderList() {

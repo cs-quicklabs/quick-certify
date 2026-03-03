@@ -21,15 +21,14 @@ export interface TeamMember {
   };
   status: 'active' | 'inactive' | 'invited' | 'archived';
   last_login_at: string | null;
-  auditLogs?: AuditLogEntry[];
+  audit_logs?: AuditLogEntry[];
   createdAt: string;
   updatedAt: string;
 }
 export interface AuditLogActor {
   id: number;
   uuid: string;
-  first_name: string;
-  last_name: string | null;
+  full_name: string;
   email: string;
 }
 
