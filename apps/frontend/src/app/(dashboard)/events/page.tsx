@@ -29,11 +29,12 @@ export default function EventsPage() {
   const debouncedQuery = useDebounce(query);
   const isSearching = query !== debouncedQuery;
 
-  const { selected, toggle, clear, hasActive: hasActiveFilters } = useMultiSelectFilters([
-    'type',
-    'level',
-    'format',
-  ]);
+  const {
+    selected,
+    toggle,
+    clear,
+    hasActive: hasActiveFilters,
+  } = useMultiSelectFilters(['type', 'level', 'format']);
   const selectedTypeIds = selected.type ?? [];
   const selectedLevelIds = selected.level ?? [];
   const selectedFormatIds = selected.format ?? [];
@@ -186,7 +187,10 @@ export default function EventsPage() {
             items={typeItems}
             selectedIds={selectedTypeIds}
             onChange={(id) => toggleFilter('type', id)}
-            onClear={() => { clear('type'); setPage(1); }}
+            onClear={() => {
+              clear('type');
+              setPage(1);
+            }}
             isLoading={isLoadingTypes}
             onOpen={handleFilterDataLoad}
           />
@@ -195,7 +199,10 @@ export default function EventsPage() {
             items={levelItems}
             selectedIds={selectedLevelIds}
             onChange={(id) => toggleFilter('level', id)}
-            onClear={() => { clear('level'); setPage(1); }}
+            onClear={() => {
+              clear('level');
+              setPage(1);
+            }}
             isLoading={isLoadingLevels}
             onOpen={handleFilterDataLoad}
           />
@@ -204,7 +211,10 @@ export default function EventsPage() {
             items={formatItems}
             selectedIds={selectedFormatIds}
             onChange={(id) => toggleFilter('format', id)}
-            onClear={() => { clear('format'); setPage(1); }}
+            onClear={() => {
+              clear('format');
+              setPage(1);
+            }}
             isLoading={isLoadingFormats}
             onOpen={handleFilterDataLoad}
           />

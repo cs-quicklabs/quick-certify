@@ -37,10 +37,7 @@ export const step1Schema = z
   })
   .refine(
     (data) => {
-      if (
-        data.durationType &&
-        (data.durationValue === undefined || data.durationValue === null)
-      ) {
+      if (data.durationType && (data.durationValue === undefined || data.durationValue === null)) {
         return false;
       }
       return true;

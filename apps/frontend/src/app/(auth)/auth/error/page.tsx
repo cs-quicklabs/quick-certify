@@ -11,30 +11,30 @@ function AuthErrorContent() {
 
   return (
     <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
-        <div className="flex justify-center mb-4">
-          <div className="p-3 bg-red-100 rounded-full">
-            <AlertCircle className="w-8 h-8 text-red-600" />
-          </div>
+      <div className="flex justify-center mb-4">
+        <div className="p-3 bg-red-100 rounded-full">
+          <AlertCircle className="w-8 h-8 text-red-600" />
         </div>
+      </div>
 
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Authentication Failed</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-2">Authentication Failed</h1>
 
-        <p className="text-gray-600 mb-6">{error}</p>
+      <p className="text-gray-600 mb-6">{error}</p>
 
-        <div className="space-y-3">
-          <Link
-            href="/login"
-            className="block w-full px-5 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 transition-colors"
-          >
-            Try again
-          </Link>
-          <Link
-            href="/"
-            className="block w-full px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 transition-colors"
-          >
-            Go to homepage
-          </Link>
-        </div>
+      <div className="space-y-3">
+        <Link
+          href="/login"
+          className="block w-full px-5 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 transition-colors"
+        >
+          Try again
+        </Link>
+        <Link
+          href="/"
+          className="block w-full px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 transition-colors"
+        >
+          Go to homepage
+        </Link>
+      </div>
     </div>
   );
 }

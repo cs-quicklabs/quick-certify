@@ -18,9 +18,7 @@ export function EventSelector({ eventId, eventName, onSelect, error }: EventSele
 
   const { data: eventsData, isLoading } = useEvents({ limit: 100 });
   const events = eventsData?.data ?? [];
-  const filteredEvents = events.filter((e) =>
-    e.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredEvents = events.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()));
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -48,9 +46,7 @@ export function EventSelector({ eventId, eventName, onSelect, error }: EventSele
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={`w-full text-left bg-gray-50 border text-sm rounded-sm px-3 py-2.5 pr-10 cursor-pointer focus:ring-primary-600 focus:border-primary-600 focus:outline-none ${
-            error
-              ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300'
+            error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300'
           }`}
         >
           <span className={`capitalize ${eventId ? 'text-gray-900' : 'text-gray-400'}`}>

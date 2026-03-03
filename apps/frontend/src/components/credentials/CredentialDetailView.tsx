@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Pencil, Save, X, Trash2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { useUpdateCredential, useDeleteCredential, useResendCredential } from '@/hooks/useCredentials';
+import {
+  useUpdateCredential,
+  useDeleteCredential,
+  useResendCredential,
+} from '@/hooks/useCredentials';
 import { useEvent } from '@/hooks/useEvents';
 import { useDesignById } from '@/hooks/useDesigns';
 import { ROUTES } from '@/config/routes';

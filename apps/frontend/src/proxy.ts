@@ -22,13 +22,7 @@ const protectedRoutes = [
 ];
 
 // Routes only accessible to unauthenticated users
-const authRoutes = [
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/reset-password',
-  '/invitation',
-];
+const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/invitation'];
 
 // Public routes accessible to everyone
 const publicRoutes = ['/', '/auth/error', '/auth/callback', '/signup/complete'];

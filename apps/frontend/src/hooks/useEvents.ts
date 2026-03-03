@@ -10,12 +10,7 @@
  *   - useEventFormats.ts
  */
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  UseMutationResult,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, UseMutationResult } from '@tanstack/react-query';
 import { eventService, EventServiceError } from '@/services';
 import { CreateEventRequest, UpdateEventRequest, EventFilters, Event } from '@/types';
 

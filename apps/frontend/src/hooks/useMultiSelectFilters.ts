@@ -17,7 +17,9 @@ export function useMultiSelectFilters(keys: string[]): UseMultiSelectFiltersRetu
   const toggle = useCallback((key: string, id: string) => {
     setSelected((prev) => ({
       ...prev,
-      [key]: prev[key]?.includes(id) ? prev[key].filter((v) => v !== id) : [...(prev[key] ?? []), id],
+      [key]: prev[key]?.includes(id)
+        ? prev[key].filter((v) => v !== id)
+        : [...(prev[key] ?? []), id],
     }));
   }, []);
 

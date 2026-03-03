@@ -123,8 +123,8 @@ export function StepCreateCredentials({
           />
 
           <p className="mt-2 text-xs text-gray-400">
-            {recipients.filter((r) => validateRecipient(r)).length} of {recipients.length}{' '}
-            recipient{recipients.length !== 1 ? 's' : ''} valid
+            {recipients.filter((r) => validateRecipient(r)).length} of {recipients.length} recipient
+            {recipients.length !== 1 ? 's' : ''} valid
           </p>
         </div>
       </div>

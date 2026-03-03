@@ -53,9 +53,7 @@ export function EventFormStep0({
       <div className="mt-4">
         <div className="mb-2">
           <label className="form-input-label">Appearance</label>
-          <p className="form-input-description -mt-2 mb-2">
-            Add a design to this event (required)
-          </p>
+          <p className="form-input-description -mt-2 mb-2">Add a design to this event (required)</p>
         </div>
 
         {hasDesign ? (
@@ -139,11 +137,7 @@ export function EventFormStep0({
             </button>
             <h3 className="text-lg font-semibold mb-4">{designTitle}</h3>
             <div className="flex items-center justify-center bg-gray-50 rounded-lg p-6 min-h-64">
-              <img
-                src={designUrl}
-                alt={designTitle}
-                className="max-h-[60vh] object-contain"
-              />
+              <img src={designUrl} alt={designTitle} className="max-h-[60vh] object-contain" />
             </div>
           </div>
         </div>
