@@ -20,6 +20,7 @@ import {
   UpdatePortalSettingsDto,
 } from './dtos';
 import { IOrganizationService } from './interfaces';
+import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 
 /**
  * Organization Service Implementation
@@ -233,7 +234,7 @@ export class OrganizationService implements IOrganizationService {
    * Deletes: users (cascades to sessions, password_resets), skills, and the organization
    * Only accessible by SYSTEM_ADMIN role
    */
-  async permanentlyDelete(uuid: string): Promise<boolean> {
+  async permanentlyDelete(uuid: string, currentUser: CurrentUserType): Promise<boolean> {
     const sequelize = this.organizationModel.sequelize;
     if (!sequelize) {
       throw new Error('Database connection not available');
@@ -242,6 +243,13 @@ export class OrganizationService implements IOrganizationService {
 
     try {
       const organization = await this.findByUuidOrFail(uuid);
+
+      if (
+        organization.id === currentUser.organizationId ||
+        organization.id === currentUser.organizationId
+      ) {
+        throw new BadRequestException('You cannot delete your own organization');
+      }
 
       // Delete all users in the organization (cascades to sessions, password_resets)
       await this.userModel.destroy({

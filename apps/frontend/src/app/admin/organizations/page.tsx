@@ -153,13 +153,15 @@ export default function AdminOrganizationsPage() {
         </td>
         <td className="px-4 py-2">{formatDate(org.createdAt)}</td>
         <td className="px-4 py-2 text-right">
-          <button
-            type="button"
-            onClick={(e) => handleDeleteClick(org, e)}
-            className="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-300 rounded-md hover:bg-red-50 hover:text-red-700 cursor-pointer"
-          >
-            Delete
-          </button>
+          {user?.organizationId !== org.id && (
+            <button
+              type="button"
+              onClick={(e) => handleDeleteClick(org, e)}
+              className="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-300 rounded-md hover:bg-red-50 hover:text-red-700 cursor-pointer"
+            >
+              Delete
+            </button>
+          )}
         </td>
       </tr>
     ));

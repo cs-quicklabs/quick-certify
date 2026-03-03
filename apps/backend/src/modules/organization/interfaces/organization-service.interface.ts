@@ -1,6 +1,7 @@
 import { OrganizationEntity } from '@src/entities';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { CreateOrganizationDto, UpdateOrganizationDto } from '../dtos';
+import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 
 /**
  * Organization Service Interface
@@ -76,7 +77,7 @@ export interface IOrganizationService {
    * Permanently delete an organization
    * Only accessible by SYSTEM_ADMIN role
    */
-  permanentlyDelete(uuid: string): Promise<boolean>;
+  permanentlyDelete(uuid: string, currentUser: CurrentUserType): Promise<boolean>;
 }
 
 export const ORGANIZATION_SERVICE = Symbol('IOrganizationService');
