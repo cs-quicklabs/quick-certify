@@ -52,7 +52,7 @@ export default function ProfileSettingsPage() {
         }
         await updateProfile.mutateAsync({
           firstName: profile.firstName,
-          avatarUrl: null,
+          avatarUrl: '',
         });
       }
     },
