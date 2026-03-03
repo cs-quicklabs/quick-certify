@@ -19,13 +19,13 @@ import { checkIfUserIsNonAdmin, checkIfUserIsSuperAdmin, checkIfUserIsSystemAdmi
  */
 export default function ArchivedMembersPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isInitialized } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const debouncedSearch = useDebounce(searchQuery);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [memberToRestore, setMemberToRestore] = useState<TeamMember | null>(null);
   const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null);
-  const [isDeletePermission, setIsDeletePermission] = useState<boolean>(false);
+  const isDeletePermission = isInitialized && !!(user && (checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user)));
   const pageSize = 10;
 
   const { mutate: restoreUser, isPending: isRestoring } = useRestoreUser();
@@ -33,11 +33,10 @@ export default function ArchivedMembersPage() {
 
   // Authorization check
   useEffect(() => {
-    if (user) {
-      setIsDeletePermission(checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user));
-      if (checkIfUserIsNonAdmin(user)) router.push('/dashboard');
+    if (isInitialized && user && checkIfUserIsNonAdmin(user)) {
+      router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [isInitialized, user, router]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -90,9 +89,8 @@ export default function ArchivedMembersPage() {
     }
   };
 
-  if (user && checkIfUserIsNonAdmin(user)) {
-    return null;
-  }
+  if (!isInitialized) return null;
+  if (user && checkIfUserIsNonAdmin(user)) return null;
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Unknown date';
