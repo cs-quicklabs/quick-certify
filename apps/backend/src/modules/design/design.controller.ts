@@ -81,6 +81,7 @@ export class DesignController {
   }
 
   @Delete(':uuid')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Delete Design (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Design deleted successfully' })
   @ApiResponse({ status: 404, description: 'Design not found' })

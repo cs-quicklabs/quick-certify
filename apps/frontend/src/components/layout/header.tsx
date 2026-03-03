@@ -23,8 +23,8 @@ type NavItem = { href: string; label: string };
 const NAV_CONFIG: Record<
   RoleType,
   {
-    nav: { href: string; label: string }[];
-    settings: { href: string; label: string }[];
+    nav: NavItem[];
+    settings: NavItem[];
   }
 > = {
   [RoleType.SystemAdmin]: {
@@ -68,15 +68,15 @@ const NAV_CONFIG: Record<
       { href: '/credentials', label: 'Credentials' },
       { href: '/pathways', label: 'Pathways' },
     ],
-    settings: [{ href: '/settings/event/type', label: 'Event Settings' }],
+    settings: [
+      { href: '/settings/account/general-information', label: 'Account Settings' },
+      { href: '/settings/event/type', label: 'Event Settings' },
+      { href: '/settings/team', label: 'Team' },
+    ],
   },
 
   [RoleType.Manager]: {
-    nav: [
-      { href: '/events', label: 'Events' },
-      { href: '/credentials', label: 'Credentials' },
-      { href: '/pathways', label: 'Pathways' },
-    ],
+    nav: [],
     settings: [],
   },
 
@@ -233,6 +233,7 @@ export function Header() {
                       <Link
                         key={item.href}
                         href={item.href}
+                        onClick={closeMenus}
                         className="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-50"
                       >
                         {item.label}
@@ -257,13 +258,13 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2">
-            {navItems.map((item, i) => (
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={closeMenus}
                 className={`block rounded-sm px-3 py-2 text-base font-medium ${
-                  i === 0
+                  pathname.includes(item.href)
                     ? 'bg-gray-900 text-white'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}

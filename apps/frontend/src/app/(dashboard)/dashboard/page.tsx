@@ -1,11 +1,14 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { useEvents } from '@/hooks/useEvents';
 import { useCredentials } from '@/hooks/useCredentials';
 import { useDesignList } from '@/hooks/useDesigns';
 import { ROUTES, createRoute } from '@/config/routes';
 import type { Event } from '@/types';
+import { RoleType } from '@/types';
 import { Calendar, Users, Award, Palette, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -94,7 +97,14 @@ function RecentEventsList({ events, isLoading }: { events: Event[]; isLoading: b
  * Main dashboard for authenticated users showing real data from APIs
  */
 export default function DashboardPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user?.role === RoleType.Designer) {
+      router.replace(ROUTES.DESIGNS);
+    }
+  }, [user, router]);
 
   const { data: eventsData, isLoading: eventsLoading } = useEvents({
     limit: 5,

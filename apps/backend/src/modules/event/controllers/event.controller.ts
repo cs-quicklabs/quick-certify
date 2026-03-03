@@ -26,7 +26,7 @@ import type { PublicRequest } from '../../../commons/interfaces/public-request.i
 @ApiBearerAuth()
 @Controller({ path: 'events', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN)
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
