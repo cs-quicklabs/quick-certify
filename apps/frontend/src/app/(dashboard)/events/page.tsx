@@ -11,7 +11,8 @@ import {
   MultiSelectFilter,
   FilterItem,
 } from '@/components/';
-import { toast } from 'react-toastify';
+import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { ROUTES } from '@/config/routes';
 import {
   useEvents,
   useDeleteEvent,
@@ -129,9 +130,9 @@ export default function EventsPage() {
     setDeletingEventId(uuid);
     try {
       await deleteEventMutation.mutateAsync(uuid);
-      toast.success('Event deleted successfully');
+      showSuccessToast('Event deleted successfully');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete event');
+      showErrorToast(error instanceof Error ? error.message : 'Failed to delete event');
     } finally {
       setDeletingEventId(null);
     }
@@ -180,12 +181,11 @@ export default function EventsPage() {
               {total} Events{hasActiveFilters && ' (filtered)'}
             </p>
           </div>
-          <Link href="/events/add" className="btn-primary">
+          <Link href={ROUTES.CREATE_EVENT} className="btn-primary">
             Add new Events
           </Link>
         </div>
 
-        {/* Filters + Search */}
         {/* Filters + Search */}
         <div className="flex flex-wrap items-center gap-4 px-4 py-2 border-b border-gray-200">
           <MultiSelectFilter

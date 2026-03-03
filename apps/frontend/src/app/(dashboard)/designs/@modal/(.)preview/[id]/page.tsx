@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import DesignPreview from '@/app/designs/_components/DesignPreview';
+import DesignPreview from '../../../_components/DesignPreview';
 import { useDesignById } from '@/hooks/useDesigns';
 
 export default function PreviewModalPage() {

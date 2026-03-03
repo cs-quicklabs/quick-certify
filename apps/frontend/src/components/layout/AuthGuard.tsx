@@ -1,23 +1,22 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { Header, Logo } from '@/components';
 import { useAuthStore } from '@/store/auth.store';
+import { Logo } from '@/components/brand';
+import { ROUTES } from '@/config/routes';
 
-export default function EventsLayout({ children }: { children: React.ReactNode }) {
+export function AuthGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user, isInitialized, isLoading } = useAuthStore();
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (isInitialized && !isLoading && !user) {
-      router.push('/login');
+      router.push(ROUTES.AUTH.LOGIN);
     }
   }, [user, isInitialized, isLoading, router]);
 
-  // Show loading while checking auth
   if (!isInitialized || isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -30,17 +29,6 @@ export default function EventsLayout({ children }: { children: React.ReactNode }
     );
   }
 
-  // Don't render until authenticated
-  if (!user) {
-    return null;
-  }
-
-  return (
-    <>
-      <Header />
-      <main className="bg-gray-50 py-3 sm:py-5 min-h-screen">
-        <div className="px-4 mx-auto max-w-screen-2xl lg:px-8">{children}</div>
-      </main>
-    </>
-  );
+  if (!user) return null;
+  return <>{children}</>;
 }

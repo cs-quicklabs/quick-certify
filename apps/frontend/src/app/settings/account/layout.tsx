@@ -1,6 +1,6 @@
 'use client';
 
-import { Header, Sidebar } from '@/components';
+import { AuthGuard, Header, Sidebar } from '@/components';
 import { accountSidebarItems } from '@/config/sidebar.config';
 
 /**
@@ -11,7 +11,7 @@ import { accountSidebarItems } from '@/config/sidebar.config';
  */
 export default function AccountSettingsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <AuthGuard>
       <Header />
       <main className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
@@ -21,6 +21,6 @@ export default function AccountSettingsLayout({ children }: { children: React.Re
           <div className="max-w-xl pb-12 px-4 lg:col-span-6">{children}</div>
         </div>
       </main>
-    </>
+    </AuthGuard>
   );
 }

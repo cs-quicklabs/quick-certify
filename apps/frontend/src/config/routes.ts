@@ -15,8 +15,7 @@ export const ROUTES = {
     RESET_PASSWORD: '/reset-password',
     VERIFY_EMAIL: '/verify-email',
     INVITATION: '/invitation',
-    GOOGLE_CALLBACK: '/auth/google/callback',
-    GOOGLE_LOGIN: '/auth/google/login',
+    GOOGLE_CALLBACK: '/auth/callback',
     ERROR: '/auth/error',
   },
 
@@ -40,7 +39,7 @@ export const ROUTES = {
       GENERAL: '/settings/account/general-information',
       SOCIAL_LINKS: '/settings/account/social-links',
       BRANDING: '/settings/account/branding',
-      PORTAL: '/settings/account/portal',
+      PORTAL: '/settings/account/issuer-portal',
     },
     EVENT: {
       ROOT: '/settings/event',

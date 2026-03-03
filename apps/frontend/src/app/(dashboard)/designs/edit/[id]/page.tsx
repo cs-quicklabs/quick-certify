@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { DesignFormPage } from '@/app/designs/_components/DesignFormPage';
+import { DesignFormPage } from '../../_components/DesignFormPage';
 import { useDesignById } from '@/hooks/useDesigns';
 
 export default function EditDesignPage() {

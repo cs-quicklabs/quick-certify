@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import DesignsList from '@/app/designs/_components/DesignsList';
+import DesignsList from './_components/DesignsList';
 import { Design } from '@/types';
 import { useDesignList } from '@/hooks/useDesigns';
+import { ROUTES } from '@/config/routes';
 import { ChevronDown, BadgeCheck, Layers } from 'lucide-react';
 import { ConfirmationDialog, ModulePermissionError, Pagination } from '@/components';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -40,7 +41,7 @@ export default function DesignsPage() {
   const { designs, meta, loading, deleteDesign, error } = useDesignList({
     page,
     limit: DESIGN_CARD_ITEM_LIMIT,
-    search: searchFromUrl,
+    search: debouncedSearch,
     type: apiType,
   });
 
@@ -53,8 +54,8 @@ export default function DesignsPage() {
     if (debouncedSearch) params.set('search', debouncedSearch);
     else params.delete('search');
 
-    router.replace(`/designs?${params.toString()}`, { scroll: false });
-  }, [debouncedSearch]);
+    router.replace(`${ROUTES.DESIGNS}?${params.toString()}`, { scroll: false });
+  }, [debouncedSearch, searchParams, router]);
 
   // Handlers
   const handleDeleteClick = (design: Design) => {
@@ -91,13 +92,13 @@ export default function DesignsPage() {
     if (value === 'All') params.delete('type');
     else params.set('type', value.toLowerCase());
 
-    router.push(`/designs?${params.toString()}`, { scroll: false });
+    router.push(`${ROUTES.DESIGNS}?${params.toString()}`, { scroll: false });
   };
 
   const goToPage = (p: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(p));
-    router.push(`/designs?${params.toString()}`, { scroll: false });
+    router.push(`${ROUTES.DESIGNS}?${params.toString()}`, { scroll: false });
   };
 
   if (loading) return <div className="p-4">Loading designs…</div>;
@@ -132,7 +133,7 @@ export default function DesignsPage() {
               <ul className="p-2 text-sm font-medium text-gray-700">
                 <li>
                   <Link
-                    href="/designs/add?type=certificate"
+                    href={`${ROUTES.DESIGNS}/add?type=certificate`}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 rounded-md p-2 hover:bg-gray-100"
                   >
@@ -142,7 +143,7 @@ export default function DesignsPage() {
                 </li>
                 <li>
                   <Link
-                    href="/designs/add?type=badge"
+                    href={`${ROUTES.DESIGNS}/add?type=badge`}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 rounded-md p-2 hover:bg-gray-100"
                   >
