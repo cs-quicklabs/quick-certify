@@ -4,19 +4,13 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { Logo } from '@/components';
 
 function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error') || 'Authentication failed';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="mb-8">
-        <Logo size="lg" asLink={false} />
-      </div>
-
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
+    <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
         <div className="flex justify-center mb-4">
           <div className="p-3 bg-red-100 rounded-full">
             <AlertCircle className="w-8 h-8 text-red-600" />
@@ -41,24 +35,18 @@ function AuthErrorContent() {
             Go to homepage
           </Link>
         </div>
-      </div>
     </div>
   );
 }
 
 function AuthErrorSkeleton() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="mb-8">
-        <Logo size="lg" asLink={false} />
+    <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
+      <div className="flex justify-center mb-4">
+        <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
       </div>
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-8 text-center">
-        <div className="flex justify-center mb-4">
-          <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-        </div>
-        <div className="h-6 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
-      </div>
+      <div className="h-6 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
     </div>
   );
 }
