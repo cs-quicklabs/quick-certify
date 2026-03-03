@@ -245,7 +245,7 @@ export class OrganizationService implements IOrganizationService {
       const organization = await this.findByUuidOrFail(uuid);
 
       if (
-        organization.id === currentUser.organizationId ||
+        organization.uuid === currentUser.organizationUuid ||
         organization.id === currentUser.organizationId
       ) {
         throw new BadRequestException('You cannot delete your own organization');
