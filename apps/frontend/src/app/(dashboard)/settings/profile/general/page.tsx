@@ -1,17 +1,10 @@
 'use client';
+import { ConfigForm } from '@/components/ConfigForm';
+import { profileFormFields } from '@/config/settings.config';
+import { useProfile, useUpdateProfile } from '@/hooks/useSettings';
+import { ProfileSettingsData, profileSettingsSchema } from '@/schemas/settings.schema';
+import { FormConfig } from '@/types';
 
-import { ConfigForm } from '../../../../components/ConfigForm';
-import { profileFormFields } from '../../../../config/settings.config';
-import { profileSettingsSchema, ProfileSettingsData } from '../../../../schemas/settings.schema';
-import { useProfile, useUpdateProfile } from '../../../../hooks/useSettings';
-import { FormConfig } from '../../../../types/form.types';
-
-/**
- * Profile Settings Page
- *
- * Allows users to update their personal profile information including
- * avatar, first name, last name, and email.
- */
 export default function ProfileSettingsPage() {
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();

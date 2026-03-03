@@ -1,16 +1,14 @@
 'use client';
-
-import { useRouter } from 'next/navigation';
-import { ConfigForm } from '../../../../components/ConfigForm';
-import { passwordFormFields } from '../../../../config/settings.config';
-import { changePasswordSchema, ChangePasswordData } from '../../../../schemas/settings.schema';
-import { useChangePassword, useDisconnectGoogle } from '../../../../hooks/useSettings';
-import { FormConfig } from '../../../../types/form.types';
-import { useAuthStore } from '../../../../store/auth.store';
-import { clearTokens } from '@/services';
-import { AuthProvider } from '@/types';
-import { toast } from 'react-toastify';
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { clearTokens } from '@/services';
+import { AuthProvider, FormConfig } from '@/types';
+import { useChangePassword, useDisconnectGoogle } from '@/hooks/useSettings';
+import { useAuthStore } from '@/store/auth.store';
+import { ChangePasswordData, changePasswordSchema } from '@/schemas/settings.schema';
+import { passwordFormFields } from '@/config/settings.config';
+import { ConfigForm } from '@/components/ConfigForm';
+import { showSuccessToast } from '@/lib/toast';
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -49,7 +47,7 @@ export default function ChangePasswordPage() {
   const disconnectGoogle = async () => {
     const response = await disconnectGoogleAuth.mutateAsync();
     if (response.success) {
-      toast.success(response.message);
+      showSuccessToast(response.message);
       clearTokenAndRedirectToLogin();
     }
   };
