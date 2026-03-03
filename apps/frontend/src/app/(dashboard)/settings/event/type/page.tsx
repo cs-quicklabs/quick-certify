@@ -5,7 +5,7 @@ import {
   useCreateEventType,
   useUpdateEventType,
   useDeleteEventType,
-} from '@/hooks/useEvents';
+} from '@/hooks/useEventTypes';
 import EventSettingList from '../_components/event-setting-list';
 
 export default function EventTypeSettingsPage() {

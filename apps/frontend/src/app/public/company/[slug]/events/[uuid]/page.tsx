@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePublicEvent, usePublicCredentials } from '@/hooks/usePublic';
@@ -9,6 +10,7 @@ import { PublicBreadcrumb } from '@/app/public/_components/publicBreadcrumb';
 import { SearchSortBar, SortOption } from '@/app/public/_components/searchSortBar';
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 import { Credential } from '@/types';
+import { createRoute } from '@/config/routes';
 
 type SortOrder = 'ASC' | 'DESC';
 type SortBy = 'created_at' | 'name';
@@ -85,15 +87,11 @@ export default function EventDetailPage() {
 
   const { data: event, isLoading: isLoadingEvent, error: eventError } = usePublicEvent(slug, uuid);
 
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search]);
+    setPage(1);
+  }, [debouncedSearch]);
   /**
    * fetches Recipients
    */
@@ -144,8 +142,8 @@ export default function EventDetailPage() {
       {/* Breadcrumb */}
       <PublicBreadcrumb
         items={[
-          { label: 'Issuer Profile', href: `/public/company/${slug}` },
-          { label: 'Events', href: `/public/company/${slug}/events` },
+          { label: 'Issuer Profile', href: createRoute.publicCompany(slug) },
+          { label: 'Events', href: createRoute.publicCompanyEvents(slug) },
           { label: event.name },
         ]}
         title={event.name}
@@ -309,7 +307,7 @@ export default function EventDetailPage() {
             {participants.map((participant) => (
               <Link
                 key={participant.uuid}
-                href={`/public/company/${slug}/recipients/${participant.uuid}`}
+                href={createRoute.publicRecipientDetail(slug, participant.uuid)}
                 className="relative flex items-center space-x-3 rounded-sm border border-gray-300 bg-white px-4 py-3 hover:border-gray-400 transition-colors"
               >
                 <div className="shrink-0">

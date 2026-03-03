@@ -11,20 +11,15 @@ import {
   MultiSelectFilter,
   FilterItem,
 } from '@/components/';
-import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { showSuccessToast } from '@/lib/toast';
 import { ROUTES } from '@/config/routes';
-import {
-  useEvents,
-  useDeleteEvent,
-  useEventTypes,
-  useEventLevels,
-  useEventFormats,
-} from '@/hooks/useEvents';
+import { useEvents, useDeleteEvent } from '@/hooks/useEvents';
+import { useEventTypes } from '@/hooks/useEventTypes';
+import { useEventLevels } from '@/hooks/useEventLevels';
+import { useEventFormats } from '@/hooks/useEventFormats';
 import { getApiErrorMessage } from '@/lib/api-error';
-
-function toggleId(prev: string[], id: string): string[] {
-  return prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id];
-}
+import { useMultiSelectFilters } from '@/hooks/useMultiSelectFilters';
+import { FilterTagList } from '@/components/events/FilterTagList';
 
 export default function EventsPage() {
   const [page, setPage] = useState(1);
@@ -34,9 +29,14 @@ export default function EventsPage() {
   const debouncedQuery = useDebounce(query);
   const isSearching = query !== debouncedQuery;
 
-  const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
-  const [selectedLevelIds, setSelectedLevelIds] = useState<string[]>([]);
-  const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>([]);
+  const { selected, toggle, clear, hasActive: hasActiveFilters } = useMultiSelectFilters([
+    'type',
+    'level',
+    'format',
+  ]);
+  const selectedTypeIds = selected.type ?? [];
+  const selectedLevelIds = selected.level ?? [];
+  const selectedFormatIds = selected.format ?? [];
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [filterDataLoaded, setFilterDataLoaded] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -106,18 +106,13 @@ export default function EventsPage() {
     }
   }, [isLoading, isInitialLoad]);
 
-  const hasActiveFilters =
-    selectedTypeIds.length > 0 || selectedLevelIds.length > 0 || selectedFormatIds.length > 0;
-
-  const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, id: string) => {
-    setter((prev) => toggleId(prev, id));
+  const toggleFilter = (key: string, id: string) => {
+    toggle(key, id);
     setPage(1);
   };
 
   const clearFilters = () => {
-    setSelectedTypeIds([]);
-    setSelectedLevelIds([]);
-    setSelectedFormatIds([]);
+    clear();
     setPage(1);
   };
   const clearSearch = () => {
@@ -131,8 +126,6 @@ export default function EventsPage() {
     try {
       await deleteEventMutation.mutateAsync(uuid);
       showSuccessToast('Event deleted successfully');
-    } catch (error) {
-      showErrorToast(error instanceof Error ? error.message : 'Failed to delete event');
     } finally {
       setDeletingEventId(null);
     }
@@ -142,17 +135,17 @@ export default function EventsPage() {
     ...selectedTypeIds.map((uuid) => ({
       key: `type-${uuid}`,
       label: typeItems.find((t) => t.uuid === uuid)?.name || uuid,
-      onRemove: () => toggleFilter(setSelectedTypeIds, uuid),
+      onRemove: () => toggleFilter('type', uuid),
     })),
     ...selectedLevelIds.map((uuid) => ({
       key: `level-${uuid}`,
       label: levelItems.find((l) => l.uuid === uuid)?.name || uuid,
-      onRemove: () => toggleFilter(setSelectedLevelIds, uuid),
+      onRemove: () => toggleFilter('level', uuid),
     })),
     ...selectedFormatIds.map((uuid) => ({
       key: `format-${uuid}`,
       label: formatItems.find((f) => f.uuid === uuid)?.name || uuid,
-      onRemove: () => toggleFilter(setSelectedFormatIds, uuid),
+      onRemove: () => toggleFilter('format', uuid),
     })),
   ];
 
@@ -192,11 +185,8 @@ export default function EventsPage() {
             label="Type"
             items={typeItems}
             selectedIds={selectedTypeIds}
-            onChange={(id) => toggleFilter(setSelectedTypeIds, id)}
-            onClear={() => {
-              setSelectedTypeIds([]);
-              setPage(1);
-            }}
+            onChange={(id) => toggleFilter('type', id)}
+            onClear={() => { clear('type'); setPage(1); }}
             isLoading={isLoadingTypes}
             onOpen={handleFilterDataLoad}
           />
@@ -204,11 +194,8 @@ export default function EventsPage() {
             label="Level"
             items={levelItems}
             selectedIds={selectedLevelIds}
-            onChange={(id) => toggleFilter(setSelectedLevelIds, id)}
-            onClear={() => {
-              setSelectedLevelIds([]);
-              setPage(1);
-            }}
+            onChange={(id) => toggleFilter('level', id)}
+            onClear={() => { clear('level'); setPage(1); }}
             isLoading={isLoadingLevels}
             onOpen={handleFilterDataLoad}
           />
@@ -216,36 +203,13 @@ export default function EventsPage() {
             label="Format"
             items={formatItems}
             selectedIds={selectedFormatIds}
-            onChange={(id) => toggleFilter(setSelectedFormatIds, id)}
-            onClear={() => {
-              setSelectedFormatIds([]);
-              setPage(1);
-            }}
+            onChange={(id) => toggleFilter('format', id)}
+            onClear={() => { clear('format'); setPage(1); }}
             isLoading={isLoadingFormats}
             onOpen={handleFilterDataLoad}
           />
 
-          {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-2">
-              {activeFilterTags.map((tag) => (
-                <span
-                  key={tag.key}
-                  className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-800 border border-blue-200 rounded-full"
-                >
-                  {tag.label}
-                  <button onClick={tag.onRemove} className="hover:text-blue-900 cursor-pointer">
-                    <X size={12} />
-                  </button>
-                </span>
-              ))}
-              <button
-                onClick={clearFilters}
-                className="text-xs text-gray-500 hover:text-gray-700 underline cursor-pointer"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
+          <FilterTagList tags={activeFilterTags} onClearAll={clearFilters} />
 
           {/* Search — icon left, spinner or clear button right */}
           <div className="ml-auto relative flex items-center">

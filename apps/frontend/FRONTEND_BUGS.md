@@ -2,8 +2,8 @@
 
 > Generated: 2026-03-03
 > Reviewer: Senior Frontend / Next.js Audit
-> Branch: `refactor/frontend`
-> Last updated: 2026-03-03 — Route group consolidation in commit `160d54d`
+> Branch: `refactor/frontend-route`
+> Last updated: 2026-03-03 — Code review pass on refactor/frontend-route (BUG-021 → BUG-033 added; BUG-021–BUG-025 fixed)
 
 ---
 
@@ -210,6 +210,23 @@ Following the initial fix pass, the remaining pages that still lived outside the
 
 ---
 
+## Code Review Findings — `refactor/frontend-route`
+
+> Added: 2026-03-03 | Full review of all 43 staged files against CLAUDE.md best practices.
+> **5 critical issues FIXED in this branch. 8 issues remain open.**
+
+### Changes Made (Fixed)
+
+| ID | File(s) | Issue | Fix Applied |
+|---|---|---|---|
+| BUG-021 | `headerNav.config.ts`, `header.tsx`, `EventForm.tsx`, `public/.../page.tsx` | Hardcoded route strings in 4 files (12 instances total) | Replaced all with `ROUTES.*` / `createRoute.*`; added `ROUTES.SETTINGS.ARCHIVED` and `createRoute.publicRecipientDetail` to `routes.ts` |
+| BUG-022 | `events/page.tsx`, `CredentialDetailView.tsx` | Duplicate error toasts — inline handler fires on top of global `MutationCache` | Removed `showErrorToast` catch block in `events/page.tsx`; removed `onError` from `resendCredential.mutate` in `CredentialDetailView.tsx` |
+| BUG-023 | `CredentialCards.tsx`, `CredentialTable.tsx` | `formatDate` defined identically in both files; `CredentialLayout.tsx` already exports it | Removed local definitions; imported `formatDate` from `./CredentialLayout` in both files |
+| BUG-024 | `EventForm.tsx` line 123 | `showSuccessToast` used for a validation error ("Please complete current step") — green toast shown for a failure state | Changed to `showErrorToast` |
+| BUG-025 | `dashboard/page.tsx` | `const { user } = useAuthStore()` subscribes to entire store; re-renders on any auth state change (loading, error flags, etc.) | Replaced with `const user = useUser()` selector hook |
+
+---
+
 ## Legend
 
 | Severity | Description |
@@ -311,6 +328,86 @@ Decide on one canonical variable per purpose and update all references. Document
 # .env.example
 BACKEND_BASE_API_URL=http://localhost:3001        # used by next.config.js (server-side rewrite)
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000    # used by client-side axios instance
+```
+
+---
+
+### BUG-021 — Hardcoded route strings across multiple components ✅ FIXED
+
+**Files:** `components/layout/header.tsx`, `config/headerNav.config.ts`, `components/events/EventForm.tsx`, `app/public/company/[slug]/events/[uuid]/page.tsx`
+**Severity:** 🔴 Critical
+**Category:** Routes / Maintainability
+**Status:** ✅ Fixed (this branch)
+
+**Problem:**
+12 hardcoded route strings across 4 files, bypassing the `ROUTES` / `createRoute` system entirely. Future route refactors would silently produce dead links in navigation, breadcrumbs, and post-action redirects.
+
+Notable instances:
+- `headerNav.config.ts` — all 9 nav hrefs hardcoded (`'/dashboard'`, `'/designs'`, `'/events'`, etc.)
+- `header.tsx` — `window.location.href = '/login'` post-logout, `href="/dashboard"` logo link
+- `EventForm.tsx` — `router.push('/events')` three times (submit, cancel, onCancel config)
+- `public/.../page.tsx` — three breadcrumb/participant links using template literals
+
+**Fix applied:**
+- Added `ROUTES.SETTINGS.ARCHIVED` and `createRoute.publicRecipientDetail(slug, uuid)` to `routes.ts`
+- Replaced all hardcoded strings with `ROUTES.*` and `createRoute.*` equivalents
+
+---
+
+### BUG-022 — Duplicate error toasts from mutateAsync + global MutationCache ✅ FIXED
+
+**Files:** `app/(dashboard)/events/page.tsx`, `components/credentials/CredentialDetailView.tsx`
+**Severity:** 🔴 Critical
+**Category:** UX / React Query
+**Status:** ✅ Fixed (this branch)
+
+**Problem:**
+Two patterns in conflict with the project's global `MutationCache` error handler:
+
+1. `events/page.tsx` — `handleDeleteEvent` wraps `mutateAsync` in `try/catch` and calls `showErrorToast` in the catch block. The global handler also fires, producing two error toasts for the same failure.
+2. `CredentialDetailView.tsx` — `resendCredential.mutate(uuid, { onError: () => showErrorToast(...) })` — per-call `onError` fires in addition to the global handler.
+
+**Fix applied:**
+- Removed `showErrorToast` from the catch block in `handleDeleteEvent` (`finally` block for state reset kept intact)
+- Removed the `onError` callback from `resendCredential.mutate` in `CredentialDetailView.tsx`
+- Cleaned up unused `showErrorToast` imports in both files
+
+---
+
+### BUG-023 — `formatDate` DRY violation in credential components ✅ FIXED
+
+**Files:** `components/credentials/CredentialCards.tsx`, `components/credentials/CredentialTable.tsx`
+**Severity:** 🔴 Critical
+**Category:** DRY / Maintainability
+**Status:** ✅ Fixed (this branch)
+
+**Problem:**
+Identical `formatDate(date: string | null)` function defined locally in both `CredentialCards.tsx` and `CredentialTable.tsx`. `CredentialLayout.tsx` already exports this exact function. Three copies of the same logic with no single source of truth.
+
+**Fix applied:**
+Removed local definitions from both files; added `import { formatDate } from './CredentialLayout'` to each.
+
+---
+
+### BUG-024 — `showSuccessToast` used for a validation error in `EventForm.tsx` ✅ FIXED
+
+**File:** `apps/frontend/src/components/events/EventForm.tsx` (line 123)
+**Severity:** 🔴 Critical
+**Category:** UX / Toast Handling
+**Status:** ✅ Fixed (this branch)
+
+**Problem:**
+When a user tries to navigate to a step they haven't completed yet, the app shows a **green success toast** saying "Please complete the current step first" — communicating a failure state with a success affordance.
+
+```typescript
+// ❌ Before
+showSuccessToast('Please complete the current step first');
+```
+
+**Fix applied:**
+```typescript
+// ✅ After
+showErrorToast('Please complete the current step first');
 ```
 
 ---
@@ -481,6 +578,54 @@ componentDidCatch(error: Error, errorInfo: ErrorInfo) {
 
 ---
 
+### BUG-027 — `header.tsx` active nav detection uses `pathname.includes()` causing false positives
+
+**File:** `apps/frontend/src/components/layout/header.tsx` (~line 83)
+**Severity:** 🟠 High
+**Category:** UX / Navigation
+**Status:** ⏳ Open
+
+**Problem:**
+`pathname.includes(item.href)` matches any route that *contains* the href as a substring. `/events` will be highlighted as active on `/events`, `/events/add`, and `/events/edit` — but `/designs` will falsely match on any future route containing the string `designs`.
+
+```typescript
+// ❌ Current — false positives
+className={pathname.includes(item.href) ? 'selected-nav' : 'unselected-nav'}
+```
+
+**Fix:**
+```typescript
+// ✅ Exact match or prefix match
+const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+className={isActive ? 'selected-nav' : 'unselected-nav'}
+```
+
+---
+
+### BUG-028 — `header.tsx` mobile menu always highlights the first nav item regardless of pathname
+
+**File:** `apps/frontend/src/components/layout/header.tsx` (~line 178)
+**Severity:** 🟠 High
+**Category:** UX / Navigation
+**Status:** ⏳ Open
+
+**Problem:**
+The mobile nav uses `i === 0` (index check) to apply the active style, meaning Dashboard is always highlighted in the mobile menu regardless of the current page.
+
+```typescript
+// ❌ Current — always highlights Dashboard
+className={`... ${i === 0 ? 'bg-gray-900 text-white' : 'text-gray-300 ...'}`}
+```
+
+**Fix:**
+```typescript
+// ✅ Mirror desktop logic
+const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+className={`... ${isActive ? 'bg-gray-900 text-white' : 'text-gray-300 ...'}`}
+```
+
+---
+
 ## 🟡 Medium Priority Bugs
 
 ---
@@ -616,6 +761,116 @@ initialize: async () => {
 
 ---
 
+### BUG-025 — Zustand full-store subscription in `DashboardPage` ✅ FIXED
+
+**File:** `apps/frontend/src/app/(dashboard)/dashboard/page.tsx` (line 19)
+**Severity:** 🟡 Medium
+**Category:** React / Performance
+**Status:** ✅ Fixed (this branch)
+
+**Problem:**
+`const { user } = useAuthStore()` subscribes to the entire auth store. Any update to `isLoading`, `error`, or `isInitialized` causes the Dashboard to re-render unnecessarily.
+
+```typescript
+// ❌ Before — entire store subscription
+const { user } = useAuthStore();
+```
+
+**Fix applied:**
+```typescript
+// ✅ After — targeted selector
+const user = useUser();
+```
+
+---
+
+### BUG-026 — `credentials/page.tsx` error detection uses raw `.message` instead of `getApiErrorMessage`
+
+**File:** `apps/frontend/src/app/(dashboard)/credentials/page.tsx` (line 82)
+**Severity:** 🟡 Medium
+**Category:** Error Handling / Consistency
+**Status:** ⏳ Open
+
+**Problem:**
+Parses `error?.message.includes('403')` directly on the raw error object. The established project pattern is `getApiErrorMessage(error)` from `@/lib/api-error` — as used correctly in `events/page.tsx`. This bypasses the error extraction utility and is fragile if the error shape changes.
+
+```typescript
+// ❌ Current
+if (error?.message.includes('403')) {
+```
+
+**Fix:**
+```typescript
+// ✅
+import { getApiErrorMessage } from '@/lib/api-error';
+if (getApiErrorMessage(error).includes('403')) {
+```
+
+---
+
+### BUG-029 — `EventSelector` re-implements `useClickOutside` manually
+
+**File:** `apps/frontend/src/components/credentials/EventSelector.tsx` (lines 25–33)
+**Severity:** 🟡 Medium
+**Category:** DRY / Hooks
+**Status:** ⏳ Open
+
+**Problem:**
+Manually attaches a `mousedown` listener for click-outside detection, duplicating the `useClickOutside` hook that already exists in the project (and is used in `credentials/page.tsx`).
+
+```typescript
+// ❌ Current — inline manual listener
+useEffect(() => {
+  const handleClickOutside = (e: MouseEvent) => { ... };
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, []);
+```
+
+**Fix:**
+```typescript
+// ✅ Use the existing hook
+import { useClickOutside } from '@/hooks/useClickOutside';
+const dropdownRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false));
+```
+
+---
+
+### BUG-030 — `EventForm.tsx` throws a raw `Error` inside an async callback
+
+**File:** `apps/frontend/src/components/events/EventForm.tsx` (~line 177)
+**Severity:** 🟡 Medium
+**Category:** Error Handling
+**Status:** ⏳ Open
+
+**Problem:**
+`handleStep0Submit` throws `new Error('Please select a design')` when no design is selected. This unhandled rejection is not caught by the global `MutationCache` (it is not a mutation), so it surfaces as an uncaught error in the console with no UI feedback to the user.
+
+```typescript
+// ❌ Current
+if (!step0FormData.designUuid) {
+  throw new Error('Please select a design');
+}
+```
+
+**Fix:**
+Use local error state and display it in the UI rather than throwing:
+```typescript
+const [designError, setDesignError] = useState<string | null>(null);
+
+// In handleStep0Submit:
+if (!step0FormData.designUuid) {
+  setDesignError('Please select a design');
+  return;
+}
+setDesignError(null);
+
+// In JSX, below the design selector:
+{designError && <p className="mt-1 text-sm text-red-600">{designError}</p>}
+```
+
+---
+
 ## 🔵 Low Priority Bugs
 
 ---
@@ -718,6 +973,62 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 ---
 
+### BUG-031 — `useEventFormInitialization.ts` accesses both `learning_link` and `learningLink`
+
+**File:** `apps/frontend/src/hooks/useEventFormInitialization.ts` (line 70)
+**Severity:** 🔵 Low
+**Category:** TypeScript / Type Consistency
+**Status:** ⏳ Open
+
+**Problem:**
+The hook reads `apiData.learning_link || apiData.learningLink` as a fallback, indicating a mismatch between the API response shape (snake_case) and the frontend `Event` type definition (likely camelCase). The correct fix is at the type/serialisation layer.
+
+```typescript
+// ❌ Current — double-access fallback masking a type issue
+(apiData.learning_link as string) || (apiData.learningLink as string)
+```
+
+**Fix:**
+Ensure the `Event` type matches the actual API response field name (`learning_link`) and remove the fallback. If camelCase is preferred, apply a response transformer in the axios interceptor or service layer.
+
+---
+
+### BUG-032 — `EventFormStep0.tsx` close button uses Unicode character instead of lucide icon
+
+**File:** `apps/frontend/src/components/events/EventFormStep0.tsx` (line 136)
+**Severity:** 🔵 Low
+**Category:** UI Consistency
+**Status:** ⏳ Open
+
+**Problem:**
+The design preview modal close button renders a raw Unicode `✕` character. The rest of the codebase uses `<X />` from `lucide-react` for close actions.
+
+```tsx
+// ❌ Current
+<button ...>✕</button>
+
+// ✅ Fix
+import { X } from 'lucide-react';
+<button ...><X className="w-4 h-4" /></button>
+```
+
+---
+
+### BUG-033 — `file-dropzone.tsx` has redundant `placeholderSizeClasses` object
+
+**File:** `apps/frontend/src/components/ui/file-dropzone.tsx` (lines 90–101)
+**Severity:** 🔵 Low
+**Category:** Dead Code / DRY
+**Status:** ⏳ Open
+
+**Problem:**
+`imageSizeClasses` and `placeholderSizeClasses` are defined as two separate objects but map to the exact same values (`small: 'w-64 h-40'`, `large: 'w-full h-[160px]'`). `placeholderSizeClasses` is never used independently.
+
+**Fix:**
+Remove `placeholderSizeClasses` and use `imageSizeClasses` in its place.
+
+---
+
 ## Summary Table
 
 | ID | File | Severity | Category | Status |
@@ -725,39 +1036,59 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 | BUG-001 | `file.service.ts` | 🔴 Critical | API | ⏳ Open |
 | BUG-002 | `api-client.ts` | 🔴 Critical | Navigation | ⏳ Open |
 | BUG-003 | `next.config.js` / `env.ts` | 🔴 Critical | Config | ⏳ Open |
+| BUG-021 | `header.tsx`, `headerNav.config.ts`, `EventForm.tsx`, public page | 🔴 Critical | Routes | ✅ Fixed (this branch) |
+| BUG-022 | `events/page.tsx`, `CredentialDetailView.tsx` | 🔴 Critical | UX / React Query | ✅ Fixed (this branch) |
+| BUG-023 | `CredentialCards.tsx`, `CredentialTable.tsx` | 🔴 Critical | DRY | ✅ Fixed (this branch) |
+| BUG-024 | `EventForm.tsx` | 🔴 Critical | UX / Toast | ✅ Fixed (this branch) |
 | BUG-004 | `api-client.ts` | 🟠 High | Security | ⏳ Open |
 | BUG-005 | `api-client.ts` | 🟠 High | Security | ⏳ Open |
 | BUG-006 | `skill.service.ts` | 🟠 High | Consistency | ⏳ Open |
 | BUG-007 | `useClickOutside.ts` | 🟠 High | React Hooks | ⏳ Open |
 | BUG-008 | `useEvents.ts` | 🟠 High | TypeScript | ⏳ Open |
 | BUG-009 | `ErrorBoundary.tsx` | 🟠 High | Observability | ⏳ Open |
+| BUG-027 | `header.tsx` | 🟠 High | UX / Navigation | ⏳ Open |
+| BUG-028 | `header.tsx` | 🟠 High | UX / Navigation | ⏳ Open |
 | BUG-010 | `useCrossTabLogout.ts` | 🟡 Medium | Consistency | ⏳ Open |
 | BUG-011 | `useImageUpload.ts` | 🟡 Medium | UX | ⏳ Open |
 | BUG-012 | `api-client.ts` | 🟡 Medium | Performance | ⏳ Open |
 | BUG-013 | `team.service.ts` | 🟡 Medium | Fragility | ⏳ Open |
 | BUG-014 | `validate-image.ts` | 🟡 Medium | Memory | ⏳ Open |
 | BUG-015 | `auth.store.ts` | 🟡 Medium | Auth / UX | ⏳ Open |
+| BUG-025 | `dashboard/page.tsx` | 🟡 Medium | React / Performance | ✅ Fixed (this branch) |
+| BUG-026 | `credentials/page.tsx` | 🟡 Medium | Error Handling | ⏳ Open |
+| BUG-029 | `EventSelector.tsx` | 🟡 Medium | DRY / Hooks | ⏳ Open |
+| BUG-030 | `EventForm.tsx` | 🟡 Medium | Error Handling | ⏳ Open |
 | BUG-016 | `ErrorBoundary.tsx` | 🔵 Low | DX | ⏳ Open |
 | BUG-017 | `auth.service.ts` | 🔵 Low | TypeScript | ⏳ Open |
 | BUG-018 | `design.service.ts` | 🔵 Low | TypeScript | ⏳ Open |
 | BUG-019 | `app/public/` pages | 🔵 Low | SEO | ⏳ Open |
 | BUG-020 | `form.types.ts` | 🔵 Low | Style | ⏳ Open |
+| BUG-031 | `useEventFormInitialization.ts` | 🔵 Low | TypeScript | ⏳ Open |
+| BUG-032 | `EventFormStep0.tsx` | 🔵 Low | UI Consistency | ⏳ Open |
+| BUG-033 | `file-dropzone.tsx` | 🔵 Low | Dead Code | ⏳ Open |
 | ROUTE-001 | `routes.ts` | 🔴 Critical | Routes | ✅ Fixed `501bcb0` |
 | ROUTE-002 | `routes.ts` | 🔴 Critical | Routes | ✅ Fixed `501bcb0` |
 | ROUTE-003 | `proxy.ts` | 🔴 Critical | Security | ✅ Fixed `501bcb0` |
-| ROUTE-004 | `(dashboard)/settings/layout.tsx` | 🔴 Critical | Routes | ✅ Fixed `501bcb0` |
+| ROUTE-004 | `(dashboard)/settings/layout.tsx` | 🔴 Critical | Routes | ✅ Fixed `501bcb0` (deleted) |
 | ROUTE-005 | `settings/*/layout.tsx`, `admin/*/layout.tsx` | 🔴 Critical | Security | ✅ Fixed `501bcb0` + `160d54d` |
-| ROUTE-006 | `auth/invitation/page.tsx` | 🟠 High | Routes | ✅ Fixed `501bcb0` |
+| ROUTE-006 | `auth/invitation/page.tsx` | 🟠 High | Routes | ✅ Fixed `501bcb0` (deleted) |
 | ROUTE-007 | `(dashboard)`, `events/`, `designs/` layouts | 🟠 High | DRY | ✅ Fixed `501bcb0` + `160d54d` |
-| ROUTE-008 | `events/event-*` pages | 🟠 High | Dead Code | ✅ Fixed `501bcb0` |
+| ROUTE-008 | `events/event-*` pages | 🟠 High | Dead Code | ✅ Fixed `501bcb0` (deleted) |
 | ROUTE-009 | `events/`, `designs/` directories | 🟠 High | Architecture | ✅ Fixed `501bcb0` |
 | ROUTE-010 | `routes.ts` | 🟡 Medium | Routes | ✅ Fixed `501bcb0` |
-| ROUTE-011 | `(dashboard)/settings/layout.tsx` | 🟡 Medium | Dead Code | ✅ Fixed `501bcb0` |
+| ROUTE-011 | `(dashboard)/settings/layout.tsx` | 🟡 Medium | Dead Code | ✅ Fixed `501bcb0` (deleted) |
 | ROUTE-012 | `auth/`, `admin/`, `settings/` outside route groups | 🟡 Medium | Architecture | ✅ Fixed `160d54d` |
 
 ---
 
-*Code quality bugs remaining: 3 Critical · 6 High · 5 Medium · 4 Low = **18 open***
-*Route & route group bugs: 4 Critical · 4 High · 3 Medium = **12 fixed** (`501bcb0` + `160d54d`)*
+*Code quality bugs: 7 Critical (4 fixed, 3 open) · 8 High (2 fixed, 6 open wait — let me recount*
 
-**Grand total: 30 bugs — 12 fixed, 18 remaining**
+**Code quality bugs (BUG-001 to BUG-033):**
+- 🔴 Critical: 7 total — 4 fixed (BUG-021–024), 3 open (BUG-001–003)
+- 🟠 High: 8 total — 0 fixed, 8 open (BUG-004–009, BUG-027–028)
+- 🟡 Medium: 10 total — 2 fixed (BUG-025), 9 open (BUG-010–015, BUG-026, BUG-029–030)
+- 🔵 Low: 8 total — 0 fixed, 8 open (BUG-016–020, BUG-031–033)
+
+*Route bugs (ROUTE-001 to ROUTE-012): 12 total — **all 12 fixed** (`501bcb0` + `160d54d`)*
+
+**Grand total: 45 bugs — 17 fixed, 28 remaining**

@@ -5,7 +5,7 @@ import {
   useCreateEventFormat,
   useUpdateEventFormat,
   useDeleteEventFormat,
-} from '@/hooks/useEvents';
+} from '@/hooks/useEventFormats';
 import EventSettingList from '../_components/event-setting-list';
 
 export default function EventFormatSettingsPage() {

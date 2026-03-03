@@ -5,7 +5,7 @@ import {
   useCreateEventLevel,
   useUpdateEventLevel,
   useDeleteEventLevel,
-} from '@/hooks/useEvents';
+} from '@/hooks/useEventLevels';
 import EventSettingList from '../_components/event-setting-list';
 
 export default function EventLevelSettingsPage() {

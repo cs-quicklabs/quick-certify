@@ -48,6 +48,7 @@ export const ROUTES = {
       FORMAT: '/settings/event/format',
     },
     TEAM: '/settings/team',
+    ARCHIVED: '/settings/archived',
   },
 
   // Admin routes (system_admin only)
@@ -100,6 +101,8 @@ export const createRoute = {
   publicCompany: (slug: string) => `/public/company/${slug}` as const,
   publicCompanyEvents: (slug: string) => `/public/company/${slug}/events` as const,
   publicCompanyRecipients: (slug: string) => `/public/company/${slug}/recipients` as const,
+  publicRecipientDetail: (slug: string, uuid: string) =>
+    `/public/company/${slug}/recipients/${uuid}` as const,
   publicPathways: (slug: string) => `/public/company/${slug}/pathways` as const,
   publicPathwayDetail: (slug: string, uuid: string) =>
     `/public/company/${slug}/pathways/${uuid}` as const,
