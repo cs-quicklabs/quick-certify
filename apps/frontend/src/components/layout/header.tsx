@@ -20,30 +20,75 @@ const ROLE_BADGE_STYLES: Record<string, string> = {
 
 type NavItem = { href: string; label: string };
 
-const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/designs', label: 'Designs' },
-  { href: '/events', label: 'Events' },
-  { href: '/credentials', label: 'Credentials' },
-  { href: '/pathways', label: 'Pathways' },
-  // { href: '/emails', label: 'Emails' }
-  // { href: '/analytics', label: 'Analytics' },
-  // { href: '/integrations', label: 'Integrations' },
-];
-
-const SYSTEM_ADMIN_NAV: NavItem[] = [{ href: '/admin/organizations', label: 'Organizations' }];
-
-const getDropdownItems = (isAdmin: boolean): NavItem[] => {
-  const items: NavItem[] = [{ href: '/settings/profile/general', label: 'Profile Settings' }];
-  if (isAdmin) {
-    items.push(
+/**
+ * ==== CONSISTENT NAV CONFIG BASED ON YOUR NOTES ====
+ */
+const NAV_CONFIG: Record<
+  RoleType,
+  {
+    nav: { href: string; label: string }[];
+    settings: { href: string; label: string }[];
+  }
+> = {
+  [RoleType.SystemAdmin]: {
+    nav: [
+      { href: '/dashboard', label: 'Dashboard' },
+      { href: '/designs', label: 'Designs' },
+      { href: '/events', label: 'Events' },
+      { href: '/credentials', label: 'Credentials' },
+      { href: '/pathways', label: 'Pathways' },
+      { href: '/admin/organizations', label: 'Organizations' },
+    ],
+    settings: [
       { href: '/settings/account/general-information', label: 'Account Settings' },
       { href: '/settings/event/type', label: 'Event Settings' },
       { href: '/settings/team', label: 'Team' },
       { href: '/settings/archived', label: 'Archived' },
-    );
-  }
-  return items;
+    ],
+  },
+
+  [RoleType.SuperAdmin]: {
+    nav: [
+      { href: '/dashboard', label: 'Dashboard' },
+      { href: '/designs', label: 'Designs' },
+      { href: '/events', label: 'Events' },
+      { href: '/credentials', label: 'Credentials' },
+      { href: '/pathways', label: 'Pathways' },
+    ],
+    settings: [
+      { href: '/settings/account/general-information', label: 'Account Settings' },
+      { href: '/settings/event/type', label: 'Event Settings' },
+      { href: '/settings/team', label: 'Team' },
+      { href: '/settings/archived', label: 'Archived' },
+    ],
+  },
+
+  [RoleType.Admin]: {
+    nav: [
+      { href: '/dashboard', label: 'Dashboard' },
+      { href: '/designs', label: 'Designs' },
+      { href: '/events', label: 'Events' },
+      { href: '/credentials', label: 'Credentials' },
+      { href: '/pathways', label: 'Pathways' },
+    ],
+    settings: [
+      { href: '/settings/event/type', label: 'Event Settings' },
+    ],
+  },
+
+  [RoleType.Manager]: {
+    nav: [
+      { href: '/events', label: 'Events' },
+      { href: '/credentials', label: 'Credentials' },
+      { href: '/pathways', label: 'Pathways' },
+    ],
+    settings: [],
+  },
+
+  [RoleType.Designer]: {
+    nav: [{ href: '/designs', label: 'Designs' }],
+    settings: [],
+  },
 };
 
 type AvatarProps = { avatarUrl: string; firstName?: string; lastName?: string; size?: 'sm' | 'lg' };
@@ -51,9 +96,7 @@ type AvatarProps = { avatarUrl: string; firstName?: string; lastName?: string; s
 function Avatar({ avatarUrl, firstName, lastName, size = 'sm' }: AvatarProps) {
   const cls = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
   return (
-    <div
-      className={`${cls} flex items-center justify-center rounded-full bg-gray-400 text-white overflow-hidden`}
-    >
+    <div className={`${cls} flex items-center justify-center rounded-full bg-gray-400 text-white overflow-hidden`}>
       {avatarUrl ? (
         <img className="h-full w-full object-cover" src={avatarUrl} alt={firstName || 'User'} />
       ) : (
@@ -84,13 +127,17 @@ export function Header() {
   }, [menuOpened]);
 
   const avatarUrl = profile?.avatarUrl || user?.avatarUrl || '';
-  const isAdmin =
-    (user?.role && [RoleType.SuperAdmin, RoleType.Admin].includes(user?.role as RoleType)) || false;
-  const isSystemAdmin = user?.role === RoleType.SystemAdmin;
-  const navItems = isSystemAdmin ? [...NAV_ITEMS, ...SYSTEM_ADMIN_NAV] : NAV_ITEMS;
-  const dropdownItems = isSystemAdmin
-    ? [...SYSTEM_ADMIN_NAV, ...getDropdownItems(true)]
-    : getDropdownItems(isAdmin);
+  const role = user?.role as RoleType;
+
+  const { nav: navItems, settings: settingsItems } = NAV_CONFIG[role] ?? {
+    nav: [],
+    settings: [],
+  };
+
+  const dropdownItems: NavItem[] = [
+    { href: '/settings/profile/general', label: 'Profile Settings' },
+    ...settingsItems,
+  ];
 
   const closeMenus = () => {
     setMenuOpened(false);
@@ -112,7 +159,6 @@ export function Header() {
     <nav className="sticky top-0 bg-gray-800 z-30">
       <div className="mx-auto px-2 sm:px-4 lg:px-8">
         <div className="relative flex h-12 items-center justify-between">
-          {/* Logo & Desktop Nav */}
           <div className="flex items-center px-2 lg:px-0">
             <Link
               href="/dashboard"
@@ -121,7 +167,7 @@ export function Header() {
               Quick Certify
             </Link>
             <div className="hidden lg:ml-4 lg:flex space-x-1">
-              {navItems.map((item, i) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -133,23 +179,15 @@ export function Header() {
             </div>
           </div>
 
-          {/* Search */}
           <GlobalSearch />
 
-          {/* Mobile Menu Button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden inline-flex items-center justify-center rounded-sm p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
           >
             <span className="sr-only">Open main menu</span>
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-            >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -162,24 +200,22 @@ export function Header() {
             </svg>
           </button>
 
-          {/* Desktop Profile */}
           <div className="hidden lg:flex items-center ml-4">
             <div className="relative ml-2" ref={dropdownRef}>
               <button onClick={() => setMenuOpened(!menuOpened)} className="cursor-pointer">
-                <Avatar
-                  avatarUrl={avatarUrl}
-                  firstName={user?.firstName}
-                  lastName={user?.lastName}
-                />
+                <Avatar avatarUrl={avatarUrl} firstName={user?.firstName} lastName={user?.lastName} />
               </button>
+
               {menuOpened && (
-                <div className="absolute right-0 z-10 mt-2 w-64 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg border border-gray-200">
+                <div className="absolute right-0 z-10 mt-2 w-64 divide-y divide-gray-100 rounded-md bg-white shadow-lg border border-gray-200">
                   <div className="px-4 py-3">
                     <p className="text-sm break-all">{user?.email}</p>
                     <p className="text-xs text-gray-500">{profile?.organizationName}</p>
                     {user?.role && (
                       <span
-                        className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_BADGE_STYLES[user.role] || 'bg-gray-100 text-gray-700'}`}
+                        className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          ROLE_BADGE_STYLES[user.role] || 'bg-gray-100 text-gray-700'
+                        }`}
                       >
                         {capitalizeFirst(user.role.replace('_', ' '))}
                       </span>
@@ -199,7 +235,7 @@ export function Header() {
                   <div className="py-1">
                     <button
                       onClick={handleSignOut}
-                      className="hover:bg-gray-50 text-gray-700 block w-full px-4 py-2 text-left text-sm cursor-pointer"
+                      className="hover:bg-gray-50 text-gray-700 block w-full px-4 py-2 text-left text-sm"
                     >
                       Sign out
                     </button>
@@ -211,7 +247,6 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2">
@@ -221,23 +256,17 @@ export function Header() {
                 href={item.href}
                 onClick={closeMenus}
                 className={`block rounded-sm px-3 py-2 text-base font-medium ${
-                  i === 0
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  i === 0 ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
               >
                 {item.label}
               </Link>
             ))}
           </div>
+
           <div className="border-t border-gray-700 pb-3 pt-4">
             <div className="flex items-center px-5">
-              <Avatar
-                avatarUrl={avatarUrl}
-                firstName={user?.firstName}
-                lastName={user?.lastName}
-                size="lg"
-              />
+              <Avatar avatarUrl={avatarUrl} firstName={user?.firstName} lastName={user?.lastName} size="lg" />
               <div className="ml-3">
                 <div className="text-base font-medium text-white">
                   {user?.firstName} {user?.lastName}
@@ -245,7 +274,7 @@ export function Header() {
                 <div className="text-sm font-medium text-gray-400">{user?.email}</div>
               </div>
             </div>
-            <div className="mt-3 space-y-1 px-2">
+            <div className="mt-3 space-y-1 px-2"> 
               {dropdownItems.map((item) => (
                 <Link
                   key={item.href}
