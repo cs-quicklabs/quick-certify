@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Force light mode: override dark variant so dark: classes never activate */
+@variant dark (&:not(*));
+
 @theme {
   --color-primary-50: oklch(0.97 0.014 254.6);
   --color-primary-100: oklch(0.93 0.029 255.5);
@@ -291,6 +294,9 @@
   @apply bg-gray-50 text-gray-700 hover:bg-gray-100;
 }
 
+.action-item-red {
+  @apply bg-red-50 text-red-700 hover:bg-red-100;
+}
 .action-item-red {
   @apply bg-red-50 text-red-700 hover:bg-red-100;
 }

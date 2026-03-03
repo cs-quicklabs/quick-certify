@@ -152,7 +152,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userModel.findOne({
-      where: { email: email.toLowerCase(), status: { [Op.ne]: 'archived' } },
+      where: { email: email.toLowerCase() },
       include: [RoleEntity],
     });
   }
