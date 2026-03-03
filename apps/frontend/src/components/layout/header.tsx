@@ -20,9 +20,6 @@ const ROLE_BADGE_STYLES: Record<string, string> = {
 
 type NavItem = { href: string; label: string };
 
-/**
- * ==== CONSISTENT NAV CONFIG BASED ON YOUR NOTES ====
- */
 const NAV_CONFIG: Record<
   RoleType,
   {
