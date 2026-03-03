@@ -68,9 +68,7 @@ const NAV_CONFIG: Record<
       { href: '/credentials', label: 'Credentials' },
       { href: '/pathways', label: 'Pathways' },
     ],
-    settings: [
-      { href: '/settings/event/type', label: 'Event Settings' },
-    ],
+    settings: [{ href: '/settings/event/type', label: 'Event Settings' }],
   },
 
   [RoleType.Manager]: {
@@ -93,7 +91,9 @@ type AvatarProps = { avatarUrl: string; firstName?: string; lastName?: string; s
 function Avatar({ avatarUrl, firstName, lastName, size = 'sm' }: AvatarProps) {
   const cls = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
   return (
-    <div className={`${cls} flex items-center justify-center rounded-full bg-gray-400 text-white overflow-hidden`}>
+    <div
+      className={`${cls} flex items-center justify-center rounded-full bg-gray-400 text-white overflow-hidden`}
+    >
       {avatarUrl ? (
         <img className="h-full w-full object-cover" src={avatarUrl} alt={firstName || 'User'} />
       ) : (
@@ -184,7 +184,13 @@ export function Header() {
             className="lg:hidden inline-flex items-center justify-center rounded-sm p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
           >
             <span className="sr-only">Open main menu</span>
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -200,7 +206,11 @@ export function Header() {
           <div className="hidden lg:flex items-center ml-4">
             <div className="relative ml-2" ref={dropdownRef}>
               <button onClick={() => setMenuOpened(!menuOpened)} className="cursor-pointer">
-                <Avatar avatarUrl={avatarUrl} firstName={user?.firstName} lastName={user?.lastName} />
+                <Avatar
+                  avatarUrl={avatarUrl}
+                  firstName={user?.firstName}
+                  lastName={user?.lastName}
+                />
               </button>
 
               {menuOpened && (
@@ -253,7 +263,9 @@ export function Header() {
                 href={item.href}
                 onClick={closeMenus}
                 className={`block rounded-sm px-3 py-2 text-base font-medium ${
-                  i === 0 ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  i === 0
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
               >
                 {item.label}
@@ -263,7 +275,12 @@ export function Header() {
 
           <div className="border-t border-gray-700 pb-3 pt-4">
             <div className="flex items-center px-5">
-              <Avatar avatarUrl={avatarUrl} firstName={user?.firstName} lastName={user?.lastName} size="lg" />
+              <Avatar
+                avatarUrl={avatarUrl}
+                firstName={user?.firstName}
+                lastName={user?.lastName}
+                size="lg"
+              />
               <div className="ml-3">
                 <div className="text-base font-medium text-white">
                   {user?.firstName} {user?.lastName}
@@ -271,7 +288,7 @@ export function Header() {
                 <div className="text-sm font-medium text-gray-400">{user?.email}</div>
               </div>
             </div>
-            <div className="mt-3 space-y-1 px-2"> 
+            <div className="mt-3 space-y-1 px-2">
               {dropdownItems.map((item) => (
                 <Link
                   key={item.href}
