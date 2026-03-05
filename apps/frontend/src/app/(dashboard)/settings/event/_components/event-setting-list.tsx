@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Header, Sidebar, ConfirmationDialog, Alert } from '@/components';
+import { Sidebar, ConfirmationDialog, Alert } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import { getApiErrorMessage } from '@/lib/api-error';
 import type { IBaseEvent } from '@/types';
