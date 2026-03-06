@@ -15,8 +15,7 @@ export const ROUTES = {
     RESET_PASSWORD: '/reset-password',
     VERIFY_EMAIL: '/verify-email',
     INVITATION: '/invitation',
-    GOOGLE_CALLBACK: '/auth/google/callback',
-    GOOGLE_LOGIN: '/auth/google/login',
+    GOOGLE_CALLBACK: '/auth/callback',
     ERROR: '/auth/error',
   },
 
@@ -40,7 +39,7 @@ export const ROUTES = {
       GENERAL: '/settings/account/general-information',
       SOCIAL_LINKS: '/settings/account/social-links',
       BRANDING: '/settings/account/branding',
-      PORTAL: '/settings/account/portal',
+      PORTAL: '/settings/account/issuer-portal',
     },
     EVENT: {
       ROOT: '/settings/event',
@@ -49,6 +48,7 @@ export const ROUTES = {
       FORMAT: '/settings/event/format',
     },
     TEAM: '/settings/team',
+    ARCHIVED: '/settings/archived',
   },
 
   // Admin routes (system_admin only)
@@ -58,7 +58,7 @@ export const ROUTES = {
 
   // Feature routes
   EVENTS: '/events',
-  CREAT_EVENT: '/events/add',
+  CREATE_EVENT: '/events/add',
   CREDENTIALS: '/credentials',
   PATHWAYS: '/pathways',
   PATHWAYS_ADD: '/pathways/add',
@@ -86,7 +86,7 @@ export const ROUTES = {
  * Use this for dynamic routes with parameters
  */
 export const createRoute = {
-  eventDetail: (id: string) => `/events/${id}` as const,
+  eventDetail: (id: string) => `/events/edit?id=${id}` as const,
   eventEdit: (id: string) => `/events/edit?id=${id}` as const,
   credentialDetail: (id: string) => `/credentials/${id}` as const,
   teamMember: (id: string) => `/settings/team/${id}` as const,
@@ -101,6 +101,8 @@ export const createRoute = {
   publicCompany: (slug: string) => `/public/company/${slug}` as const,
   publicCompanyEvents: (slug: string) => `/public/company/${slug}/events` as const,
   publicCompanyRecipients: (slug: string) => `/public/company/${slug}/recipients` as const,
+  publicRecipientDetail: (slug: string, uuid: string) =>
+    `/public/company/${slug}/recipients/${uuid}` as const,
   publicPathways: (slug: string) => `/public/company/${slug}/pathways` as const,
   publicPathwayDetail: (slug: string, uuid: string) =>
     `/public/company/${slug}/pathways/${uuid}` as const,
