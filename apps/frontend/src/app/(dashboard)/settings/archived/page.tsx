@@ -131,7 +131,7 @@ export default function ArchivedMembersPage() {
     return members.map((member) => (
       <div
         key={member.id}
-        className="bg-white mb-4 border-gray-100  flex flex-col sm:flex-row sm:items-center justify-between"
+        className="py-4 flex flex-col sm:flex-row sm:items-center justify-between"
       >
         <div className="flex-1 min-w-0">
           <div className="flex text-sm font-medium text-gray-600 truncate">
@@ -217,7 +217,9 @@ export default function ArchivedMembersPage() {
       </div>
 
       {/* List */}
-      <div className="border-separate mt-6 w-full">{renderList()}</div>
+      <div className="mt-6 bg-white shadow-md sm:rounded-sm px-4 divide-y divide-gray-100">
+        {renderList()}
+      </div>
 
       {/* Pagination */}
       <div className="pt-4 border-t border-gray-200">

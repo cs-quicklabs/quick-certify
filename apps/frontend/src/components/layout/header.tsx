@@ -88,8 +88,8 @@ export function Header() {
             </div>
           </div>
 
-          {/* Search */}
-          <GlobalSearch />
+          {/* Search — only for admin-level roles */}
+          {(isAdmin || isSystemAdmin) && <GlobalSearch />}
 
           {/* Mobile Menu Button */}
           <button
