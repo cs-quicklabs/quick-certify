@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   NotFoundException,
   Param,
@@ -133,6 +134,9 @@ export class UserController {
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
     }
+    if (existingUser.role?.role === Role.SYSTEM_ADMIN) {
+      throw new ForbiddenException('Cannot modify a system admin account');
+    }
     const auditContext = buildAuditContext(req);
     const updatedUser = await this.userService.update(existingUser.id, dto, user, { auditContext });
     return new SuccessResponse('User updated successfully', updatedUser);
@@ -156,6 +160,10 @@ export class UserController {
 
     if (!existingUser) {
       throw new NotFoundException('User not found');
+    }
+
+    if (existingUser.role?.role === Role.SYSTEM_ADMIN) {
+      throw new ForbiddenException('Cannot delete a system admin account');
     }
 
     // Prevent deleting yourself (compare UUIDs)

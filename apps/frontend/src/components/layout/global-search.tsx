@@ -6,7 +6,7 @@ import { Search, Clock, Trash2 } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useGlobalSearch } from '@/hooks/useSearch';
-import { createRoute } from '@/config/routes';
+import { ROUTES, createRoute } from '@/config/routes';
 import { SearchCategory, SearchResultItem, RecentSearchItem } from '@/types';
 import { capitalizeFirst } from '@/utils';
 import { addRecentSearch, getRecentSearches, clearRecentSearches } from '@/lib/recent-search';
@@ -32,7 +32,7 @@ function getRouteForResult(item: SearchResultItem): string {
     case SearchCategory.PATHWAYS:
       return createRoute.pathwayDetail(item.uuid);
     case SearchCategory.DESIGNS:
-      return createRoute.designPreview(item.uuid);
+      return `${ROUTES.DESIGNS}?preview=${item.uuid}`;
     case SearchCategory.TEAM_MEMBERS:
       return createRoute.teamMember(item.uuid);
   }

@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
 import { Model, ModelStatic } from 'sequelize-typescript';
-import { EventEntity, PathwayEntity, DesignEntity, UserEntity } from '@src/entities';
+import { EventEntity, PathwayEntity, DesignEntity, UserEntity, RoleEntity } from '@src/entities';
 import { ISearchService, GlobalSearchResult, SearchResultItem, SearchCategory } from './interfaces';
+import { Role } from '@src/modules/role/enums';
 
 type ILikeTerm = { [Op.iLike]: string };
 
@@ -103,6 +104,13 @@ export class SearchService implements ISearchService {
         deleted_at: null,
         [Op.or]: [{ first_name: iLikeTerm }, { last_name: iLikeTerm }, { email: iLikeTerm }],
       },
+      include: [
+        {
+          model: RoleEntity,
+          attributes: ['role'],
+          where: { role: { [Op.ne]: Role.SYSTEM_ADMIN } },
+        },
+      ],
       attributes: ['uuid', 'first_name', 'last_name', 'email'],
       limit,
       order: [['first_name', 'ASC']],

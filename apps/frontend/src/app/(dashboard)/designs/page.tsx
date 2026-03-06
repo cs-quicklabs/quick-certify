@@ -25,6 +25,13 @@ export default function DesignsPage() {
   const page = Number(searchParams.get('page') ?? 1);
   const searchFromUrl = searchParams.get('search') ?? '';
   const typeFromUrl = searchParams.get('type') as Filter | null;
+  const previewId = searchParams.get('preview');
+
+  useEffect(() => {
+    if (previewId) {
+      router.replace(`${ROUTES.DESIGNS}/preview/${previewId}`);
+    }
+  }, [previewId, router]);
 
   const [search, setSearch] = useState(searchFromUrl);
   const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
