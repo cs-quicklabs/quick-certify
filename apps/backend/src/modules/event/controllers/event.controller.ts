@@ -26,7 +26,7 @@ import type { PublicRequest } from '../../../commons/interfaces/public-request.i
 @ApiBearerAuth()
 @Controller({ path: 'events', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
@@ -94,6 +94,7 @@ export class EventController {
   }
 
   @Delete(':uuid')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Soft delete event within current organization' })
   @ApiResponse({ status: 200, description: 'Event deleted successfully' })
   @ApiResponse({ status: 404, description: 'Event not found' })

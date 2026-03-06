@@ -11,9 +11,10 @@ type Params = {
   limit: number;
   search?: string;
   type?: DesignType;
+  enabled?: boolean;
 };
 
-export function useDesignList({ page, limit, search, type }: Params) {
+export function useDesignList({ page, limit, search, type, enabled = true }: Params) {
   const queryClient = useQueryClient();
 
   const queryKey = ['designs', page, limit, search ?? '', type ?? 'all'];
@@ -27,6 +28,7 @@ export function useDesignList({ page, limit, search, type }: Params) {
         search,
         type,
       }),
+    enabled,
     placeholderData: (previousData) => previousData,
     staleTime: 30_000,
   });

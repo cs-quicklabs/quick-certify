@@ -22,9 +22,14 @@ export default function DashboardPage() {
   const router = useRouter();
   const user = useUser();
 
+  const shouldRedirect =
+    user?.role === RoleType.Designer || user?.role === RoleType.Manager;
+
   useEffect(() => {
     if (user?.role === RoleType.Designer) {
       router.replace(ROUTES.DESIGNS);
+    } else if (user?.role === RoleType.Manager) {
+      router.replace(ROUTES.EVENTS);
     }
   }, [user, router]);
 
@@ -32,9 +37,17 @@ export default function DashboardPage() {
     limit: 5,
     sortBy: 'createdAt',
     sortOrder: 'DESC',
+    enabled: !shouldRedirect,
   });
-  const { data: credentialsData, isLoading: credentialsLoading } = useCredentials({ limit: 1 });
-  const { meta: designsMeta, loading: designsLoading } = useDesignList({ page: 1, limit: 1 });
+  const { data: credentialsData, isLoading: credentialsLoading } = useCredentials({
+    limit: 1,
+    enabled: !shouldRedirect,
+  });
+  const { meta: designsMeta, loading: designsLoading } = useDesignList({
+    page: 1,
+    limit: 1,
+    enabled: !shouldRedirect,
+  });
 
   const totalEvents = eventsData?.meta?.total ?? 0;
   const totalCredentials = credentialsData?.meta?.total ?? 0;

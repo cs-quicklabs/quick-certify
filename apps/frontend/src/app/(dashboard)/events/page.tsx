@@ -20,8 +20,12 @@ import { useEventFormats } from '@/hooks/useEventFormats';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { useMultiSelectFilters } from '@/hooks/useMultiSelectFilters';
 import { FilterTagList } from '@/components/events/FilterTagList';
+import { useUser } from '@/store/auth.store';
+import { checkIfUserIsNonAdmin } from '@/utils/helpers';
 
 export default function EventsPage() {
+  const user = useUser();
+  const canDelete = !checkIfUserIsNonAdmin(user!);
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
 
@@ -289,6 +293,7 @@ export default function EventsPage() {
             <EventsTable
               events={events}
               onDelete={handleDeleteEvent}
+              canDelete={canDelete}
               deletingEventId={deletingEventId}
             />
           </div>

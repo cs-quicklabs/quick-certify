@@ -17,10 +17,12 @@ export const CREDENTIAL_KEYS = {
   batchStatus: (uuid: string) => [...CREDENTIAL_KEYS.all, 'batch', uuid] as const,
 };
 
-export function useCredentials(filters?: CredentialFilters) {
+export function useCredentials(filters?: CredentialFilters & { enabled?: boolean }) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
   return useQuery({
-    queryKey: CREDENTIAL_KEYS.list(filters),
-    queryFn: () => credentialService.getCredentials(filters),
+    queryKey: CREDENTIAL_KEYS.list(queryFilters),
+    queryFn: () => credentialService.getCredentials(queryFilters),
+    enabled,
   });
 }
 

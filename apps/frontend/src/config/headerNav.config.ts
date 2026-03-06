@@ -37,7 +37,6 @@ const NAV_ITEMS_MAP: Record<RoleType, NavItem[]> = {
     { href: ROUTES.PATHWAYS, label: 'Pathways' },
   ],
   [RoleType.Manager]: [
-    { href: ROUTES.DASHBOARD.HOME, label: 'Dashboard' },
     { href: ROUTES.EVENTS, label: 'Events' },
     { href: ROUTES.CREDENTIALS, label: 'Credentials' },
     { href: ROUTES.PATHWAYS, label: 'Pathways' },

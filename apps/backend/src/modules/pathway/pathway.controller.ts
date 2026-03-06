@@ -39,7 +39,7 @@ import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interface
 @ApiBearerAuth()
 @Controller({ path: 'pathways', version: '1' })
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MANAGER)
 export class PathwayController {
   constructor(
     private readonly pathwayService: PathwayService,
@@ -106,6 +106,7 @@ export class PathwayController {
   }
 
   @Delete(':uuid')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Delete a pathway (soft delete)' })
   @ApiParam({ name: 'uuid', description: 'Pathway UUID' })
   @ApiResponse({ status: 200, description: 'Pathway deleted successfully' })

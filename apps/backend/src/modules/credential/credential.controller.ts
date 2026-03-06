@@ -124,6 +124,7 @@ export class CredentialController {
   }
 
   @Delete(':uuid')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Soft delete credential' })
   @ApiResponse({ status: 200, description: 'Credential deleted successfully' })
   @ApiResponse({ status: 404, description: 'Credential not found' })
