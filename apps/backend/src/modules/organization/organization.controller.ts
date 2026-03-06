@@ -27,7 +27,6 @@ import { CurrentUser, Disabled, Public, Roles } from '@src/modules/auth/decorato
 import { RolesGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '../role/enums';
-import { Op } from 'sequelize';
 import { EmailService } from '@src/commons/services';
 import { ContactOrganizationDto } from './dtos/contact-organization.dto';
 import { PublicPortalGuard } from './guards/public-portal.guard';
@@ -52,14 +51,10 @@ export class OrganizationController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
   @ApiQuery({ name: 'search', required: false })
-  async findAll(@Query() pagination: PaginationDto, @CurrentUser() currentUser: CurrentUserType) {
-    const paginationQuery = {
-      ...pagination,
-      where: { id: { [Op.ne]: currentUser.organizationId } },
-    };
+  async findAll(@Query() pagination: PaginationDto) {
     const result = pagination.search
-      ? await this.organizationService.searchOrganizations(pagination.search, paginationQuery)
-      : await this.organizationService.findAll(paginationQuery);
+      ? await this.organizationService.searchOrganizations(pagination.search, pagination)
+      : await this.organizationService.findAll(pagination);
     return new SuccessResponse('Organizations retrieved successfully', result);
   }
 
@@ -124,8 +119,11 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Permanently delete organization (System Admin only)' })
   @ApiResponse({ status: 200, description: 'Organization deleted successfully' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async permanentlyDelete(@Param('uuid') uuid: string) {
-    await this.organizationService.permanentlyDelete(uuid);
+  async permanentlyDelete(
+    @Param('uuid') uuid: string,
+    @CurrentUser() currentUser: CurrentUserType,
+  ) {
+    await this.organizationService.permanentlyDelete(uuid, currentUser);
     return new SuccessResponse('Organization permanently deleted', { deleted: true });
   }
 
