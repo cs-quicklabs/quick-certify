@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Github, Globe } from 'lucide-react';
+import { createRoute } from '@/config/routes';
 
 type PublicFooterProps = {
   logoUrl?: string | null;
@@ -19,8 +20,8 @@ const SOCIAL_LINKS = [
 export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicFooterProps) {
   const displayName = orgName ?? 'Quick Certify';
   const DIRECTORY_LINKS = [
-    { label: 'Events', href: `/public/company/${slug}/events` },
-    { label: 'Recipients', href: `/public/company/${slug}/recipients` },
+    { label: 'Events', href: createRoute.publicCompanyEvents(slug) },
+    { label: 'Recipients', href: createRoute.publicCompanyRecipients(slug) },
   ];
 
   return (
