@@ -83,29 +83,36 @@ export function CertificateDesignPreview({
             alt="Certificate background"
             style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
           />
-          {placeholders.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                position: 'absolute',
-                left: p.x,
-                top: p.y,
-                transform: `translate(-50%, -50%) scale(${p.scaleX ?? 1}, ${p.scaleY ?? 1})`,
-                fontSize: p.fontSize,
-                fontFamily: p.fontFamily,
-                fontWeight: p.fontWeight ?? 'normal',
-                fontStyle: p.fontStyle ?? 'normal',
-                color: p.color,
-                textAlign: p.align ?? 'left',
-                maxWidth: p.maxWidth ?? undefined,
-                whiteSpace: p.maxWidth ? 'normal' : 'nowrap',
-                lineHeight: 1.2,
-                pointerEvents: 'none',
-              }}
-            >
-              {valueMap[p.key as PlaceholderKey] ?? p.text}
-            </div>
-          ))}
+          {placeholders.map((p) => {
+            // Max width so text never overflows the canvas when centered at p.x
+            const maxHalfW = Math.min(p.x, canvasWidth - p.x) - 20;
+            const maxTextWidth = Math.max(60, maxHalfW * 2);
+            return (
+              <div
+                key={p.id}
+                style={{
+                  position: 'absolute',
+                  left: p.x,
+                  top: p.y,
+                  transform: `translate(-50%, -50%) scale(${p.scaleX ?? 1}, ${p.scaleY ?? 1})`,
+                  fontSize: p.fontSize,
+                  fontFamily: p.fontFamily,
+                  fontWeight: p.fontWeight ?? 'normal',
+                  fontStyle: p.fontStyle ?? 'normal',
+                  color: p.color,
+                  textAlign: p.align ?? 'center',
+                  maxWidth: maxTextWidth,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  lineHeight: 1.2,
+                  pointerEvents: 'none',
+                }}
+              >
+                {valueMap[p.key as PlaceholderKey] ?? p.text}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

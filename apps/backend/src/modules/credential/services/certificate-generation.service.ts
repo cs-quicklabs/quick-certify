@@ -98,6 +98,16 @@ export class CertificateGenerationService {
     return canvas.toBuffer('image/png');
   }
 
+  private truncateText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
+    if (maxWidth <= 0 || ctx.measureText(text).width <= maxWidth) return text;
+    const ellipsis = '…';
+    let truncated = text;
+    while (truncated.length > 1 && ctx.measureText(truncated + ellipsis).width > maxWidth) {
+      truncated = truncated.slice(0, -1);
+    }
+    return truncated + ellipsis;
+  }
+
   private drawPlaceholder(
     ctx: CanvasRenderingContext2D,
     placeholder: DesignLayoutPlaceholder,
@@ -117,30 +127,20 @@ export class CertificateGenerationService {
     ctx.fillStyle = placeholder.color ?? '#000000';
 
     // Fabric.js stores x/y as CENTER of the text (originX/originY = 'center')
-    // Use 'center' textAlign and 'middle' textBaseline to match Fabric.js positioning
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    let x = placeholder.x;
+    const x = placeholder.x;
     const y = placeholder.y;
-
-    // Measure text width (accounting for horizontal scale)
-    const textWidth = ctx.measureText(text).width * scaleX;
     const canvasWidth = (ctx.canvas as unknown as { width: number }).width;
+    const padding = 20;
 
-    // Overflow protection: if text overflows left or right, shift x to keep it within bounds
-    const halfWidth = textWidth / 2;
-    const padding = 10; // Small margin from edges
+    // Max width available from center position to nearest edge (with padding), accounting for scaleX
+    const maxHalfW = Math.min(x - padding, canvasWidth - x - padding);
+    const maxTextWidth = Math.max(60, maxHalfW * 2) / scaleX;
 
-    if (x - halfWidth < padding) {
-      // Text overflows on the left — shift right
-      x = halfWidth + padding;
-    } else if (x + halfWidth > canvasWidth - padding) {
-      // Text overflows on the right — shift left
-      x = canvasWidth - halfWidth - padding;
-    }
-
-    ctx.fillText(text, x, y);
+    const displayText = this.truncateText(ctx, text, maxTextWidth);
+    ctx.fillText(displayText, x, y);
     ctx.restore();
   }
 

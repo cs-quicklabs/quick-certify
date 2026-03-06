@@ -45,6 +45,7 @@ export function RecipientTable({
                     type="text"
                     placeholder="Recipient name"
                     value={recipient.name}
+                    maxLength={50}
                     onChange={(e) => onRecipientChange(recipient.id, 'name', e.target.value)}
                     className={`w-full px-3 py-1.5 text-sm border rounded-md focus:ring-1 focus:outline-none ${
                       nameError
@@ -53,6 +54,19 @@ export function RecipientTable({
                     }`}
                   />
                   {nameError && <p className="mt-0.5 text-xs text-red-500">{nameError}</p>}
+                  {!nameError && recipient.name.length > 30 && (
+                    <p
+                      className={`mt-0.5 text-xs ${
+                        recipient.name.length >= 46
+                          ? 'text-red-500'
+                          : recipient.name.length >= 38
+                            ? 'text-amber-500'
+                            : 'text-gray-400'
+                      }`}
+                    >
+                      {recipient.name.length}/50 — long names may be truncated on the certificate
+                    </p>
+                  )}
                 </td>
                 <td className="px-4 py-2">
                   <input
