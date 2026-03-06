@@ -14,6 +14,8 @@ const protectedRoutes = [
   '/events',
   '/credentials',
   '/designs',
+  '/pathways',
+  '/admin',
   '/emails',
   '/analytics',
   '/integrations',
@@ -23,7 +25,7 @@ const protectedRoutes = [
 const authRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/invitation'];
 
 // Public routes accessible to everyone
-const publicRoutes = ['/', '/auth/error', '/auth/google/callback'];
+const publicRoutes = ['/', '/auth/error', '/auth/callback', '/signup/complete'];
 
 /**
  * Check if a path matches any of the defined routes
