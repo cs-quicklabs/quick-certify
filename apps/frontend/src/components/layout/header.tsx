@@ -13,8 +13,7 @@ import { ROUTES } from '@/config/routes';
 import { HeaderAvatar } from './HeaderAvatar';
 import {
   ROLE_BADGE_STYLES,
-  NAV_ITEMS,
-  SYSTEM_ADMIN_NAV,
+  getNavItems,
   getDropdownItems,
 } from '@/config/headerNav.config';
 
@@ -39,13 +38,9 @@ export function Header() {
   }, [menuOpened]);
 
   const avatarUrl = profile?.avatarUrl || user?.avatarUrl || '';
-  const isAdmin =
-    (user?.role && [RoleType.SuperAdmin, RoleType.Admin].includes(user?.role as RoleType)) || false;
-  const isSystemAdmin = user?.role === RoleType.SystemAdmin;
-  const navItems = isSystemAdmin ? [...NAV_ITEMS, ...SYSTEM_ADMIN_NAV] : NAV_ITEMS;
-  const dropdownItems = isSystemAdmin
-    ? [...SYSTEM_ADMIN_NAV, ...getDropdownItems(true)]
-    : getDropdownItems(isAdmin);
+  const role = (user?.role as RoleType) ?? RoleType.Manager;
+  const navItems = getNavItems(role);
+  const dropdownItems = getDropdownItems(role);
 
   const closeMenus = () => {
     setMenuOpened(false);
