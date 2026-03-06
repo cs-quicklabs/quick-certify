@@ -86,7 +86,7 @@ export const ROUTES = {
  * Use this for dynamic routes with parameters
  */
 export const createRoute = {
-  eventDetail: (id: string) => `/events/${id}` as const,
+  eventDetail: (id: string) => `/events/edit?id=${id}` as const,
   eventEdit: (id: string) => `/events/edit?id=${id}` as const,
   credentialDetail: (id: string) => `/credentials/${id}` as const,
   teamMember: (id: string) => `/settings/team/${id}` as const,

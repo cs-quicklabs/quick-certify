@@ -46,16 +46,22 @@ export default function DesignsPage() {
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
+  const prevDebouncedSearch = useRef(debouncedSearch);
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    if (prevDebouncedSearch.current === debouncedSearch) return;
+    prevDebouncedSearch.current = debouncedSearch;
+
+    const params = new URLSearchParams(searchParamsRef.current.toString());
     params.set('page', '1');
 
     if (debouncedSearch) params.set('search', debouncedSearch);
     else params.delete('search');
 
     router.replace(`${ROUTES.DESIGNS}?${params.toString()}`, { scroll: false });
-  }, [debouncedSearch, searchParams, router]);
+  }, [debouncedSearch, router]);
 
   // Handlers
   const handleDeleteClick = (design: Design) => {
