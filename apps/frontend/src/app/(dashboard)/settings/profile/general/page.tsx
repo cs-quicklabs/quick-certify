@@ -4,7 +4,7 @@ import { profileFormFields } from '@/config/settings.config';
 import { useProfile, useUpdateProfile } from '@/hooks/useSettings';
 import { ProfileSettingsData, profileSettingsSchema } from '@/schemas/settings.schema';
 import { FormConfig } from '@/types';
-import { useDeleteFile } from '../../../../hooks/useImageUpload';
+import { useDeleteFile } from '@/hooks/useImageUpload';
 
 export default function ProfileSettingsPage() {
   const { data: profile, isLoading } = useProfile();
@@ -26,7 +26,7 @@ export default function ProfileSettingsPage() {
     },
 
     onImageUpload: async (fieldName: string, imageUrl: string) => {
-      if (fieldName === 'avatarUrl' && profile?.firstName) {
+      if (fieldName === 'avatarUrl' && profile) {
         await updateProfile.mutateAsync({
           firstName: profile.firstName,
           avatarUrl: imageUrl,
@@ -35,7 +35,7 @@ export default function ProfileSettingsPage() {
     },
 
     onImageDelete: async (fieldName: string) => {
-      if (fieldName === 'avatarUrl' && profile?.firstName) {
+      if (fieldName === 'avatarUrl' && profile) {
         if (profile.avatarUrl) {
           try {
             await deleteFile.mutateAsync(profile.avatarUrl);
