@@ -10,7 +10,12 @@ export interface EventsTableProps {
   deletingEventId?: string | null;
 }
 
-export const EventsTable = ({ events, onDelete, canDelete = true, deletingEventId }: EventsTableProps) => {
+export const EventsTable = ({
+  events,
+  onDelete,
+  canDelete = true,
+  deletingEventId,
+}: EventsTableProps) => {
   if (events.length === 0) {
     return (
       <div className="flex items-center justify-center py-12 text-gray-500">

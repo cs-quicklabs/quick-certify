@@ -22,8 +22,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const user = useUser();
 
-  const shouldRedirect =
-    user?.role === RoleType.Designer || user?.role === RoleType.Manager;
+  const shouldRedirect = user?.role === RoleType.Designer || user?.role === RoleType.Manager;
 
   useEffect(() => {
     if (user?.role === RoleType.Designer) {

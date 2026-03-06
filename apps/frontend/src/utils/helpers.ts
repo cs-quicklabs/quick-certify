@@ -47,4 +47,3 @@ export function checkIfUserIsSuperAdmin(user: User) {
 export function checkIfUserIsAdmin(user: User) {
   return user?.role === RoleType.Admin || false;
 }
-

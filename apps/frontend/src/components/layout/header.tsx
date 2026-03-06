@@ -11,11 +11,7 @@ import { usePathname } from 'next/navigation';
 import { RoleType } from '@/types';
 import { ROUTES } from '@/config/routes';
 import { HeaderAvatar } from './HeaderAvatar';
-import {
-  ROLE_BADGE_STYLES,
-  getNavItems,
-  getDropdownItems,
-} from '@/config/headerNav.config';
+import { ROLE_BADGE_STYLES, getNavItems, getDropdownItems } from '@/config/headerNav.config';
 
 export function Header() {
   const pathname = usePathname();
