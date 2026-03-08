@@ -17,7 +17,7 @@ const variantClasses = {
   primary: 'btn-primary',
   secondary: 'btn-secondary',
   outline: 'btn-normal',
-  ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700',
+  ghost: 'bg-transparent text-gray-700 hover:bg-gray-100',
   danger: 'btn-red',
 };
 

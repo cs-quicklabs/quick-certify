@@ -171,7 +171,7 @@ export default function EventsPage() {
 
   return (
     <div>
-      <div className="divide-y dark:divide-gray-700 relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
+      <div className="divide-y relative bg-white shadow-md sm:rounded-sm">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
           <div>
@@ -308,7 +308,7 @@ export default function EventsPage() {
         {events.length > 0 && !isLoading && (
           <div className="relative">
             {isLoading && !isInitialLoad && (
-              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 flex items-center justify-center z-10">
+              <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
                 <Loader2 className="animate-spin text-gray-400" size={24} />
               </div>
             )}

@@ -75,8 +75,8 @@ function PathwaysContent() {
   };
 
   return (
-    <div className="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-sm">
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div className="relative bg-white shadow-md sm:rounded-sm">
+      <div className="divide-y divide-gray-200">
         {/* Header */}
         <div className="px-4 py-2 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
           <div>
@@ -105,7 +105,7 @@ function PathwaysContent() {
 
         {/* Filters */}
         <div className="flex flex-wrap items-center pt-1 pb-4 px-4 gap-x-4 gap-y-3">
-          <div className="items-center hidden mt-3 mr-0 text-sm font-medium text-gray-900 md:flex dark:text-white">
+          <div className="items-center hidden mt-3 mr-0 text-sm font-medium text-gray-900 md:flex">
             Show records only for:
           </div>
           <div className="flex flex-wrap flex-1">
@@ -122,11 +122,11 @@ function PathwaysContent() {
                   name="show-only"
                   checked={!isShowAll && currentStatus === filter.value}
                   onChange={() => handleStatusFilter(filter.value)}
-                  className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                  className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-2 cursor-pointer"
                 />
                 <label
                   htmlFor={filter.id}
-                  className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer"
+                  className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
                 >
                   {filter.label}
                 </label>
@@ -136,9 +136,7 @@ function PathwaysContent() {
               type="button"
               onClick={() => handleStatusFilter('all')}
               className={`mt-3 mr-4 font-medium text-sm cursor-pointer ${
-                isShowAll
-                  ? 'text-primary-700 underline'
-                  : 'text-blue-600 dark:text-blue-500 hover:underline'
+                isShowAll ? 'text-primary-700 underline' : 'text-blue-600 hover:underline'
               }`}
             >
               Show All

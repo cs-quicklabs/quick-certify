@@ -303,7 +303,7 @@ export default function SkillsPage() {
       {/* Skills Table */}
       <div className="relative overflow-x-auto mt-8">
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>
+          <div className="text-center py-8 text-gray-500">Loading...</div>
         ) : queryError && showQueryError ? null : skills.length === 0 ? null : (
           <Table
             columns={columns}

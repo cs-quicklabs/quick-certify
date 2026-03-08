@@ -62,7 +62,7 @@ export default function ChangePasswordPage() {
           <p className="form-subtitle">Setup a new password for your account</p>
         </div>
         <div>
-          <p className="text-gray-700 dark:text-gray-400 text-sm">
+          <p className="text-gray-700 text-sm">
             There is no password associated with this account as you've signed up using Google. In
             order to setup a new password, you need to disconnect your google account first. Once
             done, you will be able to login with your new password.

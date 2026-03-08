@@ -29,7 +29,7 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
   ];
 
   return (
-    <footer className="border-t border-gray-200 bg-white dark:bg-gray-800">
+    <footer className="border-t border-gray-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
           {/* Brand */}
@@ -48,20 +48,16 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
                   {displayName[0]?.toUpperCase() ?? '?'}
                 </div>
               )}
-              <span className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {displayName}
-              </span>
+              <span className="text-2xl font-semibold text-gray-900">{displayName}</span>
             </Link>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{slogan ?? ''}</p>
+            <p className="mt-2 text-sm text-gray-600">{slogan ?? ''}</p>
           </div>
 
           {/* Links */}
           <div className="grid grid-cols-2 gap-10 text-sm">
             <div>
-              <h3 className="mb-4 font-semibold uppercase text-gray-900 dark:text-white">
-                Directories
-              </h3>
-              <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+              <h3 className="mb-4 font-semibold uppercase text-gray-900">Directories</h3>
+              <ul className="space-y-3 text-gray-600">
                 {DIRECTORY_LINKS.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="hover:underline">
@@ -72,10 +68,8 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
               </ul>
             </div>
             <div>
-              <h3 className="mb-4 font-semibold uppercase text-gray-900 dark:text-white">
-                Credentials
-              </h3>
-              <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+              <h3 className="mb-4 font-semibold uppercase text-gray-900">Credentials</h3>
+              <ul className="space-y-3 text-gray-600">
                 {CREDENTIAL_LINKS.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="hover:underline">
@@ -88,10 +82,10 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
           </div>
         </div>
 
-        <hr className="my-8 border-gray-200 dark:border-gray-700" />
+        <hr className="my-8 border-gray-200" />
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-gray-500">
             © 2025{' '}
             <Link href="/" className="hover:underline">
               Quick Certify
@@ -105,7 +99,7 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
                 href={href}
                 target="_blank"
                 aria-label={label}
-                className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                className="text-gray-500 hover:text-gray-900"
               >
                 <Icon className="h-5 w-5" />
               </Link>

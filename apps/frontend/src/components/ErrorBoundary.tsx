@@ -21,34 +21,32 @@ interface ErrorBoundaryState {
  */
 function ErrorFallback({ error, resetError }: { error?: Error; resetError: () => void }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8 text-center">
         {/* Error Icon */}
         <div className="flex justify-center mb-6">
-          <div className="p-4 bg-red-100 dark:bg-red-900/30 rounded-full">
-            <AlertTriangle className="w-12 h-12 text-red-600 dark:text-red-400" />
+          <div className="p-4 bg-red-100 rounded-full">
+            <AlertTriangle className="w-12 h-12 text-red-600" />
           </div>
         </div>
 
         {/* Error Title */}
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-          Something went wrong
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Something went wrong</h1>
 
         {/* Error Description */}
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-gray-600 mb-6">
           We encountered an unexpected error. Please try refreshing the page or return to the
           homepage.
         </p>
 
         {/* Error Details (Development only) */}
         {process.env.NODE_ENV === 'development' && error && (
-          <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg text-left overflow-auto">
-            <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
+          <div className="mb-6 p-4 bg-gray-100 rounded-lg text-left overflow-auto">
+            <p className="text-sm font-medium text-red-600 mb-2">
               {error.name}: {error.message}
             </p>
             {error.stack && (
-              <pre className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap wrap-break-word">
+              <pre className="text-xs text-gray-600 whitespace-pre-wrap wrap-break-word">
                 {error.stack.split('\n').slice(0, 5).join('\n')}
               </pre>
             )}
@@ -66,7 +64,7 @@ function ErrorFallback({ error, resetError }: { error?: Error; resetError: () =>
           </button>
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 transition-colors dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 transition-colors"
           >
             <Home className="w-4 h-4" />
             Go to Dashboard
@@ -110,8 +108,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to console in development
-    console.log('ErrorBoundary caught an error:', error);
-    console.log('Error info:', errorInfo);
+    console.log('ErrorBoundary caught an error: ', error);
+    console.log('Error info: ', errorInfo);
 
     // Update state with error info
     this.setState({ errorInfo });

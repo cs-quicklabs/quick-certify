@@ -44,16 +44,16 @@ export default function ForgotPasswordPage() {
   if (isSuccess) {
     return (
       <div className="p-6 sm:p-8 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-          <Mail className="w-8 h-8 text-green-600 dark:text-green-400" />
+        <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+          <Mail className="w-8 h-8 text-green-600" />
         </div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">
+        <h1 className="text-xl font-bold text-gray-900 mb-2">Check your email</h1>
+        <p className="text-gray-500 mb-6">
           If an account exists with that email, we&apos;ve sent you a password reset link.
         </p>
         <Link
           href="/login"
-          className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+          className="inline-flex items-center text-sm font-medium text-primary-600 hover:underline"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to login
@@ -63,9 +63,9 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="w-full p-6 bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
+    <div className="w-full p-6 bg-white rounded-sm shadow md:mt-0 sm:max-w-md sm:p-8">
       {/* Header */}
-      <h1 className="text-xl pre font-extrabold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-4 lg:mb-5">
+      <h1 className="text-xl pre font-extrabold leading-tight tracking-tight text-gray-900 md:text-2xl mb-4 lg:mb-5">
         Forgot Password?
       </h1>
 
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
       </form>
 
       {/* Back to login */}
-      <div className="text-sm font-light text-gray-500 dark:text-gray-400 text-center mt-2">
+      <div className="text-sm font-light text-gray-500 text-center mt-2">
         <Link href="/login" className="link">
           Return Back to Login
         </Link>

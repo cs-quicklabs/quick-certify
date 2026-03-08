@@ -574,12 +574,12 @@ function CredentialLayout({
     recipients && recipients.length > 0 && onRecipientDropdownToggle && onSelectRecipient;
 
   return (
-    <div className="bg-white shadow-md dark:bg-gray-800 rounded-sm overflow-hidden">
+    <div className="bg-white shadow-md rounded-sm overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-12">
         {/* Left Section - Summary / Details */}
-        <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700">
-          <div className="px-4 sm:px-5 h-12 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{summaryTitle}</h2>
+        <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-gray-200">
+          <div className="px-4 sm:px-5 h-12 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-900">{summaryTitle}</h2>
             {summaryHeaderRight}
           </div>
 
@@ -591,9 +591,7 @@ function CredentialLayout({
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Event</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5 truncate">
-                  {eventName}
-                </p>
+                <p className="text-sm font-medium text-gray-900 mt-0.5 truncate">{eventName}</p>
               </div>
             </div>
 
@@ -625,9 +623,7 @@ function CredentialLayout({
                   </div>
                 ) : (
                   <div className="mt-0.5">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {recipientLabel}
-                    </p>
+                    <p className="text-sm font-medium text-gray-900">{recipientLabel}</p>
                     {recipientSublabel && (
                       <p className="text-xs text-gray-500 truncate">{recipientSublabel}</p>
                     )}
@@ -637,7 +633,7 @@ function CredentialLayout({
             </div>
 
             {/* Divider */}
-            <div className="border-t border-gray-100 dark:border-gray-700" />
+            <div className="border-t border-gray-100" />
 
             {/* Issue Date */}
             <div className="flex items-start gap-3">
@@ -656,7 +652,7 @@ function CredentialLayout({
                     className="mt-1.5 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none transition-colors"
                   />
                 ) : (
-                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
+                  <p className="text-sm font-medium text-gray-900 mt-0.5">
                     {formatDate(issuedDate)}
                   </p>
                 )}
@@ -693,7 +689,7 @@ function CredentialLayout({
                     </label>
                   </div>
                 ) : (
-                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
+                  <p className="text-sm font-medium text-gray-900 mt-0.5">
                     {noExpiration ? 'No Expiration' : formatDate(expirationDate)}
                   </p>
                 )}
@@ -708,7 +704,7 @@ function CredentialLayout({
         {/* Right Section - Preview */}
         <div className="lg:col-span-8">
           {/* Tab Header */}
-          <div className="px-4 sm:px-5 h-12 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="px-4 sm:px-5 h-12 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             {/* Tabs */}
             <div className="flex -mb-px overflow-x-auto">
               <button

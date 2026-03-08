@@ -57,7 +57,7 @@ export const EventItem = ({
   return (
     <>
       <tr
-        className="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+        className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
         onClick={handleRowClick}
       >
         <td className="p-4">
@@ -76,7 +76,7 @@ export const EventItem = ({
               )}
             </div>
             <div>
-              <div className="font-medium text-gray-900 dark:text-white capitalize">{name}</div>
+              <div className="font-medium text-gray-900 capitalize">{name}</div>
               <div className="text-xs text-gray-500 flex gap-2">
                 <span className="capitalize py-0.5 rounded">
                   Created On: {new Date(createdAt).toLocaleDateString()}

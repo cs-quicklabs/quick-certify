@@ -89,8 +89,8 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
               Sort
             </button>
             {showSortDropdown && (
-              <div className="absolute right-0 z-10 mt-1 w-40 bg-white border border-gray-200 rounded-sm shadow-lg dark:bg-gray-700 dark:border-gray-600">
-                <ul className="py-1 text-sm text-gray-700 dark:text-gray-200">
+              <div className="absolute right-0 z-10 mt-1 w-40 bg-white border border-gray-200 rounded-sm shadow-lg">
+                <ul className="py-1 text-sm text-gray-700">
                   {(
                     [
                       { value: 'az', label: 'A-Z' },
@@ -102,9 +102,9 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
                     <li key={opt.value}>
                       <button
                         type="button"
-                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center justify-between ${
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between ${
                           sortOption === opt.value
-                            ? 'font-medium text-primary-600 bg-primary-50 dark:bg-gray-600'
+                            ? 'font-medium text-primary-600 bg-primary-50'
                             : ''
                         }`}
                         onClick={() => {
