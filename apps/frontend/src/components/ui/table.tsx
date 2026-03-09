@@ -68,7 +68,9 @@ export function Table<T = unknown>({
     }
 
     return (
-      <div className={`border border-gray-200 rounded-sm overflow-hidden flex flex-col ${className}`}>
+      <div
+        className={`border border-gray-200 rounded-sm overflow-hidden flex flex-col ${className}`}
+      >
         {/* Header row — hidden on mobile */}
         <div
           className={`hidden sm:grid bg-gray-50 border-b border-gray-200 shrink-0`}
