@@ -9,7 +9,6 @@ import { StepReviewIssue } from '@/components/credentials/StepReviewIssue';
 import type { RecipientRow } from '@/schemas/credential.schema';
 import { useSearchParams } from 'next/navigation';
 import { useEvent } from '@/hooks/useEvents';
-import { showWarningToast } from '@/lib/toast';
 
 const STEPS = [
   { title: 'Create Credentials', subtitle: 'Add recipients' },
