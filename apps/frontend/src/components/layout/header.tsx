@@ -38,7 +38,7 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpened]);
 
-  const avatarUrl = profile?.avatarUrl || user?.avatarUrl || '';
+  const avatarUrl = profile ? (profile.avatarUrl ?? '') : (user?.avatarUrl ?? '');
   const isAdmin =
     (user?.role && [RoleType.SuperAdmin, RoleType.Admin].includes(user?.role as RoleType)) || false;
   const isSystemAdmin = user?.role === RoleType.SystemAdmin;

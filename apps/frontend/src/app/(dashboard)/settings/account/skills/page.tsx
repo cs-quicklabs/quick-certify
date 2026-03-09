@@ -15,7 +15,7 @@ import {
   checkIfUserIsSuperAdmin,
   checkIfUserIsSystemAdmin,
 } from '@/utils';
-import { Table, TableColumn } from '@/components/ui'; // adjust path
+import { Table, TableColumn } from '@/components/ui';
 
 /**
  * Skills Page
@@ -40,89 +40,6 @@ export default function SkillsPage() {
 
   const createSkillMutation = useCreateSkill();
   const deleteSkillMutation = useDeleteSkill();
-
-  const columns: TableColumn<Skill>[] = [
-    {
-      key: 'name',
-      header: 'SKILL',
-      className: 'px-6 py-4 w-full',
-      render: (skill) => {
-        if (editingSkill?.uuid === skill.uuid) {
-          return (
-            <input
-              type="text"
-              value={editSkillName}
-              onChange={(e) => {
-                setEditSkillName(e.target.value);
-                setError(null);
-              }}
-              className="form-input-field w-full"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleEditSave(skill.uuid);
-                } else if (e.key === 'Escape') {
-                  handleEditCancel();
-                }
-              }}
-              disabled={isUpdating}
-              autoFocus
-            />
-          );
-        }
-        return <span className="form-text-normal">{skill.name}</span>;
-      },
-    },
-    {
-      key: 'action',
-      header: 'ACTION',
-      className: 'px-6 py-4 text-right whitespace-nowrap',
-      render: (skill) => {
-        if (!isAuthorized) {
-          return <span className="text-gray-400">—</span>;
-        }
-
-        if (editingSkill?.uuid === skill.uuid) {
-          return (
-            <div className="flex items-center justify-end gap-4">
-              <button
-                onClick={() => handleEditSave(skill.uuid)}
-                className="btn-primary text-sm px-3 py-1.5"
-                disabled={isUpdating || !editSkillName.trim()}
-              >
-                {isUpdating ? 'Saving...' : 'Save'}
-              </button>
-              <button
-                onClick={handleEditCancel}
-                className="btn-inline-blue text-sm"
-                disabled={isUpdating}
-              >
-                Cancel
-              </button>
-            </div>
-          );
-        }
-
-        return (
-          <div className="flex items-center justify-end gap-4">
-            <button
-              onClick={() => handleEditStart(skill)}
-              className="btn-inline-blue text-sm whitespace-nowrap"
-              disabled={deletingId !== null}
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDelete(skill)}
-              className="btn-inline-red text-sm whitespace-nowrap"
-              disabled={deletingId !== null}
-            >
-              {deletingId === skill.uuid ? 'Deleting...' : 'Delete'}
-            </button>
-          </div>
-        );
-      },
-    },
-  ];
 
   // Authorization check - only Admin and Super Admin can access
   useEffect(() => {
@@ -149,11 +66,8 @@ export default function SkillsPage() {
     return () => clearTimeout(timer);
   }, [successMessage]);
 
-  // Reset showQueryError when queryError changes
   useEffect(() => {
-    if (queryError) {
-      setShowQueryError(true);
-    }
+    if (queryError) setShowQueryError(true);
   }, [queryError]);
 
   // Don't render if user is not authorized
@@ -161,7 +75,7 @@ export default function SkillsPage() {
     return null;
   }
 
-  const handleAddSkill = async (e: React.FormEvent) => {
+  const handleAddSkill = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
@@ -241,6 +155,80 @@ export default function SkillsPage() {
     user &&
     (checkIfUserIsAdmin(user) || checkIfUserIsSuperAdmin(user) || checkIfUserIsSystemAdmin(user));
 
+  const columns: TableColumn<Skill>[] = [
+    {
+      key: 'name',
+      header: 'Skill',
+      render: (skill) =>
+        editingSkill?.uuid === skill.uuid ? (
+          <input
+            type="text"
+            value={editSkillName}
+            onChange={(e) => {
+              setEditSkillName(e.target.value);
+              setError(null);
+            }}
+            className="form-input-field w-full"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleEditSave(skill.uuid);
+              else if (e.key === 'Escape') handleEditCancel();
+            }}
+            disabled={isUpdating}
+            autoFocus
+          />
+        ) : (
+          <span className="form-text-normal">{skill.name}</span>
+        ),
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (skill) => {
+        if (!isAuthorized) return <span className="text-gray-400">—</span>;
+
+        if (editingSkill?.uuid === skill.uuid) {
+          return (
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => handleEditSave(skill.uuid)}
+                className="btn-primary text-sm px-3 py-1.5"
+                disabled={isUpdating || !editSkillName.trim()}
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={handleEditCancel}
+                className="btn-inline-blue text-sm"
+                disabled={isUpdating}
+              >
+                Cancel
+              </button>
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex items-center justify-end gap-3">
+            <button
+              onClick={() => handleEditStart(skill)}
+              className="btn-inline-blue text-sm whitespace-nowrap"
+              disabled={deletingId !== null}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(skill)}
+              className="btn-inline-red text-sm whitespace-nowrap"
+              disabled={deletingId !== null}
+            >
+              {deletingId === skill.uuid ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -301,20 +289,17 @@ export default function SkillsPage() {
       )}
 
       {/* Skills Table */}
-      <div className="relative overflow-x-auto mt-8">
-        {isLoading ? (
-          <div className="text-center py-8 text-gray-500">Loading...</div>
-        ) : queryError && showQueryError ? null : skills.length === 0 ? null : (
-          <Table
-            columns={columns}
-            data={skills}
-            isLoading={isLoading}
-            scrollable
-            maxHeight="400px"
-            rowClassName="odd:bg-white even:bg-gray-50"
-          />
-        )}
-      </div>
+      {!queryError && (
+        <Table
+          columns={columns}
+          data={skills}
+          isLoading={isLoading}
+          responsive
+          scrollable
+          emptyMessage="No skills found. Create your first skill above."
+          rowClassName="odd:bg-white even:bg-gray-50"
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog

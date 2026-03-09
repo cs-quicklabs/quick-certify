@@ -4,6 +4,36 @@ import { useState, useEffect, useRef } from 'react';
 import { buildValueMap, type PlaceholderKey } from '@certify/certificate-core';
 import type { Design } from '@/types';
 
+/** Measures rendered text width using an off-screen canvas. */
+function measureTextWidth(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
+  fontWeight = 'normal',
+  fontStyle = 'normal',
+): number {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return 0;
+  ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`;
+  return ctx.measureText(text).width;
+}
+
+/** Returns the largest font size ≤ maxFontSize at which text fits within maxWidth. */
+function fitFontSize(
+  text: string,
+  maxFontSize: number,
+  maxWidth: number,
+  fontFamily: string,
+  fontWeight?: string,
+  fontStyle?: string,
+): number {
+  if (maxWidth <= 0) return maxFontSize;
+  const measured = measureTextWidth(text, maxFontSize, fontFamily, fontWeight, fontStyle);
+  if (measured <= maxWidth) return maxFontSize;
+  return Math.max(6, Math.floor(maxFontSize * (maxWidth / measured)));
+}
+
 interface CertificateDesignPreviewProps {
   design: Design;
   recipientName: string;
@@ -83,29 +113,45 @@ export function CertificateDesignPreview({
             alt="Certificate background"
             style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
           />
-          {placeholders.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                position: 'absolute',
-                left: p.x,
-                top: p.y,
-                transform: `translate(-50%, -50%) scale(${p.scaleX ?? 1}, ${p.scaleY ?? 1})`,
-                fontSize: p.fontSize,
-                fontFamily: p.fontFamily,
-                fontWeight: p.fontWeight ?? 'normal',
-                fontStyle: p.fontStyle ?? 'normal',
-                color: p.color,
-                textAlign: p.align ?? 'left',
-                maxWidth: p.maxWidth ?? undefined,
-                whiteSpace: p.maxWidth ? 'normal' : 'nowrap',
-                lineHeight: 1.2,
-                pointerEvents: 'none',
-              }}
-            >
-              {valueMap[p.key as PlaceholderKey] ?? p.text}
-            </div>
-          ))}
+          {placeholders.map((p) => {
+            // Use the designer's intended width; fall back to canvas-edge for old designs
+            const maxTextWidth = p.maxWidth
+              ? p.maxWidth
+              : Math.max(60, (Math.min(p.x, canvasWidth - p.x) - 20) * 2);
+            // Cap font size at 68px (height constraint), then shrink to fit width
+            const baseFontSize = Math.min(Math.round(p.fontSize * (p.scaleY ?? 1)), 68);
+            const displayText = valueMap[p.key as PlaceholderKey] ?? p.text;
+            const fittedFontSize = fitFontSize(
+              displayText,
+              baseFontSize,
+              maxTextWidth,
+              p.fontFamily,
+              p.fontWeight,
+              p.fontStyle,
+            );
+            return (
+              <div
+                key={p.id}
+                style={{
+                  position: 'absolute',
+                  left: p.x,
+                  top: p.y,
+                  transform: 'translate(-50%, -50%)',
+                  fontSize: fittedFontSize,
+                  fontFamily: p.fontFamily,
+                  fontWeight: p.fontWeight ?? 'normal',
+                  fontStyle: p.fontStyle ?? 'normal',
+                  color: p.color,
+                  textAlign: p.align ?? 'center',
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.2,
+                  pointerEvents: 'none',
+                }}
+              >
+                {displayText}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
