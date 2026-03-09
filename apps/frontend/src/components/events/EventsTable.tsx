@@ -18,8 +18,8 @@ export const EventsTable = ({
 }: EventsTableProps) => {
   if (events.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12 text-gray-500">
-        <p>No events found</p>
+      <div className="bg-white border-b border-gray-200">
+        <p className="px-6 py-12 text-center text-sm text-gray-500">No events found</p>
       </div>
     );
   }

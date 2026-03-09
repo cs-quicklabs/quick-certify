@@ -33,7 +33,7 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpened]);
 
-  const avatarUrl = profile?.avatarUrl || user?.avatarUrl || '';
+  const avatarUrl = profile ? (profile.avatarUrl ?? '') : (user?.avatarUrl ?? '');
   const role = (user?.role as RoleType) ?? RoleType.Manager;
   const navItems = getNavItems(role);
   const dropdownItems = getDropdownItems(role);

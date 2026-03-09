@@ -30,6 +30,7 @@ export interface FormFieldConfig {
   className?: string;
   min?: number; // For number inputs
   max?: number; // For number inputs
+  maxFn?: (formData: Record<string, unknown>) => number; // Dynamic max based on form state
   defaultValue?: string; // Default value for the field
   icon?: string; // Icon to display next to the label
   /** Conditionally show/hide field based on current form data */

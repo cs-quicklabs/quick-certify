@@ -137,6 +137,8 @@ export function ConfigForm<T extends z.ZodType>({
     const value = formData[field.name];
     const error = errors[field.name];
     const isDisabled = field.disabled || isSubmitting || isLoading;
+    const resolvedMax = field.maxFn ? field.maxFn(formData) : field.max;
+    const resolvedField = resolvedMax !== field.max ? { ...field, max: resolvedMax } : field;
 
     switch (field.type) {
       case 'text':
@@ -146,7 +148,7 @@ export function ConfigForm<T extends z.ZodType>({
         return (
           <InputField
             key={field.name}
-            field={field}
+            field={resolvedField}
             value={value}
             error={error}
             onChange={handleChange}

@@ -53,12 +53,10 @@ export default function EventSettingList({
     isOpen: boolean;
     item: IBaseEvent | null;
   }>({ isOpen: false, item: null });
-  const observerTarget = useRef<HTMLTableCellElement>(null);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (queryError) {
-      setShowQueryError(true);
-    }
+    if (queryError) setShowQueryError(true);
   }, [queryError]);
 
   useEffect(() => {
@@ -78,14 +76,9 @@ export default function EventSettingList({
     );
 
     const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
+    if (currentTarget) observer.observe(currentTarget);
     return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
+      if (currentTarget) observer.unobserve(currentTarget);
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
@@ -142,92 +135,65 @@ export default function EventSettingList({
     }
   };
 
-  const renderItemsList = () => {
-    if (queryError && showQueryError) return null;
-
-    const columns: TableColumn<IBaseEvent>[] = [
-      {
-        key: 'name',
-        header: label.toUpperCase(),
-        render: (item) =>
-          editingUuid === item.uuid ? (
-            <input
-              type="text"
-              value={editingValue}
-              onChange={(e) => setEditingValue(e.target.value)}
-              className="form-input-field w-full"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSaveEdit();
-                else if (e.key === 'Escape') handleCancelEdit();
-              }}
-              disabled={isUpdating}
-              autoFocus
-            />
-          ) : (
-            <span className="form-text-normal">{item.name}</span>
-          ),
-        className: 'w-full',
-      },
-      {
-        key: 'action',
-        header: 'ACTION',
-        render: (item) =>
-          editingUuid === item.uuid ? (
-            <div className="flex items-center justify-end gap-4">
-              <button
-                onClick={handleSaveEdit}
-                className="btn-primary text-sm px-3 py-1.5"
-                disabled={isUpdating || !editingValue.trim()}
-              >
-                {isUpdating ? 'Saving...' : 'Save'}
-              </button>
-              <button onClick={handleCancelEdit} className="btn-inline-blue text-sm">
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-end gap-4">
-              <button
-                onClick={() => handleEdit(item.uuid, item.name)}
-                className="btn-inline-blue"
-                disabled={deletingId !== null}
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => setConfirmDialog({ isOpen: true, item })}
-                className="btn-inline-red"
-                disabled={deletingId !== null}
-              >
-                {deletingId === item.uuid ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          ),
-        className: 'text-right',
-        headerClassName: 'text-right',
-      },
-    ];
-
-    return (
-      <>
-        <Table<IBaseEvent>
-          columns={columns}
-          data={items}
-          isLoading={isLoading}
-          emptyMessage={`No ${title.toLowerCase()} found. Create your first ${lowerLabel} above.`}
-          loadingMessage="Loading..."
-          scrollable
-          maxHeight="420px"
-        />
-
-        {hasNextPage && <div ref={observerTarget} className="h-4" />}
-
-        {isFetchingNextPage && (
-          <div className="text-center py-4 text-gray-500">Loading more...</div>
-        )}
-      </>
-    );
-  };
+  const columns: TableColumn<IBaseEvent>[] = [
+    {
+      key: 'name',
+      header: label,
+      render: (item) =>
+        editingUuid === item.uuid ? (
+          <input
+            type="text"
+            value={editingValue}
+            onChange={(e) => setEditingValue(e.target.value)}
+            className="form-input-field w-full"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSaveEdit();
+              else if (e.key === 'Escape') handleCancelEdit();
+            }}
+            disabled={isUpdating}
+            autoFocus
+          />
+        ) : (
+          <span className="form-text-normal">{item.name}</span>
+        ),
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (item) =>
+        editingUuid === item.uuid ? (
+          <div className="flex items-center justify-end gap-3">
+            <button
+              onClick={handleSaveEdit}
+              className="btn-primary text-sm px-3 py-1.5"
+              disabled={isUpdating || !editingValue.trim()}
+            >
+              {isUpdating ? 'Saving...' : 'Save'}
+            </button>
+            <button onClick={handleCancelEdit} className="btn-inline-blue text-sm">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-end gap-3">
+            <button
+              onClick={() => handleEdit(item.uuid, item.name)}
+              className="btn-inline-blue text-sm whitespace-nowrap"
+              disabled={deletingId !== null}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setConfirmDialog({ isOpen: true, item })}
+              className="btn-inline-red text-sm whitespace-nowrap"
+              disabled={deletingId !== null}
+            >
+              {deletingId === item.uuid ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        ),
+    },
+  ];
 
   return (
     <>
@@ -282,7 +248,25 @@ export default function EventSettingList({
                 />
               )}
 
-              <div>{renderItemsList()}</div>
+              {!queryError && (
+                <>
+                  <Table<IBaseEvent>
+                    columns={columns}
+                    data={items}
+                    isLoading={isLoading}
+                    responsive
+                    scrollable
+                    emptyMessage={`No ${title.toLowerCase()} found. Create your first ${lowerLabel} above.`}
+                    rowClassName="odd:bg-white even:bg-gray-50"
+                  />
+
+                  {hasNextPage && <div ref={observerTarget} className="h-4" />}
+
+                  {isFetchingNextPage && (
+                    <div className="text-center py-4 text-sm text-gray-500">Loading more...</div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>

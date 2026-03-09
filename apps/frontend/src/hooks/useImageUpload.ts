@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { replaceImage } from '@/lib/image-upload';
 import { getApiErrorMessage } from '@/lib/api-error';
-import { FileCategory } from '@/services/api/file.service';
+import { FileCategory, deleteFile } from '@/services/api/file.service';
 
 interface UseImageUploadOptions {
   category?: FileCategory;
@@ -38,34 +39,18 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     }
   };
 
-  const remove = async (currentUrl: string) => {
-    // Note: In some cases we might just want to clear the URL without calling delete API immediately,
-    // but the current implementation seems to support direct deletion.
-    // If currentUrl comes from backend, we might want to delete it.
-
-    // For now, let's assume the component handles the UI state and this hook handles the API.
-    // However, deleteImage util might be needed if we want to clean up S3 files.
-
-    // Logic from original component:
-    /*
-        const confirmImageDelete = async () => {
-            // ... updates state ...
-            if (config.onImageDelete) {
-                await config.onImageDelete('avatarUrl');
-            }
-        };
-        */
-
-    if (options.onDelete) {
-      try {
+  const remove = async (currentUrl?: string) => {
+    try {
+      if (options.onDelete) {
         await options.onDelete();
-        return true;
-      } catch (err) {
-        setError(getApiErrorMessage(err, 'Failed to delete image'));
-        return false;
+      } else if (currentUrl) {
+        await deleteFile(currentUrl);
       }
+      return true;
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to delete image'));
+      return false;
     }
-    return true;
   };
 
   return {
@@ -75,4 +60,10 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     error,
     setError,
   };
+}
+
+export function useDeleteFile() {
+  return useMutation({
+    mutationFn: (url: string) => deleteFile(url),
+  });
 }

@@ -152,7 +152,40 @@ export function DesignEditor({ backgroundUrl, initialLayout, onLayoutChangeActio
 
     // Listen for object modifications
     canvas.on('object:modified', emitLayout);
-    canvas.on('object:moving', emitLayout);
+
+    // Clamp position within canvas bounds while dragging
+    canvas.on('object:moving', (e) => {
+      const obj = e.target;
+      if (!obj) return;
+      const halfW = ((obj.width ?? 0) * (obj.scaleX ?? 1)) / 2;
+      const halfH = ((obj.height ?? 0) * (obj.scaleY ?? 1)) / 2;
+      obj.set({
+        left: Math.max(halfW, Math.min(CANVAS_WIDTH - halfW, obj.left ?? 0)),
+        top: Math.max(halfH, Math.min(CANVAS_HEIGHT - halfH, obj.top ?? 0)),
+      });
+      emitLayout();
+    });
+
+    // Limit resize: height capped at 45px (font size cap); width can stretch freely
+    canvas.on('object:scaling', (e) => {
+      const obj = e.target;
+      if (!obj) return;
+      const naturalW = obj.width ?? 0;
+      const naturalH = obj.height ?? 0;
+      if (!naturalW || !naturalH) return;
+      const maxScaleY = 68 / naturalH;
+      const maxScaleX = (CANVAS_WIDTH - 40) / naturalW;
+      const clampedScaleX = Math.max(0.5, Math.min(obj.scaleX ?? 1, maxScaleX));
+      const clampedScaleY = Math.max(0.5, Math.min(obj.scaleY ?? 1, maxScaleY));
+      const halfW = (naturalW * clampedScaleX) / 2;
+      const halfH = (naturalH * clampedScaleY) / 2;
+      obj.set({
+        scaleX: clampedScaleX,
+        scaleY: clampedScaleY,
+        left: Math.max(halfW, Math.min(CANVAS_WIDTH - halfW, obj.left ?? 0)),
+        top: Math.max(halfH, Math.min(CANVAS_HEIGHT - halfH, obj.top ?? 0)),
+      });
+    });
 
     // Handle delete key to remove placeholders
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -274,6 +307,7 @@ export function extractLayout(canvas: Canvas): DesignLayout {
         align: (text.textAlign as 'left' | 'center' | 'right') ?? 'center',
         scaleX: text.scaleX ?? 1,
         scaleY: text.scaleY ?? 1,
+        maxWidth: Math.round((text.width ?? 0) * (text.scaleX ?? 1)),
       };
     });
 

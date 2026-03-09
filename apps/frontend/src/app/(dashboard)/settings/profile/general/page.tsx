@@ -24,7 +24,7 @@ export default function ProfileSettingsPage() {
     },
 
     onImageUpload: async (fieldName: string, imageUrl: string) => {
-      if (fieldName === 'avatarUrl' && profile?.firstName) {
+      if (fieldName === 'avatarUrl' && profile) {
         await updateProfile.mutateAsync({
           firstName: profile.firstName,
           avatarUrl: imageUrl,
@@ -33,10 +33,10 @@ export default function ProfileSettingsPage() {
     },
 
     onImageDelete: async (fieldName: string) => {
-      if (fieldName === 'avatarUrl' && profile?.firstName) {
+      if (fieldName === 'avatarUrl' && profile) {
         await updateProfile.mutateAsync({
           firstName: profile.firstName,
-          avatarUrl: undefined,
+          avatarUrl: '',
         });
       }
     },

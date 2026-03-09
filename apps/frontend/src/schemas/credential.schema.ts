@@ -5,7 +5,7 @@ export const recipientRowSchema = z.object({
   name: z
     .string()
     .min(1, 'Name is required')
-    .max(200, 'Name must be 200 characters or less')
+    .max(50, 'Name must be 50 characters or less')
     .regex(/[a-zA-Z]/, 'Name must contain at least one letter'),
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
 });

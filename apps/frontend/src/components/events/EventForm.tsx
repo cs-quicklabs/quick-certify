@@ -320,7 +320,10 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         placeholder: 'e.g. 4',
         required: true,
         min: 1,
-        max: 999,
+        maxFn: (formData) => {
+          const caps: Record<string, number> = { day: 365, week: 52, month: 12 };
+          return caps[formData.durationType as string] ?? 365;
+        },
         visibleWhen: (formData) => !!formData.durationType,
       },
     ] as FormFieldConfig[],
