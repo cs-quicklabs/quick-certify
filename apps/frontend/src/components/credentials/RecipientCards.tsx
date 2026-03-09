@@ -61,19 +61,6 @@ export function RecipientCards({
                 }`}
               />
               {nameError && <p className="mt-0.5 text-xs text-red-500">{nameError}</p>}
-              {!nameError && recipient.name.length > 30 && (
-                <p
-                  className={`mt-0.5 text-xs ${
-                    recipient.name.length >= 46
-                      ? 'text-red-500'
-                      : recipient.name.length >= 38
-                        ? 'text-amber-500'
-                        : 'text-gray-400'
-                  }`}
-                >
-                  {recipient.name.length}/50 — long names may be truncated on the certificate
-                </p>
-              )}
             </div>
             <div>
               <input

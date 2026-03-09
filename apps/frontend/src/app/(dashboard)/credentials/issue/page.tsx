@@ -60,14 +60,6 @@ export default function IssueCredentialPage() {
 
   const handleStep1Continue = useCallback(
     (data: { eventId: string; eventName: string; recipients: RecipientRow[] }) => {
-      const longNameCount = data.recipients.filter((r) => r.name.length > 30).length;
-      if (longNameCount > 0) {
-        showWarningToast(
-          longNameCount === 1
-            ? 'One recipient has a long name that may be truncated on the certificate.'
-            : `${longNameCount} recipients have long names that may be truncated on the certificate.`,
-        );
-      }
       setFormData((prev) => ({ ...prev, ...data }));
       setActiveStep(1);
     },

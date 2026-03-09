@@ -98,49 +98,45 @@ export class CertificateGenerationService {
     return canvas.toBuffer('image/png');
   }
 
-  private truncateText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
-    if (maxWidth <= 0 || ctx.measureText(text).width <= maxWidth) return text;
-    const ellipsis = '…';
-    let truncated = text;
-    while (truncated.length > 1 && ctx.measureText(truncated + ellipsis).width > maxWidth) {
-      truncated = truncated.slice(0, -1);
-    }
-    return truncated + ellipsis;
-  }
-
   private drawPlaceholder(
     ctx: CanvasRenderingContext2D,
     placeholder: DesignLayoutPlaceholder,
     text: string,
   ): void {
-    const scaleX = placeholder.scaleX ?? 1;
     const scaleY = placeholder.scaleY ?? 1;
-    const fontSize = Math.round((placeholder.fontSize ?? 36) * scaleY);
+    // Max font size of 68 to prevent excessively large text from crashing canvas rendering
+    let fontSize = Math.min(Math.round((placeholder.fontSize ?? 36) * scaleY), 68);
     const fontFamily = placeholder.fontFamily ?? 'Times New Roman';
     const fontWeight = placeholder.fontWeight === 'bold' ? 'bold' : '';
     const fontStyle = placeholder.fontStyle === 'italic' ? 'italic' : '';
 
     ctx.save();
 
-    // Apply font
-    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`.trim();
-    ctx.fillStyle = placeholder.color ?? '#000000';
-
     // Fabric.js stores x/y as CENTER of the text (originX/originY = 'center')
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.fillStyle = placeholder.color ?? '#000000';
 
     const x = placeholder.x;
     const y = placeholder.y;
     const canvasWidth = (ctx.canvas as unknown as { width: number }).width;
     const padding = 20;
 
-    // Max width available from center position to nearest edge (with padding), accounting for scaleX
+    // Use the designer's intended width; fall back to canvas-edge for old designs
     const maxHalfW = Math.min(x - padding, canvasWidth - x - padding);
-    const maxTextWidth = Math.max(60, maxHalfW * 2) / scaleX;
+    const maxTextWidth = placeholder.maxWidth ? placeholder.maxWidth : Math.max(60, maxHalfW * 2);
 
-    const displayText = this.truncateText(ctx, text, maxTextWidth);
-    ctx.fillText(displayText, x, y);
+    // Auto-shrink font size to fit maxWidth instead of truncating
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`.trim();
+    if (maxTextWidth > 0) {
+      const measured = ctx.measureText(text).width;
+      if (measured > maxTextWidth) {
+        fontSize = Math.max(6, Math.floor(fontSize * (maxTextWidth / measured)));
+        ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`.trim();
+      }
+    }
+
+    ctx.fillText(text, x, y);
     ctx.restore();
   }
 

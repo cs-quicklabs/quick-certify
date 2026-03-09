@@ -166,15 +166,15 @@ export function DesignEditor({ backgroundUrl, initialLayout, onLayoutChangeActio
       emitLayout();
     });
 
-    // Limit resize so text never exceeds canvas dimensions
+    // Limit resize: height capped at 45px (font size cap); width can stretch freely
     canvas.on('object:scaling', (e) => {
       const obj = e.target;
       if (!obj) return;
       const naturalW = obj.width ?? 0;
       const naturalH = obj.height ?? 0;
       if (!naturalW || !naturalH) return;
+      const maxScaleY = 68 / naturalH;
       const maxScaleX = (CANVAS_WIDTH - 40) / naturalW;
-      const maxScaleY = (CANVAS_HEIGHT - 40) / naturalH;
       const clampedScaleX = Math.max(0.5, Math.min(obj.scaleX ?? 1, maxScaleX));
       const clampedScaleY = Math.max(0.5, Math.min(obj.scaleY ?? 1, maxScaleY));
       const halfW = (naturalW * clampedScaleX) / 2;
@@ -307,6 +307,7 @@ export function extractLayout(canvas: Canvas): DesignLayout {
         align: (text.textAlign as 'left' | 'center' | 'right') ?? 'center',
         scaleX: text.scaleX ?? 1,
         scaleY: text.scaleY ?? 1,
+        maxWidth: Math.round((text.width ?? 0) * (text.scaleX ?? 1)),
       };
     });
 
