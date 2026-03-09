@@ -22,6 +22,7 @@ import { RoleModule } from './modules/role';
 import { FileModule } from './modules/file';
 import { SkillModule } from './modules/skill';
 import { EventModule } from './modules/event';
+import { AuditModule } from './modules/audit/audit.module';
 
 // Entities for guards
 import { SessionEntity, UserEntity } from './entities';
@@ -30,6 +31,7 @@ import { DesignModule } from './modules/design/design.module';
 import { RecipientModule } from './modules/recipient/recipient.module';
 import { CredentialModule } from './modules/credential/credential.module';
 import { PathwayModule } from './modules/pathway/pathway.module';
+import { SearchModule } from './modules/search';
 
 /**
  * Application Root Module
@@ -111,6 +113,8 @@ import { PathwayModule } from './modules/pathway/pathway.module';
     RecipientModule,
     CredentialModule,
     PathwayModule,
+    SearchModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [

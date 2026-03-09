@@ -15,6 +15,8 @@ export const PATHWAY_KEYS = {
   participants: (id: string) => [...PATHWAY_KEYS.all, 'participants', id] as const,
   participantList: (id: string, filters?: Record<string, unknown>) =>
     [...PATHWAY_KEYS.participants(id), { filters }] as const,
+  participantDetail: (pathwayId: string, recipientUuid: string) =>
+    [...PATHWAY_KEYS.participants(pathwayId), 'detail', recipientUuid] as const,
 };
 
 export function usePathways(filters?: PathwayFilters & { enabled?: boolean }) {
@@ -74,6 +76,14 @@ export function usePathwayParticipants(
     queryKey: PATHWAY_KEYS.participantList(pathwayUuid, filters),
     queryFn: () => pathwayService.getParticipants(pathwayUuid, filters),
     enabled: !!pathwayUuid,
+  });
+}
+
+export function usePathwayParticipantDetail(pathwayUuid: string, recipientUuid: string) {
+  return useQuery({
+    queryKey: PATHWAY_KEYS.participantDetail(pathwayUuid, recipientUuid),
+    queryFn: () => pathwayService.getParticipantDetail(pathwayUuid, recipientUuid),
+    enabled: !!pathwayUuid && !!recipientUuid,
   });
 }
 

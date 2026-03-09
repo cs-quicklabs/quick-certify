@@ -75,18 +75,18 @@ export default function EventsPage() {
     enabled: filterDataLoaded,
   });
 
-  const typeItems: FilterItem[] = (typesData?.data ?? []).map((t) => ({
-    uuid: t.uuid,
-    name: t.name,
-  }));
-  const levelItems: FilterItem[] = (levelsData?.data ?? []).map((l) => ({
-    uuid: l.uuid,
-    name: l.name,
-  }));
-  const formatItems: FilterItem[] = (formatsData?.data ?? []).map((f) => ({
-    uuid: f.uuid,
-    name: f.name,
-  }));
+  function mapDataToFilterItems<T extends { uuid: string; name: string }>(
+    data: T[] | undefined,
+  ): FilterItem[] {
+    return (data ?? []).map((item) => ({
+      uuid: item.uuid,
+      name: item.name,
+    }));
+  }
+
+  const typeItems: FilterItem[] = mapDataToFilterItems(typesData?.data);
+  const levelItems: FilterItem[] = mapDataToFilterItems(levelsData?.data);
+  const formatItems: FilterItem[] = mapDataToFilterItems(formatsData?.data);
 
   // Fetch events (paginated, server-side filters)
   const { data, isLoading, error } = useEvents({
@@ -274,17 +274,21 @@ export default function EventsPage() {
             />
             {/* Spinner while debounce pending, clear button when there's a value */}
             <div className="absolute right-3">
-              {isSearching ? (
-                <Loader2 size={14} className="animate-spin text-gray-400" />
-              ) : query ? (
-                <button
-                  onClick={clearSearch}
-                  className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-                  aria-label="Clear search"
-                >
-                  <X size={14} />
-                </button>
-              ) : null}
+              {(() => {
+                if (isSearching)
+                  return <Loader2 size={14} className="animate-spin text-gray-400" />;
+                if (query)
+                  return (
+                    <button
+                      onClick={clearSearch}
+                      className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  );
+                return null;
+              })()}
             </div>
           </div>
         </div>

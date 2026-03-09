@@ -58,6 +58,7 @@ export const ROUTES = {
 
   // Feature routes
   EVENTS: '/events',
+  CREAT_EVENT: '/events/add',
   CREDENTIALS: '/credentials',
   PATHWAYS: '/pathways',
   PATHWAYS_ADD: '/pathways/add',
@@ -76,6 +77,7 @@ export const ROUTES = {
     RECIPIENTS: '/public/recipients',
     VERIFY: '/public/verify',
     RETRIEVE: '/public/retrieve',
+    PATHWAYS: '/public/pathways',
   },
 } as const;
 
@@ -85,11 +87,23 @@ export const ROUTES = {
  */
 export const createRoute = {
   eventDetail: (id: string) => `/events/${id}` as const,
+  eventEdit: (id: string) => `/events/edit?id=${id}` as const,
   credentialDetail: (id: string) => `/credentials/${id}` as const,
   teamMember: (id: string) => `/settings/team/${id}` as const,
   pathwayDetail: (id: string) => `/pathways/${id}` as const,
   pathwayEdit: (id: string) => `/pathways/edit?id=${id}` as const,
+  pathwayParticipantDetail: (pathwayId: string, recipientUuid: string) =>
+    `/pathways/${pathwayId}/participants/${recipientUuid}` as const,
+  designPreview: (id: string) => `/designs/preview/${id}` as const,
   resetPasswordWithToken: (token: string) => `/reset-password?token=${token}` as const,
   invitationWithToken: (token: string) => `/invitation?token=${token}` as const,
   publicCredential: (uuid: string) => `/public/credential/${uuid}` as const,
+  publicCompany: (slug: string) => `/public/company/${slug}` as const,
+  publicCompanyEvents: (slug: string) => `/public/company/${slug}/events` as const,
+  publicCompanyRecipients: (slug: string) => `/public/company/${slug}/recipients` as const,
+  publicPathways: (slug: string) => `/public/company/${slug}/pathways` as const,
+  publicPathwayDetail: (slug: string, uuid: string) =>
+    `/public/company/${slug}/pathways/${uuid}` as const,
+  publicPathwayParticipant: (slug: string, pathwayUuid: string, participantUuid: string) =>
+    `/public/company/${slug}/pathways/${pathwayUuid}/participants/${participantUuid}` as const,
 } as const;

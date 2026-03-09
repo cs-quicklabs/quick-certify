@@ -5,10 +5,18 @@ import Link from 'next/link';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
 import { ConfirmationDialog } from '@/components/ui';
-import { Search } from 'lucide-react';
-import { getInitials } from '@/utils';
+import { GlobalSearch } from './global-search';
+import { getInitials, capitalizeFirst } from '@/utils';
 import { usePathname } from 'next/navigation';
 import { RoleType } from '@/types';
+
+const ROLE_BADGE_STYLES: Record<string, string> = {
+  [RoleType.SystemAdmin]: 'bg-purple-100 text-purple-700',
+  [RoleType.SuperAdmin]: 'bg-blue-100 text-blue-700',
+  [RoleType.Admin]: 'bg-indigo-100 text-indigo-700',
+  [RoleType.Manager]: 'bg-amber-100 text-amber-700',
+  [RoleType.Designer]: 'bg-emerald-100 text-emerald-700',
+};
 
 type NavItem = { href: string; label: string };
 
@@ -126,25 +134,7 @@ export function Header() {
           </div>
 
           {/* Search */}
-          <div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
-            <div className="w-full max-w-lg lg:max-w-xs">
-              <label htmlFor="search" className="sr-only">
-                Search
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="search"
-                  name="search"
-                  className="block w-full rounded-md border border-transparent bg-gray-700 py-1.5 pl-10 pr-3 leading-5 text-gray-300 placeholder-gray-400 focus:border-white focus:bg-white focus:text-gray-900 focus:outline-none focus:ring-white sm:text-sm"
-                  placeholder="Search Events or Participants"
-                  type="search"
-                />
-              </div>
-            </div>
-          </div>
+          <GlobalSearch />
 
           {/* Mobile Menu Button */}
           <button
@@ -187,6 +177,13 @@ export function Header() {
                   <div className="px-4 py-3">
                     <p className="text-sm break-all">{user?.email}</p>
                     <p className="text-xs text-gray-500">{profile?.organizationName}</p>
+                    {user?.role && (
+                      <span
+                        className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_BADGE_STYLES[user.role] || 'bg-gray-100 text-gray-700'}`}
+                      >
+                        {capitalizeFirst(user.role.replace('_', ' '))}
+                      </span>
+                    )}
                   </div>
                   <div className="py-1">
                     {dropdownItems.map((item) => (
