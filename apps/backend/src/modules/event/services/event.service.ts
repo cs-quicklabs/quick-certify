@@ -173,6 +173,14 @@ export class EventService {
 
   async deleteByUuid(uuid: string, organizationUuid: string): Promise<boolean> {
     const event = await this.requireEvent(uuid, organizationUuid);
+
+    const isLinked = await this.eventRepository.isLinkedToPathway(event.id);
+    if (isLinked) {
+      throw new ConflictException(
+        'This event is linked to one or more pathways. Remove it from all pathways before deleting.',
+      );
+    }
+
     await this.eventRepository.softDelete(event);
     return true;
   }

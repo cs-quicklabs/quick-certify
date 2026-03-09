@@ -22,6 +22,7 @@ import {
   EventEntity,
   EventSkillEntity,
   SkillEntity,
+  PathwayEventEntity,
 } from '@src/entities';
 import { AuthModule } from '../auth';
 import { OrganizationModule } from '../organization';
@@ -36,6 +37,7 @@ import { DesignModule } from '../design/design.module';
       EventEntity,
       EventSkillEntity,
       SkillEntity,
+      PathwayEventEntity,
     ]),
     AuthModule,
     OrganizationModule,
