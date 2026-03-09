@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, WhereOptions } from 'sequelize';
-import { Model, ModelStatic } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 import { EventEntity, PathwayEntity, DesignEntity, UserEntity, RoleEntity } from '@src/entities';
 import { ISearchService, GlobalSearchResult, SearchResultItem, SearchCategory } from './interfaces';
 import { Role } from '@src/modules/role/enums';
@@ -26,17 +25,8 @@ export class SearchService implements ISearchService {
     const iLikeTerm: ILikeTerm = { [Op.iLike]: `%${term}%` };
 
     const [events, pathways, designs, teamMembers] = await Promise.all([
-      this.searchByName(this.eventModel, iLikeTerm, organizationId, limit, SearchCategory.EVENTS, {
-        is_active: true,
-      }),
-      this.searchByName(
-        this.pathwayModel,
-        iLikeTerm,
-        organizationId,
-        limit,
-        SearchCategory.PATHWAYS,
-        { is_active: true },
-      ),
+      this.searchEvents(iLikeTerm, organizationId, limit),
+      this.searchPathways(iLikeTerm, organizationId, limit),
       this.searchDesigns(iLikeTerm, organizationId, limit),
       this.searchTeamMembers(iLikeTerm, organizationId, limit),
     ]);
@@ -50,25 +40,41 @@ export class SearchService implements ISearchService {
     };
   }
 
-  private async searchByName(
-    model: ModelStatic<Model>,
+  private async searchEvents(
     iLikeTerm: ILikeTerm,
     organizationId: number,
     limit: number,
-    category: SearchCategory,
-    extraWhere: WhereOptions = {},
   ): Promise<SearchResultItem[]> {
-    const rows = await model.findAll({
-      where: { organization_id: organizationId, name: iLikeTerm, ...extraWhere },
+    const rows = await this.eventModel.findAll({
+      where: { organization_id: organizationId, name: iLikeTerm, is_active: true },
       attributes: ['uuid', 'name'],
       limit,
       order: [['created_at', 'DESC']],
     });
 
     return rows.map((row) => ({
-      uuid: row.getDataValue('uuid'),
-      name: row.getDataValue('name'),
-      category,
+      uuid: row.uuid,
+      name: row.name,
+      category: SearchCategory.EVENTS,
+    }));
+  }
+
+  private async searchPathways(
+    iLikeTerm: ILikeTerm,
+    organizationId: number,
+    limit: number,
+  ): Promise<SearchResultItem[]> {
+    const rows = await this.pathwayModel.findAll({
+      where: { organization_id: organizationId, name: iLikeTerm, is_active: true },
+      attributes: ['uuid', 'name'],
+      limit,
+      order: [['created_at', 'DESC']],
+    });
+
+    return rows.map((row) => ({
+      uuid: row.uuid,
+      name: row.name,
+      category: SearchCategory.PATHWAYS,
     }));
   }
 
