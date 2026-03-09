@@ -131,7 +131,7 @@ export default function ArchivedMembersPage() {
     return members.map((member) => (
       <div
         key={member.id}
-        className="bg-white mb-4 border-gray-100  flex flex-col sm:flex-row sm:items-center justify-between"
+        className="mb-4 border-gray-100  flex flex-col sm:flex-row sm:items-center justify-between"
       >
         <div className="flex-1 min-w-0">
           <div className="flex text-sm font-medium text-gray-600 truncate">
