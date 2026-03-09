@@ -82,7 +82,7 @@ export default function PublicRecipientsPage() {
   }, []);
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
+    <div className="bg-gray-50 min-h-screen p-4">
       {/* Breadcrumb */}
       <PublicBreadcrumb
         items={[
@@ -91,8 +91,7 @@ export default function PublicRecipientsPage() {
         ]}
         title="Recipients"
       />
-      {/* Search & Sort */}
-      <div className="max-w-7xl mx-auto mt-4 p-4 rounded-sm border border-gray-200 bg-white">
+      <div className="max-w-7xl mx-auto mt-4 pt-4 pb-8 px-8 rounded-sm border border-gray-200 bg-white">
         <SearchSortBar
           search={search}
           onSearchChange={handleSearch}
@@ -105,22 +104,22 @@ export default function PublicRecipientsPage() {
           activeSortBy={sortBy}
           activeSortOrder={sortOrder}
         />
+        {/* Recipients Grid */}
+        <div className="mt-6">
+          {isLoading ? (
+            <RecipientGridSkeleton />
+          ) : (
+            <RecipientGrid
+              recipients={recipients}
+              isLoading={isLoading}
+              error={error}
+              search={search}
+              slug={slug}
+            />
+          )}
+        </div>
       </div>
-      {/* Recipients Grid */}
-      <div className="max-w-7xl mx-auto mt-6">
-        {isLoading ? (
-          <RecipientGridSkeleton />
-        ) : (
-          <RecipientGrid
-            recipients={recipients}
-            isLoading={isLoading}
-            error={error}
-            search={search}
-            slug={slug}
-          />
-        )}
-      </div>
-      ;{/* Pagination */}
+      {/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div className="max-w-7xl mx-auto mt-6 bg-white border border-gray-200 rounded-sm p-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
