@@ -52,6 +52,7 @@ export function RecipientCards({
                 type="text"
                 placeholder="Recipient name"
                 value={recipient.name}
+                maxLength={50}
                 onChange={(e) => onRecipientChange(recipient.id, 'name', e.target.value)}
                 className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:outline-none ${
                   nameError

@@ -27,26 +27,31 @@ export const step1Schema = z
     durationType: z.string().optional(),
     durationValue: z.preprocess(
       (val) => (val === '' || val === undefined || val === null ? undefined : val),
-      z.coerce
-        .number()
-        .int('Must be a whole number')
-        .min(1, 'Must be at least 1')
-        .max(999, 'Must not exceed 999')
-        .optional(),
+      z.coerce.number().int('Must be a whole number').min(1, 'Must be at least 1').optional(),
     ),
   })
-  .refine(
-    (data) => {
-      if (data.durationType && (data.durationValue === undefined || data.durationValue === null)) {
-        return false;
+  .superRefine((data, ctx) => {
+    if (data.durationType && (data.durationValue === undefined || data.durationValue === null)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Duration is required when duration type is selected',
+        path: ['durationValue'],
+      });
+      return;
+    }
+
+    if (data.durationType && data.durationValue !== undefined) {
+      const caps: Record<string, number> = { day: 365, week: 52, month: 12 };
+      const cap = caps[data.durationType];
+      if (cap && data.durationValue > cap) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Must not exceed ${cap} for ${data.durationType}s`,
+          path: ['durationValue'],
+        });
       }
-      return true;
-    },
-    {
-      message: 'Duration is required when duration type is selected',
-      path: ['durationValue'],
-    },
-  );
+    }
+  });
 
 export type Step0SchemaData = z.infer<typeof step0Schema>;
 export type Step1SchemaData = z.infer<typeof step1Schema>;
