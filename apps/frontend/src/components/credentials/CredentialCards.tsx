@@ -21,7 +21,7 @@ export function CredentialCards({ credentials, isLoading }: CredentialCardsProps
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
         </div>
       ) : credentials.length === 0 ? (
-        <p className="text-center py-12 text-gray-500 text-sm">No credentials found</p>
+        <p className="px-6 py-12 text-center text-sm text-gray-500">No credentials found</p>
       ) : (
         credentials.map((item) => (
           <div key={item.uuid} className="block px-4 py-2 hover:bg-gray-50">

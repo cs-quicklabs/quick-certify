@@ -108,7 +108,7 @@ export default function DesignsList({
           <DesignCard key={design.uuid} design={design} onDelete={() => onDelete(design)} />
         ))
       ) : (
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-white border-b border-gray-200 shadow-sm">
           <p className="px-6 py-12 text-center text-sm text-gray-500">No designs found</p>
         </div>
       )}

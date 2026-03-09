@@ -75,7 +75,7 @@ function PathwaysContent() {
   };
 
   return (
-    <div className="relative bg-white shadow-md sm:rounded-sm">
+    <div className="relative bg-white shadow-md sm:rounded-sm overflow-hidden">
       <div className="divide-y divide-gray-200">
         {/* Header */}
         <div className="px-4 py-2 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">

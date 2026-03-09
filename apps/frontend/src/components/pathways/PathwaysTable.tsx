@@ -58,7 +58,7 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
               </tr>
             ) : pathways.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-12 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-500">
                   No pathways found
                 </td>
               </tr>
@@ -102,7 +102,7 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
           </div>
         ) : pathways.length === 0 ? (
-          <p className="text-center py-12 text-gray-500 text-sm">No pathways found</p>
+          <p className="px-6 py-12 text-center text-sm text-gray-500">No pathways found</p>
         ) : (
           pathways.map((pathway) => (
             <button
