@@ -102,17 +102,16 @@ export default function DesignsList({
         </div>
       </div>
 
-      {/* Empty state */}
-      {designs.length === 0 && (
-        <div className="py-16 text-center text-gray-500 text-medium font-medium">
-          no designs found
+      {/* List */}
+      {designs.length > 0 ? (
+        designs.map((design) => (
+          <DesignCard key={design.uuid} design={design} onDelete={() => onDelete(design)} />
+        ))
+      ) : (
+        <div className="bg-white border-b border-gray-200">
+          <p className="px-6 py-12 text-center text-sm text-gray-500">No designs found</p>
         </div>
       )}
-
-      {/* List */}
-      {designs.map((design) => (
-        <DesignCard key={design.uuid} design={design} onDelete={() => onDelete(design)} />
-      ))}
     </>
   );
 }
