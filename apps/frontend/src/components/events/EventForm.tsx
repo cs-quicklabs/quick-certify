@@ -1,35 +1,28 @@
 'use client';
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { z } from 'zod';
-import { ConfigForm } from '@/components/ConfigForm';
-import type { FormFieldConfig } from '@/types/form.types';
+import { Loader2 } from 'lucide-react';
 import { Stepper } from '@/components/Stepper';
-import {
-  useEventTypes,
-  useEventLevels,
-  useEventFormats,
-  useCreateEvent,
-  useUpdateEvent,
-  useEvent,
-} from '@/hooks/useEvents';
+import type { FormFieldConfig } from '@/types/form.types';
+import { useCreateEvent, useUpdateEvent, useEvent } from '@/hooks/useEvents';
+import { useEventTypes } from '@/hooks/useEventTypes';
+import { useEventLevels } from '@/hooks/useEventLevels';
+import { useEventFormats } from '@/hooks/useEventFormats';
 import { useSkills } from '@/hooks/useSkills';
-import { useEventStepper, Step0Data, Step1Data } from '@/hooks/useEventStepper';
+import { useEventStepper, type Step0Data, type Step1Data } from '@/hooks/useEventStepper';
+import { useEventFormInitialization } from '@/hooks/useEventFormInitialization';
 import { DesignSelectorModal } from '@/components/designs/DesignSelectorModal';
-import { SkillSelector } from '@/components/events/SkillSelector';
-import { Eye, SquarePen, Trash, Loader2, UploadCloud } from 'lucide-react';
 import { useDesignList } from '@/hooks/useDesigns';
-import { Design } from '@/types';
-import { Event } from '@/types';
-import { showSuccessToast } from '@/lib/toast';
+import { type Design, type Event } from '@/types';
+import { showSuccessToast, showErrorToast } from '@/lib/toast';
+import { ROUTES } from '@/config/routes';
+import { step0Schema, step1Schema } from '@/schemas/eventForm.schemas';
+import { EventFormStep0 } from './EventFormStep0';
+import { EventFormStep1 } from './EventFormStep1';
 
-// Maximum number of items to fetch for dropdown lists
 const DROPDOWN_PAGE_SIZE = 100;
 
-/**
- * Extended Step0Data with UI-specific fields
- */
 interface Step0FormData extends Step0Data {
   design?: string;
   designId?: string;
@@ -37,9 +30,6 @@ interface Step0FormData extends Step0Data {
   designType?: string;
 }
 
-/**
- * Extended Step1Data (same as hook's interface)
- */
 type Step1FormData = Step1Data;
 
 interface EventFormProps {
@@ -49,25 +39,13 @@ interface EventFormProps {
   initialStep?: number;
 }
 
-/**
- * Event Form Component
- * Handles both creating new events and editing existing events
- */
 export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }: EventFormProps) {
   const router = useRouter();
   const isEditMode = mode === 'edit';
 
-  // Loading states
   const [isFormReady, setIsFormReady] = useState(!isEditMode);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-  // Step 0 data storage (core data for stepper validation)
   const [step0CoreData, setStep0CoreData] = useState<Step0Data>({ name: '' });
-
-  // Step 0 UI data storage (includes display fields)
   const [step0FormData, setStep0FormData] = useState<Step0FormData>({ name: '' });
-
-  // Step 1 data storage
   const [step1Data, setStep1Data] = useState<Step1FormData>({
     description: '',
     learningLink: '',
@@ -75,11 +53,11 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     formatId: '',
     typeId: '',
   });
-
-  // Skills state - stores selected skill UUIDs
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  const [isDesignModalOpen, setIsDesignModalOpen] = useState(false);
 
-  // Stepper hook - manages step state based on field completion
+  const step0FormRef = useRef<HTMLFormElement>(null);
+
   const {
     currentStep,
     setCurrentStep,
@@ -93,20 +71,12 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     steps,
   } = useEventStepper(initialStep, step0CoreData, step1Data, selectedSkillIds);
 
-  // Modal state
-  const [isDesignModalOpen, setIsDesignModalOpen] = useState(false);
-
-  // Form refs
-  const step0FormRef = useRef<HTMLFormElement>(null);
-
-  // Fetch event data if in edit mode
   const shouldFetchEvent = isEditMode && !!eventUuid && !initialEventData;
   const { data: eventData, isLoading: isLoadingEvent } = useEvent(
     eventUuid ?? '',
     shouldFetchEvent,
   );
 
-  // Data fetching for dropdowns
   const { data: typesData, isLoading: isLoadingTypes } = useEventTypes({
     page: 1,
     limit: DROPDOWN_PAGE_SIZE,
@@ -119,18 +89,12 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     page: 1,
     limit: DROPDOWN_PAGE_SIZE,
   });
-  const { designs } = useDesignList({
-    page: 1,
-    limit: DROPDOWN_PAGE_SIZE,
-  });
-
-  // Fetch skills for dropdown
+  const { designs } = useDesignList({ page: 1, limit: DROPDOWN_PAGE_SIZE });
   const { data: skillsData, isLoading: isLoadingSkills } = useSkills({
     page: 1,
     limit: DROPDOWN_PAGE_SIZE,
   });
 
-  // Mutations
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent(eventUuid ?? '');
 
@@ -138,87 +102,31 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   const levels = levelsData?.data ?? [];
   const formats = formatsData?.data ?? [];
   const skills = skillsData?.data ?? [];
-
   const isLoadingDropdowns =
     isLoadingTypes || isLoadingLevels || isLoadingFormats || isLoadingSkills;
 
-  // Track if form has been initialized to prevent infinite loops
-  const isInitializedRef = useRef(false);
+  useEventFormInitialization({
+    isEditMode,
+    eventUuid,
+    eventData,
+    setStep0CoreData,
+    setStep0FormData,
+    setStep1Data,
+    setSelectedSkillIds,
+    setIsFormReady,
+  });
 
-  // Reset initialization when mode or eventUuid changes
-  useEffect(() => {
-    isInitializedRef.current = false;
-    setIsFormReady(!isEditMode);
-  }, [mode, eventUuid, isEditMode]);
-
-  // Initialize form data when event data is loaded (edit mode)
-  useEffect(() => {
-    if (isEditMode && eventData && !isInitializedRef.current) {
-      // Handle both snake_case and camelCase from API
-      const apiData = eventData as unknown as Record<string, unknown>;
-      const designData = apiData.design as {
-        url?: string;
-        id?: string;
-        name?: string;
-        type?: string;
-        uuid?: string;
-      } | null;
-
-      // Populate Step 0 core data (for stepper validation)
-      setStep0CoreData({
-        name: (apiData.name as string) || '',
-        designUuid: designData?.uuid,
-      });
-
-      // Populate Step 0 UI data (for display)
-      setStep0FormData({
-        name: (apiData.name as string) || '',
-        design: designData?.url,
-        designId: designData?.id,
-        designTitle: designData?.name,
-        designType: designData?.type,
-        designUuid: designData?.uuid,
-      });
-
-      // Populate Step 1 data
-      // Note: API may return snake_case fields
-      setStep1Data({
-        description: (apiData.description as string) || undefined,
-        learningLink:
-          (apiData.learning_link as string) || (apiData.learningLink as string) || undefined,
-        typeId: eventData.event_type?.uuid,
-        levelId: eventData.event_level?.uuid,
-        formatId: eventData.event_format?.uuid,
-        durationType: (apiData.duration_type as string) || undefined,
-        durationValue: (apiData.duration_value as number) || undefined,
-      });
-
-      // Populate skills from event data
-      if (eventData.skills && eventData.skills.length > 0) {
-        setSelectedSkillIds(eventData.skills.map((skill) => skill.uuid));
-      }
-
-      // Mark as initialized and ready to render form
-      isInitializedRef.current = true;
-      setIsFormReady(true);
-    }
-  }, [isEditMode, eventData]);
-
-  // Stepper navigation with toast for restricted steps
   const handleStepSelect = useCallback(
     (step: number) => {
       if (canNavigateToStep(step)) {
         setCurrentStep(step);
       } else {
-        showSuccessToast('Please complete the current step first');
+        showErrorToast('Please complete the current step first');
       }
     },
     [canNavigateToStep, setCurrentStep],
   );
 
-  /**
-   * Add/remove skill handlers for SkillSelector
-   */
   const handleAddSkill = useCallback((skillUuid: string) => {
     setSelectedSkillIds((prev) => [...prev, skillUuid]);
   }, []);
@@ -227,17 +135,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     setSelectedSkillIds((prev) => prev.filter((id) => id !== skillUuid));
   }, []);
 
-  /**
-   * Handle design selection from modal
-   */
   const handleDesignSelect = useCallback((design: Design) => {
-    // Update core data for stepper validation
-    setStep0CoreData((prev) => ({
-      ...prev,
-      designUuid: design.uuid,
-    }));
-
-    // Update UI data for display
+    setStep0CoreData((prev) => ({ ...prev, designUuid: design.uuid }));
     setStep0FormData((prev) => ({
       ...prev,
       design: design.url,
@@ -248,18 +147,9 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     }));
   }, []);
 
-  /**
-   * Handle design removal
-   */
   const handleDeleteDesign = useCallback((e: React.MouseEvent<SVGElement>) => {
     e.stopPropagation();
-    // Update core data for stepper validation
-    setStep0CoreData((prev) => ({
-      ...prev,
-      designUuid: undefined,
-    }));
-
-    // Update UI data for display
+    setStep0CoreData((prev) => ({ ...prev, designUuid: undefined }));
     setStep0FormData((prev) => ({
       ...prev,
       design: undefined,
@@ -270,61 +160,32 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     }));
   }, []);
 
-  /**
-   * Handle design edit (reopen modal)
-   */
   const handleEditDesign = useCallback((e: React.MouseEvent<SVGElement>) => {
     e.stopPropagation();
     setIsDesignModalOpen(true);
   }, []);
 
-  /**
-   * Trigger form submission via ref
-   */
   const triggerStep0Submit = useCallback(() => {
     step0FormRef.current?.requestSubmit();
   }, []);
 
-  /**
-   * Handle Step 0 submission - Validate and navigate to Step 1
-   */
   const handleStep0Submit = useCallback(
     async (formData: { name: string }) => {
-      // Update core data for stepper validation
-      const updatedCoreData: Step0Data = {
-        ...step0CoreData,
-        name: formData.name,
-      };
+      const updatedCoreData: Step0Data = { ...step0CoreData, name: formData.name };
       setStep0CoreData(updatedCoreData);
-
-      // Update UI data for display
-      setStep0FormData((prev) => ({
-        ...prev,
-        name: formData.name,
-      }));
-
-      // Validate that design is selected (required)
+      setStep0FormData((prev) => ({ ...prev, name: formData.name }));
       if (!step0FormData.designUuid) {
-        throw new Error('Please select a design'); // ← tells ConfigForm it failed
+        throw new Error('Please select a design');
       }
-
-      // In both create and edit mode, just navigate to Step 1
-      // Event creation happens on final submit in Step 1
       goToNextStep();
     },
     [goToNextStep, step0CoreData, step0FormData.designUuid],
   );
 
-  /**
-   * Handle Step 1 submission - Update the event with full details
-   */
   const handleStep1Submit = useCallback(
     async (formData: Step1FormData) => {
-      // Store form data for persistence
       setStep1Data(formData);
-
       if (isEditMode && eventUuid) {
-        // Edit mode: update existing event (supports null to clear optional fields)
         await updateEvent.mutateAsync({
           name: step0CoreData.name,
           designId: step0FormData.designUuid || null,
@@ -337,10 +198,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           durationValue: formData.durationValue ?? null,
           skillIds: selectedSkillIds,
         });
-
         showSuccessToast('Event updated successfully');
       } else {
-        // Create mode: create event with all data from both steps
         await createEvent.mutateAsync({
           name: step0CoreData.name,
           designId: step0FormData.designUuid || '',
@@ -355,10 +214,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         });
         showSuccessToast('Event created successfully');
       }
-
-      // Mark Step 1 as completed
       markStepCompleted(1);
-      router.push('/events');
+      router.push(ROUTES.EVENTS);
     },
     [
       eventUuid,
@@ -372,15 +229,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
       isEditMode,
     ],
   );
-
-  // Step 0 form schema and config
-  const step0Schema = z.object({
-    name: z
-      .string()
-      .min(1, 'Name is required')
-      .max(255, 'Name must not exceed 255 characters')
-      .transform((val) => val.trim()),
-  });
 
   const step0Config = {
     title: isEditMode ? 'Edit Event' : 'Add New Event',
@@ -401,53 +249,8 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
     schema: step0Schema,
     submitLabel: 'Next',
     onSubmit: handleStep0Submit,
-    // Show checkmark when step is complete
     isComplete: isStep0Complete,
   };
-
-  // Step 1 schema and config
-  const step1Schema = z
-    .object({
-      description: z
-        .string()
-        .max(5000, 'Description must not exceed 5000 characters')
-        .optional()
-        .transform((val) => val?.trim() || undefined),
-      learningLink: z
-        .string()
-        .max(500, 'Learning link must not exceed 500 characters')
-        .url('Please enter a valid URL')
-        .optional()
-        .or(z.literal('')),
-      typeId: z.string({ error: 'Event type is required' }).min(1, 'Event type is required'),
-      levelId: z.string({ error: 'Event level is required' }).min(1, 'Event level is required'),
-      formatId: z.string({ error: 'Event format is required' }).min(1, 'Event format is required'),
-      durationType: z.string().optional(),
-      durationValue: z.preprocess(
-        (val) => (val === '' || val === undefined || val === null ? undefined : val),
-        z.coerce
-          .number()
-          .int('Must be a whole number')
-          .min(1, 'Must be at least 1')
-          .max(999, 'Must not exceed 999')
-          .optional(),
-      ),
-    })
-    .refine(
-      (data) => {
-        if (
-          data.durationType &&
-          (data.durationValue === undefined || data.durationValue === null)
-        ) {
-          return false;
-        }
-        return true;
-      },
-      {
-        message: 'Duration is required when duration type is selected',
-        path: ['durationValue'],
-      },
-    );
 
   const step1Config = {
     title: 'About',
@@ -517,7 +320,10 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
         placeholder: 'e.g. 4',
         required: true,
         min: 1,
-        max: 999,
+        maxFn: (formData) => {
+          const caps: Record<string, number> = { day: 365, week: 52, month: 12 };
+          return caps[formData.durationType as string] ?? 365;
+        },
         visibleWhen: (formData) => !!formData.durationType,
       },
     ] as FormFieldConfig[],
@@ -529,12 +335,10 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           ? 'Update Event'
           : 'Save Event',
     onSubmit: handleStep1Submit,
-    onCancel: () => router.push('/events'),
-    // Show checkmark when step is complete
+    onCancel: () => router.push(ROUTES.EVENTS),
     isComplete: isStep1Complete,
   };
 
-  // Show loading state until form data is populated
   if (!isFormReady || (isEditMode && isLoadingEvent && !initialEventData)) {
     return (
       <div className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
@@ -549,7 +353,6 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
   return (
     <div className="max-w-7xl mx-auto pb-10 lg:py-12 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Stepper Sidebar */}
         <Stepper
           steps={steps}
           activeIndex={currentStep}
@@ -558,165 +361,49 @@ export function EventForm({ mode, eventUuid, initialEventData, initialStep = 0 }
           onSelect={handleStepSelect}
         />
 
-        {/* Main Content */}
         <section className="lg:col-span-9">
-          {/* Step 0: Info & Appearance */}
           {currentStep === 0 && (
-            <div className="max-w-xl pb-12 px-4 lg:col-span-6">
-              <ConfigForm
-                config={{ ...step0Config, showSubmit: false }}
-                initialValues={step0FormData}
-                formRef={step0FormRef}
-                isLoading={false}
-                onChange={(values) => {
-                  const name = (values.name as string) || '';
-                  setStep0CoreData((prev) => (prev.name === name ? prev : { ...prev, name }));
-                  setStep0FormData((prev) => (prev.name === name ? prev : { ...prev, name }));
-                }}
-              />
-
-              {/* Design Selection */}
-              <div className="mt-4">
-                <div className="mb-2">
-                  <label className="form-input-label">Appearance</label>
-                  <p className="form-input-description -mt-2 mb-2">
-                    Add a design to this event (required)
-                  </p>
-                </div>
-
-                {step0FormData.design ? (
-                  <div className="relative flex overflow-hidden rounded-lg border border-gray-300">
-                    <div className="relative flex h-30 w-40 items-center justify-center overflow-hidden bg-gray-100 p-2">
-                      <img
-                        alt={step0FormData.designTitle}
-                        src={step0FormData.design}
-                        className="size-full object-contain"
-                      />
-                    </div>
-                    <div className="flex flex-1 flex-col p-4">
-                      <h4 className="mb-1 text-sm font-medium">{step0FormData.designTitle}</h4>
-                      <div className="flex items-center gap-x-1.5 text-gray-600">
-                        <span className="capitalize bg-brand-softer border border-brand-subtle text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded">
-                          {step0FormData.designType}
-                        </span>
-                      </div>
-                      <div className="w-full mt-auto flex justify-between">
-                        <button
-                          type="button"
-                          onClick={() => setIsPreviewOpen(true)}
-                          className="flex items-center text-blue-600 hover:text-blue-800"
-                        >
-                          <Eye size={16} strokeWidth={1} />
-                          <span className="text-xs font-medium ml-1">Preview</span>
-                        </button>
-                        <div className="flex items-center gap-2">
-                          <SquarePen
-                            size={16}
-                            strokeWidth={1}
-                            className="cursor-pointer hover:text-blue-600"
-                            onClick={handleEditDesign}
-                          />
-                          <Trash
-                            size={16}
-                            strokeWidth={1}
-                            className="cursor-pointer hover:text-red-600"
-                            onClick={handleDeleteDesign}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => setIsDesignModalOpen(true)}
-                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
-                  >
-                    <UploadCloud className="w-10 h-10 mb-2 text-gray-400" strokeWidth={1.5} />
-                    <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold text-black">Click to upload</span> or drag and
-                      drop
-                    </p>
-                    <p className="text-xs text-gray-500">Select from your designs</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Step 0 Actions */}
-              <div className="flex justify-end items-center mt-6">
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => router.push('/events')}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary ml-3 flex items-center gap-2"
-                  onClick={triggerStep0Submit}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+            <EventFormStep0
+              config={step0Config as Parameters<typeof EventFormStep0>[0]['config']}
+              initialValues={step0FormData as unknown as Record<string, unknown>}
+              formRef={step0FormRef}
+              onFormChange={(values) => {
+                const name = (values.name as string) || '';
+                setStep0CoreData((prev) => (prev.name === name ? prev : { ...prev, name }));
+                setStep0FormData((prev) => (prev.name === name ? prev : { ...prev, name }));
+              }}
+              hasDesign={!!step0FormData.design}
+              designUrl={step0FormData.design}
+              designTitle={step0FormData.designTitle}
+              designType={step0FormData.designType}
+              onDesignAdd={() => setIsDesignModalOpen(true)}
+              onDesignEdit={handleEditDesign}
+              onDesignDelete={handleDeleteDesign}
+              onCancel={() => router.push(ROUTES.EVENTS)}
+              onNext={triggerStep0Submit}
+            />
           )}
 
-          {/* Step 1: Enhanced Details */}
           {currentStep === 1 && (
-            <main className="max-w-xl pb-12 px-4 lg:col-span-6">
-              <ConfigForm
-                key={eventUuid ?? 'create'}
-                config={step1Config}
-                initialValues={step1Data}
-                isLoading={createEvent.isPending || updateEvent.isPending || isLoadingDropdowns}
-              >
-                <SkillSelector
-                  skills={skills}
-                  selectedSkillIds={selectedSkillIds}
-                  onAdd={handleAddSkill}
-                  onRemove={handleRemoveSkill}
-                  isLoading={isLoadingSkills}
-                />
-              </ConfigForm>
-            </main>
+            <EventFormStep1
+              config={step1Config as Parameters<typeof EventFormStep1>[0]['config']}
+              initialValues={step1Data as unknown as Record<string, unknown>}
+              formKey={eventUuid ?? 'create'}
+              skills={skills}
+              selectedSkillIds={selectedSkillIds}
+              onSkillAdd={handleAddSkill}
+              onSkillRemove={handleRemoveSkill}
+              isLoadingSkills={isLoadingSkills}
+              isLoading={createEvent.isPending || updateEvent.isPending || isLoadingDropdowns}
+            />
           )}
 
-          {/* Design Selector Modal */}
           <DesignSelectorModal
             isOpen={isDesignModalOpen}
             designsList={designs}
             onClose={() => setIsDesignModalOpen(false)}
             onSelect={handleDesignSelect}
           />
-
-          {/* Design Preview Modal */}
-          {isPreviewOpen && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-              onClick={() => setIsPreviewOpen(false)}
-            >
-              <div
-                className="relative bg-white rounded-lg shadow-xl p-6 max-w-3xl w-full mx-4"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsPreviewOpen(false)}
-                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center"
-                >
-                  ✕
-                </button>
-                <h3 className="text-lg font-semibold mb-4">{step0FormData.designTitle}</h3>
-                <div className="flex items-center justify-center bg-gray-50 rounded-lg p-6 min-h-64">
-                  <img
-                    src={step0FormData.design}
-                    alt={step0FormData.designTitle}
-                    className="max-h-[60vh] object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </section>
       </div>
     </div>

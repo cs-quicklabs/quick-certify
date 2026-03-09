@@ -103,41 +103,37 @@ export class CertificateGenerationService {
     placeholder: DesignLayoutPlaceholder,
     text: string,
   ): void {
-    const scaleX = placeholder.scaleX ?? 1;
     const scaleY = placeholder.scaleY ?? 1;
-    const fontSize = Math.round((placeholder.fontSize ?? 36) * scaleY);
+    // Max font size of 68 to prevent excessively large text from crashing canvas rendering
+    let fontSize = Math.min(Math.round((placeholder.fontSize ?? 36) * scaleY), 68);
     const fontFamily = placeholder.fontFamily ?? 'Times New Roman';
     const fontWeight = placeholder.fontWeight === 'bold' ? 'bold' : '';
     const fontStyle = placeholder.fontStyle === 'italic' ? 'italic' : '';
 
     ctx.save();
 
-    // Apply font
-    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`.trim();
-    ctx.fillStyle = placeholder.color ?? '#000000';
-
     // Fabric.js stores x/y as CENTER of the text (originX/originY = 'center')
-    // Use 'center' textAlign and 'middle' textBaseline to match Fabric.js positioning
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.fillStyle = placeholder.color ?? '#000000';
 
-    let x = placeholder.x;
+    const x = placeholder.x;
     const y = placeholder.y;
-
-    // Measure text width (accounting for horizontal scale)
-    const textWidth = ctx.measureText(text).width * scaleX;
     const canvasWidth = (ctx.canvas as unknown as { width: number }).width;
+    const padding = 20;
 
-    // Overflow protection: if text overflows left or right, shift x to keep it within bounds
-    const halfWidth = textWidth / 2;
-    const padding = 10; // Small margin from edges
+    // Use the designer's intended width; fall back to canvas-edge for old designs
+    const maxHalfW = Math.min(x - padding, canvasWidth - x - padding);
+    const maxTextWidth = placeholder.maxWidth ? placeholder.maxWidth : Math.max(60, maxHalfW * 2);
 
-    if (x - halfWidth < padding) {
-      // Text overflows on the left — shift right
-      x = halfWidth + padding;
-    } else if (x + halfWidth > canvasWidth - padding) {
-      // Text overflows on the right — shift left
-      x = canvasWidth - halfWidth - padding;
+    // Auto-shrink font size to fit maxWidth instead of truncating
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`.trim();
+    if (maxTextWidth > 0) {
+      const measured = ctx.measureText(text).width;
+      if (measured > maxTextWidth) {
+        fontSize = Math.max(6, Math.floor(fontSize * (maxTextWidth / measured)));
+        ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`.trim();
+      }
     }
 
     ctx.fillText(text, x, y);

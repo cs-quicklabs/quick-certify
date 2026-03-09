@@ -73,10 +73,10 @@ function CompleteSignupContent() {
   }
 
   return (
-    <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full bg-white rounded-sm shadow md:mt-0 sm:max-w-lg xl:p-0">
       <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
         {/* Header */}
-        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
           Tell us more about your issuer account
         </h1>
 
@@ -124,7 +124,7 @@ function CompleteSignupContent() {
             Complete profile and go to Dashboard
           </Button>
 
-          <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex justify-center items-center">
+          <p className="text-sm font-light text-gray-500 flex justify-center items-center">
             Already have an account?{' '}
             <Link href="/login" className="link ml-2">
               Login
@@ -139,13 +139,13 @@ function CompleteSignupContent() {
 function CompleteSignupSkeleton() {
   return (
     <div className="p-6 sm:p-8 space-y-4 md:space-y-6 animate-pulse">
-      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-72 mb-6"></div>
+      <div className="h-7 bg-gray-200 rounded w-72 mb-6"></div>
       <div className="space-y-4 md:space-y-6">
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
       </div>
     </div>
   );

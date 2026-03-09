@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { SkillEntity, OrganizationEntity } from '@src/entities';
 import { CreateSkillDto, UpdateSkillDto } from './dtos';
 import { EventSkillService } from '@src/modules/event/services/event-skill.service';
@@ -35,9 +36,7 @@ export class SkillService {
       };
     }
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const { count, rows } = await this.skillModel.findAndCountAll({
       where: {
@@ -45,23 +44,11 @@ export class SkillService {
         ...where,
       },
       order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findOne(id: number, organizationId: number): Promise<SkillEntity | null> {

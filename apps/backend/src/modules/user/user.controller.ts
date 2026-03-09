@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   Query,
   UnauthorizedException,
   UseGuards,
@@ -17,11 +18,13 @@ import { CreateUserDto, UpdateUserDto } from './dtos';
 import { PaginationDto } from '@src/commons/base/dtos';
 import { SuccessResponse } from '@src/commons/dtos';
 import { CurrentUser, Roles } from '@src/modules/auth/decorators';
+import { buildAuditContext } from '../audit/audit.context.builder';
 import { RolesGuard, OrganizationGuard } from '@src/modules/auth/guards';
 import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 import { Role } from '@src/modules/role/enums';
 import { EmailService } from '@src/commons/services';
 import { UserPaginationRequestOptions } from './dtos/interface';
+import type { AuditableRequest } from '@src/commons/interfaces/auditable-request';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -90,10 +93,15 @@ export class UserController {
   @ApiOperation({ summary: 'Create a new user/invitation (Admin/Super Admin only)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
-  async create(@CurrentUser() user: CurrentUserType, @Body() dto: CreateUserDto) {
+  async create(
+    @CurrentUser() user: CurrentUserType,
+    @Body() dto: CreateUserDto,
+    @Req() req: AuditableRequest,
+  ) {
     // Only Admin and Super Admin can create users/invitations
     dto.organizationId = user.organizationId;
-    const newUser = await this.userService.create(dto, user);
+    const auditContext = buildAuditContext(req);
+    const newUser = await this.userService.create(dto, user, { auditContext });
 
     // Send welcome email if user was created with password (not invitation)
     // Note: Invitation emails are sent by userService.create()
@@ -116,6 +124,7 @@ export class UserController {
     @CurrentUser() user: CurrentUserType,
     @Param('uuid') uuid: string,
     @Body() dto: UpdateUserDto,
+    @Req() req: AuditableRequest,
   ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
@@ -124,7 +133,8 @@ export class UserController {
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
     }
-    const updatedUser = await this.userService.update(existingUser.id, dto, user);
+    const auditContext = buildAuditContext(req);
+    const updatedUser = await this.userService.update(existingUser.id, dto, user, { auditContext });
     return new SuccessResponse('User updated successfully', updatedUser);
   }
 
@@ -134,7 +144,11 @@ export class UserController {
   @ApiOperation({ summary: 'Delete user (soft delete - archives user) (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async remove(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+  async remove(
+    @CurrentUser() user: CurrentUserType,
+    @Param('uuid') uuid: string,
+    @Req() req: AuditableRequest,
+  ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
       user.organizationUuid,
@@ -149,7 +163,8 @@ export class UserController {
       throw new UnauthorizedException('Cannot delete your own account');
     }
 
-    await this.userService.softDelete(existingUser.id);
+    const auditContext = buildAuditContext(req);
+    await this.userService.softDelete(existingUser.id, auditContext);
     return new SuccessResponse('User deleted successfully', { deleted: true });
   }
 
@@ -229,7 +244,11 @@ export class UserController {
   @ApiOperation({ summary: 'Restore deleted user (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'User restored successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async restore(@CurrentUser() user: CurrentUserType, @Param('uuid') uuid: string) {
+  async restore(
+    @CurrentUser() user: CurrentUserType,
+    @Param('uuid') uuid: string,
+    @Req() req: AuditableRequest,
+  ) {
     const existingUser = await this.userService.findOneByUuidAndOrganization(
       uuid,
       user.organizationUuid,
@@ -237,7 +256,8 @@ export class UserController {
     if (!existingUser) {
       return new SuccessResponse('User not found', null);
     }
-    const restoredUser = await this.userService.restore(existingUser.id);
+    const auditContext = buildAuditContext(req);
+    const restoredUser = await this.userService.restore(existingUser.id, auditContext);
     return new SuccessResponse('User restored successfully', restoredUser);
   }
 }

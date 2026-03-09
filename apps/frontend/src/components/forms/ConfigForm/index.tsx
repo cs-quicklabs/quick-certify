@@ -108,6 +108,13 @@ export function ConfigForm<T extends z.ZodType>({
 
     try {
       await config.onSubmit(result.data as z.infer<T>);
+
+      // clear the current values back to the provided initial values
+      // (or an empty object when none were supplied).
+      if (config.resetOnSuccess) {
+        setFormData(initialValues as Record<string, unknown>);
+      }
+
       setSubmitSuccess(true);
     } catch (error) {
       setSubmitError(getApiErrorMessage(error));
@@ -130,6 +137,8 @@ export function ConfigForm<T extends z.ZodType>({
     const value = formData[field.name];
     const error = errors[field.name];
     const isDisabled = field.disabled || isSubmitting || isLoading;
+    const resolvedMax = field.maxFn ? field.maxFn(formData) : field.max;
+    const resolvedField = resolvedMax !== field.max ? { ...field, max: resolvedMax } : field;
 
     switch (field.type) {
       case 'text':
@@ -139,7 +148,7 @@ export function ConfigForm<T extends z.ZodType>({
         return (
           <InputField
             key={field.name}
-            field={field}
+            field={resolvedField}
             value={value}
             error={error}
             onChange={handleChange}

@@ -9,6 +9,8 @@ import { RecipientEntity } from '@src/entities/recipient.entity';
 import { EventEntity } from '@src/entities/event.entity';
 import { OrganizationEntity } from '@src/entities/organization.entity';
 import { CredentialStatusEnum } from '@src/commons/enums';
+import { escapeLikePattern } from '@src/commons/utils';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 import { DesignLayout } from '@certify/certificate-core';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { EventService } from '@src/modules/event/services/event.service';
@@ -74,9 +76,7 @@ export class CredentialService {
       };
     }
 
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const whereClause: Record<string, unknown> = {
       organization_id: organization.id,
@@ -98,8 +98,8 @@ export class CredentialService {
     const recipientWhere: Record<string, unknown> | undefined = search
       ? {
           [Op.or]: [
-            { name: { [Op.iLike]: `%${search}%` } },
-            { email: { [Op.iLike]: `%${search}%` } },
+            { name: { [Op.iLike]: `%${escapeLikePattern(search)}%` } },
+            { email: { [Op.iLike]: `%${escapeLikePattern(search)}%` } },
           ],
         }
       : undefined;
@@ -110,7 +110,7 @@ export class CredentialService {
         {
           model: RecipientEntity,
           as: 'recipient',
-          attributes: ['uuid', 'name', 'email'],
+          attributes: orgFromReq ? ['uuid', 'name'] : ['uuid', 'name', 'email'],
           where: recipientWhere,
         },
         {
@@ -120,23 +120,11 @@ export class CredentialService {
         },
       ],
       order: [[sortBy, sortOrder]],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findByUuid(uuid: string, organizationUuid: string): Promise<CredentialEntity | null> {
@@ -153,7 +141,7 @@ export class CredentialService {
   }
 
   async create(organizationUuid: string, dto: CreateCredentialDto): Promise<CredentialEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const recipient = await this.recipientService.findOrCreate(organizationUuid, {
       name: dto.recipientName,
@@ -225,7 +213,7 @@ export class CredentialService {
     credential: CredentialEntity,
     organizationUuid: string,
   ): Promise<CredentialEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const event = credential.event;
     if (!event?.design_id) {
@@ -287,7 +275,7 @@ export class CredentialService {
     userId: number,
     dto: BatchCreateCredentialDto,
   ): Promise<{ batchUuid: string; totalCount: number }> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     // Idempotency check: if batch with same key exists for this org, return it
     const existingBatch = await this.batchModel.findOne({
@@ -381,7 +369,7 @@ export class CredentialService {
     failedCount: number;
     errorDetails: Array<{ credentialId: number; error: string }> | null;
   }> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const batch = await this.batchModel.findOne({
       where: {
@@ -412,7 +400,7 @@ export class CredentialService {
     organizationUuid: string,
     dto: PreviewCredentialDto,
   ): Promise<{ previewUrl: string }> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const event = await this.eventService.findByUuid(dto.eventId, organizationUuid);
     if (!event) {
@@ -487,7 +475,7 @@ export class CredentialService {
     credential: CredentialEntity,
     organizationUuid: string,
   ): Promise<void> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     console.log(`Regenerating credential ${credential.uuid} for organization ${organization.name}`);
 
@@ -666,7 +654,7 @@ export class CredentialService {
   async findIssuedForRecipients(
     recipientIds: number[],
     eventIds: number[],
-  ): Promise<Array<{ recipient_id: number; event_id: number }>> {
+  ): Promise<Array<{ recipient_id: number; event_id: number; issued_date: string | null }>> {
     if (recipientIds.length === 0 || eventIds.length === 0) return [];
     return this.credentialModel.findAll({
       where: {
@@ -674,16 +662,8 @@ export class CredentialService {
         event_id: { [Op.in]: eventIds },
         status: CredentialStatusEnum.ISSUED,
       },
-      attributes: ['recipient_id', 'event_id'],
+      attributes: ['recipient_id', 'event_id', 'issued_date'],
       raw: true,
     });
-  }
-
-  private async requireOrganization(uuid: string) {
-    const organization = await this.organizationService.findByUuid(uuid);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    return organization;
   }
 }

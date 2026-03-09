@@ -51,7 +51,7 @@ export function PathwayBanner({
   const statusConfig = STATUS_BADGE[pathway.status] ?? STATUS_BADGE[PathwayStatus.DRAFT];
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900">
+    <div className="bg-gray-50">
       <div className="px-4 mx-auto max-w-screen-2xl lg:px-8 pt-4">
         <div className="rounded-sm border border-gray-200 bg-white overflow-hidden">
           <div className="relative">

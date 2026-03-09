@@ -63,10 +63,10 @@ function SignupContent() {
   };
 
   return (
-    <div className="w-full bg-white rounded-sm shadow dark:border md:mt-0 sm:max-w-lg xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full bg-white rounded-sm shadow md:mt-0 sm:max-w-lg xl:p-0">
       <div className="p-6 sm:p-8 space-y-4 md:space-y-6">
         {/* Header */}
-        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white mb-6">
+        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl mb-6">
           Register new issuer account
         </h1>
 
@@ -161,7 +161,7 @@ function SignupContent() {
         </form>
 
         {/* Login Link */}
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 flex justify-center items-center">
+        <p className="text-sm font-light text-gray-500 flex justify-center items-center">
           Already have an account?{' '}
           <Link href="/login" className="link ml-2">
             Login
@@ -175,20 +175,20 @@ function SignupContent() {
 function SignupSkeleton() {
   return (
     <div className="p-6 sm:p-8 space-y-4 md:space-y-6 animate-pulse">
-      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-64 mb-6"></div>
+      <div className="h-7 bg-gray-200 rounded w-64 mb-6"></div>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
         </div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
         <div className="grid grid-cols-2 gap-4">
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded"></div>
         </div>
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-10 bg-gray-200 rounded"></div>
       </div>
     </div>
   );

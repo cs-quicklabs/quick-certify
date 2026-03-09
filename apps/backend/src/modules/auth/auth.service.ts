@@ -166,9 +166,8 @@ export class AuthService implements IAuthService {
     const user = await this.userService.findByEmail(dto.email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Invalid email');
     }
-
     if (user.auth_provider !== AuthProvider.Email) {
       throw new UnauthorizedException(
         'This account uses Google authentication. Please sign in with Google.',
@@ -253,10 +252,14 @@ export class AuthService implements IAuthService {
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
+    const genericResponse = {
+      success: true,
+      message: 'If the email exists, a reset link has been sent',
+    };
     const user = await this.userService.findByEmail(dto.email);
 
     if (!user) {
-      return { success: true, message: 'If the email exists, a reset link has been sent' };
+      return genericResponse;
     }
 
     if (user.auth_provider !== AuthProvider.Email) {
@@ -266,7 +269,7 @@ export class AuthService implements IAuthService {
     }
 
     // Validate user status (extracted to avoid duplication)
-    this.userService.validateUserStatusForPasswordReset(user);
+    this.userService.validateUserStatusForAuth(user);
 
     await this.passwordResetService.invalidateAllForUser(user.id); // user.id is now number
 
@@ -294,7 +297,7 @@ export class AuthService implements IAuthService {
       })
       .catch(console.error);
 
-    return { success: true, message: 'If the email exists, a reset link has been sent' };
+    return genericResponse;
   }
 
   async checkForgotPasswordToken(token: string) {
@@ -337,6 +340,7 @@ export class AuthService implements IAuthService {
         {
           password: dto.newPassword,
         },
+        undefined,
         { transaction },
       );
 
@@ -400,6 +404,7 @@ export class AuthService implements IAuthService {
           {
             password: dto.newPassword,
           },
+          undefined,
           { transaction },
         );
 
@@ -432,8 +437,8 @@ export class AuthService implements IAuthService {
   }
 
   async acceptInvitation(dto: AcceptInvitationDto, ipAddress?: string, userAgent?: string) {
-    // Find user by token (token is the user's UUID)
-    const user = await this.userService.findByUuid(dto.token);
+    // Find user by secure invitation token (not UUID)
+    const user = await this.userService.findByInvitationToken(dto.token);
     if (!user) {
       throw new NotFoundException('Invalid invitation token');
     }
@@ -455,9 +460,11 @@ export class AuthService implements IAuthService {
     }
 
     // Password will be hashed by userService.update()
+    // Clear invitation token after acceptance to prevent reuse
     await this.userService.update(user.id, {
       password: dto.password,
       status: 'active',
+      invitation_token: null,
     });
 
     // Create session and return tokens using helper method
@@ -612,7 +619,7 @@ export class AuthService implements IAuthService {
     if (existingUser) {
       // User exists, try to login instead
       // Validate user status (extracted to avoid duplication)
-      this.userService.validateUserStatusForPasswordReset(existingUser);
+      this.userService.validateUserStatusForAuth(existingUser);
 
       // Link Google account if not already linked
       if (!existingUser.google_id) {
@@ -749,7 +756,7 @@ export class AuthService implements IAuthService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<JwtTokens> {
-    this.userService.validateUserStatusForPasswordReset(user);
+    this.userService.validateUserStatusForAuth(user);
 
     if (
       user.google_id &&
@@ -786,14 +793,16 @@ export class AuthService implements IAuthService {
       await this.userService.update(
         user.id,
         { google_id: '', auth_provider: AuthProvider.Email },
+        undefined,
         { transaction },
       );
-      await this.forgotPassword({ email: user.email });
 
       // Revoke all sessions for security (password changed)
       await this.sessionService.revokeAllForUser(user.uuid, transaction);
 
       await transaction.commit();
+
+      await this.forgotPassword({ email: user.email });
       return {
         success: true,
         message: 'Password changed successfully. All sessions have been revoked.',

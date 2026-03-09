@@ -6,54 +6,17 @@ import { useAuthStore } from '@/store/auth.store';
 import { useProfile } from '@/hooks/useSettings';
 import { ConfirmationDialog } from '@/components/ui';
 import { GlobalSearch } from './global-search';
-import { getInitials } from '@/utils';
+import { capitalizeFirst } from '@/utils';
 import { usePathname } from 'next/navigation';
 import { RoleType } from '@/types';
-
-type NavItem = { href: string; label: string };
-
-const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/designs', label: 'Designs' },
-  { href: '/events', label: 'Events' },
-  { href: '/credentials', label: 'Credentials' },
-  { href: '/pathways', label: 'Pathways' },
-  // { href: '/emails', label: 'Emails' }
-  // { href: '/analytics', label: 'Analytics' },
-  // { href: '/integrations', label: 'Integrations' },
-];
-
-const SYSTEM_ADMIN_NAV: NavItem[] = [{ href: '/admin/organizations', label: 'Organizations' }];
-
-const getDropdownItems = (isAdmin: boolean): NavItem[] => {
-  const items: NavItem[] = [{ href: '/settings/profile/general', label: 'Profile Settings' }];
-  if (isAdmin) {
-    items.push(
-      { href: '/settings/account/general-information', label: 'Account Settings' },
-      { href: '/settings/event/type', label: 'Event Settings' },
-      { href: '/settings/team', label: 'Team' },
-      { href: '/settings/archived', label: 'Archived' },
-    );
-  }
-  return items;
-};
-
-type AvatarProps = { avatarUrl: string; firstName?: string; lastName?: string; size?: 'sm' | 'lg' };
-
-function Avatar({ avatarUrl, firstName, lastName, size = 'sm' }: AvatarProps) {
-  const cls = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
-  return (
-    <div
-      className={`${cls} flex items-center justify-center rounded-full bg-gray-400 text-white overflow-hidden`}
-    >
-      {avatarUrl ? (
-        <img className="h-full w-full object-cover" src={avatarUrl} alt={firstName || 'User'} />
-      ) : (
-        <span className="text-lg font-medium">{getInitials(firstName, lastName)}</span>
-      )}
-    </div>
-  );
-}
+import { ROUTES } from '@/config/routes';
+import { HeaderAvatar } from './HeaderAvatar';
+import {
+  ROLE_BADGE_STYLES,
+  NAV_ITEMS,
+  SYSTEM_ADMIN_NAV,
+  getDropdownItems,
+} from '@/config/headerNav.config';
 
 export function Header() {
   const pathname = usePathname();
@@ -75,7 +38,7 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpened]);
 
-  const avatarUrl = profile?.avatarUrl || user?.avatarUrl || '';
+  const avatarUrl = profile ? (profile.avatarUrl ?? '') : (user?.avatarUrl ?? '');
   const isAdmin =
     (user?.role && [RoleType.SuperAdmin, RoleType.Admin].includes(user?.role as RoleType)) || false;
   const isSystemAdmin = user?.role === RoleType.SystemAdmin;
@@ -97,7 +60,7 @@ export function Header() {
   const confirmSignOut = async () => {
     setShowLogoutConfirm(false);
     await logout();
-    window.location.href = '/login';
+    window.location.href = ROUTES.AUTH.LOGIN;
   };
 
   return (
@@ -107,7 +70,7 @@ export function Header() {
           {/* Logo & Desktop Nav */}
           <div className="flex items-center px-2 lg:px-0">
             <Link
-              href="/dashboard"
+              href={ROUTES.DASHBOARD.HOME}
               className="text-white font-bold font-mono px-3 hidden lg:block tracking-wider"
             >
               Quick Certify
@@ -158,7 +121,7 @@ export function Header() {
           <div className="hidden lg:flex items-center ml-4">
             <div className="relative ml-2" ref={dropdownRef}>
               <button onClick={() => setMenuOpened(!menuOpened)} className="cursor-pointer">
-                <Avatar
+                <HeaderAvatar
                   avatarUrl={avatarUrl}
                   firstName={user?.firstName}
                   lastName={user?.lastName}
@@ -169,6 +132,13 @@ export function Header() {
                   <div className="px-4 py-3">
                     <p className="text-sm break-all">{user?.email}</p>
                     <p className="text-xs text-gray-500">{profile?.organizationName}</p>
+                    {user?.role && (
+                      <span
+                        className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_BADGE_STYLES[user.role] || 'bg-gray-100 text-gray-700'}`}
+                      >
+                        {capitalizeFirst(user.role.replace('_', ' '))}
+                      </span>
+                    )}
                   </div>
                   <div className="py-1">
                     {dropdownItems.map((item) => (
@@ -217,7 +187,7 @@ export function Header() {
           </div>
           <div className="border-t border-gray-700 pb-3 pt-4">
             <div className="flex items-center px-5">
-              <Avatar
+              <HeaderAvatar
                 avatarUrl={avatarUrl}
                 firstName={user?.firstName}
                 lastName={user?.lastName}

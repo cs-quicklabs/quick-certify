@@ -1,8 +1,19 @@
-import { BelongsTo, Column, DataType, ForeignKey, Index, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Index,
+  Table,
+} from 'sequelize-typescript';
 import { BaseEntity } from './base.entity';
 import { RoleEntity } from './role.entity';
 import { OrganizationEntity } from './organization.entity';
 import { Exclude } from 'class-transformer';
+import { SessionEntity } from './session.entity';
+import { PasswordResetEntity } from './password-reset.entity';
+import { AuditLogEntity } from './audit-log.entity';
 
 /**
  * User Entity
@@ -13,8 +24,12 @@ import { Exclude } from 'class-transformer';
 @Table({
   tableName: 'user',
   underscored: true,
+  indexes: [{ name: 'IDX_USER_ORG_STATUS', fields: ['organization_id', 'status'] }],
 })
 export class UserEntity extends BaseEntity {
+  @HasMany(() => AuditLogEntity, { foreignKey: 'target_user_id' })
+  declare audit_logs: AuditLogEntity[];
+
   // Override UUID with table-specific index
   @Index({ name: 'IDX_USER_UUID', unique: true })
   declare uuid: string;
@@ -26,7 +41,7 @@ export class UserEntity extends BaseEntity {
   })
   declare organization_id: number;
 
-  @BelongsTo(() => OrganizationEntity)
+  @BelongsTo(() => OrganizationEntity, { onDelete: 'CASCADE' })
   declare organization: OrganizationEntity;
 
   @Column({
@@ -82,8 +97,14 @@ export class UserEntity extends BaseEntity {
   })
   declare role_id: number;
 
-  @BelongsTo(() => RoleEntity)
+  @BelongsTo(() => RoleEntity, { onDelete: 'RESTRICT' })
   declare role: RoleEntity;
+
+  @HasMany(() => SessionEntity)
+  declare sessions: SessionEntity[];
+
+  @HasMany(() => PasswordResetEntity)
+  declare passwordResets: PasswordResetEntity[];
 
   @Column({
     type: DataType.STRING(20),
@@ -116,4 +137,17 @@ export class UserEntity extends BaseEntity {
     allowNull: true,
   })
   declare last_login_at: Date | null;
+
+  @Index({ name: 'IDX_USER_INVITATION_TOKEN', unique: true })
+  @Column({
+    type: DataType.STRING(64),
+    allowNull: true,
+  })
+  declare invitation_token: string | null;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  declare invitation_expires_at: Date | null;
 }

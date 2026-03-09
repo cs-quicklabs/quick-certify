@@ -4,6 +4,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserEntity } from '@src/entities/user.entity';
 import { AuthModule } from '@src/modules/auth';
+import { AuditModule } from '../audit/audit.module';
 import { EmailService } from '@src/commons/services';
 import { RoleModule } from '../role';
 import { OrganizationModule } from '../organization';
@@ -19,6 +20,7 @@ import { OrganizationModule } from '../organization';
     forwardRef(() => AuthModule), // For PasswordService - forwardRef to avoid circular dependency
     RoleModule,
     OrganizationModule,
+    AuditModule,
   ],
   controllers: [UserController],
   providers: [UserService, EmailService],

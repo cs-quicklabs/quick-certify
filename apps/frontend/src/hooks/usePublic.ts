@@ -2,6 +2,7 @@ import { showSuccessToast } from '@/lib/toast';
 import { publicService } from '@/services/api/public.service';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { BaseSearchFilters } from '@/lib/query-params';
+import { PublicPathwayFilters } from '@/types';
 import { credentialService } from '@/services';
 import { CREDENTIAL_KEYS } from './useCredentials';
 
@@ -12,6 +13,12 @@ export const PUBLIC_KEYS = {
   credentials: (slug: string, filters: object) => ['public', 'credentials', slug, filters] as const,
   recipients: (slug: string, filters: object) => ['public', 'recipients', slug, filters] as const,
   event: (slug: string, eventUuid: string) => ['public', 'event', slug, eventUuid] as const,
+  pathways: (slug: string, filters: object) => ['public', 'pathways', slug, filters] as const,
+  pathway: (slug: string, pathwayUuid: string) => ['public', 'pathway', slug, pathwayUuid] as const,
+  pathwayParticipants: (slug: string, pathwayUuid: string, filters: object) =>
+    ['public', 'pathway-participants', slug, pathwayUuid, filters] as const,
+  pathwayParticipant: (slug: string, pathwayUuid: string, participantUuid: string) =>
+    ['public', 'pathway-participant', slug, pathwayUuid, participantUuid] as const,
   credential: (uuid: string) => ['public', 'credential', uuid] as const,
 };
 
@@ -124,6 +131,78 @@ export function usePublicEvent(slug?: string, eventUuid?: string) {
       return publicService.getPublicEvent(slug, eventUuid);
     },
     enabled: !!slug && !!eventUuid,
+    staleTime: 10_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePublicPathways(
+  slug: string,
+  filters?: PublicPathwayFilters & { enabled?: boolean },
+) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
+
+  return useQuery({
+    queryKey: PUBLIC_KEYS.pathways(slug, queryFilters),
+    queryFn: async () => {
+      if (!slug) throw new Error('Missing organization slug');
+      return publicService.getPublicPathways(slug, queryFilters);
+    },
+    enabled: !!slug && enabled,
+    staleTime: 10_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePublicPathway(slug?: string, pathwayUuid?: string) {
+  return useQuery({
+    queryKey: PUBLIC_KEYS.pathway(slug ?? '', pathwayUuid ?? ''),
+    queryFn: async () => {
+      if (!slug || !pathwayUuid) throw new Error('Missing slug or pathwayUuid');
+      return publicService.getPublicPathway(slug, pathwayUuid);
+    },
+    enabled: !!slug && !!pathwayUuid,
+    staleTime: 10_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePublicPathwayParticipants(
+  slug: string,
+  pathwayUuid: string,
+  filters?: PublicPathwayFilters & { enabled?: boolean },
+) {
+  const { enabled = true, ...queryFilters } = filters ?? {};
+
+  return useQuery({
+    queryKey: PUBLIC_KEYS.pathwayParticipants(slug, pathwayUuid, queryFilters),
+    queryFn: async () => {
+      if (!slug || !pathwayUuid) throw new Error('Missing slug or pathwayUuid');
+      return publicService.getPublicPathwayParticipants(slug, pathwayUuid, queryFilters);
+    },
+    enabled: !!slug && !!pathwayUuid && enabled,
+    staleTime: 10_000,
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePublicPathwayParticipant(
+  slug?: string,
+  pathwayUuid?: string,
+  participantUuid?: string,
+) {
+  return useQuery({
+    queryKey: PUBLIC_KEYS.pathwayParticipant(slug ?? '', pathwayUuid ?? '', participantUuid ?? ''),
+    queryFn: async () => {
+      if (!slug || !pathwayUuid || !participantUuid)
+        throw new Error('Missing slug, pathwayUuid, or participantUuid');
+      return publicService.getPublicPathwayParticipant(slug, pathwayUuid, participantUuid);
+    },
+    enabled: !!slug && !!pathwayUuid && !!participantUuid,
     staleTime: 10_000,
     retry: 2,
     refetchOnWindowFocus: false,

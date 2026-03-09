@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Credential } from '@/types';
 import Link from 'next/link';
 import { OrgPageState, RecentCertificatesSkeleton } from '../../_components/orgPageState';
+import { createRoute } from '@/config/routes';
 
 export default function PublicCompanyPage() {
   const params = useParams();
@@ -138,13 +139,13 @@ export default function PublicCompanyPage() {
               <InfoItem title="Browse">
                 <div className="flex flex-col gap-1">
                   <Link
-                    href={`/public/company/${slug}/events`}
+                    href={createRoute.publicCompanyEvents(slug)}
                     className="text-sm text-blue-600 hover:underline"
                   >
                     → View all Events
                   </Link>
                   <Link
-                    href={`/public/company/${slug}/recipients`}
+                    href={createRoute.publicCompanyRecipients(slug)}
                     className="text-sm text-blue-600 hover:underline"
                   >
                     → View all Recipients

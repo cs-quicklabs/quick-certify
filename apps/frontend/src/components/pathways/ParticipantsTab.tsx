@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePathwayParticipants } from '@/hooks/usePathways';
 import { Pagination } from '@/components/ui/pagination';
 import { AddParticipantModal } from './AddParticipantModal';
 import { ArrowUpDown, Check } from 'lucide-react';
+import { createRoute } from '@/config/routes';
 
 const PARTICIPANT_STATUS: Record<string, { style: string; label: string }> = {
   completed: { style: 'bg-green-100 text-green-800', label: 'Completed' },
@@ -87,8 +89,8 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
               Sort
             </button>
             {showSortDropdown && (
-              <div className="absolute right-0 z-10 mt-1 w-40 bg-white border border-gray-200 rounded-sm shadow-lg dark:bg-gray-700 dark:border-gray-600">
-                <ul className="py-1 text-sm text-gray-700 dark:text-gray-200">
+              <div className="absolute right-0 z-10 mt-1 w-40 bg-white border border-gray-200 rounded-sm shadow-lg">
+                <ul className="py-1 text-sm text-gray-700">
                   {(
                     [
                       { value: 'az', label: 'A-Z' },
@@ -100,9 +102,9 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
                     <li key={opt.value}>
                       <button
                         type="button"
-                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center justify-between ${
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center justify-between ${
                           sortOption === opt.value
-                            ? 'font-medium text-primary-600 bg-primary-50 dark:bg-gray-600'
+                            ? 'font-medium text-primary-600 bg-primary-50'
                             : ''
                         }`}
                         onClick={() => {
@@ -162,9 +164,15 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
                     </span>
                   </td>
                   <td className="px-4 py-2.5">
-                    <button className="text-primary-600 hover:text-primary-700 text-xs font-medium">
+                    <Link
+                      href={createRoute.pathwayParticipantDetail(
+                        pathwayId,
+                        participant.recipient.uuid,
+                      )}
+                      className="text-primary-600 hover:text-primary-700 text-xs font-medium"
+                    >
                       View
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))
@@ -179,7 +187,11 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
           <div className="px-4 py-8 text-center text-sm text-gray-500">No participants yet.</div>
         ) : (
           participants.map((participant) => (
-            <div key={participant.id} className="px-4 py-3 bg-white hover:bg-gray-50">
+            <Link
+              key={participant.id}
+              href={createRoute.pathwayParticipantDetail(pathwayId, participant.recipient.uuid)}
+              className="block px-4 py-3 bg-white hover:bg-gray-50"
+            >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-medium text-sm text-gray-900">
                   {participant.recipient.name}
@@ -193,7 +205,7 @@ export function ParticipantsTab({ pathwayId }: ParticipantsTabProps) {
                 </span>
               </div>
               <p className="text-xs text-gray-500">{participant.recipient.email}</p>
-            </div>
+            </Link>
           ))
         )}
       </div>

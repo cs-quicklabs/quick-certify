@@ -91,12 +91,7 @@ function createApiClient(): AxiosInstance {
         // Prevent infinite retry loops
         if (originalRequest._retry) {
           // Already tried to refresh, refresh token must be expired - logout
-          clearTokens();
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('auth-storage');
-            localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
-            window.location.href = '/login';
-          }
+          forceLogout();
           return Promise.reject(error);
         }
 
@@ -107,12 +102,7 @@ function createApiClient(): AxiosInstance {
         const refreshToken = getRefreshToken();
         if (!refreshToken) {
           // No refresh token available - logout
-          clearTokens();
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('auth-storage');
-            localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
-            window.location.href = '/login';
-          }
+          forceLogout();
           return Promise.reject(error);
         }
 
@@ -136,12 +126,7 @@ function createApiClient(): AxiosInstance {
           }
         } catch (refreshError) {
           // Refresh token is expired or invalid - logout user
-          clearTokens();
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('auth-storage');
-            localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
-            window.location.href = '/login';
-          }
+          forceLogout();
           return Promise.reject(refreshError);
         }
       }
@@ -159,6 +144,8 @@ function createApiClient(): AxiosInstance {
 const TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 export const SESSION_ID_KEY = 'authSessionId';
+const AUTH_STORAGE_KEY = 'auth-storage';
+const QUERY_CACHE_KEY = 'REACT_QUERY_OFFLINE_CACHE';
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -191,6 +178,14 @@ export function clearTokens(): void {
 
   // Clear cookie
   document.cookie = `${TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+}
+
+function forceLogout(): void {
+  clearTokens();
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  localStorage.removeItem(QUERY_CACHE_KEY);
+  window.location.href = '/login';
 }
 
 export function getSessionId(): string | null {

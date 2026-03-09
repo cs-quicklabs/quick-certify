@@ -4,15 +4,18 @@ import { Op, WhereOptions } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import {
   PathwayEntity,
-  EventEntity,
   DesignEntity,
   RecipientEntity,
   OrganizationEntity,
+  EventEntity,
 } from '@src/entities';
 import { CreatePathwayDto, UpdatePathwayDto } from './dtos';
 import { PaginatedResult } from '@src/commons/base';
 import { OrganizationService } from '@src/modules/organization/organization.service';
 import { PathwayEventService } from './pathway-event.service';
+import { escapeLikePattern } from '@src/commons/utils';
+import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
+import { IPathwayService } from './interfaces';
 
 const DEFAULT_PATHWAY_INCLUDES = [
   {
@@ -31,7 +34,7 @@ const DEFAULT_PATHWAY_INCLUDES = [
 ];
 
 @Injectable()
-export class PathwayService {
+export class PathwayService implements IPathwayService {
   constructor(
     @InjectModel(PathwayEntity)
     private readonly pathwayModel: typeof PathwayEntity,
@@ -60,9 +63,7 @@ export class PathwayService {
 
     const allowedSortColumns = ['created_at', 'name', 'status'];
     const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : 'created_at';
-    const safeLimit = Math.min(Math.max(1, limit), 100);
-    const safePage = Math.max(1, page);
-    const offset = (safePage - 1) * safeLimit;
+    const pagination = sanitizePagination(page, limit);
 
     const queryWhere: WhereOptions<PathwayEntity> = {
       organization_id: organization.id,
@@ -74,7 +75,7 @@ export class PathwayService {
     }
 
     if (search?.trim()) {
-      queryWhere.name = { [Op.iLike]: `%${search.trim()}%` };
+      queryWhere.name = { [Op.iLike]: `%${escapeLikePattern(search.trim())}%` };
     }
 
     const { count, rows } = await this.pathwayModel.findAndCountAll({
@@ -82,23 +83,11 @@ export class PathwayService {
       include: DEFAULT_PATHWAY_INCLUDES,
       distinct: true,
       order: [[safeSortBy, sortOrder === 'ASC' ? 'ASC' : 'DESC']],
-      limit: safeLimit,
-      offset,
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
     });
 
-    const totalPages = Math.ceil(count / safeLimit);
-
-    return {
-      data: rows,
-      meta: {
-        total: count,
-        page: safePage,
-        limit: safeLimit,
-        totalPages,
-        hasNextPage: safePage < totalPages,
-        hasPrevPage: safePage > 1,
-      },
-    };
+    return buildPaginatedResult(rows, count, pagination);
   }
 
   async findByUuid(uuid: string, organizationUuid: string): Promise<PathwayEntity | null> {
@@ -116,7 +105,7 @@ export class PathwayService {
   }
 
   async create(organizationUuid: string, dto: CreatePathwayDto): Promise<PathwayEntity> {
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
     const normalizedName = dto.name.trim();
 
     // Check for existing pathway with same name
@@ -178,7 +167,7 @@ export class PathwayService {
     dto: UpdatePathwayDto,
   ): Promise<PathwayEntity> {
     const pathway = await this.requirePathway(uuid, organizationUuid);
-    const organization = await this.requireOrganization(organizationUuid);
+    const organization = await this.organizationService.findByUuidOrFail(organizationUuid);
 
     const updateData: Partial<PathwayEntity> = {};
 
@@ -233,13 +222,73 @@ export class PathwayService {
     return true;
   }
 
-  // Private helpers
+  // ─── Public (unauthenticated) methods ───
 
-  private async requireOrganization(uuid: string) {
-    const org = await this.organizationService.findByUuid(uuid);
-    if (!org) throw new NotFoundException('Organization not found');
-    return org;
+  /**
+   * List active pathways for an organization identified by slug.
+   * Used by public pages – no auth required.
+   */
+  async findAllPublic(
+    slug: string,
+    filters: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    } = {},
+  ): Promise<PaginatedResult<PathwayEntity>> {
+    const organization = await this.organizationService.findBySlug(slug);
+    if (!organization?.portal_enabled) return this.emptyPaginatedResult(filters.limit || 10);
+
+    const { page = 1, limit = 10, sortBy = 'created_at', sortOrder = 'DESC', search } = filters;
+
+    const allowedSortColumns = ['created_at', 'name'];
+    const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : 'created_at';
+    const pagination = sanitizePagination(page, limit);
+
+    const queryWhere: WhereOptions<PathwayEntity> = {
+      organization_id: organization.id,
+      is_active: true,
+      status: 'active',
+    };
+
+    if (search?.trim()) {
+      queryWhere.name = { [Op.iLike]: `%${escapeLikePattern(search.trim())}%` };
+    }
+
+    const { count, rows } = await this.pathwayModel.findAndCountAll({
+      where: queryWhere,
+      include: DEFAULT_PATHWAY_INCLUDES,
+      distinct: true,
+      order: [[safeSortBy, sortOrder === 'ASC' ? 'ASC' : 'DESC']],
+      limit: pagination.safeLimit,
+      offset: pagination.offset,
+    });
+
+    return buildPaginatedResult(rows, count, pagination);
   }
+
+  /**
+   * Get a single active pathway by UUID under the given org slug.
+   * Used by public pages – no auth required.
+   */
+  async findOnePublic(slug: string, pathwayUuid: string): Promise<PathwayEntity | null> {
+    const organization = await this.organizationService.findBySlug(slug);
+    if (!organization?.portal_enabled) return null;
+
+    return this.pathwayModel.findOne({
+      where: {
+        uuid: pathwayUuid,
+        organization_id: organization.id,
+        is_active: true,
+        status: 'active',
+      },
+      include: DEFAULT_PATHWAY_INCLUDES,
+    });
+  }
+
+  // ─── Private helpers ───
 
   async requirePathway(uuid: string, organizationUuid: string): Promise<PathwayEntity> {
     const pathway = await this.findByUuid(uuid, organizationUuid);

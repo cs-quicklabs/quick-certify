@@ -33,10 +33,8 @@ export function SortableCredentialItem({
     <li
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-        credential.isFinal
-          ? 'ring-1 ring-inset ring-green-200 bg-green-50 hover:bg-green-50 dark:bg-green-900/20'
-          : ''
+      className={`group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 bg-white hover:bg-gray-50 ${
+        credential.isFinal ? 'ring-1 ring-inset ring-green-200 bg-green-50 hover:bg-green-50' : ''
       }`}
     >
       {/* Drag handle */}
@@ -49,15 +47,13 @@ export function SortableCredentialItem({
       </span>
 
       {/* Order number */}
-      <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+      <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600">
         {index + 1}
       </span>
 
       {/* Credential name */}
       <div className="flex-1 min-w-0">
-        <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">
-          {credential.name}
-        </span>
+        <span className="text-sm font-medium text-gray-900 truncate block">{credential.name}</span>
       </div>
 
       {/* Mark as final */}
@@ -65,8 +61,8 @@ export function SortableCredentialItem({
         type="button"
         className={`shrink-0 text-xs px-2 py-1 rounded-sm border cursor-pointer transition-opacity ${
           credential.isFinal
-            ? 'opacity-100 bg-green-100 text-green-800 border-green-300 dark:bg-green-800 dark:text-green-200 dark:border-green-600'
-            : 'opacity-0 group-hover:opacity-100 bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-600'
+            ? 'opacity-100 bg-green-100 text-green-800 border-green-300'
+            : 'opacity-0 group-hover:opacity-100 bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
         }`}
         onClick={onToggleFinal}
       >
@@ -76,7 +72,7 @@ export function SortableCredentialItem({
       {/* Delete */}
       <button
         type="button"
-        className="shrink-0 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 cursor-pointer"
+        className="shrink-0 p-1 rounded hover:bg-red-100 cursor-pointer"
         onClick={onRemove}
         aria-label="Remove credential"
       >

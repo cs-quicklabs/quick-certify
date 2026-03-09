@@ -1,6 +1,7 @@
 import { OrganizationEntity } from '@src/entities';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { CreateOrganizationDto, UpdateOrganizationDto } from '../dtos';
+import type { CurrentUser as CurrentUserType } from '@src/modules/auth/interfaces';
 
 /**
  * Organization Service Interface
@@ -21,6 +22,11 @@ export interface IOrganizationService {
    * Find organization by UUID
    */
   findByUuid(uuid: string): Promise<OrganizationEntity | null>;
+
+  /**
+   * Find organization by UUID or throw NotFoundException
+   */
+  findByUuidOrFail(uuid: string): Promise<OrganizationEntity>;
 
   /**
    * Find organization by slug
@@ -71,7 +77,7 @@ export interface IOrganizationService {
    * Permanently delete an organization
    * Only accessible by SYSTEM_ADMIN role
    */
-  permanentlyDelete(uuid: string): Promise<boolean>;
+  permanentlyDelete(uuid: string, currentUser: CurrentUserType): Promise<boolean>;
 }
 
 export const ORGANIZATION_SERVICE = Symbol('IOrganizationService');

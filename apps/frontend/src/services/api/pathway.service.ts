@@ -1,5 +1,10 @@
 import { PaginatedResponse } from '@/types';
-import { Pathway, PathwayFilters, PathwayParticipant } from '@/types/pathway.types';
+import {
+  Pathway,
+  PathwayFilters,
+  PathwayParticipant,
+  PublicPathwayParticipant,
+} from '@/types/pathway.types';
 import { apiClient, ApiResponse } from './api-client';
 import { buildUrl } from '@/lib/query-params';
 
@@ -80,6 +85,16 @@ export const pathwayService = {
     const response = await apiClient.post<ApiResponse<PathwayParticipant>>(
       `/pathways/${pathwayUuid}/participants`,
       data,
+    );
+    return response.data.data;
+  },
+
+  async getParticipantDetail(
+    pathwayUuid: string,
+    recipientUuid: string,
+  ): Promise<PublicPathwayParticipant> {
+    const response = await apiClient.get<ApiResponse<PublicPathwayParticipant>>(
+      `/pathways/${pathwayUuid}/participants/${recipientUuid}`,
     );
     return response.data.data;
   },

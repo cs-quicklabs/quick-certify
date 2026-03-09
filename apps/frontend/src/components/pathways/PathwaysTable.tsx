@@ -30,8 +30,8 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
     <>
       {/* Desktop Table */}
       <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <table className="w-full text-sm text-left text-gray-500">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
               <th scope="col" className="px-4 py-3">
                 Name
@@ -58,7 +58,7 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
               </tr>
             ) : pathways.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-12 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-500">
                   No pathways found
                 </td>
               </tr>
@@ -67,7 +67,7 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
                 <tr
                   key={pathway.uuid}
                   onClick={() => router.push(createRoute.pathwayDetail(pathway.uuid))}
-                  className="border-b border-gray-200 dark:border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
                 >
                   <th scope="row" className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
@@ -96,25 +96,23 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
       </div>
 
       {/* Mobile Card Layout */}
-      <div className="sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="sm:hidden divide-y divide-gray-200">
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
           </div>
         ) : pathways.length === 0 ? (
-          <p className="text-center py-12 text-gray-500 text-sm">No pathways found</p>
+          <p className="px-6 py-12 text-center text-sm text-gray-500">No pathways found</p>
         ) : (
           pathways.map((pathway) => (
             <button
               key={pathway.uuid}
               type="button"
               onClick={() => router.push(createRoute.pathwayDetail(pathway.uuid))}
-              className="block w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="block w-full text-left px-4 py-3 hover:bg-gray-50"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-sm text-gray-900 dark:text-white">
-                  {pathway.name}
-                </span>
+                <span className="font-semibold text-sm text-gray-900">{pathway.name}</span>
                 <div className="flex items-center text-xs">
                   <div className={`w-2 h-2 mr-1.5 ${STATUS_DOT[pathway.status]} rounded-full`} />
                   <span className="text-gray-500">{STATUS_LABEL[pathway.status]}</span>
@@ -140,14 +138,14 @@ function CredentialBadges({ events }: { events: Pathway['events'] }) {
       {events.slice(0, MAX_VISIBLE_CREDENTIALS).map((credential) => (
         <span
           key={credential.uuid}
-          className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 mr-1 rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+          className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 mr-1 rounded bg-primary-100 text-primary-800"
         >
           {credential.name}
         </span>
       ))}
       {events.length > MAX_VISIBLE_CREDENTIALS && (
         <span
-          className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 cursor-default"
+          className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 cursor-default"
           title={events
             .slice(MAX_VISIBLE_CREDENTIALS)
             .map((c) => c.name)

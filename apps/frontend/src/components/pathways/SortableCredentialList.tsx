@@ -52,20 +52,20 @@ export function SortableCredentialList({
 
   if (credentials.length === 0) {
     return (
-      <div className="border border-dashed border-gray-300 rounded-sm px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400 mb-6">
+      <div className="border border-dashed border-gray-300 rounded-sm px-4 py-8 text-center text-sm text-gray-500 mb-6">
         No credentials added yet. Search and add credentials above.
       </div>
     );
   }
 
   return (
-    <div className="border border-gray-200 rounded-sm dark:border-gray-600 overflow-hidden mb-6">
+    <div className="border border-gray-200 rounded-sm overflow-hidden mb-6">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext
           items={credentials.map((c) => c.uuid)}
           strategy={verticalListSortingStrategy}
         >
-          <ul className="divide-y divide-gray-200 dark:divide-gray-600">
+          <ul className="divide-y divide-gray-200">
             {credentials.map((credential, index) => (
               <SortableCredentialItem
                 key={credential.uuid}
