@@ -58,7 +58,9 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
           {/* Links */}
           <div className="grid grid-cols-2 gap-10 text-sm">
             <div>
-              <h3 className="mb-2 font-semibold uppercase text-gray-900 text-xs tracking-wider">Directories</h3>
+              <h3 className="mb-2 font-semibold uppercase text-gray-900 text-xs tracking-wider">
+                Directories
+              </h3>
               <ul className="space-y-2 text-gray-600">
                 {DIRECTORY_LINKS.map((link) => (
                   <li key={link.href}>

@@ -10,7 +10,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { PathwayStatusEnum } from '@src/commons/enums';
 import { PathwayEventItemDto } from './pathway-event-item.dto';
 
@@ -23,8 +23,9 @@ export class UpdatePathwayDto {
   @IsOptional()
   @IsString({ message: 'Pathway name must be a string' })
   @MaxLength(255, { message: 'Pathway name must not exceed 255 characters' })
-  @Matches(/^[^\s].*[^\s]$|^[^\s]$/, {
-    message: 'Pathway name cannot be empty or only spaces',
+  @Transform(({ value }) => value?.trim())
+  @Matches(/^(?=.*[A-Za-z])[A-Za-z0-9 ]+$/, {
+    message: 'Pathway name must contain at least one letter and special characters are not allowed',
   })
   name?: string;
 

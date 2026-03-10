@@ -31,7 +31,17 @@ export function PathwayForm({
   isPending,
   onSubmit,
 }: PathwayFormProps) {
+  const VALID_NAME_RE = /^[a-zA-Z0-9\u00C0-\u017F][a-zA-Z0-9\s\-'.,/&()\u00C0-\u017F]*$/;
+
+  const validateName = (value: string): string => {
+    if (!value.trim()) return 'Name is required';
+    if (!VALID_NAME_RE.test(value.trim()))
+      return 'Name must start with a letter or number and cannot contain special characters like @, $, %, ^, *, !';
+    return '';
+  };
+
   const [name, setName] = useState(initialValues?.name ?? '');
+  const [nameError, setNameError] = useState('');
   const [description, setDescription] = useState(initialValues?.description ?? '');
   const [bannerUrl, setBannerUrl] = useState<string | null>(initialValues?.bannerUrl ?? null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,7 +115,11 @@ export function PathwayForm({
   });
 
   const handleFormSubmit = (status: 'active' | 'draft') => {
-    if (!name.trim()) return;
+    const error = validateName(name);
+    if (error) {
+      setNameError(error);
+      return;
+    }
     onSubmit(getFormValues(), status);
   };
 
@@ -133,12 +147,20 @@ export function PathwayForm({
               <input
                 id="pathway-name"
                 type="text"
-                className="form-input-field w-full"
+                className={`form-input-field w-full ${nameError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
                 placeholder="e.g. Full Stack Developer"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (nameError) setNameError(validateName(e.target.value));
+                }}
+                onBlur={() => setNameError(validateName(name))}
               />
-              <p className="form-input-description">Give your pathway a clear, descriptive name.</p>
+              {nameError ? (
+                <p className="mt-1 text-sm text-red-600">{nameError}</p>
+              ) : (
+                <p className="form-input-description">Give your pathway a clear, descriptive name.</p>
+              )}
             </div>
 
             {/* Description */}

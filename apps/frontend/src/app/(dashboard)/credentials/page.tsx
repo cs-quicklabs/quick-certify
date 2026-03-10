@@ -85,7 +85,7 @@ export default function CredentialsPage() {
 
   return (
     <div>
-      <div className="bg-white shadow-sm">
+      <div className="bg-white shadow-md sm:rounded-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between min-w-34 px-4 py-2 border-b border-gray-200">
           <div>

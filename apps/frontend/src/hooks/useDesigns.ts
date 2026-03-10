@@ -18,7 +18,15 @@ type Params = {
 export function useDesignList({ page, limit, search, type, sortBy, sortOrder }: Params) {
   const queryClient = useQueryClient();
 
-  const queryKey = ['designs', page, limit, search ?? '', type ?? 'all', sortBy ?? '', sortOrder ?? ''];
+  const queryKey = [
+    'designs',
+    page,
+    limit,
+    search ?? '',
+    type ?? 'all',
+    sortBy ?? '',
+    sortOrder ?? '',
+  ];
 
   const query = useQuery({
     queryKey,

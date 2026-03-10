@@ -43,6 +43,7 @@ export interface Pathway {
   banner_url: string | null;
   status: PathwayStatus;
   is_active: boolean;
+  duration: string | null;
   events: PathwayEvent[];
   participants: { uuid: string; name: string; email: string }[];
   createdAt: string;

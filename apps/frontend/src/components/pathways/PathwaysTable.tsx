@@ -50,7 +50,7 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="px-4 py-12 text-center">
+                <td colSpan={5} className="px-4 py-12 text-center">
                   <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
                   </div>
@@ -58,7 +58,7 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
               </tr>
             ) : pathways.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-500">
+                <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
                   No pathways found
                 </td>
               </tr>
@@ -82,6 +82,9 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
                   <td className="px-4 py-2 form-text-normal">
                     {pathway.participants?.length || '-'}
                   </td>
+                  {/* <td className="px-4 py-2 form-text-normal">
+                    {pathway.duration ?? '-'}
+                  </td> */}
                   <td className="px-4 py-2 form-text-normal">
                     <div className="flex items-center">
                       <div className={`w-3 h-3 mr-2 ${STATUS_DOT[pathway.status]} rounded-full`} />
@@ -123,6 +126,7 @@ export function PathwaysTable({ pathways, isLoading }: PathwaysTableProps) {
               </div>
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>{pathway.participants?.length ?? 0} participants</span>
+                {/* {pathway.duration && <span>{pathway.duration}</span>} */}
               </div>
             </button>
           ))
