@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions, ModelStatic } from 'sequelize';
 import { Model } from 'sequelize-typescript';
-import { EventEntity, PathwayEntity, DesignEntity, UserEntity } from '@src/entities';
+import { EventEntity, PathwayEntity, DesignEntity } from '@src/entities';
 import { ISearchService, GlobalSearchResult, SearchResultItem, SearchCategory } from './interfaces';
 import { CurrentUser } from '../auth/interfaces';
+import { UserService } from '../user';
 
 type ILikeTerm = { [Op.iLike]: string };
 
@@ -17,8 +18,7 @@ export class SearchService implements ISearchService {
     private readonly pathwayModel: typeof PathwayEntity,
     @InjectModel(DesignEntity)
     private readonly designModel: typeof DesignEntity,
-    @InjectModel(UserEntity)
-    private readonly userModel: typeof UserEntity,
+    private readonly userService: UserService,
   ) {}
 
   async search(query: string, user: CurrentUser, limit = 5): Promise<GlobalSearchResult> {
@@ -54,7 +54,7 @@ export class SearchService implements ISearchService {
         { is_active: true },
       ),
       this.searchDesigns(iLikeTerm, user.organizationId, limit),
-      this.searchTeamMembers(iLikeTerm, user, limit),
+      this.searchTeamMembers(term, user, limit),
     ]);
 
     return {
@@ -112,26 +112,20 @@ export class SearchService implements ISearchService {
   }
 
   private async searchTeamMembers(
-    iLikeTerm: ILikeTerm,
+    term: string,
     user: CurrentUser,
     limit: number,
   ): Promise<SearchResultItem[]> {
-    const rows = await this.userModel.findAll({
-      where: {
-        organization_id: user.organizationId,
-        status: 'active',
-        deleted_at: null,
-        uuid: { [Op.ne]: user.uuid },
-        [Op.or]: [{ first_name: iLikeTerm }, { last_name: iLikeTerm }, { email: iLikeTerm }],
-      },
-      attributes: ['uuid', 'first_name', 'last_name', 'email'],
+    const paginatedUsers = await this.userService.searchUsers(user.organizationId, term, {
+      currentUserRole: user.role,
+      excludeUserUuid: user.uuid,
+      status: 'active',
       limit,
-      order: [['first_name', 'ASC']],
     });
 
-    return rows.map((row) => ({
+    return paginatedUsers.data.map((row) => ({
       uuid: row.uuid,
-      name: `${row.first_name} ${row.last_name || ''}`.trim(),
+      name: row.full_name,
       category: SearchCategory.TEAM_MEMBERS,
       subtitle: row.email,
     }));
