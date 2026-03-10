@@ -27,8 +27,9 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
   const DIRECTORY_LINKS = [
     { label: 'Events', href: createRoute.publicCompanyEvents(slug) },
     { label: 'Recipients', href: createRoute.publicCompanyRecipients(slug) },
-    { label: 'Pathways', href: createRoute.publicPathways(slug) },
   ];
+
+  const PATHWAY_LINKS = [{ label: 'Pathways', href: createRoute.publicPathways(slug) }];
 
   return (
     <footer className="border-t border-gray-200 bg-white">
@@ -69,10 +70,10 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
                 ))}
               </ul>
             </div>
-            {/* <div>
-              <h3 className="mb-4 font-semibold uppercase text-gray-900">Credentials</h3>
+            <div>
+              <h3 className="mb-4 font-semibold uppercase text-gray-900">Pathways</h3>
               <ul className="space-y-3 text-gray-600">
-                {CREDENTIAL_LINKS.map((link) => (
+                {PATHWAY_LINKS.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="hover:underline">
                       {link.label}
@@ -80,7 +81,7 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
                   </li>
                 ))}
               </ul>
-            </div> */}
+            </div>
           </div>
         </div>
 
