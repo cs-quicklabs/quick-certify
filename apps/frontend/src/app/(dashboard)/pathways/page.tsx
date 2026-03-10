@@ -24,7 +24,7 @@ function PathwaysContent() {
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
-  const currentStatus = searchParams.get('status') || PathwayStatus.ACTIVE;
+  const currentStatus = searchParams.get('status') || 'all';
   const isShowAll = currentStatus === 'all';
 
   const [searchInput, setSearchInput] = useState(currentSearch);

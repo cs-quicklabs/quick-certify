@@ -79,21 +79,17 @@ export function EventSelector({ eventId, eventName, onSelect, error }: EventSele
                 </div>
               ) : filteredEvents.length === 0 ? (
                 <div className="py-4 text-center">
-                  {search ? (
-                    <p className="text-sm text-gray-500">No events match your search</p>
-                  ) : (
-                    <>
-                      <p className="text-sm text-gray-500 mb-3">No events available</p>
-                      <Link
-                        href={ROUTES.CREATE_EVENT}
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <PlusCircle className="h-4 w-4" />
-                        Create an event
-                      </Link>
-                    </>
-                  )}
+                  <p className="text-sm text-gray-500 mb-3">
+                    {search ? 'No events match your search' : 'No events available'}
+                  </p>
+                  <Link
+                    href={ROUTES.CREATE_EVENT}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    Create an event
+                  </Link>
                 </div>
               ) : (
                 filteredEvents.map((event) => (

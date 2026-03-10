@@ -101,9 +101,9 @@ export function EventFormStep0({
           >
             <UploadCloud className="w-10 h-10 mb-2 text-gray-400" strokeWidth={1.5} />
             <p className="mb-2 text-sm text-gray-500">
-              <span className="font-semibold text-black">Click to upload</span> or drag and drop
+              <span className="font-semibold text-black">Click to select a design</span>
             </p>
-            <p className="text-xs text-gray-500">Select from your designs</p>
+            <p className="text-xs text-gray-500">Choose from your saved designs</p>
           </div>
         )}
       </div>
