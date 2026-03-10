@@ -59,14 +59,10 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
           <div className="grid grid-cols-2 gap-10 text-sm">
             <div>
               <h3 className="mb-4 font-semibold uppercase text-gray-900">Directories</h3>
-              <ul className="divide-y divide-gray-100 text-gray-600">
+              <ul className="space-y-3 text-gray-600">
                 {DIRECTORY_LINKS.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="flex items-center gap-2 py-2.5 text-sm hover:text-gray-900 transition-colors group"
-                    >
-                      <span className="w-1 h-1 rounded-full bg-gray-300 group-hover:bg-gray-600 transition-colors shrink-0" />
+                    <Link href={link.href} className="hover:underline">
                       {link.label}
                     </Link>
                   </li>
