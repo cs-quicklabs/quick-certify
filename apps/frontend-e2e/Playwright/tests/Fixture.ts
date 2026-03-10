@@ -1,8 +1,3 @@
-/**
- * This file contains test fixtures and setup configurations for Playwright tests.
- * It provides custom test fixtures and global setup functionality.
- */
-
 import { test as base, expect as baseExpect } from '@playwright/test';
 import { LoginPage } from '../pageobjects/LoginPage';
 import { RegistrationPage } from '../pageobjects/RegistrationPage';
@@ -24,10 +19,6 @@ import issuerPortalData from '../testData/issuerPortalData.json';
 import skillsData from '../testData/skillsData.json';
 import teamData from '../testData/teamData.json';
 
-/**
- * Extends the base Playwright test with custom fixtures.
- * These fixtures provide page objects and test data for use in test cases.
- */
 type Fixtures = {
   loginPage: LoginPage;
   registrationPage: RegistrationPage;

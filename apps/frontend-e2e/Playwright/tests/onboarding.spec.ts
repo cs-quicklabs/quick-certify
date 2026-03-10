@@ -37,7 +37,6 @@ test.describe('Validate Registration Form', () => {
 
   test.describe('Valid Registration', () => {
     test('UR101_Verify: Registration with valid data', async ({ registrationPage }) => {
-      console.log('Starting test: UR101_Verify : Registration with valid data');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -53,7 +52,6 @@ test.describe('Validate Registration Form', () => {
     test('UR102_Verify: Registration after leaving last name field blank', async ({
       registrationPage,
     }) => {
-      console.log('Starting test: UR102_Verify : Registration after leaving last name field blank');
       await registrationPage.enterFirstName(registrationData.globalValue.validFirstName);
       await registrationPage.enterUserEmail(email);
       await registrationPage.enterIssuerName(issuerName);
@@ -65,7 +63,6 @@ test.describe('Validate Registration Form', () => {
   });
   test.describe('First Name field validation Test', () => {
     test('UR103_Verify: Numerical value validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR103_Verify: Numerical value validation in First Name field');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.numericalValue,
         registrationData.globalValue.validLastName,
@@ -82,9 +79,6 @@ test.describe('Validate Registration Form', () => {
       );
     });
     test('UR104_Verify: Special character value validation', async ({ registrationPage }) => {
-      console.log(
-        'Starting test: UR104_Verify: Special character value validation in First Name field',
-      );
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.specialCharacterValue,
         registrationData.globalValue.validLastName,
@@ -101,7 +95,6 @@ test.describe('Validate Registration Form', () => {
       );
     });
     test('UR105_Verify: Less than 2 character validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR105_Verify less than 2 character validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.lessCharacterValue,
         registrationData.globalValue.validLastName,
@@ -119,7 +112,6 @@ test.describe('Validate Registration Form', () => {
     });
 
     test.fixme('UR106_Verify: More than 50 character validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR106_Verify: More than 50 character validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.maxCharacterValue,
         registrationData.globalValue.validLastName,
@@ -136,7 +128,6 @@ test.describe('Validate Registration Form', () => {
       );
     });
     test('UR107_Verify: Mandatory Field validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR107_Verify: Mandatory Field validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.blankValue,
         registrationData.globalValue.validLastName,
@@ -155,7 +146,6 @@ test.describe('Validate Registration Form', () => {
   });
   test.describe('Last Name field validation Test', () => {
     test('UR108_Verify: Numerical value validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR108_Verify: Numerical value validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.numericalValue,
@@ -172,7 +162,6 @@ test.describe('Validate Registration Form', () => {
       );
     });
     test('UR109_Verify: Special Character validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR109_Verify: Special Character validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.specialCharacterValue,
@@ -189,7 +178,6 @@ test.describe('Validate Registration Form', () => {
       );
     });
     test.fixme('UR110_Verify: More than 50 character validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR110_Verify: More than 50 character validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.maxCharacterValue,
@@ -209,7 +197,6 @@ test.describe('Validate Registration Form', () => {
 
   test.describe('Email field validation Test', () => {
     test('UR111_Verify: Existing Email validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR111_Verify: Existing Email validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -227,7 +214,6 @@ test.describe('Validate Registration Form', () => {
     });
 
     test('UR112_Verify: Invalid Email validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR112_Verify: Invalid Email validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -244,7 +230,6 @@ test.describe('Validate Registration Form', () => {
       );
     });
     test('UR113_Verify: Mandatory Field validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR113_Verify: Mandatory Field validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -267,7 +252,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR114_Verify: Existing Issuer Name validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
@@ -286,7 +270,6 @@ test.describe('Validate Registration Form', () => {
     });
 
     test('UR115_Verify: Less than 2 character validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR115_Verify: Less than 2 character validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -304,7 +287,6 @@ test.describe('Validate Registration Form', () => {
     });
 
     test.fixme('UR116_Verify: More than 50 character validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR116_Verify: More than 50 character validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -322,7 +304,6 @@ test.describe('Validate Registration Form', () => {
     });
 
     test('UR117_Verify: Mandatory field validation', async ({ registrationPage }) => {
-      console.log('Starting test: UR117_Verify: Mandatory field validation');
       await registrationPage.fillRegistrationFormData(
         registrationData.globalValue.validFirstName,
         registrationData.globalValue.validLastName,
@@ -345,7 +326,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR118_Verify: Existing Issuer URL validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       await registrationPage.fillRegistrationFormData(
@@ -368,7 +348,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR119_Verify: Invalid URL validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       await registrationPage.fillRegistrationFormData(
@@ -391,7 +370,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR120_Verify: Mandatory Field validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       await registrationPage.fillRegistrationFormData(
@@ -416,7 +394,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR121_Verify: Upper case validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -440,7 +417,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR122_Verify: Less than 8 password value validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -464,7 +440,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR123_Verify: Special character value validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -488,7 +463,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR124_Verify: Numerical value validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -512,7 +486,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR125_Verify: Lower case validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -536,7 +509,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR126_Verify: Mandatory Field validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -560,7 +532,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR127_Verify: More than 50 character validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -584,7 +555,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR128_Verify: Mandatory confirm password field validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();
@@ -608,7 +578,6 @@ test.describe('Validate Registration Form', () => {
       registrationPage,
       randomDataGenerator,
     }) => {
-      console.log('Starting test: UR129_Verify: Password Mismatch validation');
       const newEmail = randomDataGenerator.generateRandomEmail();
       const newIssuerName = randomDataGenerator.generateRandomName();
       const newIssuerUrl = randomDataGenerator.generateRandomUrl();

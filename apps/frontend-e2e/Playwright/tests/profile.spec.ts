@@ -48,19 +48,16 @@ test.beforeEach(async ({ page, loginPage, profileSettingsPage: fixtureProfileSet
 
 test.describe('To validate the Profile Settings Functionality', () => {
   test('P101_To verify Profile Settings page loads successfully', async () => {
-    console.log('Starting test: P101_To verify Profile Settings page loads successfully');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.validatePageLoaded();
   });
 
   test('P102_To verify navigation to Profile Settings via header dropdown', async () => {
-    console.log('Starting test: P102_To verify navigation to Profile Settings via header dropdown');
     await profileSettingsPage.navigateViaHeader();
     await profileSettingsPage.validatePageLoaded();
   });
 
   test('P103_To verify email field is disabled (read-only)', async () => {
-    console.log('Starting test: P103_To verify email field is disabled (read-only)');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
     await profileSettingsPage.validateEmailFieldDisabled();
@@ -69,9 +66,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   test('P104_To verify successful profile update with valid first name and last name', async ({
     page,
   }) => {
-    console.log(
-      'Starting test: P104_To verify successful profile update with valid first name and last name',
-    );
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -102,9 +96,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   test('P105_To verify profile update with only first name (last name optional)', async ({
     page,
   }) => {
-    console.log(
-      'Starting test: P105_To verify profile update with only first name (last name optional)',
-    );
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -132,7 +123,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P106_To verify first name field validation - required field error', async () => {
-    console.log('Starting test: P106_To verify first name field validation - required field error');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -169,7 +159,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P107_To verify first name field validation - minimum length error', async () => {
-    console.log('Starting test: P107_To verify first name field validation - minimum length error');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -187,10 +176,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P108_To verify first name field validation - only letters allowed', async () => {
-    console.log('Starting test: P108_To verify first name field validation - only letters allowed');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
-
     await profileSettingsPage.enterFirstName(profileData.formData.firstNameWithNumbers);
     await profileSettingsPage.clickSaveButton();
 
@@ -205,9 +192,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P109_To verify first name field validation - cannot be only spaces', async () => {
-    console.log(
-      'Starting test: P109_To verify first name field validation - cannot be only spaces',
-    );
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -225,10 +209,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P110_To verify last name field validation - only letters allowed', async () => {
-    console.log('Starting test: P110_To verify last name field validation - only letters allowed');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
-
     await profileSettingsPage.enterFirstName(profileData.formData.validFirstName);
     await profileSettingsPage.enterLastName(profileData.formData.lastNameWithNumbers);
     await profileSettingsPage.clickSaveButton();
@@ -244,10 +226,8 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P111_To verify last name accepts spaces (e.g., Van Der Berg)', async () => {
-    console.log('Starting test: P111_To verify last name accepts spaces (e.g., Van Der Berg)');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
-
     const firstName = profileData.formData.validFirstName;
     const lastName = profileData.formData.validLastNameWithSpaces;
 
@@ -261,7 +241,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P112_To verify profile data persists after page reload', async () => {
-    console.log('Starting test: P112_To verify profile data persists after page reload');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -281,7 +260,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P113_To verify current user email is displayed correctly', async () => {
-    console.log('Starting test: P113_To verify current user email is displayed correctly');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -291,7 +269,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P114_To verify Save button is enabled when form is valid', async () => {
-    console.log('Starting test: P114_To verify Save button is enabled when form is valid');
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
@@ -302,9 +279,6 @@ test.describe('To validate the Profile Settings Functionality', () => {
   });
 
   test('P115_To verify form fields are pre-populated with existing profile data', async () => {
-    console.log(
-      'Starting test: P115_To verify form fields are pre-populated with existing profile data',
-    );
     await profileSettingsPage.openUrl();
     await profileSettingsPage.waitForFormReady();
 
