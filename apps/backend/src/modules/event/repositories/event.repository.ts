@@ -7,6 +7,7 @@ import { EventLevelEntity } from '@src/entities/event-level.entity';
 import { EventFormatEntity } from '@src/entities/event-format.entity';
 import { DesignEntity } from '@src/entities/design.entity';
 import { SkillEntity } from '@src/entities/skill.entity';
+import { PathwayEventEntity } from '@src/entities/pathway-event.entity';
 import { FindAllOptions, PaginatedResult } from '@src/commons/base';
 import { sanitizePagination, buildPaginatedResult } from '@src/commons/utils';
 
@@ -65,6 +66,8 @@ export class EventRepository {
   constructor(
     @InjectModel(EventEntity)
     private readonly model: typeof EventEntity,
+    @InjectModel(PathwayEventEntity)
+    private readonly pathwayEventModel: typeof PathwayEventEntity,
   ) {}
 
   /**
@@ -292,6 +295,14 @@ export class EventRepository {
         through: { attributes: [] },
       },
     ];
+  }
+
+  /**
+   * Check whether the event is linked to any pathways
+   */
+  async isLinkedToPathway(eventId: number): Promise<boolean> {
+    const count = await this.pathwayEventModel.count({ where: { event_id: eventId } });
+    return count > 0;
   }
 
   /**

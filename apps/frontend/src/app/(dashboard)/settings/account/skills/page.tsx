@@ -177,7 +177,9 @@ export default function SkillsPage() {
             autoFocus
           />
         ) : (
-          <span className="form-text-normal">{skill.name}</span>
+          <span className="form-text-normal block max-w-xs truncate" title={skill.name}>
+            {skill.name}
+          </span>
         ),
     },
     {
