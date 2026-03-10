@@ -27,6 +27,7 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
   const DIRECTORY_LINKS = [
     { label: 'Events', href: createRoute.publicCompanyEvents(slug) },
     { label: 'Recipients', href: createRoute.publicCompanyRecipients(slug) },
+    { label: 'Pathways', href: createRoute.publicPathways(slug) },
   ];
 
   return (

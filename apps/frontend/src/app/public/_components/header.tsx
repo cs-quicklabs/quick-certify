@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { createRoute } from '@/config/routes';
 
 type PublicHeaderProps = {
   slug: string;
@@ -8,9 +9,10 @@ type PublicHeaderProps = {
 };
 
 const getNavItems = (slug: string) => [
-  { label: 'Issuer Profile', href: `/public/company/${slug}/` },
-  { label: 'Events', href: `/public/company/${slug}/events` },
-  { label: 'Recipients', href: `/public/company/${slug}/recipients` },
+  { label: 'Issuer Profile', href: createRoute.publicCompany(slug) },
+  { label: 'Events', href: createRoute.publicCompanyEvents(slug) },
+  { label: 'Recipients', href: createRoute.publicCompanyRecipients(slug) },
+  { label: 'Pathways', href: createRoute.publicPathways(slug) },
 ];
 
 export default function PublicHeader({ slug, logoUrl, orgName }: PublicHeaderProps) {
