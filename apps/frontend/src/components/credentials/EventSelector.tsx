@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, PlusCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useEvents } from '@/hooks/useEvents';
+import { ROUTES } from '@/config/routes';
 
 interface EventSelectorProps {
   eventId: string;
@@ -76,9 +78,23 @@ export function EventSelector({ eventId, eventName, onSelect, error }: EventSele
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
                 </div>
               ) : filteredEvents.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  {search ? 'No events match your search' : 'No events available'}
-                </p>
+                <div className="py-4 text-center">
+                  {search ? (
+                    <p className="text-sm text-gray-500">No events match your search</p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-500 mb-3">No events available</p>
+                      <Link
+                        href={ROUTES.CREATE_EVENT}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <PlusCircle className="h-4 w-4" />
+                        Create an event
+                      </Link>
+                    </>
+                  )}
+                </div>
               ) : (
                 filteredEvents.map((event) => (
                   <button

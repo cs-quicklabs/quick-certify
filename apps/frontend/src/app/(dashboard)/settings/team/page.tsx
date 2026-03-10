@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
-import Link from 'next/link';
 import { useRoles, useTeamMembers } from '@/hooks/useTeam';
 import { useAuthStore } from '@/store/auth.store';
 import type { TeamMember } from '@/services/api/team.service';
@@ -140,21 +139,19 @@ export default function TeamsPage() {
               const inputId = `role-${value}`;
 
               return (
-                <Link href="" key={value}>
-                  <div className="flex items-center mt-3 mr-4">
-                    <input
-                      id={inputId}
-                      type="radio"
-                      name="show-only"
-                      checked={roleFilter === value}
-                      onChange={() => handleRoleFilterChange(value)}
-                      className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    />
-                    <label htmlFor={inputId} className="ml-2 text-sm font-medium text-gray-900">
-                      {label}
-                    </label>
-                  </div>
-                </Link>
+                <div key={value} className="flex items-center mt-3 mr-4">
+                  <input
+                    id={inputId}
+                    type="radio"
+                    name="show-only"
+                    checked={roleFilter === value}
+                    onChange={() => handleRoleFilterChange(value)}
+                    className="w-4 h-4 bg-gray-100 border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                  />
+                  <label htmlFor={inputId} className="ml-2 text-sm font-medium text-gray-900">
+                    {label}
+                  </label>
+                </div>
               );
             })}
 
