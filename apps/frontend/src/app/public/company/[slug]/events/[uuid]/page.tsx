@@ -11,6 +11,7 @@ import { SearchSortBar, SortOption } from '@/app/public/_components/searchSortBa
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 import { Credential } from '@/types';
 import { createRoute } from '@/config/routes';
+import { toTitleCase } from '@/utils/string.utils';
 
 type SortOrder = 'ASC' | 'DESC';
 type SortBy = 'created_at' | 'name';
@@ -217,7 +218,9 @@ export default function EventDetailPage() {
                   <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Event Type
                   </dt>
-                  <dd className="mt-1 text-sm text-gray-900">{event.event_type.name}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {toTitleCase(event.event_type.name)}
+                  </dd>
                 </div>
               )}
               {event.event_level && (
@@ -225,7 +228,9 @@ export default function EventDetailPage() {
                   <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Event Level
                   </dt>
-                  <dd className="mt-1 text-sm text-gray-900">{event.event_level.name}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {toTitleCase(event.event_level.name)}
+                  </dd>
                 </div>
               )}
               {event.event_format && (
@@ -233,7 +238,9 @@ export default function EventDetailPage() {
                   <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                     Event Format
                   </dt>
-                  <dd className="mt-1 text-sm text-gray-900">{event.event_format.name}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {toTitleCase(event.event_format.name)}
+                  </dd>
                 </div>
               )}
               {event.duration_type && (

@@ -692,8 +692,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     const whereClause: Record<string, unknown> = {
       ...options.where,
-      organization_id: organizationId,
       ...searchCondition,
+      organization_id: organizationId,
     };
 
     // Apply role-based filtering (extracted to avoid duplication)
@@ -781,13 +781,13 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
     }
     if (role === Role.SUPER_ADMIN) {
       // Super Admin cannot see other Super Admins
-      return [Role.SUPER_ADMIN];
+      return [Role.SYSTEM_ADMIN, Role.SUPER_ADMIN];
     } else if (role === Role.ADMIN) {
       // Admin cannot see Super Admin, but can see other Admins
-      return [Role.SUPER_ADMIN];
+      return [Role.SYSTEM_ADMIN, Role.SUPER_ADMIN];
     } else {
       // Lower level users (manager, designer) cannot see Super Admin or Admin
-      return [Role.SUPER_ADMIN, Role.ADMIN];
+      return [Role.SYSTEM_ADMIN, Role.SUPER_ADMIN, Role.ADMIN];
     }
   }
 
@@ -824,6 +824,8 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       }
     }
 
+    console.log(excludedRoleIds);
+
     if (options.status === 'active') {
       whereClause.status = { [Op.ne]: 'archived' };
     } else {
@@ -832,7 +834,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
     // Handle role filtering - need to find role IDs first
     let roleIds: number[] | undefined;
-    if (options.role) {
+    if (options && options.role) {
       const roleFilter = options.role.toLowerCase();
       // Admin filter should include both admin and super_admin
       if (roleFilter === 'admin') {

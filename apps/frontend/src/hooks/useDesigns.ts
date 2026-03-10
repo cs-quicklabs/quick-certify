@@ -12,12 +12,30 @@ type Params = {
   search?: string;
   type?: DesignType;
   enabled?: boolean;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 };
 
-export function useDesignList({ page, limit, search, type, enabled = true }: Params) {
+export function useDesignList({
+  page,
+  limit,
+  search,
+  type,
+  enabled = true,
+  sortBy,
+  sortOrder,
+}: Params) {
   const queryClient = useQueryClient();
 
-  const queryKey = ['designs', page, limit, search ?? '', type ?? 'all'];
+  const queryKey = [
+    'designs',
+    page,
+    limit,
+    search ?? '',
+    type ?? 'all',
+    sortBy ?? '',
+    sortOrder ?? '',
+  ];
 
   const query = useQuery({
     queryKey,
@@ -27,6 +45,8 @@ export function useDesignList({ page, limit, search, type, enabled = true }: Par
         limit,
         search,
         type,
+        sortBy,
+        sortOrder,
       }),
     enabled,
     placeholderData: (previousData) => previousData,

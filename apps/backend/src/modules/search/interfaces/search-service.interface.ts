@@ -1,3 +1,5 @@
+import { CurrentUser } from '@src/modules/auth/interfaces';
+
 export enum SearchCategory {
   EVENTS = 'events',
   PATHWAYS = 'pathways',
@@ -21,5 +23,5 @@ export interface GlobalSearchResult {
 }
 
 export interface ISearchService {
-  search(query: string, organizationId: number, limit?: number): Promise<GlobalSearchResult>;
+  search(query: string, currentUser: CurrentUser, limit?: number): Promise<GlobalSearchResult>;
 }

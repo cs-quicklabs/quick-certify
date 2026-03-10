@@ -77,8 +77,8 @@ export class SkillService {
       throw new NotFoundException('Organization not found');
     }
 
-    // Normalize skill name (trim and check for duplicates)
-    const normalizedName = dto.name.trim();
+    // DTO @Transform already trims and capitalizes
+    const normalizedName = dto.name;
 
     // Check for duplicate skill name within the same organization
     const existingSkill = await this.skillModel.findOne({
@@ -102,8 +102,8 @@ export class SkillService {
     const skill = await this.requireById(id, organizationId);
 
     if (dto.name !== undefined) {
-      // Normalize skill name
-      const normalizedName = dto.name.trim();
+      // DTO @Transform already trims and capitalizes
+      const normalizedName = dto.name;
 
       // Check for duplicate skill name (excluding current skill)
       const existingSkill = await this.skillModel.findOne({

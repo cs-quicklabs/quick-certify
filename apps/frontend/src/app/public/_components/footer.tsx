@@ -27,12 +27,13 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
   const DIRECTORY_LINKS = [
     { label: 'Events', href: createRoute.publicCompanyEvents(slug) },
     { label: 'Recipients', href: createRoute.publicCompanyRecipients(slug) },
+    { label: 'Pathways', href: createRoute.publicPathways(slug) },
   ];
 
   return (
     <footer className="border-t border-gray-200 bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-10">
-        <div className="flex flex-col gap-10 md:flex-row md:justify-between">
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <div className="flex flex-col gap-6 md:flex-row md:justify-between">
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-3">
@@ -49,7 +50,7 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
                   {displayName[0]?.toUpperCase() ?? '?'}
                 </div>
               )}
-              <span className="text-2xl font-semibold text-gray-900">{displayName}</span>
+              <span className="text-lg font-semibold text-gray-900">{displayName}</span>
             </Link>
             <p className="mt-2 text-sm text-gray-600">{slogan ?? ''}</p>
           </div>
@@ -57,8 +58,10 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
           {/* Links */}
           <div className="grid grid-cols-2 gap-10 text-sm">
             <div>
-              <h3 className="mb-4 font-semibold uppercase text-gray-900">Directories</h3>
-              <ul className="space-y-3 text-gray-600">
+              <h3 className="mb-2 font-semibold uppercase text-gray-900 text-xs tracking-wider">
+                Directories
+              </h3>
+              <ul className="space-y-2 text-gray-600">
                 {DIRECTORY_LINKS.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="hover:underline">
@@ -68,22 +71,10 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
                 ))}
               </ul>
             </div>
-            {/* <div>
-              <h3 className="mb-4 font-semibold uppercase text-gray-900">Credentials</h3>
-              <ul className="space-y-3 text-gray-600">
-                {CREDENTIAL_LINKS.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="hover:underline">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div> */}
           </div>
         </div>
 
-        <hr className="my-8 border-gray-200" />
+        <hr className="my-4 border-gray-200" />
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <span className="text-sm text-gray-500">

@@ -43,6 +43,8 @@ export default function DesignsPage() {
     limit: DESIGN_CARD_ITEM_LIMIT,
     search: debouncedSearch,
     type: apiType,
+    sortBy: 'updated_at',
+    sortOrder: 'DESC',
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);

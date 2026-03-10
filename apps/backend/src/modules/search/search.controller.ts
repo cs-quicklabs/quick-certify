@@ -18,7 +18,7 @@ export class SearchController {
   @ApiQuery({ name: 'limit', required: false, description: 'Results per category (max 10)' })
   @ApiResponse({ status: 200, description: 'Search results retrieved' })
   async search(@CurrentUser() user: CurrentUserType, @Query() dto: SearchQueryDto) {
-    const results = await this.searchService.search(dto.q, user.organizationId, dto.limit);
+    const results = await this.searchService.search(dto.q, user, dto.limit);
     return new SuccessResponse('Search results retrieved', results);
   }
 }

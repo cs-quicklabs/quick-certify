@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { createRoute } from '@/config/routes';
+import { toTitleCase } from '@/utils/string.utils';
 import type { Event } from '@/types';
 
 interface RecentEventsListProps {
@@ -37,7 +38,7 @@ export function RecentEventsList({ events, isLoading }: RecentEventsListProps) {
           <div className="min-w-0 flex-1">
             <p className="font-medium text-gray-900 truncate">{event.name}</p>
             <p className="text-sm text-gray-500">
-              {event.event_type?.name ?? 'No type'} &bull;{' '}
+              {toTitleCase(event.event_type?.name) || 'No type'} &bull;{' '}
               {new Date(event.createdAt).toLocaleDateString()}
             </p>
           </div>
