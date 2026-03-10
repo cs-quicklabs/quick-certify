@@ -33,26 +33,17 @@ export class AccountGeneralInfoPage {
     this.locator_unverifiedAlert = page.locator('[role="alert"]').filter({ hasText: 'unverified' });
   }
 
-  /**
-   * Navigate to Account General Information page
-   */
   async openUrl() {
     await this.page.goto('/settings/account/general-information');
     await this.page.waitForLoadState('networkidle');
   }
 
-  /**
-   * Wait for form to be ready
-   */
   async waitForFormReady() {
     await this.page.waitForSelector('#name', { state: 'visible', timeout: 10000 });
     await this.page.waitForTimeout(1000);
     await this.page.waitForLoadState('networkidle');
   }
 
-  /**
-   * Validate page is loaded
-   */
   async validatePageLoaded() {
     await expect(this.locator_pageTitle).toBeVisible();
     await expect(this.locator_pageSubtitle).toBeVisible();
@@ -115,9 +106,6 @@ export class AccountGeneralInfoPage {
     return this.locator_linkedinCompanyIdField.inputValue();
   }
 
-  /**
-   * Get field error element (sibling p.text-red-500)
-   */
   getFieldErrorLocator(fieldId: string): Locator {
     return this.page.locator(`#${fieldId}`).locator('..').locator('..').locator('p.text-red-500');
   }
@@ -150,23 +138,16 @@ export class AccountGeneralInfoPage {
     if (message) await expect(this.locator_alertToast.first()).toContainText(message);
   }
 
-  /**
-   * Verify that success message does NOT appear (validation prevented submission)
-   */
   async validateNoSuccessMessage() {
-    // Wait a bit to ensure no success message appears
     await this.page.waitForTimeout(1000);
     const successMessages = this.page
       .locator('[role="alert"]')
       .filter({ hasText: /saved successfully|success/i });
     const count = await successMessages.count();
-    // Success message should not be visible
+
     expect(count).toBe(0);
   }
 
-  /**
-   * Save general info with provided fields
-   */
   async saveGeneralInfo(data: {
     name: string;
     description?: string;

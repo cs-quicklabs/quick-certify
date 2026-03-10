@@ -3,61 +3,33 @@ import type { AccountIssuerPortalPage } from '../pageobjects/AccountIssuerPortal
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-/**
- * Test Suite: Account Settings - Issuer Portal
- * Screen: /settings/account/issuer-portal
- *
- * Coverage:
- * - Super Admin can upload banner image
- * - Super Admin can enable portal checkbox
- * - Super Admin can disable portal checkbox
- */
-
-/**
- * Helper function to create a minimal valid PNG image for testing
- */
-function createTestImage(filePath: string, sizeKB: number = 50): void {
+function createTestImage(filePath: string, sizeKB = 50): void {
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  // Create a minimal valid PNG (1x1 pixel PNG)
-  // PNG signature + minimal IHDR chunk + IEND chunk
   const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const ihdrChunk = Buffer.alloc(25);
-  ihdrChunk.writeUInt32BE(13, 0); // Chunk length
-  ihdrChunk.write('IHDR', 4); // Chunk type
-  // Width: 1, Height: 1, Bit depth: 8, Color type: 2 (RGB), Compression: 0, Filter: 0, Interlace: 0
-  ihdrChunk.writeUInt32BE(1, 8); // Width
-  ihdrChunk.writeUInt32BE(1, 12); // Height
-  ihdrChunk[16] = 8; // Bit depth
-  ihdrChunk[17] = 2; // Color type
-  ihdrChunk[18] = 0; // Compression
-  ihdrChunk[19] = 0; // Filter
-  ihdrChunk[20] = 0; // Interlace
-  const ihdrCrc = 0x12345678; // Placeholder CRC
+  ihdrChunk.writeUInt32BE(13, 0);
+  ihdrChunk.write('IHDR', 4);
+
+  ihdrChunk.writeUInt32BE(1, 8);
+  ihdrChunk.writeUInt32BE(1, 12);
+  ihdrChunk[16] = 8;
+  ihdrChunk[17] = 2;
+  ihdrChunk[18] = 0;
+  ihdrChunk[19] = 0;
+  ihdrChunk[20] = 0;
+  const ihdrCrc = 0x12345678;
   ihdrChunk.writeUInt32BE(ihdrCrc, 21);
 
   const iendChunk = Buffer.from([
-    0x00,
-    0x00,
-    0x00,
-    0x00, // Length
-    0x49,
-    0x45,
-    0x4e,
-    0x44, // IEND
-    0xae,
-    0x42,
-    0x60,
-    0x82, // CRC
+    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
   ]);
 
-  // For larger files, pad with IDAT chunk data
   let imageData = Buffer.concat([pngSignature, ihdrChunk]);
   if (sizeKB > 1) {
-    // Add padding to reach desired size (simplified - just add zeros)
     const paddingSize = (sizeKB - 1) * 1024;
     const padding = Buffer.alloc(paddingSize);
     imageData = Buffer.concat([imageData, padding]);
@@ -80,16 +52,15 @@ test.beforeEach(
       throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
     }
 
-    // Create test assets directory and images if they don't exist
     const testAssetsDir = path.join(__dirname, '..', 'test-assets');
     const bannerPath = path.join(testAssetsDir, 'banner.png');
     const largeBannerPath = path.join(testAssetsDir, 'large-banner.png');
 
     if (!fs.existsSync(bannerPath)) {
-      createTestImage(bannerPath, 50); // 50KB
+      createTestImage(bannerPath, 50);
     }
     if (!fs.existsSync(largeBannerPath)) {
-      createTestImage(largeBannerPath, 2048); // 2MB (exceeds 1MB limit)
+      createTestImage(largeBannerPath, 2048);
     }
 
     await page.goto('/settings/account/issuer-portal');
@@ -137,9 +108,8 @@ test.describe('Account Settings - Issuer Portal', () => {
       issuerPortalData.expectedMessages.bannerSuccessMessage,
     );
 
-    // Verify banner is displayed
     const isBannerDisplayed = await accountIssuerPortalPage.isBannerDisplayed();
-    // Banner might be displayed or might need a reload
+
     if (!isBannerDisplayed) {
       await page.reload();
       await accountIssuerPortalPage.waitForPageReady();
@@ -151,12 +121,8 @@ test.describe('Account Settings - Issuer Portal', () => {
     await accountIssuerPortalPage.waitForPageReady();
     await accountIssuerPortalPage.validatePageLoaded();
 
-    // Check current state
     const initialState = await accountIssuerPortalPage.isPortalEnabled();
 
-    // Manage this:
-    // - if enable then check for disable case
-    // - if disable then check for enable case
     const targetState = !initialState;
 
     const responsePromise = page

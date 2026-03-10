@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 import { RandomDataGenerator } from '../utils/RandomDataGenerator';
-import { teamData } from '../tests/Fixture';
+import teamData from '../testData/teamData.json';
 
 export class TeamPage {
   readonly page: Page;
@@ -256,7 +256,8 @@ export class TeamPage {
     const addedMembersCount = await this.locator_statusColumn.count();
     for (let i = 0; i < addedMembersCount; i++) {
       const fetchedStatus = await this.locator_statusColumn.nth(i).textContent();
-      if (fetchedStatus?.trim() === 'active') {
+      const status = fetchedStatus?.trim();
+      if (status === 'active' || status === 'pending') {
         await this.locator_statusColumn.nth(i).click();
         return;
       }

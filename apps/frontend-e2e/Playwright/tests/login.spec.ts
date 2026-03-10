@@ -1,20 +1,14 @@
 import { test, loginData } from './Fixture';
+import type { LoginPage } from '../pageobjects/LoginPage';
 
-/**
- * Test Case: L10
- * Description: Verifies the complete flow for the Login Functionality
- * Elements Verified :
- * - Valid Login
- * - Invalid Login
- * - Blank Login
- * - Password Eye Icon
- * - Login Button
- */
-
-let loginPage;
+let loginPage: LoginPage;
 
 const userName = process.env.USER_EMAIL;
 const password = process.env.USER_PASS;
+
+if (!userName || !password) {
+  throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
+}
 
 test.beforeEach(async ({ loginPage: fixtureLoginPage }) => {
   loginPage = fixtureLoginPage;

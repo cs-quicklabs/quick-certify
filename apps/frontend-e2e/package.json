@@ -22,6 +22,9 @@
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:debug": "playwright test --debug",
-    "generateResults": "allure serve allure-results"
+    "execute:loginTests": "npx playwright test ./login.spec.ts",
+    "execute:onboardingTests": "npx playwright test ./onboarding.spec.ts",
+    "generateResults": "allure serve allure-results",
+    "report": "playwright show-report playwright-report"
   }
 }

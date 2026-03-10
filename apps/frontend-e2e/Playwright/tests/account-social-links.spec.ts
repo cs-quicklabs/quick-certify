@@ -1,16 +1,6 @@
 import { test, socialLinksData } from './Fixture';
 import type { AccountSocialLinksPage } from '../pageobjects/AccountSocialLinksPage';
 
-/**
- * Test Suite: Account Settings - Social Links
- * Screen: /settings/account/social-links
- *
- * Coverage:
- * - Super Admin can add valid social links for a company
- * - Error shown when an invalid social link (wrong domain) is entered
- * - Error shown for incorrect URL format in social links
- */
-
 let accountSocialLinksPage: AccountSocialLinksPage;
 
 test.beforeEach(
@@ -70,7 +60,6 @@ test.describe('Account Settings - Social Links', () => {
       socialLinksData.expectedMessages.successMessage,
     );
 
-    // Verify values persist after reload
     await page.reload();
     await accountSocialLinksPage.waitForFormReady();
     await accountSocialLinksPage.validateFieldValues(data);

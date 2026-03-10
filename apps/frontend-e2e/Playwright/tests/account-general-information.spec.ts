@@ -1,21 +1,12 @@
 import { test, accountGeneralInfoData, expect } from './Fixture';
 import type { AccountGeneralInfoPage } from '../pageobjects/AccountGeneralInfoPage';
 
-/**
- * Test Case: A10
- * Description: Verifies Account Settings - General Information page
- * Elements Verified:
- * - Page load and navigation
- * - Issuer/Organisation Name (required)
- * - Issuer Description (textarea)
- * - Support Email
- * - Slogan
- * - LinkedIn Company ID
- * - Save and validation messages
- */
+const userName = process.env.USER_EMAIL;
+const password = process.env.USER_PASS;
 
-const userName = process.env.USER_EMAIL || 'divanshu@crownstack.com';
-const password = process.env.USER_PASS || 'Password@12';
+if (!userName || !password) {
+  throw new Error('USER_EMAIL / USER_PASS must be set for authenticated E2E tests');
+}
 
 let accountGeneralInfoPage: AccountGeneralInfoPage;
 
@@ -23,7 +14,7 @@ test.beforeEach(
   async ({ page, loginPage, accountGeneralInfoPage: fixtureAccountGeneralInfoPage }) => {
     accountGeneralInfoPage = fixtureAccountGeneralInfoPage;
 
-    await page.goto('/settings/account/general-information');
+    await accountGeneralInfoPage.openUrl();
 
     const currentUrl = page.url();
     if (currentUrl.includes('/login')) {
@@ -33,7 +24,7 @@ test.beforeEach(
         loginPage.clickOnSigninBtn(),
         page.waitForURL(/\/(dashboard|settings)/, { timeout: 20000 }),
       ]);
-      await page.goto('/settings/account/general-information');
+      await accountGeneralInfoPage.openUrl();
       await page.waitForLoadState('networkidle');
     } else {
       await page.waitForLoadState('networkidle');
@@ -76,12 +67,10 @@ test.describe('Account Settings - General Information', () => {
 
     await Promise.all([
       accountGeneralInfoPage.saveGeneralInfo(data),
-      page
-        .waitForResponse(
-          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
-          { timeout: 10000 },
-        )
-        .catch(() => {}),
+      page.waitForResponse(
+        (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
+        { timeout: 10000 },
+      ),
     ]);
 
     await page.waitForTimeout(1000);
@@ -95,12 +84,10 @@ test.describe('Account Settings - General Information', () => {
     const name = accountGeneralInfoData.formData.validName;
     await Promise.all([
       accountGeneralInfoPage.saveGeneralInfo({ name }),
-      page
-        .waitForResponse(
-          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
-          { timeout: 10000 },
-        )
-        .catch(() => {}),
+      page.waitForResponse(
+        (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
+        { timeout: 10000 },
+      ),
     ]);
 
     await page.waitForTimeout(1000);
@@ -115,7 +102,6 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -127,13 +113,11 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify validation error appears
     await accountGeneralInfoPage.validateFieldError(
       'name',
       accountGeneralInfoData.expectedMessages.nameNotOnlySpaces,
     );
 
-    // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -148,7 +132,6 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -163,13 +146,11 @@ test.describe('Account Settings - General Information', () => {
     await accountGeneralInfoPage.clickSaveButton();
     await accountGeneralInfoPage.page.waitForTimeout(1500);
 
-    // Verify validation error appears
     await accountGeneralInfoPage.validateFieldError(
       'linkedin_company_id',
       accountGeneralInfoData.expectedMessages.linkedInIdInvalid,
     );
 
-    // Verify success message does NOT appear (form should not submit)
     await accountGeneralInfoPage.validateNoSuccessMessage();
   });
 
@@ -209,12 +190,10 @@ test.describe('Account Settings - General Information', () => {
 
     await Promise.all([
       accountGeneralInfoPage.saveGeneralInfo(data),
-      page
-        .waitForResponse(
-          (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
-          { timeout: 10000 },
-        )
-        .catch(() => {}),
+      page.waitForResponse(
+        (resp) => resp.url().includes('organizations/settings') && resp.status() === 200,
+        { timeout: 10000 },
+      ),
     ]);
 
     await page.waitForTimeout(1000);
