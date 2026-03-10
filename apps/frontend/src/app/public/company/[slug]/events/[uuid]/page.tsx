@@ -11,7 +11,7 @@ import { SearchSortBar, SortOption } from '@/app/public/_components/searchSortBa
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 import { Credential } from '@/types';
 import { createRoute } from '@/config/routes';
-import { toTitleCase } from '@/utils/helpers';
+import { toTitleCase } from '@/utils/string.utils';
 
 type SortOrder = 'ASC' | 'DESC';
 type SortBy = 'created_at' | 'name';

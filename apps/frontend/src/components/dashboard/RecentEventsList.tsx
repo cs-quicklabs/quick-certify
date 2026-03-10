@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { createRoute } from '@/config/routes';
-import { toTitleCase } from '@/utils/helpers';
+import { toTitleCase } from '@/utils/string.utils';
 import type { Event } from '@/types';
 
 interface RecentEventsListProps {

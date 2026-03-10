@@ -16,16 +16,6 @@ export function capitalizeFirst(str: string | null | undefined): string {
     .join(' ');
 }
 
-export function toTitleCase(str: string | null | undefined): string {
-  if (!str) return '';
-
-  return str
-    .trim()
-    .split(/\s+/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
-
 export function filterAndSortRoles(roles: Role[] | undefined): Roles[] {
   if (!roles || roles.length === 0) return [];
 

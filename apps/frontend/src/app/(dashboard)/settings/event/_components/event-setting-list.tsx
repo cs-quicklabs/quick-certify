@@ -5,7 +5,7 @@ import { Sidebar, ConfirmationDialog, Alert } from '@/components';
 import { eventSidebarItems } from '@/config/sidebar.config';
 import { getApiErrorMessage } from '@/lib/api-error';
 import type { IBaseEvent } from '@/types';
-import { toTitleCase } from '@/utils/helpers';
+import { toTitleCase } from '@/utils/string.utils';
 import { Table, TableColumn } from '@/components/ui';
 
 interface EventSettingListProps {
