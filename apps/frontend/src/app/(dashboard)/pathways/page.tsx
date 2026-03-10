@@ -132,15 +132,15 @@ function PathwaysContent() {
                 </label>
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => handleStatusFilter('all')}
-              className={`mt-3 mr-4 font-medium text-sm cursor-pointer ${
-                isShowAll ? 'text-primary-700 underline' : 'text-blue-600 hover:underline'
-              }`}
-            >
-              Show All
-            </button>
+            {!isShowAll && (
+              <button
+                type="button"
+                onClick={() => handleStatusFilter('all')}
+                className="mt-3 mr-4 font-medium text-sm cursor-pointer text-blue-600 hover:underline"
+              >
+                Show All
+              </button>
+            )}
           </div>
         </div>
 
