@@ -159,7 +159,9 @@ export function PathwayForm({
               {nameError ? (
                 <p className="mt-1 text-sm text-red-600">{nameError}</p>
               ) : (
-                <p className="form-input-description">Give your pathway a clear, descriptive name.</p>
+                <p className="form-input-description">
+                  Give your pathway a clear, descriptive name.
+                </p>
               )}
             </div>
 
