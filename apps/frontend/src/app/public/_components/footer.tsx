@@ -27,9 +27,8 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
   const DIRECTORY_LINKS = [
     { label: 'Events', href: createRoute.publicCompanyEvents(slug) },
     { label: 'Recipients', href: createRoute.publicCompanyRecipients(slug) },
+    { label: 'Pathways', href: createRoute.publicPathways(slug) },
   ];
-
-  const PATHWAY_LINKS = [{ label: 'Pathways', href: createRoute.publicPathways(slug) }];
 
   return (
     <footer className="border-t border-gray-200 bg-white">
@@ -60,22 +59,14 @@ export default function PublicFooter({ logoUrl, orgName, slogan, slug }: PublicF
           <div className="grid grid-cols-2 gap-10 text-sm">
             <div>
               <h3 className="mb-4 font-semibold uppercase text-gray-900">Directories</h3>
-              <ul className="space-y-3 text-gray-600">
+              <ul className="divide-y divide-gray-100 text-gray-600">
                 {DIRECTORY_LINKS.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="hover:underline">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 font-semibold uppercase text-gray-900">Pathways</h3>
-              <ul className="space-y-3 text-gray-600">
-                {PATHWAY_LINKS.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="hover:underline">
+                    <Link
+                      href={link.href}
+                      className="flex items-center gap-2 py-2.5 text-sm hover:text-gray-900 transition-colors group"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-gray-300 group-hover:bg-gray-600 transition-colors shrink-0" />
                       {link.label}
                     </Link>
                   </li>
