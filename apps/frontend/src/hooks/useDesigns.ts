@@ -11,11 +11,20 @@ type Params = {
   limit: number;
   search?: string;
   type?: DesignType;
+  enabled?: boolean;
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
 };
 
-export function useDesignList({ page, limit, search, type, sortBy, sortOrder }: Params) {
+export function useDesignList({
+  page,
+  limit,
+  search,
+  type,
+  enabled = true,
+  sortBy,
+  sortOrder,
+}: Params) {
   const queryClient = useQueryClient();
 
   const queryKey = [
@@ -39,6 +48,7 @@ export function useDesignList({ page, limit, search, type, sortBy, sortOrder }: 
         sortBy,
         sortOrder,
       }),
+    enabled,
     placeholderData: (previousData) => previousData,
     staleTime: 30_000,
   });

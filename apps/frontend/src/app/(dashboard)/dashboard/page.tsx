@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@/store/auth.store';
 import { useEvents } from '@/hooks/useEvents';
 import { useCredentials } from '@/hooks/useCredentials';
 import { useDesignList } from '@/hooks/useDesigns';
 import { ROUTES } from '@/config/routes';
+import { RoleType } from '@/types';
 import { Calendar, Users, Award, Palette } from 'lucide-react';
 import Link from 'next/link';
 import { StatsCard } from '@/components/dashboard/StatsCard';
@@ -16,15 +19,34 @@ import { RecentEventsList } from '@/components/dashboard/RecentEventsList';
  * Main dashboard for authenticated users showing real data from APIs
  */
 export default function DashboardPage() {
+  const router = useRouter();
   const user = useUser();
+
+  const shouldRedirect = user?.role === RoleType.Designer || user?.role === RoleType.Manager;
+
+  useEffect(() => {
+    if (user?.role === RoleType.Designer) {
+      router.replace(ROUTES.DESIGNS);
+    } else if (user?.role === RoleType.Manager) {
+      router.replace(ROUTES.EVENTS);
+    }
+  }, [user, router]);
 
   const { data: eventsData, isLoading: eventsLoading } = useEvents({
     limit: 5,
     sortBy: 'createdAt',
     sortOrder: 'DESC',
+    enabled: !shouldRedirect,
   });
-  const { data: credentialsData, isLoading: credentialsLoading } = useCredentials({ limit: 1 });
-  const { meta: designsMeta, loading: designsLoading } = useDesignList({ page: 1, limit: 1 });
+  const { data: credentialsData, isLoading: credentialsLoading } = useCredentials({
+    limit: 1,
+    enabled: !shouldRedirect,
+  });
+  const { meta: designsMeta, loading: designsLoading } = useDesignList({
+    page: 1,
+    limit: 1,
+    enabled: !shouldRedirect,
+  });
 
   const totalEvents = eventsData?.meta?.total ?? 0;
   const totalCredentials = credentialsData?.meta?.total ?? 0;

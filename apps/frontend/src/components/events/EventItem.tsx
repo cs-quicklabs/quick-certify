@@ -14,6 +14,7 @@ export interface EventItemProps {
   event_format?: { name: string } | null;
   design?: { url: string; name?: string; type: string } | null;
   onDelete?: (uuid: string) => void;
+  canDelete?: boolean;
   isDeleting?: boolean;
 }
 
@@ -26,6 +27,7 @@ export const EventItem = ({
   event_format,
   design,
   onDelete,
+  canDelete = true,
   isDeleting = false,
 }: EventItemProps) => {
   const router = useRouter();
@@ -103,9 +105,9 @@ export const EventItem = ({
             </button>
             <button
               onClick={handleDeleteClick}
-              disabled={isDeleting}
+              disabled={isDeleting || !canDelete}
               className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium rounded bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Delete event"
+              title={canDelete ? 'Delete event' : 'You are not authorized to delete events'}
             >
               <Trash2 size={16} strokeWidth={1.7} />
               <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>

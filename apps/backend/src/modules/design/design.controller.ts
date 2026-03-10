@@ -24,7 +24,7 @@ import { GetDesignDto } from './dtos/get-design.dto';
 @ApiTags('Designs')
 @ApiBearerAuth()
 @UseGuards(RolesGuard)
-@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.DESIGNER)
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.DESIGNER, Role.MANAGER)
 @Controller({ path: 'designs', version: '1' })
 export class DesignController {
   constructor(private readonly designService: DesignService) {}
@@ -81,6 +81,7 @@ export class DesignController {
   }
 
   @Delete(':uuid')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Delete Design (Admin/Super Admin only)' })
   @ApiResponse({ status: 200, description: 'Design deleted successfully' })
   @ApiResponse({ status: 404, description: 'Design not found' })

@@ -11,30 +11,33 @@ export const ROLE_BADGE_STYLES: Record<string, string> = {
   [RoleType.Designer]: 'bg-emerald-100 text-emerald-700',
 };
 
-export const NAV_ITEMS: NavItem[] = [
-  { href: ROUTES.DASHBOARD.HOME, label: 'Dashboard' },
-  { href: ROUTES.DESIGNS, label: 'Designs' },
-  { href: ROUTES.EVENTS, label: 'Events' },
-  { href: ROUTES.CREDENTIALS, label: 'Credentials' },
-  { href: ROUTES.PATHWAYS, label: 'Pathways' },
-  // { href: ROUTES.EMAILS, label: 'Emails' }
-  // { href: ROUTES.ANALYTICS, label: 'Analytics' },
-  // { href: ROUTES.INTEGRATIONS, label: 'Integrations' },
+const ALL_ROLES = Object.values(RoleType);
+const ADMIN_ROLES = [RoleType.SystemAdmin, RoleType.SuperAdmin, RoleType.Admin];
+const PRIVILEGED_ROLES = [RoleType.SystemAdmin, RoleType.SuperAdmin];
+
+type NavItemDef = NavItem & { roles: RoleType[] };
+
+const NAV_ITEMS: NavItemDef[] = [
+  { href: ROUTES.DASHBOARD.HOME, label: 'Dashboard', roles: ADMIN_ROLES },
+  { href: ROUTES.DESIGNS, label: 'Designs', roles: [...ADMIN_ROLES, RoleType.Designer] },
+  { href: ROUTES.EVENTS, label: 'Events', roles: [...ADMIN_ROLES, RoleType.Manager] },
+  { href: ROUTES.CREDENTIALS, label: 'Credentials', roles: [...ADMIN_ROLES, RoleType.Manager] },
+  { href: ROUTES.PATHWAYS, label: 'Pathways', roles: [...ADMIN_ROLES, RoleType.Manager] },
+  { href: ROUTES.ADMIN.ORGANIZATIONS, label: 'Organizations', roles: [RoleType.SystemAdmin] },
 ];
 
-export const SYSTEM_ADMIN_NAV: NavItem[] = [
-  { href: ROUTES.ADMIN.ORGANIZATIONS, label: 'Organizations' },
+const DROPDOWN_ITEMS: NavItemDef[] = [
+  { href: ROUTES.SETTINGS.PROFILE.GENERAL, label: 'Profile Settings', roles: ALL_ROLES },
+  { href: ROUTES.SETTINGS.ACCOUNT.GENERAL, label: 'Account Settings', roles: PRIVILEGED_ROLES },
+  { href: ROUTES.SETTINGS.EVENT.TYPE, label: 'Event Settings', roles: ADMIN_ROLES },
+  { href: ROUTES.SETTINGS.TEAM, label: 'Team', roles: ADMIN_ROLES },
+  { href: ROUTES.SETTINGS.ARCHIVED, label: 'Archived', roles: PRIVILEGED_ROLES },
 ];
 
-export function getDropdownItems(isAdmin: boolean): NavItem[] {
-  const items: NavItem[] = [{ href: ROUTES.SETTINGS.PROFILE.GENERAL, label: 'Profile Settings' }];
-  if (isAdmin) {
-    items.push(
-      { href: ROUTES.SETTINGS.ACCOUNT.GENERAL, label: 'Account Settings' },
-      { href: ROUTES.SETTINGS.EVENT.TYPE, label: 'Event Settings' },
-      { href: ROUTES.SETTINGS.TEAM, label: 'Team' },
-      { href: ROUTES.SETTINGS.ARCHIVED, label: 'Archived' },
-    );
-  }
-  return items;
+export function getNavItems(role: RoleType): NavItem[] {
+  return NAV_ITEMS.filter(({ roles }) => roles.includes(role));
+}
+
+export function getDropdownItems(role: RoleType): NavItem[] {
+  return DROPDOWN_ITEMS.filter(({ roles }) => roles.includes(role));
 }

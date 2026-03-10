@@ -280,7 +280,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
 
       const inviteLink = `${
         process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-      }/auth/invitation?token=${invitationToken}`;
+      }/invitation?token=${invitationToken}`;
 
       this.mailService
         .sendInvitationEmail(userWithRelations.email, {
@@ -503,7 +503,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
         : 'Administrator';
       const inviteLink = `${
         process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-      }/auth/invitation?token=${newToken}`;
+      }/invitation?token=${newToken}`;
 
       this.mailService
         .sendInvitationEmail(user.email, {
@@ -614,7 +614,7 @@ export class UserService extends BaseCrudService<UserEntity, CreateUserDto, Upda
       : 'Administrator';
     const inviteLink = `${
       process.env.FRONTEND_DOMAIN || 'http://localhost:3000'
-    }/auth/invitation?token=${newToken}`;
+    }/invitation?token=${newToken}`;
     const organization = await this.organizationService.findOne(user.organization_id);
     if (organization) {
       this.mailService

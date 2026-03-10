@@ -94,6 +94,7 @@ export class EventController {
   }
 
   @Delete(':uuid')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @ApiOperation({ summary: 'Soft delete event within current organization' })
   @ApiResponse({ status: 200, description: 'Event deleted successfully' })
   @ApiResponse({ status: 404, description: 'Event not found' })
