@@ -11,12 +11,7 @@ import { usePathname } from 'next/navigation';
 import { RoleType } from '@/types';
 import { ROUTES } from '@/config/routes';
 import { HeaderAvatar } from './HeaderAvatar';
-import {
-  ROLE_BADGE_STYLES,
-  NAV_ITEMS,
-  SYSTEM_ADMIN_NAV,
-  getDropdownItems,
-} from '@/config/headerNav.config';
+import { ROLE_BADGE_STYLES, getNavItems, getDropdownItems } from '@/config/headerNav.config';
 
 export function Header() {
   const pathname = usePathname();
@@ -39,13 +34,9 @@ export function Header() {
   }, [menuOpened]);
 
   const avatarUrl = profile ? (profile.avatarUrl ?? '') : (user?.avatarUrl ?? '');
-  const isAdmin =
-    (user?.role && [RoleType.SuperAdmin, RoleType.Admin].includes(user?.role as RoleType)) || false;
-  const isSystemAdmin = user?.role === RoleType.SystemAdmin;
-  const navItems = isSystemAdmin ? [...NAV_ITEMS, ...SYSTEM_ADMIN_NAV] : NAV_ITEMS;
-  const dropdownItems = isSystemAdmin
-    ? [...SYSTEM_ADMIN_NAV, ...getDropdownItems(true)]
-    : getDropdownItems(isAdmin);
+  const role = (user?.role as RoleType) ?? RoleType.Manager;
+  const navItems = getNavItems(role);
+  const dropdownItems = getDropdownItems(role);
 
   const closeMenus = () => {
     setMenuOpened(false);
@@ -76,7 +67,7 @@ export function Header() {
               Quick Certify
             </Link>
             <div className="hidden lg:ml-4 lg:flex space-x-1">
-              {navItems.map((item, i) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -170,13 +161,13 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2">
-            {navItems.map((item, i) => (
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={closeMenus}
                 className={`block rounded-sm px-3 py-2 text-base font-medium ${
-                  i === 0
+                  pathname.includes(item.href)
                     ? 'bg-gray-900 text-white'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
