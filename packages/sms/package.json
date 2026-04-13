@@ -42,16 +42,16 @@
     }
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.13",
-    "@nestjs/config": "^4.0.2",
-    "twilio": "^5.5.0"
+    "@nestjs/common": "^11.1.18",
+    "@nestjs/config": "^4.0.4",
+    "twilio": "^5.13.1"
   },
   "devDependencies": {
-    "@types/node": "^25.2.0"
+    "@types/node": "^25.6.0"
   },
   "peerDependencies": {
-    "@nestjs/common": "^11.1.13",
-    "@nestjs/config": "^4.0.2"
+    "@nestjs/common": "^11.1.18",
+    "@nestjs/config": "^4.0.4"
   },
   "engines": {
     "node": ">=18.0.0"

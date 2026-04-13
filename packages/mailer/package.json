@@ -43,16 +43,16 @@
     }
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.13",
-    "@nestjs/config": "^4.0.2",
-    "nodemailer": "^7.0.13"
+    "@nestjs/common": "^11.1.18",
+    "@nestjs/config": "^4.0.4",
+    "nodemailer": "^8.0.5"
   },
   "devDependencies": {
-    "@types/nodemailer": "^7.0.9"
+    "@types/nodemailer": "^8.0.0"
   },
   "peerDependencies": {
-    "@nestjs/common": "^11.1.13",
-    "@nestjs/config": "^4.0.2"
+    "@nestjs/common": "^11.1.18",
+    "@nestjs/config": "^4.0.4"
   },
   "engines": {
     "node": ">=18.0.0"
