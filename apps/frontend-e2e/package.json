@@ -12,10 +12,10 @@
     }
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.1",
-    "@types/node": "^25.2.0",
-    "allure": "^3.0.1",
-    "allure-playwright": "^3.4.5"
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.1",
+    "allure": "^3.8.2",
+    "allure-playwright": "^3.9.0"
   },
   "scripts": {
     "test:e2e": "playwright test",
